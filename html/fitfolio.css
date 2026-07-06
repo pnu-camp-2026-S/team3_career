@@ -1415,6 +1415,49 @@ button {
   height: 40px;
 }
 
+.profile-readonly .form-field input:disabled,
+.profile-readonly .form-field select:disabled,
+.profile-readonly .date-trigger:disabled,
+.profile-readonly .major-trigger:disabled,
+.profile-readonly .picker-trigger:disabled {
+  color: #273244;
+  opacity: 1;
+  cursor: default;
+  background-color: #fbfcff;
+}
+
+.profile-readonly .form-field select:disabled {
+  color: #273244;
+}
+
+.profile-readonly [data-photo-button],
+.profile-readonly [data-add-education],
+.profile-readonly .delete-education {
+  display: none;
+}
+
+.profile-readonly .chip {
+  cursor: default;
+}
+
+.profile-readonly .chip:not(.selected) {
+  opacity: 0.48;
+}
+
+.profile-readonly .chip:disabled {
+  color: #425066;
+}
+
+.profile-readonly .chip.selected:disabled {
+  color: var(--brand);
+}
+
+.profile-readonly .date-trigger:disabled .calendar-icon,
+.profile-readonly .major-trigger:disabled .select-chevron,
+.profile-readonly .picker-trigger:disabled span[aria-hidden="true"] {
+  opacity: 0.58;
+}
+
 .anchor-menu {
   position: sticky;
   top: 96px;

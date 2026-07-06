@@ -146,10 +146,7 @@
             </div>
           </section>
 
-          <div class="form-actions">
-            <button class="ghost-button" type="button" data-temp-save>임시저장</button>
-            <button class="primary-button" type="button" data-save-profile>저장</button>
-          </div>
+          <div class="form-actions" data-form-actions></div>
         </div>
       </div>
 
@@ -187,6 +184,7 @@
     const interestFields = ["채용", "대외활동", "공모전", "교육"];
 
     const profileState = {
+      editing: false,
       birthDate: "2001-03-15",
       datePickerOpen: false,
       periodPicker: null,
@@ -238,6 +236,30 @@
       const selectedJobs = [...profileState.chips.jobs];
       const options = selectedJobs.flatMap((job) => detailJobs[job] || []);
       return [...new Set(options.length ? options : Object.values(detailJobs).flat())];
+    }
+
+    function loadSavedProfile() {
+      const savedProfile = localStorage.getItem("myfitfolioProfile");
+      if (!savedProfile) return;
+
+      try {
+        const parsed = JSON.parse(savedProfile);
+        if (parsed.name) document.querySelector("#profileName").value = parsed.name;
+        if (parsed.gender) document.querySelector("#profileGender").value = parsed.gender;
+        if (parsed.birthDate) profileState.birthDate = parsed.birthDate;
+        if (parsed.email) document.querySelector("#profileEmail").value = parsed.email;
+        if (parsed.phone) document.querySelector("#profilePhone").value = parsed.phone;
+        if (parsed.address) document.querySelector("#profileAddress").value = parsed.address;
+        if (Array.isArray(parsed.educations) && parsed.educations.length) profileState.educations = parsed.educations;
+        if (parsed.preferences) profileState.preferences = { ...profileState.preferences, ...parsed.preferences };
+        if (parsed.chips) {
+          Object.entries(parsed.chips).forEach(([key, values]) => {
+            if (profileState.chips[key] && Array.isArray(values)) profileState.chips[key] = new Set(values);
+          });
+        }
+      } catch (error) {
+        console.warn("Saved profile could not be loaded.", error);
+      }
     }
 
     function getDaysInMonth(year, month) {
@@ -511,19 +533,74 @@
       renderChipRows();
       renderSalarySelect();
       renderPickedValues();
+      renderFormActions();
+      renderEditState();
+    }
+
+    function renderFormActions() {
+      const actions = document.querySelector("[data-form-actions]");
+      if (!actions) return;
+
+      actions.innerHTML = profileState.editing
+        ? `
+          <button class="ghost-button" type="button" data-temp-save>임시저장</button>
+          <button class="primary-button" type="button" data-save-profile>저장</button>
+        `
+        : '<button class="primary-button" type="button" data-edit-profile>수정하기</button>';
+    }
+
+    function renderEditState() {
+      document.body.classList.toggle("profile-editing", profileState.editing);
+      document.body.classList.toggle("profile-readonly", !profileState.editing);
+
+      const selectors = [
+        "#profileName",
+        "#profileGender",
+        "#profileEmail",
+        "#profilePhone",
+        "#profileAddress",
+        "[data-salary-select]",
+        "[data-edu-field]",
+        "[data-photo-button]",
+        "[data-toggle-date-picker]",
+        "[data-add-education]",
+        "[data-delete-education]",
+        "[data-major-trigger]",
+        "[data-toggle-period-picker]",
+        "[data-chip-group]",
+        "[data-open-search]"
+      ];
+
+      document.querySelectorAll(selectors.join(",")).forEach((control) => {
+        control.disabled = !profileState.editing;
+      });
+
+      if (!profileState.editing) {
+        closeSearchModal();
+      }
     }
 
     document.addEventListener("click", (event) => {
+      const editButton = event.target.closest("[data-edit-profile]");
+      if (editButton) {
+        profileState.editing = true;
+        renderAllDynamicParts();
+        return;
+      }
+
       const photoButton = event.target.closest("[data-photo-button]");
+      if (photoButton && !profileState.editing) return;
       if (photoButton) document.querySelector("#photoInput")?.click();
 
       const dateToggle = event.target.closest("[data-toggle-date-picker]");
+      if (dateToggle && !profileState.editing) return;
       if (dateToggle) {
         profileState.datePickerOpen = !profileState.datePickerOpen;
         renderDatePicker();
       }
 
       const dateDay = event.target.closest("[data-date-day]");
+      if (dateDay && !profileState.editing) return;
       if (dateDay) {
         const { year, month } = getDateParts(profileState.birthDate);
         const nextDay = Number(dateDay.dataset.dateDay);
@@ -533,21 +610,26 @@
       }
 
       const addEducation = event.target.closest("[data-add-education]");
+      if (addEducation && !profileState.editing) return;
       if (addEducation) {
         collectEducationValues();
         profileState.periodPicker = null;
         profileState.educations.push({ schoolType: "대학교 4년", school: "", periodStart: "", periodEnd: "", major: "", minor: "", gpa: "" });
         renderEducationList();
+        renderEditState();
       }
 
       const deleteEducation = event.target.closest("[data-delete-education]");
+      if (deleteEducation && !profileState.editing) return;
       if (deleteEducation && profileState.educations.length > 1) {
         collectEducationValues();
         profileState.educations.splice(Number(deleteEducation.dataset.deleteEducation), 1);
         renderEducationList();
+        renderEditState();
       }
 
       const majorTrigger = event.target.closest("[data-major-trigger]");
+      if (majorTrigger && !profileState.editing) return;
       if (majorTrigger) {
         profileState.periodPicker = null;
         const menu = document.querySelector(`[data-major-menu="${majorTrigger.dataset.majorTrigger}"]`);
@@ -558,15 +640,18 @@
       }
 
       const majorOption = event.target.closest("[data-major-option]");
+      if (majorOption && !profileState.editing) return;
       if (majorOption) {
         const index = Number(majorOption.dataset.majorOption);
         const fieldName = majorOption.dataset.majorField || "major";
         const value = majorOption.dataset.majorValue || "";
         profileState.educations[index][fieldName] = value;
         renderEducationList();
+        renderEditState();
       }
 
       const periodTrigger = event.target.closest("[data-toggle-period-picker]");
+      if (periodTrigger && !profileState.editing) return;
       if (periodTrigger) {
         collectEducationValues();
         const index = Number(periodTrigger.dataset.periodIndex);
@@ -574,9 +659,11 @@
         const current = profileState.periodPicker;
         profileState.periodPicker = current?.index === index && current?.fieldName === fieldName ? null : { index, fieldName };
         renderEducationList();
+        renderEditState();
       }
 
       const periodMonth = event.target.closest("[data-period-month]");
+      if (periodMonth && !profileState.editing) return;
       if (periodMonth) {
         const index = Number(periodMonth.dataset.periodIndex);
         const fieldName = periodMonth.dataset.periodField;
@@ -585,9 +672,11 @@
         profileState.educations[index][fieldName] = `${year}-${String(month).padStart(2, "0")}`;
         profileState.periodPicker = null;
         renderEducationList();
+        renderEditState();
       }
 
       const chip = event.target.closest("[data-chip-group]");
+      if (chip && !profileState.editing) return;
       if (chip) {
         const group = chip.dataset.chipGroup;
         const value = chip.dataset.chipValue;
@@ -603,9 +692,11 @@
       }
 
       const searchButton = event.target.closest("[data-open-search]");
+      if (searchButton && !profileState.editing) return;
       if (searchButton) renderSearchModal(searchButton.dataset.openSearch);
 
       const searchOption = event.target.closest("[data-select-search]");
+      if (searchOption && !profileState.editing) return;
       if (searchOption) {
         profileState.preferences[searchOption.dataset.selectSearch] = searchOption.dataset.searchValue || "";
         closeSearchModal();
@@ -624,15 +715,22 @@
         anchor.classList.add("active");
       }
 
-      if (event.target.closest("[data-temp-save]")) saveProfile();
+      if (event.target.closest("[data-temp-save]")) {
+        saveProfile();
+      }
 
       if (event.target.closest("[data-save-profile]")) {
         saveProfile();
-        window.location.href = "main.html";
+        profileState.editing = false;
+        profileState.datePickerOpen = false;
+        profileState.periodPicker = null;
+        renderAllDynamicParts();
       }
     });
 
     document.addEventListener("change", (event) => {
+      if (!profileState.editing) return;
+
       const photoInput = event.target.closest("#photoInput");
       if (photoInput) {
         const file = photoInput.files?.[0];
@@ -682,6 +780,8 @@
     });
 
     document.addEventListener("input", (event) => {
+      if (!profileState.editing) return;
+
       const searchInput = event.target.closest("[data-search-input]");
       if (searchInput) {
         const modal = document.querySelector("[data-search-options]");
@@ -699,6 +799,7 @@
       }
     });
 
+    loadSavedProfile();
     renderAllDynamicParts();
   </script>
 </body>
