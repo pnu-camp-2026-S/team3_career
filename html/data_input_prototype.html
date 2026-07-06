@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Myfitfolio - 자료입력 프로토타입</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --panel: #f8f9fd;
+      --card: #ffffff;
+      --line: #e7eaf3;
+      --text: #17203a;
+      --muted: #697386;
+      --primary: #5965e8;
+      --primary-soft: #eef2ff;
+      --green: #2f9d62;
+      --orange: #b96a28;
+      --red: #c84646;
+      --shadow: 0 6px 18px rgba(31, 36, 62, .025);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    button, input, textarea, select { font-family: inherit; }
+    button { cursor: pointer; border: 0; }
+    .app { display: flex; min-height: 100vh; background: #fff; }
+
+    .sidebar {
+      width: 292px;
+      background: #f7f8fc;
+      color: #1f263d;
+      border-right: 1px solid #e8ebf3;
+      padding: 28px 22px;
+      height: 100vh;
+      position: sticky;
+      top: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+    .brand-name {
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: -.8px;
+      color: var(--primary);
+      margin-bottom: 6px;
+    }
+    .side-email { color: #6f7789; font-size: 13px; }
+    .ok-dot { color: #64c36e; margin-right: 5px; }
+    .side-button {
+      width: 100%;
+      height: 48px;
+      border: 1px dashed #cfd5e8;
+      background: #fff;
+      border-radius: 12px;
+      color: #4d556f;
+      font-weight: 850;
+      box-shadow: 0 6px 16px rgba(31, 36, 62, .03);
+    }
+    .folder-title {
+      font-size: 13px;
+      color: #9aa1b5;
+      font-weight: 900;
+      margin-bottom: 10px;
+    }
+    .project-list, .side-folder-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .project-item, .side-folder {
+      background: transparent;
+      color: #4e566a;
+      border-radius: 10px;
+      padding: 11px 12px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      text-align: left;
+      width: 100%;
+    }
+    .project-item:hover, .project-item.active, .side-folder:hover, .side-folder.active {
+      background: var(--primary-soft);
+      color: var(--primary);
+    }
+    .count {
+      background: transparent;
+      color: #8d95aa;
+      font-weight: 800;
+      font-size: 12px;
+    }
+    .side-tip {
+      margin-top: auto;
+      background: #eef5ff;
+      color: #526078;
+      border-radius: 12px;
+      padding: 16px;
+      line-height: 1.55;
+      font-size: 13px;
+    }
+    .side-tip b { color: var(--primary); }
+
+    .main { flex: 1; min-width: 0; background: #fff; }
+    .topbar {
+      min-height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 0 34px;
+      border-bottom: 1px solid #e8ebf3;
+      background: #fff;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+    .top-menu {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      height: 72px;
+      overflow-x: auto;
+    }
+    .nav-btn {
+      height: 72px;
+      border-radius: 0;
+      padding: 0 2px;
+      color: #7b8195;
+      background: transparent;
+      border-bottom: 3px solid transparent;
+      font-size: 15px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+    .nav-btn:hover, .nav-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+    .top-actions { display: flex; align-items: center; gap: 10px; }
+    .chip {
+      background: #f7f8fc;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 10px 14px;
+      color: #60667c;
+      font-size: 14px;
+    }
+    .profile {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 7px 12px 7px 7px;
+    }
+    .avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ffe48a, #ff8ea3);
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .content {
+      padding: 46px 44px 80px;
+      background: #fff;
+    }
+    .shell { max-width: 1120px; margin: 0 auto; }
+    .page-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 28px;
+    }
+    .page-head h1 {
+      font-size: 30px;
+      line-height: 1.1;
+      margin: 0 0 10px;
+      letter-spacing: -1.2px;
+      color: var(--text);
+    }
+    .page-head p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.6;
+    }
+    .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .btn {
+      height: 44px;
+      border-radius: 13px;
+      padding: 0 18px;
+      background: var(--primary);
+      color: #fff;
+      font-weight: 800;
+      box-shadow: 0 10px 25px rgba(89, 101, 232, .22);
+    }
+    .btn.secondary {
+      background: #fff;
+      color: #34384f;
+      border: 1px solid var(--line);
+      box-shadow: none;
+    }
+    .btn.ghost {
+      background: var(--primary-soft);
+      color: var(--primary);
+      box-shadow: none;
+    }
+    .btn.danger {
+      background: #fff0f0;
+      color: var(--red);
+      box-shadow: none;
+    }
+    .btn.small {
+      height: 34px;
+      padding: 0 12px;
+      font-size: 13px;
+      border-radius: 10px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 22px;
+      min-height: 132px;
+      box-shadow: var(--shadow);
+    }
+    .stat-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 9px;
+      display: grid;
+      place-items: center;
+      font-size: 15px;
+      font-weight: 900;
+      margin-bottom: 16px;
+      background: var(--primary-soft);
+      color: var(--primary);
+    }
+    .stat-card span {
+      display: block;
+      font-size: 14px;
+      color: #596174;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    .stat-card strong {
+      font-size: 30px;
+      letter-spacing: -1px;
+      color: #11182f;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.25fr) minmax(320px, .75fr);
+      gap: 20px;
+      align-items: start;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+    .card + .card { margin-top: 20px; }
+    .card-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .card h2 {
+      font-size: 20px;
+      margin: 0;
+      color: var(--text);
+      letter-spacing: -.5px;
+    }
+    .desc {
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: 14px;
+      margin: 0 0 18px;
+    }
+    .dropzone {
+      border: 2px dashed #cfd5e8;
+      border-radius: 12px;
+      background: #fbfcff;
+      padding: 30px;
+      text-align: center;
+      transition: .2s;
+    }
+    .dropzone:hover, .dropzone.active {
+      background: #f1f5ff;
+      border-color: var(--primary);
+    }
+    .dropzone .icon { font-size: 38px; margin-bottom: 8px; }
+    .dropzone b { display: block; margin-bottom: 6px; }
+    .folder-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .folder-tab {
+      background: #fbfcff;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 14px;
+      text-align: left;
+      color: #4e566a;
+      font-weight: 850;
+    }
+    .folder-tab small {
+      display: block;
+      color: #8a91a6;
+      margin-top: 5px;
+      font-weight: 700;
+    }
+    .folder-tab.active {
+      background: var(--primary-soft);
+      border-color: #cfd4ff;
+      color: var(--primary);
+    }
+    .file-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .file-item {
+      display: grid;
+      grid-template-columns: 40px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: #fff;
+    }
+    .file-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: var(--primary-soft);
+      display: grid;
+      place-items: center;
+      color: var(--primary);
+      font-weight: 900;
+    }
+    .file-item b {
+      display: block;
+      font-size: 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .file-item span {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+    .file-actions {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .status {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .status.done { background: #eaf8f1; color: #15854d; }
+    .status.ready { background: #fff7dd; color: #9a6a00; }
+    .status.draft { background: #eff3ff; color: #3567d5; }
+    .status.fail { background: #fff0f0; color: var(--red); }
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .mini-box {
+      background: #fbfcff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .mini-box b { display: block; margin-bottom: 6px; }
+    .mini-box span {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .progress-wrap {
+      height: 12px;
+      background: #edf0f7;
+      border-radius: 999px;
+      overflow: hidden;
+      margin: 10px 0;
+    }
+    .progress-bar {
+      height: 100%;
+      width: 48%;
+      background: linear-gradient(90deg, var(--primary), #8bdcff);
+      border-radius: 999px;
+      transition: .4s;
+    }
+    .chat {
+      display: flex;
+      flex-direction: column;
+      height: 350px;
+    }
+    .chat-log {
+      flex: 1;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding-right: 4px;
+    }
+    .bubble {
+      max-width: 88%;
+      padding: 12px 14px;
+      border-radius: 17px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .bubble.ai { background: #f2f4ff; border-top-left-radius: 6px; }
+    .bubble.user {
+      background: var(--primary);
+      color: #fff;
+      margin-left: auto;
+      border-top-right-radius: 6px;
+    }
+    .chat-input {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .chat-input input {
+      flex: 1;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 0 14px;
+      min-width: 0;
+    }
+    .hidden { display: none !important; }
+    .toast {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      background: #151936;
+      color: #fff;
+      border-radius: 16px;
+      padding: 14px 17px;
+      box-shadow: 0 16px 45px rgba(0, 0, 0, .2);
+      z-index: 30;
+      transform: translateY(20px);
+      opacity: 0;
+      pointer-events: none;
+      transition: .25s;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 13, 31, .48);
+      display: grid;
+      place-items: center;
+      z-index: 20;
+      padding: 22px;
+    }
+    .modal {
+      background: #fff;
+      border-radius: 24px;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, .25);
+      width: min(680px, 100%);
+      max-height: 86vh;
+      overflow: auto;
+      padding: 26px;
+    }
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .modal h2 { margin: 0; font-size: 22px; }
+    .close {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: #f4f5fb;
+      font-size: 20px;
+    }
+    .preview-doc {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fbfcff;
+      padding: 18px;
+      line-height: 1.7;
+      color: #4c556c;
+    }
+
+    @media (max-width: 1100px) {
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .layout { grid-template-columns: 1fr; }
+      .top-actions { display: none; }
+      .content { padding: 34px 24px 60px; }
+    }
+    @media (max-width: 900px) {
+      .app { display: block; }
+      .sidebar { position: relative; width: 100%; height: auto; }
+      .stats, .folder-tabs, .mini-grid { grid-template-columns: 1fr; }
+      .page-head { flex-direction: column; }
+    }
+    @media (max-width: 680px) {
+      .topbar { align-items: flex-start; flex-direction: column; height: auto; padding: 12px 18px; }
+      .top-menu { width: 100%; height: auto; }
+      .nav-btn { height: 46px; }
+      .file-item { grid-template-columns: 40px minmax(0, 1fr); }
+      .file-actions { grid-column: 1 / -1; justify-content: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div>
+        <div class="brand-name">Myfitfolio</div>
+        <div class="side-email"><span class="ok-dot">●</span>student@pusan.ac.kr</div>
+      </div>
+
+      <button class="side-button" onclick="addFakeFile()">＋ 자료 추가</button>
+
+      <div>
+        <div class="folder-title">프로젝트</div>
+        <div class="project-list" id="projectList"></div>
+      </div>
+
+      <div>
+        <div class="folder-title">자료 폴더</div>
+        <div class="side-folder-list" id="sideFolderList"></div>
+      </div>
+
+      <div class="side-tip">
+        <b>클릭 확인용 프로토타입</b><br>
+        실제 저장과 AI 호출은 하지 않고, 화면 상태와 버튼 반응만 확인합니다.
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <nav class="top-menu">
+          <button class="nav-btn active" onclick="setTopTab(this, 'dashboard')">메인</button>
+          <button class="nav-btn" onclick="setTopTab(this, 'input')">자료입력</button>
+          <button class="nav-btn" onclick="setTopTab(this, 'create')">포트폴리오생성</button>
+          <button class="nav-btn" onclick="setTopTab(this, 'manage')">포트폴리오관리</button>
+          <button class="nav-btn" onclick="setTopTab(this, 'recommend')">대외활동추천</button>
+          <button class="nav-btn" onclick="setTopTab(this, 'profile')">마이페이지</button>
+        </nav>
+        <div class="top-actions">
+          <div class="chip" id="saveState">임시 저장됨</div>
+          <div class="profile"><div class="avatar">홍</div><span>홍길동</span></div>
+        </div>
+      </header>
+
+      <section class="content">
+        <div class="shell">
+          <div class="page-head">
+            <div>
+              <h1>자료 입력 / 자료 정리</h1>
+              <p id="projectDescription">업로드한 활동 자료를 폴더별로 정리하고 분석하기 전에 자료 상태를 확인합니다.</p>
+            </div>
+            <div class="btn-row">
+              <button class="btn ghost" onclick="openMdModal()">AI 대화로 md 만들기</button>
+              <button class="btn secondary" onclick="syncGithub()">GitHub 동기화</button>
+              <button class="btn" onclick="runAnalysis()">분석하기</button>
+            </div>
+          </div>
+
+          <div class="stats">
+            <article class="stat-card">
+              <div class="stat-icon">F</div>
+              <span>업로드 자료</span>
+              <strong id="fileCount">0</strong>
+            </article>
+            <article class="stat-card">
+              <div class="stat-icon">AI</div>
+              <span>AI 요약 완료</span>
+              <strong id="summaryCount">0</strong>
+            </article>
+            <article class="stat-card">
+              <div class="stat-icon">I</div>
+              <span>index 반영</span>
+              <strong id="indexState">대기</strong>
+            </article>
+            <article class="stat-card">
+              <div class="stat-icon">G</div>
+              <span>GitHub 상태</span>
+              <strong id="githubState">미연결</strong>
+            </article>
+          </div>
+
+          <div class="layout">
+            <div>
+              <section class="card">
+                <div class="card-title-row">
+                  <h2>자료 업로드</h2>
+                  <span class="status ready" id="uploadStatus">업로드 대기</span>
+                </div>
+                <p class="desc">파일 선택 또는 자료 추가 버튼을 눌렀을 때 목록에 반영되는지 확인하는 영역입니다.</p>
+                <input type="file" id="fileInput" class="hidden" multiple onchange="handleFileSelect(event)">
+                <div class="dropzone" onclick="document.getElementById('fileInput').click()">
+                  <div class="icon">＋</div>
+                  <b>여기를 클릭해 자료를 추가하세요</b>
+                  <p class="desc" style="margin:0">PDF, PPT, DOCX, MD, 이미지 파일을 선택한 것처럼 표시합니다.</p>
+                </div>
+              </section>
+
+              <section class="card">
+                <div class="card-title-row">
+                  <h2>폴더별 자료 목록</h2>
+                  <button class="btn small secondary" onclick="createFolder()">폴더 만들기</button>
+                </div>
+                <div class="folder-tabs" id="folderTabs"></div>
+                <div class="file-list" id="fileList"></div>
+              </section>
+            </div>
+
+            <aside>
+              <section class="card">
+                <div class="card-title-row">
+                  <h2>AI 정리 상태</h2>
+                  <span class="status draft" id="analysisStatus">미분석</span>
+                </div>
+                <p class="desc" id="analysisMessage">자료를 추가한 뒤 AI 요약 또는 분석하기 버튼을 눌러 상태 변화를 확인하세요.</p>
+                <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+                <div class="mini-grid">
+                  <div class="mini-box"><b>summary.md</b><span id="summaryState">생성 대기</span></div>
+                  <div class="mini-box"><b>index.json</b><span id="indexDetail">파일 순서 반영 대기</span></div>
+                  <div class="mini-box"><b>log.md</b><span id="logState">변경 이력 없음</span></div>
+                  <div class="mini-box"><b>우선순위</b><span>목록 순서대로 분석</span></div>
+                </div>
+              </section>
+
+              <section class="card chat">
+                <div class="card-title-row">
+                  <h2>AI 대화창</h2>
+                  <span class="status done">프로토타입</span>
+                </div>
+                <div class="chat-log" id="chatLog">
+                  <div class="bubble ai">자료를 업로드하면 파일별 요약, 누락 정보, 포트폴리오 연결 방향을 정리해줄 수 있어요.</div>
+                </div>
+                <div class="chat-input">
+                  <input id="chatInput" placeholder="예: 이 자료를 어떻게 정리하면 좋아?" onkeydown="if(event.key==='Enter') sendChat()">
+                  <button class="btn small" onclick="sendChat()">전송</button>
+                </div>
+              </section>
+            </aside>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast">완료되었습니다.</div>
+
+  <div class="modal-backdrop hidden" id="modalBackdrop" onclick="closeModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-head">
+        <h2 id="modalTitle">상세 정보</h2>
+        <button class="close" onclick="hideModal()">×</button>
+      </div>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <script>
+    const projects = [
+      { name: 'AI 포트폴리오 추천 서비스', desc: '서비스 기획서, 와이어프레임, 발표 자료를 정리하는 프로젝트입니다.' },
+      { name: '캡스톤 디자인 팀 프로젝트', desc: '팀 프로젝트 보고서와 API 설계 자료를 포트폴리오용 경험으로 정리합니다.' },
+      { name: '교내 SW 아이디어 공모전', desc: '공모전 제출 자료, 발표 자료, 결과 이미지를 정리합니다.' }
+    ];
+
+    const folders = [
+      { id: 'planning', name: '기획자료' },
+      { id: 'presentation', name: '발표자료' },
+      { id: 'ai', name: 'AI 생성자료' }
+    ];
+
+    let selectedProject = 0;
+    let selectedFolder = 'planning';
+    let files = [
+      { id: 1, folder: 'planning', name: '프로젝트_기획서.pdf', type: 'PDF', status: '분석완료' },
+      { id: 2, folder: 'presentation', name: '와이어프레임_정리본.pptx', type: 'PPT', status: '분석대기' },
+      { id: 3, folder: 'ai', name: '활동요약_초안.md', type: 'MD', status: '작성완료' }
+    ];
+    let nextFileId = 4;
+    let toastTimer = null;
+
+    function renderAll() {
+      renderProjects();
+      renderFolders();
+      renderFiles();
+      updateStats();
+      document.getElementById('projectDescription').textContent = projects[selectedProject].desc;
+    }
+
+    function renderProjects() {
+      const list = document.getElementById('projectList');
+      list.innerHTML = projects.map((project, index) => `
+        <button class="project-item ${index === selectedProject ? 'active' : ''}" onclick="selectProject(${index})">
+          <span>📁 ${project.name}</span><span class="count">${files.length}</span>
+        </button>
+      `).join('');
+    }
+
+    function renderFolders() {
+      const folderButtons = folders.map(folder => {
+        const count = files.filter(file => file.folder === folder.id).length;
+        return `
+          <button class="side-folder ${folder.id === selectedFolder ? 'active' : ''}" onclick="selectFolder('${folder.id}')">
+            <span>${folder.name}</span><span class="count">${count}</span>
+          </button>
+        `;
+      }).join('');
+      document.getElementById('sideFolderList').innerHTML = folderButtons;
+
+      document.getElementById('folderTabs').innerHTML = folders.map(folder => {
+        const count = files.filter(file => file.folder === folder.id).length;
+        return `
+          <button class="folder-tab ${folder.id === selectedFolder ? 'active' : ''}" onclick="selectFolder('${folder.id}')">
+            ${folder.name}<small>${count}개 자료</small>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function renderFiles() {
+      const targetFiles = files.filter(file => file.folder === selectedFolder);
+      const list = document.getElementById('fileList');
+      if (targetFiles.length === 0) {
+        list.innerHTML = '<div class="dropzone"><b>이 폴더에는 아직 자료가 없습니다.</b><p class="desc" style="margin:6px 0 0">자료 추가 버튼을 눌러 클릭 흐름을 확인하세요.</p></div>';
+        return;
+      }
+
+      list.innerHTML = targetFiles.map(file => `
+        <article class="file-item">
+          <div class="file-icon">${file.type}</div>
+          <div>
+            <b title="${file.name}">${file.name}</b>
+            <span>${getFolderName(file.folder)} · 우선순위 ${targetFiles.indexOf(file) + 1}</span>
+          </div>
+          <div class="file-actions">
+            <span class="status ${getStatusClass(file.status)}">${file.status}</span>
+            <button class="btn small secondary" onclick="previewFile(${file.id})">미리보기</button>
+            <button class="btn small ghost" onclick="summarizeFile(${file.id})">AI 요약</button>
+            <button class="btn small danger" onclick="deleteFile(${file.id})">삭제</button>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    function updateStats() {
+      const completed = files.filter(file => file.status === '분석완료' || file.status === '작성완료').length;
+      document.getElementById('fileCount').textContent = files.length;
+      document.getElementById('summaryCount').textContent = completed;
+      document.getElementById('indexState').textContent = files.length ? '완료' : '대기';
+      document.getElementById('indexDetail').textContent = files.length ? '폴더와 파일 순서가 반영되었습니다.' : '파일 순서 반영 대기';
+      document.getElementById('summaryState').textContent = completed ? '요약 초안 생성됨' : '생성 대기';
+      document.getElementById('logState').textContent = files.length ? '최근 변경 기록 있음' : '변경 이력 없음';
+    }
+
+    function setTopTab(button, page) {
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+      button.classList.add('active');
+      showToast(`${button.textContent} 탭을 선택했습니다.`);
+      if (page !== 'input' && page !== 'dashboard') {
+        showModal(button.textContent, `
+          <p class="desc">이 화면은 자료입력 프로토타입 안에서 클릭 연결만 확인하는 임시 화면입니다.</p>
+          <div class="preview-doc">실제 페이지 이동 없이 상단 메뉴 클릭 반응을 확인했습니다.</div>
+        `);
+      }
+    }
+
+    function selectProject(index) {
+      selectedProject = index;
+      renderAll();
+      showToast(`${projects[index].name} 프로젝트를 선택했습니다.`);
+    }
+
+    function selectFolder(folderId) {
+      selectedFolder = folderId;
+      renderAll();
+      showToast(`${getFolderName(folderId)} 폴더를 선택했습니다.`);
+    }
+
+    function addFakeFile() {
+      const samples = ['활동_증빙자료.pdf', '결과_이미지.png', '팀회의록.md', '발표_초안.pptx'];
+      const name = samples[(nextFileId - 4) % samples.length];
+      files.push({
+        id: nextFileId++,
+        folder: selectedFolder,
+        name,
+        type: name.split('.').pop().toUpperCase(),
+        status: '분석대기'
+      });
+      document.getElementById('uploadStatus').textContent = '업로드 완료';
+      renderAll();
+      showToast('가짜 자료가 목록에 추가되었습니다.');
+    }
+
+    function handleFileSelect(event) {
+      Array.from(event.target.files).forEach(file => {
+        files.push({
+          id: nextFileId++,
+          folder: selectedFolder,
+          name: file.name,
+          type: (file.name.split('.').pop() || 'FILE').toUpperCase(),
+          status: '분석대기'
+        });
+      });
+      event.target.value = '';
+      document.getElementById('uploadStatus').textContent = '업로드 완료';
+      renderAll();
+      showToast('선택한 파일명이 목록에 표시되었습니다.');
+    }
+
+    function previewFile(fileId) {
+      const file = files.find(item => item.id === fileId);
+      showModal('파일 미리보기', `
+        <div class="preview-doc">
+          <b>${file.name}</b><br>
+          이 영역은 실제 파일 내용을 읽지 않고 미리보기 클릭이 되는지 확인하기 위한 화면입니다.<br><br>
+          파일 유형: ${file.type}<br>
+          현재 상태: ${file.status}<br>
+          저장 위치: /folders/${file.folder}/${file.name}
+        </div>
+      `);
+    }
+
+    function summarizeFile(fileId) {
+      const file = files.find(item => item.id === fileId);
+      if (!file) return;
+      file.status = '분석완료';
+      document.getElementById('analysisStatus').textContent = '요약완료';
+      document.getElementById('analysisStatus').className = 'status done';
+      document.getElementById('analysisMessage').textContent = `${file.name} 파일의 AI 요약이 완료된 것처럼 표시했습니다.`;
+      document.getElementById('progressBar').style.width = '72%';
+      renderAll();
+      showToast('AI 요약 상태로 변경했습니다.');
+    }
+
+    function deleteFile(fileId) {
+      const file = files.find(item => item.id === fileId);
+      files = files.filter(item => item.id !== fileId);
+      renderAll();
+      showToast(`${file.name} 파일을 목록에서 삭제했습니다.`);
+    }
+
+    function createFolder() {
+      const folderName = `새 폴더 ${folders.length + 1}`;
+      const id = `folder-${folders.length + 1}`;
+      folders.push({ id, name: folderName });
+      selectedFolder = id;
+      renderAll();
+      showToast(`${folderName}가 생성되었습니다.`);
+    }
+
+    function runAnalysis() {
+      document.getElementById('analysisStatus').textContent = '분석완료';
+      document.getElementById('analysisStatus').className = 'status done';
+      document.getElementById('analysisMessage').textContent = '정리된 자료를 기반으로 포트폴리오 분석 결과가 생성된 것처럼 표시했습니다.';
+      document.getElementById('progressBar').style.width = '100%';
+      document.getElementById('saveState').textContent = '분석 완료';
+      showModal('분석 결과', `
+        <div class="preview-doc">
+          <b>프로토타입 분석 결과</b><br>
+          파일 순서, 폴더 구조, AI 요약 상태를 참조해 분석하기 버튼의 클릭 흐름을 확인했습니다.<br><br>
+          다음 화면에서는 포트폴리오 생성으로 이동하는 버튼이 배치될 수 있습니다.
+        </div>
+        <div class="btn-row" style="margin-top:16px">
+          <button class="btn" onclick="hideModal(); showToast('포트폴리오 생성 화면으로 이동하는 흐름입니다.')">포트폴리오 생성으로 이동</button>
+          <button class="btn secondary" onclick="hideModal()">닫기</button>
+        </div>
+      `);
+    }
+
+    function syncGithub() {
+      document.getElementById('githubState').textContent = '동기화';
+      document.getElementById('saveState').textContent = 'GitHub 동기화 완료';
+      showToast('GitHub 동기화 버튼 클릭을 확인했습니다.');
+    }
+
+    function openMdModal() {
+      showModal('AI 대화로 md 만들기', `
+        <p class="desc">파일이 없을 때 활동 내용을 입력하면 Markdown 자료가 만들어지는 흐름을 확인하는 모달입니다.</p>
+        <textarea id="mdInput" style="width:100%;min-height:120px;border:1px solid #e7eaf3;border-radius:12px;padding:14px;resize:vertical">팀 프로젝트에서 요구사항 분석과 발표 자료 제작을 담당했습니다.</textarea>
+        <div class="btn-row" style="margin-top:16px">
+          <button class="btn" onclick="createMdFile()">md 파일 생성</button>
+          <button class="btn secondary" onclick="hideModal()">취소</button>
+        </div>
+      `);
+    }
+
+    function createMdFile() {
+      files.push({
+        id: nextFileId++,
+        folder: 'ai',
+        name: 'ai_activity_summary.md',
+        type: 'MD',
+        status: '작성완료'
+      });
+      selectedFolder = 'ai';
+      hideModal();
+      renderAll();
+      showToast('AI 생성 md 파일이 추가되었습니다.');
+    }
+
+    function sendChat() {
+      const input = document.getElementById('chatInput');
+      const text = input.value.trim();
+      if (!text) return;
+      const log = document.getElementById('chatLog');
+      log.insertAdjacentHTML('beforeend', `<div class="bubble user">${escapeHtml(text)}</div>`);
+      log.insertAdjacentHTML('beforeend', '<div class="bubble ai">좋아요. 이 내용은 summary.md와 index.json에 반영되는 흐름으로 설계할 수 있습니다.</div>');
+      input.value = '';
+      log.scrollTop = log.scrollHeight;
+    }
+
+    function showModal(title, body) {
+      document.getElementById('modalTitle').textContent = title;
+      document.getElementById('modalBody').innerHTML = body;
+      document.getElementById('modalBackdrop').classList.remove('hidden');
+    }
+
+    function hideModal() {
+      document.getElementById('modalBackdrop').classList.add('hidden');
+    }
+
+    function closeModal(event) {
+      if (event.target.id === 'modalBackdrop') hideModal();
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
+    }
+
+    function getFolderName(folderId) {
+      return (folders.find(folder => folder.id === folderId) || {}).name || '미분류';
+    }
+
+    function getStatusClass(status) {
+      if (status === '분석완료' || status === '작성완료') return 'done';
+      if (status === '분석대기') return 'ready';
+      if (status === '분석실패') return 'fail';
+      return 'draft';
+    }
+
+    function escapeHtml(text) {
+      return text.replace(/[&<>"']/g, char => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      }[char]));
+    }
+
+    renderAll();
+  </script>
+</body>
+</html>
