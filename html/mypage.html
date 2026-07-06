@@ -20,42 +20,601 @@
       </nav>
       <div class="nav-actions">
         <button class="icon-button" type="button" aria-label="알림">!</button>
-        <a class="user-chip" href="mypage.html" aria-label="마이페이지로 이동"><span class="avatar"></span></a>
+        <a class="user-chip" href="mypage.html" aria-label="마이페이지로 이동">
+          <span class="avatar"></span>
+        </a>
       </div>
     </header>
+
     <main class="mypage">
       <div class="mypage-content">
         <h1 class="page-title">마이페이지</h1>
         <p class="page-subtitle">내 정보를 입력하고 취업 조건을 관리해보세요.</p>
+
         <div class="section-stack">
-          <section class="profile-section">
+          <section class="profile-section" id="basic">
             <h2 class="section-heading">기본 정보</h2>
             <div class="field-grid">
-              <div class="profile-photo"><span class="avatar-lg"></span><button class="ghost-button" type="button">사진 변경</button></div>
-              <div class="form-field"><label>이름</label><input value="홍길동" /></div>
-              <div class="form-field"><label>이메일</label><input value="user@univ.ac.kr" /></div>
-              <div class="form-field"><label>희망 직무</label><input value="IT/개발/기획" /></div>
+              <div class="profile-photo">
+                <span class="avatar-lg" data-photo-preview></span>
+                <input id="photoInput" class="visually-hidden" type="file" accept="image/*" />
+                <button class="ghost-button" type="button" data-photo-button>
+                  <span aria-hidden="true">↥</span> 사진 변경
+                </button>
+              </div>
+              <div class="form-field">
+                <label for="profileName">이름</label>
+                <input id="profileName" type="text" value="김예지" />
+              </div>
+              <div class="form-field">
+                <label for="profileGender">성별</label>
+                <select id="profileGender">
+                  <option selected>여성</option>
+                  <option>남성</option>
+                  <option>선택 안 함</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label>생년월일</label>
+                <div class="date-control" data-date-control>
+                  <button class="date-trigger" type="button" data-toggle-date-picker>
+                    <span data-birth-display>2001.03.15</span>
+                    <span class="date-trigger-icon" aria-hidden="true">⌄</span>
+                  </button>
+                  <div data-date-picker></div>
+                </div>
+              </div>
             </div>
           </section>
-          <section class="profile-section">
+
+          <section class="profile-section" id="contact">
+            <h2 class="section-heading">연락처 정보 <span style="color:#98a4b5;font-size:12px">ⓘ 소셜 계정에서 가져온 정보입니다.</span></h2>
+            <div class="inline-fields">
+              <div class="form-field">
+                <label for="profileEmail">이메일</label>
+                <input id="profileEmail" type="email" value="user@univ.ac.kr" />
+              </div>
+              <div class="form-field">
+                <label for="profilePhone">휴대폰번호</label>
+                <input id="profilePhone" type="tel" value="010-1234-5678" />
+              </div>
+              <div class="form-field">
+                <label for="profileAddress">주소</label>
+                <input id="profileAddress" type="text" value="부산광역시 금정구 장전동" />
+              </div>
+            </div>
+          </section>
+
+          <section class="profile-section" id="school">
+            <h2 class="section-heading">학력</h2>
+            <div class="education-list" data-education-list></div>
+            <button class="ghost-button" type="button" data-add-education style="margin-top:16px">+ 항목 추가</button>
+          </section>
+
+          <section class="profile-section" id="condition">
             <h2 class="section-heading">희망근무조건</h2>
-            <div class="form-row">
-              <div class="form-field"><label>희망 업종</label><input placeholder="IT/SW" /></div>
-              <div class="form-field"><label>희망 지역</label><input placeholder="부산" /></div>
+            <div class="job-grid">
+              <div class="form-field">
+                <label>희망 직무</label>
+                <div class="chip-row" data-chip-row="jobs"></div>
+              </div>
+              <div class="search-row">
+                <div class="form-field">
+                  <label>세부직무 선택</label>
+                  <button class="picker-trigger" type="button" data-open-search="detailJob">
+                    <span class="placeholder" data-picked-value="detailJob">검색하여 선택</span>
+                    <span aria-hidden="true">⌕</span>
+                  </button>
+                </div>
+                <div class="form-field">
+                  <label>희망 업종</label>
+                  <button class="picker-trigger" type="button" data-open-search="workIndustry">
+                    <span class="placeholder" data-picked-value="workIndustry">검색하여 선택</span>
+                    <span aria-hidden="true">⌕</span>
+                  </button>
+                </div>
+                <div class="form-field">
+                  <label>희망근무지역</label>
+                  <button class="picker-trigger" type="button" data-open-search="workRegion">
+                    <span class="placeholder" data-picked-value="workRegion">검색하여 선택</span>
+                    <span aria-hidden="true">⌕</span>
+                  </button>
+                </div>
+                <div class="form-field">
+                  <label for="salarySelect">희망연봉</label>
+                  <select id="salarySelect" data-salary-select></select>
+                </div>
+              </div>
             </div>
           </section>
+
+          <section class="profile-section" id="interest">
+            <h2 class="section-heading">관심분야</h2>
+            <div class="section-stack">
+              <div class="form-field">
+                <label>관심 분야</label>
+                <div class="chip-row" data-chip-row="interestFields"></div>
+              </div>
+              <div class="form-field">
+                <label>관심 기업</label>
+                <div class="chip-row" data-chip-row="companies"></div>
+              </div>
+              <div class="form-field">
+                <label>관심 산업</label>
+                <div class="chip-row" data-chip-row="industries"></div>
+              </div>
+            </div>
+          </section>
+
           <div class="form-actions">
-            <button class="ghost-button" type="button">임시저장</button>
-            <a class="primary-button" href="main.html">저장</a>
+            <button class="ghost-button" type="button" data-temp-save>임시저장</button>
+            <button class="primary-button" type="button" data-save-profile>저장</button>
           </div>
         </div>
       </div>
-      <aside class="anchor-menu">
-        <button class="active" type="button">기본 정보</button>
-        <button type="button">희망근무조건</button>
+
+      <aside class="anchor-menu" aria-label="마이페이지 섹션">
+        <button class="active" type="button" data-anchor-target="basic">기본 정보</button>
+        <button type="button" data-anchor-target="contact">연락처 정보</button>
+        <button type="button" data-anchor-target="school">학력</button>
+        <button type="button" data-anchor-target="condition">희망근무조건</button>
+        <button type="button" data-anchor-target="interest">관심분야</button>
       </aside>
     </main>
+    <div id="modalRoot"></div>
   </div>
-  <script>document.querySelectorAll('.folder-title').forEach((button)=>{button.addEventListener('click',()=>button.closest('.folder-section')?.classList.toggle('open'));});</script>
+
+  <script>
+    const jobs = [
+      "기획/전략", "마케팅/홍보", "회계/세무", "인사/노무", "영업", "고객상담",
+      "상품기획/MD", "디자인", "개발", "데이터", "보안", "생산/품질",
+      "연구개발", "교육", "IT/개발", "서비스"
+    ];
+    const detailJobs = {
+      "기획/전략": ["서비스 기획", "사업 기획", "PM", "전략기획", "데이터 기획"],
+      "마케팅/홍보": ["콘텐츠 마케팅", "브랜드 마케팅", "퍼포먼스 마케팅", "PR"],
+      "회계/세무": ["회계", "세무", "재무", "IR"],
+      "인사/노무": ["HRM", "HRD", "채용", "노무"],
+      "IT/개발": ["프론트엔드", "백엔드", "풀스택", "앱 개발", "AI 엔지니어", "데이터 엔지니어"],
+      "개발": ["프론트엔드", "백엔드", "풀스택", "앱 개발", "AI 엔지니어", "데이터 엔지니어"]
+    };
+    const companies = ["삼성전자", "SK하이닉스", "네이버", "카카오", "LG CNS", "현대자동차", "롯데", "CJ", "토스", "당근"];
+    const industries = ["반도체", "IT/SW", "금융", "교육", "콘텐츠", "제조", "바이오", "유통", "공공", "게임"];
+    const regions = ["서울", "부산", "대구", "인천", "광주", "대전", "울산", "경기", "세종", "제주", "원격근무"];
+    const schoolTypes = ["대학교 2,3년", "대학교 4년", "대학원 석사", "대학원 박사"];
+    const majors = ["컴퓨터공학", "소프트웨어학", "정보통신공학", "경영학", "경제학", "전자공학", "기계공학", "산업공학", "디자인학", "통계학", "미디어커뮤니케이션", "국어국문학", "영어영문학", "심리학", "교육학"];
+    const salaryRanges = ["회사 내규에 따름", "2,800만원 이상", "3,000만원 이상", "3,500만원 이상", "4,000만원 이상", "5,000만원 이상"];
+    const interestFields = ["채용", "대외활동", "공모전", "교육"];
+
+    const profileState = {
+      birthDate: "2001-03-15",
+      datePickerOpen: false,
+      photo: localStorage.getItem("myfitfolioPhoto") || "",
+      educations: [
+        {
+          schoolType: "대학교 4년",
+          school: "부산대학교",
+          period: "2020.03 ~ 2026.02",
+          major: "컴퓨터공학",
+          minor: "",
+          gpa: "4.1/4.5"
+        }
+      ],
+      chips: {
+        jobs: new Set(["IT/개발"]),
+        interestFields: new Set(["채용", "공모전"]),
+        companies: new Set(["네이버", "카카오"]),
+        industries: new Set(["IT/SW"])
+      },
+      preferences: {
+        detailJob: "",
+        workIndustry: "",
+        workRegion: "",
+        salary: "회사 내규에 따름"
+      }
+    };
+
+    const searchConfigs = {
+      detailJob: {
+        label: "세부직무",
+        placeholder: "직무명을 검색하세요",
+        options: () => getDetailJobOptions()
+      },
+      workIndustry: {
+        label: "희망 업종",
+        placeholder: "업종명을 검색하세요",
+        options: () => industries
+      },
+      workRegion: {
+        label: "희망근무지역",
+        placeholder: "지역명을 검색하세요",
+        options: () => regions
+      }
+    };
+
+    function getDetailJobOptions() {
+      const selectedJobs = [...profileState.chips.jobs];
+      const options = selectedJobs.flatMap((job) => detailJobs[job] || []);
+      return [...new Set(options.length ? options : Object.values(detailJobs).flat())];
+    }
+
+    function getDaysInMonth(year, month) {
+      return new Date(year, month, 0).getDate();
+    }
+
+    function getDateParts(value) {
+      const [year, month, day] = value.split("-").map(Number);
+      return { year, month, day };
+    }
+
+    function formatDateDisplay(value) {
+      const { year, month, day } = getDateParts(value);
+      return `${year}.${String(month).padStart(2, "0")}.${String(day).padStart(2, "0")}`;
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      })[char]);
+    }
+
+    function renderDatePicker() {
+      const picker = document.querySelector("[data-date-picker]");
+      const display = document.querySelector("[data-birth-display]");
+      if (display) display.textContent = formatDateDisplay(profileState.birthDate);
+      if (!picker) return;
+
+      if (!profileState.datePickerOpen) {
+        picker.innerHTML = "";
+        return;
+      }
+
+      const { year, month, day } = getDateParts(profileState.birthDate);
+      const years = Array.from({ length: 41 }, (_, index) => 1970 + index);
+      const months = Array.from({ length: 12 }, (_, index) => index + 1);
+      const days = Array.from({ length: getDaysInMonth(year, month) }, (_, index) => index + 1);
+
+      picker.innerHTML = `
+        <div class="date-picker-panel">
+          <div class="date-picker-selects">
+            <label><span>년도</span><select data-date-part="year">
+              ${years.map((item) => `<option value="${item}" ${item === year ? "selected" : ""}>${item}년</option>`).join("")}
+            </select></label>
+            <label><span>월</span><select data-date-part="month">
+              ${months.map((item) => `<option value="${item}" ${item === month ? "selected" : ""}>${item}월</option>`).join("")}
+            </select></label>
+          </div>
+          <div class="date-days">
+            ${days.map((item) => `<button class="${item === day ? "selected" : ""}" type="button" data-date-day="${item}">${item}</button>`).join("")}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderEducationList() {
+      const list = document.querySelector("[data-education-list]");
+      if (!list) return;
+
+      list.innerHTML = profileState.educations.map((education, index) => `
+        <div class="education-item ${index > 0 ? "has-delete" : ""}" data-education-index="${index}">
+          ${index > 0 ? `<button class="delete-education" type="button" data-delete-education="${index}" aria-label="학력 항목 삭제">×</button>` : ""}
+          <div class="education-grid">
+            <div class="form-field">
+              <label>학교 구분</label>
+              <select data-edu-field="schoolType" data-edu-index="${index}">
+                ${schoolTypes.map((type) => `<option ${type === education.schoolType ? "selected" : ""}>${type}</option>`).join("")}
+              </select>
+            </div>
+            <div class="form-field">
+              <label>학교명</label>
+              <input data-edu-field="school" data-edu-index="${index}" type="text" value="${escapeHtml(education.school)}" />
+            </div>
+            <div class="form-field">
+              <label>재학기간</label>
+              <input data-edu-field="period" data-edu-index="${index}" type="text" value="${escapeHtml(education.period)}" />
+            </div>
+            ${renderMajorPicker(index, "major", "전공", education.major)}
+            ${renderMajorPicker(index, "minor", "부전공/연계전공", education.minor)}
+            <div class="form-field">
+              <label>학점</label>
+              <input data-edu-field="gpa" data-edu-index="${index}" type="text" value="${escapeHtml(education.gpa)}" />
+            </div>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function renderMajorPicker(index, fieldName, label, value) {
+      return `
+        <div class="form-field major-field">
+          <label>${label}</label>
+          <button class="major-trigger" type="button" data-major-trigger="${index}-${fieldName}">
+            <span>${escapeHtml(value || `${label}을 선택하세요`)}</span>
+            <span aria-hidden="true">⌄</span>
+          </button>
+          <div class="major-menu" data-major-menu="${index}-${fieldName}">
+            ${majors.map((major) => `<button type="button" data-major-option="${index}" data-major-field="${fieldName}" data-major-value="${major}">${major}</button>`).join("")}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderChipRows() {
+      renderChipRow("jobs", jobs);
+      renderChipRow("interestFields", interestFields);
+      renderChipRow("companies", companies);
+      renderChipRow("industries", industries);
+    }
+
+    function renderChipRow(group, values) {
+      const row = document.querySelector(`[data-chip-row="${group}"]`);
+      if (!row) return;
+      row.innerHTML = values.map((value) => `
+        <button class="chip ${profileState.chips[group].has(value) ? "selected" : ""}" type="button" data-chip-group="${group}" data-chip-value="${value}">
+          ${value}
+        </button>
+      `).join("");
+    }
+
+    function renderSalarySelect() {
+      const select = document.querySelector("[data-salary-select]");
+      if (!select) return;
+      select.innerHTML = salaryRanges.map((range) => `<option ${range === profileState.preferences.salary ? "selected" : ""}>${range}</option>`).join("");
+    }
+
+    function renderPickedValues() {
+      document.querySelectorAll("[data-picked-value]").forEach((target) => {
+        const key = target.dataset.pickedValue;
+        const value = profileState.preferences[key] || "";
+        target.textContent = value || "검색하여 선택";
+        target.classList.toggle("placeholder", !value);
+      });
+    }
+
+    function renderPhoto() {
+      const preview = document.querySelector("[data-photo-preview]");
+      if (!preview) return;
+      preview.innerHTML = profileState.photo ? `<img src="${profileState.photo}" alt="프로필 사진" />` : "";
+      preview.classList.toggle("has-photo", Boolean(profileState.photo));
+    }
+
+    function collectEducationValues() {
+      document.querySelectorAll("[data-edu-field]").forEach((input) => {
+        const index = Number(input.dataset.eduIndex);
+        const fieldName = input.dataset.eduField;
+        if (profileState.educations[index]) profileState.educations[index][fieldName] = input.value;
+      });
+    }
+
+    function renderSearchOptions(type, query = "") {
+      const config = searchConfigs[type];
+      const normalizedQuery = query.trim().toLowerCase();
+      const options = config.options().filter((option) => option.toLowerCase().includes(normalizedQuery));
+
+      if (!options.length) return `<div class="empty-options">검색 결과가 없어요.</div>`;
+
+      return options.map((option) => `
+        <button class="search-option ${profileState.preferences[type] === option ? "selected" : ""}" type="button" data-select-search="${type}" data-search-value="${option}">
+          ${option}
+        </button>
+      `).join("");
+    }
+
+    function renderSearchModal(type) {
+      const config = searchConfigs[type];
+      const modalRoot = document.querySelector("#modalRoot");
+      if (!config || !modalRoot) return;
+
+      const helperText = type === "detailJob" && profileState.chips.jobs.size
+        ? `선택한 희망 직무: ${[...profileState.chips.jobs].join(", ")}`
+        : "검색하거나 아래 목록에서 선택하세요.";
+
+      modalRoot.innerHTML = `
+        <div class="modal-backdrop" data-modal-backdrop></div>
+        <section class="search-modal" role="dialog" aria-modal="true" aria-label="${config.label} 선택">
+          <div class="search-modal-head">
+            <div>
+              <h3>${config.label} 선택</h3>
+              <p>${helperText}</p>
+            </div>
+            <button class="icon-button modal-close" type="button" data-close-modal aria-label="닫기">×</button>
+          </div>
+          <div class="modal-search-box">
+            <span aria-hidden="true">⌕</span>
+            <input data-search-input type="search" placeholder="${config.placeholder}" autofocus />
+          </div>
+          <div class="search-options" data-search-options>${renderSearchOptions(type)}</div>
+        </section>
+      `;
+    }
+
+    function closeSearchModal() {
+      const modalRoot = document.querySelector("#modalRoot");
+      if (modalRoot) modalRoot.innerHTML = "";
+    }
+
+    function saveProfile() {
+      collectEducationValues();
+      const payload = {
+        name: document.querySelector("#profileName")?.value || "",
+        gender: document.querySelector("#profileGender")?.value || "",
+        birthDate: profileState.birthDate,
+        email: document.querySelector("#profileEmail")?.value || "",
+        phone: document.querySelector("#profilePhone")?.value || "",
+        address: document.querySelector("#profileAddress")?.value || "",
+        educations: profileState.educations,
+        preferences: profileState.preferences,
+        chips: Object.fromEntries(Object.entries(profileState.chips).map(([key, value]) => [key, [...value]]))
+      };
+      localStorage.setItem("myfitfolioProfile", JSON.stringify(payload));
+      sessionStorage.setItem("myfitfolioProfileSaved", "true");
+    }
+
+    function renderAllDynamicParts() {
+      renderPhoto();
+      renderDatePicker();
+      renderEducationList();
+      renderChipRows();
+      renderSalarySelect();
+      renderPickedValues();
+    }
+
+    document.addEventListener("click", (event) => {
+      const photoButton = event.target.closest("[data-photo-button]");
+      if (photoButton) document.querySelector("#photoInput")?.click();
+
+      const dateToggle = event.target.closest("[data-toggle-date-picker]");
+      if (dateToggle) {
+        profileState.datePickerOpen = !profileState.datePickerOpen;
+        renderDatePicker();
+      }
+
+      const dateDay = event.target.closest("[data-date-day]");
+      if (dateDay) {
+        const { year, month } = getDateParts(profileState.birthDate);
+        const nextDay = Number(dateDay.dataset.dateDay);
+        profileState.birthDate = `${year}-${String(month).padStart(2, "0")}-${String(nextDay).padStart(2, "0")}`;
+        profileState.datePickerOpen = false;
+        renderDatePicker();
+      }
+
+      const addEducation = event.target.closest("[data-add-education]");
+      if (addEducation) {
+        collectEducationValues();
+        profileState.educations.push({ schoolType: "대학교 4년", school: "", period: "", major: "", minor: "", gpa: "" });
+        renderEducationList();
+      }
+
+      const deleteEducation = event.target.closest("[data-delete-education]");
+      if (deleteEducation && profileState.educations.length > 1) {
+        collectEducationValues();
+        profileState.educations.splice(Number(deleteEducation.dataset.deleteEducation), 1);
+        renderEducationList();
+      }
+
+      const majorTrigger = event.target.closest("[data-major-trigger]");
+      if (majorTrigger) {
+        const menu = document.querySelector(`[data-major-menu="${majorTrigger.dataset.majorTrigger}"]`);
+        document.querySelectorAll(".major-menu.open").forEach((openMenu) => {
+          if (openMenu !== menu) openMenu.classList.remove("open");
+        });
+        menu?.classList.toggle("open");
+      }
+
+      const majorOption = event.target.closest("[data-major-option]");
+      if (majorOption) {
+        const index = Number(majorOption.dataset.majorOption);
+        const fieldName = majorOption.dataset.majorField || "major";
+        const value = majorOption.dataset.majorValue || "";
+        profileState.educations[index][fieldName] = value;
+        renderEducationList();
+      }
+
+      const chip = event.target.closest("[data-chip-group]");
+      if (chip) {
+        const group = chip.dataset.chipGroup;
+        const value = chip.dataset.chipValue;
+        const selectedSet = profileState.chips[group];
+        if (selectedSet.has(value)) selectedSet.delete(value);
+        else selectedSet.add(value);
+
+        if (group === "jobs" && profileState.preferences.detailJob && !getDetailJobOptions().includes(profileState.preferences.detailJob)) {
+          profileState.preferences.detailJob = "";
+        }
+        renderChipRows();
+        renderPickedValues();
+      }
+
+      const searchButton = event.target.closest("[data-open-search]");
+      if (searchButton) renderSearchModal(searchButton.dataset.openSearch);
+
+      const searchOption = event.target.closest("[data-select-search]");
+      if (searchOption) {
+        profileState.preferences[searchOption.dataset.selectSearch] = searchOption.dataset.searchValue || "";
+        closeSearchModal();
+        renderPickedValues();
+      }
+
+      if (event.target.closest("[data-close-modal]") || event.target.closest("[data-modal-backdrop]")) {
+        closeSearchModal();
+      }
+
+      const anchor = event.target.closest("[data-anchor-target]");
+      if (anchor) {
+        const target = document.querySelector(`#${anchor.dataset.anchorTarget}`);
+        target?.scrollIntoView({ behavior: "smooth", block: "start" });
+        document.querySelectorAll("[data-anchor-target]").forEach((item) => item.classList.remove("active"));
+        anchor.classList.add("active");
+      }
+
+      if (event.target.closest("[data-temp-save]")) saveProfile();
+
+      if (event.target.closest("[data-save-profile]")) {
+        saveProfile();
+        window.location.href = "main.html";
+      }
+    });
+
+    document.addEventListener("change", (event) => {
+      const photoInput = event.target.closest("#photoInput");
+      if (photoInput) {
+        const file = photoInput.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.addEventListener("load", () => {
+          profileState.photo = String(reader.result || "");
+          localStorage.setItem("myfitfolioPhoto", profileState.photo);
+          renderPhoto();
+        });
+        reader.readAsDataURL(file);
+      }
+
+      const datePart = event.target.closest("[data-date-part]");
+      if (datePart) {
+        const { year, month, day } = getDateParts(profileState.birthDate);
+        const nextYear = datePart.dataset.datePart === "year" ? Number(datePart.value) : year;
+        const nextMonth = datePart.dataset.datePart === "month" ? Number(datePart.value) : month;
+        const nextDay = Math.min(day, getDaysInMonth(nextYear, nextMonth));
+        profileState.birthDate = `${nextYear}-${String(nextMonth).padStart(2, "0")}-${String(nextDay).padStart(2, "0")}`;
+        profileState.datePickerOpen = true;
+        renderDatePicker();
+      }
+
+      const eduInput = event.target.closest("[data-edu-field]");
+      if (eduInput) {
+        const index = Number(eduInput.dataset.eduIndex);
+        const fieldName = eduInput.dataset.eduField;
+        if (profileState.educations[index]) profileState.educations[index][fieldName] = eduInput.value;
+      }
+
+      const salarySelect = event.target.closest("[data-salary-select]");
+      if (salarySelect) profileState.preferences.salary = salarySelect.value;
+    });
+
+    document.addEventListener("input", (event) => {
+      const searchInput = event.target.closest("[data-search-input]");
+      if (searchInput) {
+        const modal = document.querySelector("[data-search-options]");
+        const dialog = searchInput.closest(".search-modal");
+        const type = dialog?.getAttribute("aria-label")?.replace(" 선택", "");
+        const key = Object.entries(searchConfigs).find(([, config]) => config.label === type)?.[0];
+        if (modal && key) modal.innerHTML = renderSearchOptions(key, searchInput.value);
+      }
+
+      const eduInput = event.target.closest("[data-edu-field]");
+      if (eduInput) {
+        const index = Number(eduInput.dataset.eduIndex);
+        const fieldName = eduInput.dataset.eduField;
+        if (profileState.educations[index]) profileState.educations[index][fieldName] = eduInput.value;
+      }
+    });
+
+    renderAllDynamicParts();
+  </script>
 </body>
 </html>
