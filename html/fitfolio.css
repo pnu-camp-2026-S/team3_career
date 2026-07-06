@@ -1937,3 +1937,120 @@ a.auth-tab {
     padding: 24px 18px;
   }
 }
+
+
+/* Fixes for static separated pages */
+.social-stack .social-button {
+  display: flex;
+  grid-template-columns: none;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 18px;
+  padding: 0 24px;
+  background: #fff;
+  border-color: var(--line);
+  color: #182033;
+}
+.social-stack .social-button span:last-child {
+  display: inline;
+}
+.social-stack .social-button:nth-child(2) {
+  background: #fff;
+  border-color: var(--line);
+  color: #182033;
+}
+.social-stack .social-button:hover {
+  border-color: #a9baf4;
+  box-shadow: 0 12px 26px rgba(21, 92, 255, 0.09);
+}
+.social-stack .social-icon {
+  flex: 0 0 32px;
+  justify-self: auto;
+}
+.mini-folder,
+.metric-symbol {
+  position: relative;
+  display: inline-block;
+  flex: 0 0 auto;
+}
+.mini-folder {
+  width: 18px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-radius: 4px;
+  color: #7d8aa0;
+}
+.mini-folder::before {
+  content: "";
+  position: absolute;
+  left: 1px;
+  top: -6px;
+  width: 9px;
+  height: 6px;
+  border: 2px solid currentColor;
+  border-bottom: 0;
+  border-radius: 4px 4px 0 0;
+  background: currentColor;
+  opacity: 0.18;
+}
+.metric-symbol {
+  width: 18px;
+  height: 18px;
+}
+.metric-symbol.document::before {
+  content: "";
+  position: absolute;
+  inset: 1px 3px;
+  border: 2px solid currentColor;
+  border-radius: 3px;
+}
+.metric-symbol.check::before {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 8px;
+  width: 11px;
+  height: 6px;
+  border-left: 3px solid currentColor;
+  border-bottom: 3px solid currentColor;
+  transform: rotate(-45deg);
+}
+.metric-symbol.star::before {
+  content: "\2605";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  line-height: 1;
+}
+.metric-symbol.heart::before {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  left: 2px;
+  top: 3px;
+  background: currentColor;
+  transform: rotate(45deg);
+  border-radius: 3px;
+}
+.metric-symbol.heart::after {
+  content: "";
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  left: 1px;
+  top: 1px;
+  background: currentColor;
+  border-radius: 50%;
+  box-shadow: 8px 0 0 currentColor;
+}
+.folder-chevron::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+}
