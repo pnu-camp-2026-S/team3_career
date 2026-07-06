@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Myfitfolio Web Prototype - Portfolio Only</title>
+  <style>
+    :root{
+      --nav:#121636;
+      --nav2:#1c2150;
+      --primary:#6457ff;
+      --primary2:#7d72ff;
+      --bg:#f6f7fb;
+      --card:#ffffff;
+      --line:#e7e9f2;
+      --muted:#7d8295;
+      --text:#202236;
+      --green:#24b26b;
+      --yellow:#ffd94d;
+      --red:#ff6b6b;
+      --blue:#3b82f6;
+      --shadow:0 18px 45px rgba(32,34,54,.08);
+      --radius:22px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter, Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;background:var(--bg);color:var(--text)}
+    button,input,textarea,select{font-family:inherit}
+    button{cursor:pointer;border:0}
+    .hidden{display:none!important}
+    .app{display:flex;min-height:100vh}
+    .sidebar{width:292px;background:#f8f9fd;color:#1d2440;border-right:1px solid #e6e9f4;padding:28px 22px;height:100vh;position:sticky;top:0;box-shadow:none}
+    .side-brand{margin-bottom:28px!important}
+    .brand-name{color:#5965e8!important;font-size:24px!important;font-weight:900!important;letter-spacing:-.8px}
+    .side-email{color:#6f7789!important;font-size:13px!important;margin-top:6px}
+    .ok-dot{color:#64c36e!important}
+    .folder-panel{display:flex;flex-direction:column;gap:18px;overflow:auto;padding-right:2px}
+    .folder-title{color:#9aa1b5!important;text-transform:none!important;letter-spacing:0!important;font-size:13px!important;font-weight:900;margin-bottom:10px}
+    .folder-group{display:flex;flex-direction:column;gap:8px}
+    .folder-item{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;background:transparent!important;border:0!important;color:#4e566a!important;border-radius:10px!important;padding:11px 12px;text-align:left;font-size:14px;font-weight:800;transition:.2s;box-shadow:none!important;cursor:pointer;}
+    .folder-item:hover,.folder-item.active-folder{background:#eef2ff!important;color:#5965e8!important}
+    .folder-item .count{background:transparent!important;color:#8d95aa!important;font-weight:800!important}
+    .main{flex:1;min-width:0;background:#fff}
+    .topbar{min-height:72px;background:#fff;position:sticky;top:0;z-index:3;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:20px!important;padding:0 34px!important;border-bottom:1px solid #e8ebf3;box-shadow:none;overflow:visible!important;}
+    .crumb{font-size:13px;color:var(--muted);margin-bottom:3px}.page-title{font-size:24px;font-weight:850;letter-spacing:-.7px}
+    .top-menu{flex:1 1 auto!important;min-width:0!important;width:auto!important;display:flex!important;justify-content:flex-start!important;align-items:center!important;gap:24px!important;overflow-x:auto!important;white-space:nowrap!important;scrollbar-width:none;}
+    .top-menu button{flex:0 0 auto!important;background:transparent;color:#7b8195;border-radius:0;padding:0 2px;font-size:15px;font-weight:800;height:72px;border-bottom:3px solid transparent;transition:.2s}
+    .top-menu button:hover,.top-menu button.active{background:transparent;color:#5965e8;border-bottom-color:#5965e8}
+    .top-actions{flex:0 0 auto!important;display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:10px}
+    .chip{background:#f7f8fc;border:1px solid var(--line);border-radius:999px;padding:10px 14px;color:#60667c;font-size:14px}.profile{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:7px 12px 7px 7px}.avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#ffe48a,#ff8ea3);display:grid;place-items:center;font-weight:800;color:#fff}
+    .content{padding:46px 44px 80px;background:#fff}
+    .section{display:none}.section.active{display:block}
+    .grid{display:grid;gap:20px}
+    .grid-2{grid-template-columns:1.15fr .85fr}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px}
+    .card-title{font-size:18px;font-weight:850;margin-bottom:8px;letter-spacing:-.4px}.card-desc{color:var(--muted);line-height:1.55;font-size:14px;margin-bottom:18px}
+    .btn-row{display:flex;gap:10px;flex-wrap:wrap}.btn{height:44px;border-radius:13px;padding:0 18px;background:var(--primary);color:#fff;font-weight:750;box-shadow:0 10px 25px rgba(100,87,255,.24);display:inline-flex;align-items:center;justify-content:center}.btn.secondary{background:#fff;color:#34384f;border:1px solid var(--line);box-shadow:none}.btn.danger{background:#fff0f0;color:#d14545;box-shadow:none}.btn.ghost{background:#f0efff;color:var(--primary);box-shadow:none}.btn.small{height:34px;padding:0 12px;font-size:13px;border-radius:10px}
+    .form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.field{display:flex;flex-direction:column;gap:7px}.field label{font-size:13px;font-weight:750;color:#555b70}.field input,.field select,.field textarea{border:1px solid var(--line);border-radius:13px;background:#fff;padding:13px 14px;font-size:14px;outline:none}.field textarea{min-height:120px;resize:vertical}
+    .tag-group{display:flex;flex-wrap:wrap;gap:8px}.tag{padding:8px 11px;border-radius:999px;background:#f3f5fb;border:1px solid #e2e5ef;color:#535a72;font-size:13px;cursor:pointer}.tag.selected{background:#eef0ff;border-color:#bfc4ff;color:var(--primary);font-weight:750}
+    
+    .chat-log{flex:1;overflow:auto;display:flex;flex-direction:column;gap:12px;padding-right:4px}.bubble{max-width:86%;padding:12px 14px;border-radius:17px;font-size:14px;line-height:1.5}.bubble.ai{background:#f2f4ff;border-top-left-radius:6px}.bubble.user{background:var(--primary);color:#fff;margin-left:auto;border-top-right-radius:6px}.chat-input{display:flex;gap:8px;margin-top:14px}.chat-input input{flex:1;border:1px solid var(--line);border-radius:14px;padding:0 14px}
+    .portfolio-head{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:18px}.portfolio-head h2{margin:0;font-size:24px}.portfolio-block{border-left:4px solid var(--primary);padding-left:14px;margin:20px 0}.portfolio-block h3{margin:0 0 8px;font-size:16px}.portfolio-block p{margin:0;color:#555b70;line-height:1.65;font-size:14px}.portfolio-card{display:flex;gap:16px;border:1px solid var(--line);border-radius:20px;padding:16px;background:#fff;align-items:center}.thumb{width:120px;height:84px;border-radius:15px;background:linear-gradient(135deg,#eef0ff,#fff7d8);border:1px solid #e7e9f2;display:flex;flex-direction:column;justify-content:center;gap:7px;padding:12px;flex:0 0 auto}.thumb div{height:8px;border-radius:99px;background:#d6daf7}.thumb div:nth-child(2){width:70%}.thumb div:nth-child(3){width:88%}.portfolio-info{flex:1}.portfolio-info h3{font-size:16px;margin:0 0 7px}.portfolio-info p{margin:0;colorvar(--muted);font-size:13px;line-height:1.45}.portfolio-actions{display:flex;gap:7px;align-items:center}.like{width:38px;height:38px;border-radius:12px;background:#f7f8fc;border:1px solid var(--line);font-size:18px}.like.on{background:#fff0f3;border-color:#ffd0da}.tabs{display:flex;gap:8px;background:#eef0f7;padding:5px;border-radius:14px;width:max-content;margin-bottom:18px}.tab{padding:9px 15px;border-radius:11px;background:transparent;color:#656b7f;font-weight:750;cursor:pointer}.tab.active{background:#fff;color:var(--primary);box-shadow:0 6px 16px rgba(32,34,54,.08)}.toast{position:fixed;right:24px;bottom:24px;background:#151936;color:#fff;border-radius:16px;padding:14px 17px;box-shadow:0 16px 45px rgba(0,0,0,.2);z-index:10;transform:translateY(20px);opacity:0;pointer-events:none;transition:.25s}.toast.show{transform:translateY(0);opacity:1}.modal-backdrop{position:fixed;inset:0;background:rgba(10,13,31,.48);display:grid;place-items:center;z-index:20;padding:22px}.modal{background:#fff;border-radius:24px;box-shadow:0 30px 80px rgba(0,0,0,.25);width:min(680px,100%);max-height:86vh;overflow:auto;padding:26px}.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.modal h2{margin:0;font-size:22px}.close{width:38px;height:38px;border-radius:12px;background:#f4f5fb;border:0;font-size:20px;display:grid;place-items:center}
+    
+    .dashboard-shell{max-width:1040px;margin:0 auto}.dashboard-head{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin-bottom:34px}.dashboard-head h1{font-size:30px;line-height:1.1;margin:0 0 10px;letter-spacing:-1.2px;color:#17203a}.dashboard-head p{margin:0;color:#697386;font-size:15px}
+    .info-needed-card{display:grid;grid-template-columns:68px 1fr;gap:20px;background:#fff;border:1px dashed #cfd5e8;border-radius:12px;padding:34px;box-shadow:0 6px 18px rgba(31,36,62,.025)}.notice-icon{width:58px;height:58px;border-radius:50%;background:#eef2ff;color:#5965e8;font-size:34px;font-weight:900;display:grid;place-items:center}.info-needed-card h2{margin:0 0 10px;font-size:26px;letter-spacing:-.8px}.info-needed-card p{margin:0;color:#697386;line-height:1.7}
+    
+    .auth-screen{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;background:#fff}.auth-art{background:linear-gradient(135deg,#f4f6ff,#eef9ff);display:flex;flex-direction:column;justify-content:center;padding:70px;position:relative;overflow:hidden}.auth-art:before,.auth-art:after{content:"";position:absolute;border-radius:50%;background:rgba(100,87,255,.14)}.auth-art:before{width:280px;height:280px;left:-80px;top:70px}.auth-art:after{width:420px;height:420px;right:-120px;bottom:-130px}.auth-art h1{font-size:44px;line-height:1.25;margin:0 0 18px;letter-spacing:-1.5px;position:relative;color:#121636;font-weight:850}.auth-art p{font-size:16px;color:#687087;line-height:1.7;position:relative;margin:0}.auth-panel{display:flex;align-items:center;justify-content:center;padding:42px;background:#fff}.auth-box{width:min(430px,100%)}.auth-box h2{font-size:28px;font-weight:850;margin:0 0 8px;color:#121636;letter-spacing:-0.5px}.auth-box .sub{color:var(--muted);margin-bottom:24px;font-size:14px;line-height:1.5}.social{width:100%;height:48px;border-radius:14px;border:1px solid var(--line);background:#fff;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:10px;font-weight:750;font-size:14px;transition:0.2s;color:#333;text-align:center}.social:hover{background:#f8f9fa;border-color:#ccc}.social-badge{width:22px;height:22px;border-radius:50%;display:inline-grid;place-items:center;color:#fff;font-size:12px;font-weight:900;line-height:1}.social-badge.google{background:#4285f4}.social-badge.naver{background:#03c75a}.divider{display:flex;align-items:center;gap:12px;margin:22px 0;color:#9ca2b5;font-size:13px;font-weight:600}.divider:before,.divider:after{content:"";height:1px;background:var(--line);flex:1}
+    
+    .pf-setup-container { display: grid; grid-template-columns: 1fr; gap: 20px; }
+    .pf-edit-layout { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 24px; align-items: start; }
+    .pf-draft-view { min-height: 560px; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 32px; box-shadow: var(--shadow); }
+    .pf-ai-panel { display: flex; flex-direction: column; height: 560px; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); }
+    .pf-action-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid var(--line); }
+    .experience-checkbox-group { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+    .experience-option { display: flex; align-items: center; gap: 10px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: #fafbfe; cursor: pointer; transition: 0.2s; }
+    .experience-option:hover { background: #f1f4ff; border-color: var(--primary2); }
+    .experience-option input { width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; }
+    .keyword-pool { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    .pf-loading-screen { min-height: 560px; display: grid; place-items: center; text-align: center; background: linear-gradient(135deg,#fbfcff,#f1f4ff); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 48px 24px; }
+    .pf-loading-card { max-width: 420px; }
+    .loading-face { width: 92px; height: 92px; border-radius: 30px; background: #fff; display: grid; place-items: center; margin: 0 auto 20px; font-size: 40px; box-shadow: 0 16px 40px rgba(100,87,255,.18); animation: loadingFloat 1.4s ease-in-out infinite; }
+    .pf-loading-screen h3 { margin: 0 0 10px; font-size: 24px; color: #11182f; letter-spacing: -.4px; }
+    .pf-loading-screen p { margin: 0; color: var(--muted); line-height: 1.6; font-size: 14px; }
+    .pf-loading-dots { display: flex; justify-content: center; gap: 7px; margin-top: 20px; }
+    .pf-loading-dots span { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); animation: dotPulse 1s ease-in-out infinite; }
+    .pf-loading-dots span:nth-child(2) { animation-delay: .15s; }
+    .pf-loading-dots span:nth-child(3) { animation-delay: .3s; }
+    @keyframes loadingFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+    @keyframes dotPulse { 0%,100% { opacity: .35; transform: scale(.82); } 50% { opacity: 1; transform: scale(1.15); } }
+    .criteria{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+    .criterion{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center}
+    .criterion b{display:block;font-size:13px;margin-top:5px}
+    .criterion span{font-size:12px;color:var(--muted)}
+    .confirm-modal-backdrop { position: fixed; inset: 0; background: rgba(10,13,31,0.5); display: grid; place-items: center; z-index: 9999; padding: 20px; }
+    .confirm-modal { background: #fff; border-radius: 20px; max-width: 440px; width: 100%; padding: 28px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); text-align: center; }
+    .confirm-modal h3 { margin: 0 0 12px 0; font-size: 20px; font-weight: 850; color: #151936; }
+    .confirm-modal p { margin: 0 0 24px 0; font-size: 14px; color: #555b70; line-height: 1.6; }
+    .confirm-buttons { display: flex; gap: 12px; justify-content: center; }
+    .confirm-buttons .btn { flex: 1; height: 42px; }
+  </style>
+</head>
+<body>
+
+  <!-- 1. 로그인 / 회원가입 스크린 -->
+  <div id="auth" class="auth-screen">
+    <div class="auth-art">
+      <h1>흩어진 경험을<br/>취업용 포트폴리오로.</h1>
+      <p>Myfitfolio는 학교 활동, 프로젝트, 공모전 경험을 정리하고<br/>원하는 직무에 맞는 포트폴리오와 활동 추천까지 연결합니다.</p>
+    </div>
+    <div class="auth-panel">
+      <div class="auth-box">
+        <div class="logo" style="color:#171a35;padding:0;margin-bottom:26px"><div class="logo-mark" style="background:var(--primary); color:#fff; display:inline-grid; width:32px; height:32px; place-items:center; border-radius:8px; margin-right:8px;">M</div><span>Myfitfolio</span></div>
+        <h2>로그인 / 회원가입</h2>
+        <div class="sub">로그인하면 메인으로 이동하고, 정보가 없을 경우 입력 안내가 표시됩니다.</div>
+        <button class="social" onclick="socialLogin(false)"><span class="social-badge google">G</span>구글로 계속하기</button>
+        <button class="social" onclick="socialLogin(false)"><span class="social-badge naver">N</span>네이버로 계속하기</button>
+        <div class="divider">또는 기존 계정 체험</div>
+        <button class="btn secondary" style="width:100%" onclick="socialLogin(true)">이미 정보 입력한 사용자로 보기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 메인 애플리케이션 프레임워크 -->
+  <div id="app" class="app hidden">
+    <aside class="sidebar">
+      <div class="side-brand">
+        <div class="brand-name">Myfitfolio</div>
+        <div class="side-email"><span class="ok-dot">●</span> user@univ.ac.kr</div>
+      </div>
+
+      <div class="folder-panel light-folders">
+        <div class="folder-title">프로젝트 리스트</div>
+        <div class="folder-group" id="projectList">
+          <button class="folder-item active-folder" onclick="go('create')"><span>📁 AI 포트폴리오 추천 서비스</span><span class="count">3</span></button>
+          <button class="folder-item" onclick="go('create')"><span>📁 캡스톤 디자인 팀 프로젝트</span><span class="count">3</span></button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <div class="crumb" id="crumb">Myfitfolio / 메인</div>
+          <div class="page-title" id="title">메인</div>
+        </div>
+        <nav class="top-menu" aria-label="주요 메뉴">
+          <button class="nav-btn active" data-page="dashboard" onclick="go('dashboard')">메인</button>
+          <button class="nav-btn" data-page="create" onclick="go('create')">포트폴리오생성</button>
+          <button class="nav-btn" data-page="manage" onclick="go('manage')">포트폴리오관리</button>
+          <button class="nav-btn" data-page="profile" onclick="go('profile')">마이페이지</button>
+        </nav>
+        <div class="top-actions">
+          <span class="chip" id="topStatus">프로필 입력 필요</span>
+          <div class="profile"><div class="avatar" id="profileAvatar">홍</div><span id="profileName">홍길동</span></div>
+        </div>
+      </header>
+
+      <div class="content">
+        <!-- 2. 정보를 입력하세요 안내 스크린 (대시보드 미입력 가이드) -->
+        <section id="dashboard" class="section active">
+          <div id="firstLanding" class="dashboard-shell">
+            <div class="dashboard-head">
+              <div>
+                <h1>나의 활동 대시보드</h1>
+                <p>업로드한 활동 자료를 기반으로 프로젝트, 공모전, 수상 이력을 한눈에 확인하세요.</p>
+              </div>
+              <button class="btn" onclick="go('profile')">정보 입력하기</button>
+            </div>
+            <div class="info-needed-card">
+              <div class="notice-icon">!</div>
+              <div>
+                <h2>정보를 입력해주세요</h2>
+                <p>아직 저장된 개인정보가 없어서 전체 분석 결과를 만들 수 없어요. 마이페이지에서 기본 정보와 희망 직무를 저장하면 진척도, 부족한 활동, 추천 공모전이 자동으로 표시됩니다.</p>
+                <div class="btn-row" style="margin-top:16px">
+                  <button class="btn" onclick="go('profile')">마이페이지에서 정보 저장</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. 정보 입력 후 활성화 레이아웃 (대시보드가 포트폴리오 유도 허브로 바뀜) -->
+          <div id="filledLanding" class="dashboard-shell hidden">
+            <div class="dashboard-head">
+              <div>
+                <h1>나의 활동 대시보드</h1>
+                <p>기본 프로필 연동이 완료되었습니다. 포트폴리오 생성 스튜디오로 이동해 맞춤 콘텐츠를 작성해보세요.</p>
+              </div>
+              <button class="btn" onclick="go('create')">🚀 포트폴리오 생성하기</button>
+            </div>
+
+            <div class="portfolio-card" style="margin-top:20px; padding:32px;">
+              <div class="portfolio-info">
+                <h3 style="font-size:20px; margin-bottom:10px;">✨ AI 맞춤 분석 완료</h3>
+                <p style="font-size:15px; color:var(--text); line-height:1.6;">홍길동님의 프로필[품질/생산관리] 정보에 최적화된 포트폴리오 구성 파일들이 준비되었습니다. 빌더 창에서 원하는 키워드를 배치하세요.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. 핵심 기능: 포트폴리오 생성 (STAR Pipeline 모듈 완벽 내장) -->
+        <section id="create" class="section">
+          <div id="pfSetupScreen" class="pf-setup-container">
+            <div class="card">
+              <div class="card-title">포트폴리오 생성 설정</div>
+              <div class="card-desc">원하는 포트폴리오의 형식을 선택하고, 본인의 경험 폴더와 강조할 AI 핵심 키워드를 설정해 맞춤형 초안을 만드세요.</div>
+              
+              <div class="form-grid" style="margin-top:20px;">
+                <div class="field">
+                  <label>포트폴리오 형식 선택</label>
+                  <select id="pfFormatSelect">
+                    <option value="한 페이지 요약형">한 페이지 요약형 (핵심 역량 압축)</option>
+                    <option value="상세 기술형 포트폴리오" selected>상세 기술형 포트폴리오 (프로젝트 입증용)</option>
+                    <option value="PPT 발표 스펙형">PPT 발표 대본 및 슬라이드형</option>
+                    <option value="자기소개서 연계형">자기소개서 스토리라인형</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>생성 목적</label>
+                  <select id="pfPurposeSelect">
+                    <option>취업 지원용</option>
+                    <option>인턴 지원용</option>
+                    <option>대외활동 제출용</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="field" style="margin-top:20px;">
+                <label>사용할 경험 데이터셋 선택 (중복 선택 가능)</label>
+                <div class="experience-checkbox-group">
+                  <label class="experience-option">
+                    <input type="checkbox" value="AI 포트폴리오 추천 서비스" checked>
+                    <span>📁 AI 포트폴리오 추천 서비스 (기획 및 프론트 개발, 기록 6건)</span>
+                  </label>
+                  <label class="experience-option">
+                    <input type="checkbox" value="캡스톤 디자인 팀 프로젝트" checked>
+                    <span>📁 캡스톤 디자인 팀 프로젝트 (실험 설계 및 데이터 가공, 기록 4건)</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="field" style="margin-top:20px;">
+                <label>반영할 AI 핵심 역량 키워드 선택</label>
+                <div class="keyword-pool">
+                  <span class="tag selected" onclick="this.classList.toggle('selected')">문제해결능력</span>
+                  <span class="tag selected" onclick="this.classList.toggle('selected')">데이터 기반 분석</span>
+                  <span class="tag selected" onclick="this.classList.toggle('selected')">팀 협업 및 조율</span>
+                  <span class="tag" onclick="this.classList.toggle('selected')">공정 최적화</span>
+                </div>
+              </div>
+
+              <div class="btn-row" style="margin-top:24px;">
+                <button class="btn" style="padding: 0 32px;" onclick="triggerGeneratePortfolio()">포트폴리오 생성하기</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 로딩 화면 효과 -->
+          <div id="pfLoadingScreen" class="pf-loading-screen hidden" aria-live="polite">
+            <div class="pf-loading-card">
+              <div class="loading-face">MY</div>
+              <h3>포트폴리오가 생성되고있습니다</h3>
+              <p>선택한 경험과 키워드를 직무 맞춤형 슬라이드 구조로 정리하고 있어요.</p>
+              <div class="pf-loading-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+            </div>
+          </div>
+
+          <!-- 생성 완료 후 AI 실시간 워크스페이스 작업실 스크린 -->
+          <div id="pfWorkspaceScreen" class="pf-edit-layout hidden">
+            <div class="pf-draft-view">
+              <div class="portfolio-head">
+                <div>
+                  <h2 id="workspaceTitle" style="font-size:22px; font-weight:850; color:#11182f;">상세 기술형 포트폴리오 초안</h2>
+                  <p class="card-desc" style="margin: 4px 0 0 0;">경험 데이터와 핵심 키워드를 기반으로 실시간 렌더링된 검증 모델입니다.</p>
+                </div>
+                <span class="status done">초안 생성</span>
+              </div>
+              <div id="workspaceContent"></div>
+            </div>
+
+            <div>
+              <div class="card" style="padding:20px; margin-bottom:20px;">
+                <div class="folder-title" style="margin-bottom:12px;">포트폴리오 관리 액션</div>
+                <div class="pf-action-bar">
+                  <button class="btn danger" style="flex:1;" onclick="handlePfAction('포트폴리오 닫기')">닫기</button>
+                  <button class="btn" style="flex:1;" onclick="handlePfAction('저장')">보관함 저장</button>
+                  <button class="btn ghost" style="flex:1;" onclick="handlePfAction('다운로드')">PPT 다운</button>
+                  <button class="btn secondary" style="flex:1;" onclick="handlePfAction('AI로 수정하기')">AI 실시간 교정</button>
+                </div>
+              </div>
+
+              <div class="pf-ai-panel">
+                <div class="card-title" style="font-size:16px;">✨ AI 포트폴리오 실시간 교정창</div>
+                <div class="chat-log" id="pfAssistantLog" style="height:300px;">
+                  <div class="bubble ai">포트폴리오 가중치 구조화를 완료했습니다! 보완 수정을 원하는 문단 조율 지시를 내려주세요.</div>
+                </div>
+                <div class="chat-input">
+                  <input id="pfAssistantInput" placeholder="예: '전체 내용을 더 전문적인 톤으로 바꿔줘'" onkeydown="if(event.key==='Enter') sendPfAssistantChat()">
+                  <button class="btn small" onclick="sendPfAssistantChat()">반영</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 포트폴리오 관리 보관함 스크린 -->
+        <section id="manage" class="section">
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap">
+              <div><div class="card-title">생성된 포트폴리오 관리</div><div class="card-desc">최신순 아카이빙 내역입니다. 수정 클릭 시 즉시 AI 편집룸에 재동기화됩니다.</div></div>
+              <button class="btn" onclick="go('create')">새 포트폴리오 생성</button>
+            </div>
+            <div class="tabs"><button class="tab active" id="tabAll" onclick="setManageTab('all',this)">전체</button><button class="tab" id="tabDraft" onclick="setManageTab('draft',this)">임시저장</button></div>
+            <div class="task-list" id="portfolioList"></div>
+          </div>
+        </section>
+
+        <!-- 마이페이지 프로필 세팅 스크린 -->
+        <section id="profile" class="section">
+          <div class="grid grid-2">
+            <div class="card">
+              <div class="card-title">마이페이지 정보 입력</div>
+              <div class="card-desc">정보 저장을 완료하면 대시보드 및 생성 스튜디오 기능이 전면 업그레이드 됩니다.</div>
+              <div class="form-grid">
+                <div class="field"><label>이름</label><input id="name" value="홍길동"></div>
+                <div class="field"><label>학교</label><input value="부산대학교"></div>
+                <div class="field"><label>전공</label><input value="화공생명공학"></div>
+                <div class="field"><label>희망 직무</label><select id="job"><option selected>품질/생산관리</option><option>공정 엔지니어</option><option>데이터 분석</option></select></div>
+              </div>
+              <div class="btn-row" style="margin-top:18px"><button class="btn" onclick="saveProfile()">정보 저장</button></div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast" class="toast">저장되었습니다.</div>
+  
+  <div id="modalBackdrop" class="modal-backdrop hidden" onclick="hideModal()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-head"><h2 id="modalTitle">상세 정보</h2><button class="close" onclick="hideModal()">×</button></div>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <div id="confirmModalBackdrop" class="confirm-modal-backdrop hidden">
+    <div class="confirm-modal">
+      <h3>경고 알림</h3>
+      <p>포트폴리오를 닫으면 다시 작성 할 수 없습니다. 정말로 나가시겠습니까?</p>
+      <div class="confirm-buttons">
+        <button class="btn danger" onclick="confirmCloseAction(true)">예</button>
+        <button class="btn secondary" onclick="confirmCloseAction(false)">아니오</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const state = {
+      hasProfile: false,
+      portfolios: [
+        { id: 1, title: '품질/생산관리 지원용 포트폴리오', date: '2026.07.03', status: '완료', liked: true, desc: '배터리 공정 분석 및 서포터즈 데이터 분석 경험 수치 중심 설계.' },
+        { id: 2, title: '공정 엔지니어 인턴 지원 포트폴리오', date: '2026.07.01', status: '임시저장', liked: false, desc: '실험 설계 인프라 템플릿 매칭 초안 파일.' }
+      ],
+      manageTab: 'all'
+    };
+
+    const pageTitles = {
+      dashboard: ['Myfitfolio / 메인', '메인 활동 대시보드'],
+      create: ['Myfitfolio / 포트폴리오생성', '포트폴리오 생성 스튜디오'],
+      manage: ['Myfitfolio / 포트폴리오관리', '생성된 포트폴리오 관리 보관함'],
+      profile: ['Myfitfolio / 마이페이지', '마이페이지 커리어 프로필 세팅']
+    };
+
+    function socialLogin(preFilled){ 
+      document.getElementById('auth').classList.add('hidden'); 
+      document.getElementById('app').classList.remove('hidden'); 
+      state.hasProfile = preFilled;
+      renderLanding();
+      go('dashboard'); 
+    }
+
+    function renderLanding() {
+      document.getElementById('firstLanding').classList.toggle('hidden', state.hasProfile);
+      document.getElementById('filledLanding').classList.toggle('hidden', !state.hasProfile);
+      document.getElementById('topStatus').textContent = state.hasProfile ? '프로필 입력 완료' : '프로필 입력 필요';
+    }
+
+    function go(page) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.page === page));
+      
+      const sec = document.getElementById(page);
+      if(sec) sec.classList.add('active');
+      
+      const titles = pageTitles[page] || ['Myfitfolio', page];
+      document.getElementById('crumb').textContent = titles[0];
+      document.getElementById('title').textContent = titles[1];
+
+      if(page === 'manage') renderPortfolios();
+      if(page === 'create') {
+        document.getElementById('pfSetupScreen').classList.remove('hidden');
+        document.getElementById('pfLoadingScreen').classList.add('hidden');
+        document.getElementById('pfWorkspaceScreen').classList.add('hidden');
+      }
+      window.scrollTo({top:0, behavior:'smooth'});
+    }
+
+    /* 포트폴리오 파이프라인 제어 엔진 */
+    function triggerGeneratePortfolio() {
+      const fmt = document.getElementById('pfFormatSelect').value;
+      document.getElementById('pfSetupScreen').classList.add('hidden');
+      document.getElementById('pfWorkspaceScreen').classList.add('hidden');
+      document.getElementById('pfLoadingScreen').classList.remove('hidden');
+      document.getElementById('workspaceTitle').textContent = fmt + " 초안 작업실";
+
+      setTimeout(() => {
+        renderGeneratedPortfolio(fmt);
+        document.getElementById('pfLoadingScreen').classList.add('hidden');
+        document.getElementById('pfWorkspaceScreen').classList.remove('hidden');
+      }, 1500);
+    }
+
+    function renderGeneratedPortfolio(fmt) {
+      document.getElementById('workspaceContent').innerHTML = `
+        <div class="portfolio-block"><h3>[STAR] 1. 프로젝트 목적 및 개요</h3><p>선택된 직무인 품질/생산관리에 부합하도록 공정 가시성 및 수치 지표의 신뢰성을 연마하기 위한 핵심 타깃 초안입니다.</p></div>
+        <div class="portfolio-block"><h3>[STAR] 2. 담당 역할 및 인프라 설계</h3><p>전체 프로젝트 내부 사용자 리서치를 주도하여 총 120명의 표본 데이터를 기반으로 3가지 크리티컬 병목 Pain Point를 도출했습니다.</p></div>
+        <div class="portfolio-block"><h3>[STAR] 3. 정량적 성과 및 증빙 근거</h3><p>최종 제안 경진대회 프로세스에서 우수팀(2위) 수상을 기록하였으며, 팩트 기반 검증 출처 링크가 자동 연계된 상태입니다.</p></div>
+      `;
+    }
+
+    function jumpToWorkspaceDirectly(title, desc) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.getElementById('create').classList.add('active');
+      document.getElementById('pfSetupScreen').classList.add('hidden');
+      document.getElementById('pfLoadingScreen').classList.add('hidden');
+      document.getElementById('pfWorkspaceScreen').classList.remove('hidden');
+      document.getElementById('workspaceTitle').textContent = title + " (AI 수정 편집모드)";
+      
+      document.getElementById('workspaceContent').innerHTML = `
+        <div style="background:#f4f5ff; padding:12px; border-radius:10px; font-size:13px; margin-bottom:14px; color:var(--primary); font-weight:700;">🔄 보관함 문서 직접 호출 완료 : ${desc}</div>
+        <div class="portfolio-block"><h3>1. 전문 분야 핵심 요약</h3><p>사용자 정보 분석 알고리즘과 축적 자산을 융합한 직무 포트폴리오 편집 단계입니다.</p></div>
+      `;
+      showToast('AI 실시간 편집 작업실로 이동했습니다.');
+    }
+
+    function handlePfAction(act) {
+      if(act === '저장') {
+        showToast('포트폴리오 보관함에 임시저장되었습니다.');
+        go('manage');
+      } else if(act === '다운로드') {
+        showToast('PPT 형식 파일 다운로드를 시작합니다.');
+      } else if(act === 'AI로 수정하기') {
+        document.getElementById('pfAssistantInput').focus();
+        showToast('AI 수정창에서 수정 지시어를 입력하세요.');
+      } else if(act === '포트폴리오 닫기') {
+        document.getElementById('confirmModalBackdrop').classList.remove('hidden');
+      }
+    }
+
+    function confirmCloseAction(yes) {
+      document.getElementById('confirmModalBackdrop').classList.add('hidden');
+      if(yes) go('dashboard');
+    }
+
+    function sendPfAssistantChat() {
+      const input = document.getElementById('pfAssistantInput');
+      if(!input.value.trim()) return;
+      const log = document.getElementById('pfAssistantLog');
+      log.insertAdjacentHTML('beforeend', `<div class="bubble user">${input.value}</div>`);
+      input.value = '';
+      setTimeout(() => {
+        log.insertAdjacentHTML('beforeend', `<div class="bubble ai">💡 지시하신 스타일 톤앤매너 속성을 확인했습니다. 좌측 워크스페이스 본문 구성을 업데이트했습니다.</div>`);
+        log.scrollTop = log.scrollHeight;
+      }, 400);
+    }
+
+    /* 포트폴리오 목록 데이터 관리 인터페이스 */
+    function renderPortfolios() {
+      const el = document.getElementById('portfolioList');
+      let list = [...state.portfolios];
+      if(state.manageTab === 'draft') list = list.filter(p => p.status === '임시저장');
+      
+      el.innerHTML = list.map(p => `
+        <div class="portfolio-card">
+          <div class="thumb"><div></div><div></div><div></div></div>
+          <div class="portfolio-info"><h3>${p.title}</h3><p>${p.desc}</p></div>
+          <div class="portfolio-actions">
+            <button class="btn small secondary" onclick="openPortfolio(${p.id})">열기</button>
+            <button class="btn small ghost" onclick="jumpToWorkspaceDirectly('${p.title}', '${p.desc}')">수정</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function setManageTab(tab, btn) {
+      state.manageTab = tab;
+      document.querySelectorAll('#manage .tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      renderPortfolios();
+    }
+
+    function openPortfolio(id) {
+      const p = state.portfolios.find(x => x.id === id);
+      showModal(p.title, `<p>${p.desc}</p><br/><button class="btn" onclick="hideModal(); jumpToWorkspaceDirectly('${p.title}','${p.desc}');">생성 편집화면으로 이동</button>`);
+    }
+
+    function saveProfile() { 
+      state.hasProfile = true;
+      const nameVal = document.getElementById('name').value.trim() || '홍길동';
+      document.getElementById('profileName').textContent = nameVal;
+      document.getElementById('profileAvatar').textContent = nameVal.slice(0,1);
+      renderLanding();
+      showToast('프로필 데이터가 저장되었습니다.'); 
+      setTimeout(() => go('dashboard'), 400);
+    }
+    
+    function showModal(t, b) { document.getElementById('modalTitle').textContent = t; document.getElementById('modalBody').innerHTML = b; document.getElementById('modalBackdrop').classList.remove('hidden'); }
+    function hideModal() { document.getElementById('modalBackdrop').classList.add('hidden'); }
+    function showToast(m) { const t = document.getElementById('toast'); t.textContent = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2000); }
+  </script>
+</body>
+</html>
