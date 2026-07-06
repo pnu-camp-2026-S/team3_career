@@ -12,9 +12,9 @@
       <a class="brand-word" href="main.html">Myfit<span>folio</span></a>
       <nav class="nav-tabs" aria-label="주요 메뉴">
         <a class="nav-tab active" href="main.html">메인</a>
+        <a class="nav-tab" href="create.html">파일관리</a>
         <a class="nav-tab" href="portfolio_create.html">포트폴리오 생성</a>
         <a class="nav-tab" href="portfolio_manage.html">포트폴리오 관리</a>
-        <a class="nav-tab" href="create.html">파일 관리</a>
         <a class="nav-tab" href="contest.html">활동 추천</a>
         <a class="nav-tab" href="mypage.html">마이페이지</a>
       </nav>
@@ -159,6 +159,7 @@
   </div>
 
   <script>
+    const STORAGE_KEY = 'myfitfolioFolderState';
     const folderTypes = [
       { key: 'personal', label: '개인 프로젝트' },
       { key: 'team', label: '팀 프로젝트' },
@@ -167,8 +168,13 @@
       { key: 'education', label: '교육' },
       { key: 'volunteer', label: '봉사' },
     ];
+    const folderGroups = [
+      { key: 'completed', label: '완료된 활동 폴더' },
+      { key: 'ready', label: '준비된 활동 폴더' },
+    ];
 
-    const folders = {};
+    let folderState = loadFolderState();
+    const folders = folderState.folders;
     const awardRecords = [];
     const fileInput = document.getElementById('fileInput');
     const uploadButton = document.getElementById('uploadButton');
@@ -180,10 +186,59 @@
 
     let selectedFolderId = 'completed-personal';
 
-    folderTypes.forEach((type) => {
-      folders[`completed-${type.key}`] = { status: 'completed', label: type.label, files: [] };
-      folders[`ready-${type.key}`] = { status: 'ready', label: type.label, files: [] };
-    });
+    function createDefaultState() {
+      const defaultFolders = {};
+      folderGroups.forEach((group) => {
+        folderTypes.forEach((type) => {
+          const folderId = `${group.key}-${type.key}`;
+          defaultFolders[folderId] = {
+            id: folderId,
+            group: group.key,
+            status: group.key,
+            type: type.key,
+            label: type.label,
+            files: [],
+            subfolders: [
+              { id: `${folderId}-planning`, name: '기획 자료', gitUrl: '' },
+              { id: `${folderId}-result`, name: '결과 자료', gitUrl: '' },
+            ],
+          };
+        });
+      });
+      return { folders: defaultFolders };
+    }
+
+    function loadFolderState() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if (saved?.folders) return normalizeState(saved);
+      } catch (error) {
+        console.warn('폴더 상태를 읽지 못했습니다.', error);
+      }
+      return createDefaultState();
+    }
+
+    function normalizeState(saved) {
+      const defaults = createDefaultState();
+      folderGroups.forEach((group) => {
+        folderTypes.forEach((type) => {
+          const folderId = `${group.key}-${type.key}`;
+          const savedFolder = saved.folders[folderId] || {};
+          defaults.folders[folderId] = {
+            ...defaults.folders[folderId],
+            ...savedFolder,
+            status: savedFolder.status || savedFolder.group || group.key,
+            files: Array.isArray(savedFolder.files) ? savedFolder.files : defaults.folders[folderId].files,
+            subfolders: Array.isArray(savedFolder.subfolders) ? savedFolder.subfolders : defaults.folders[folderId].subfolders,
+          };
+        });
+      });
+      return defaults;
+    }
+
+    function saveFolderState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(folderState));
+    }
 
     function createFileId(fileName) {
       return `${Date.now()}-${Math.random().toString(16).slice(2)}-${fileName}`;
@@ -207,6 +262,8 @@
         targetFolder.files.push({
           id: createFileId(file.name),
           name: file.name,
+          type: (file.name.split('.').pop() || 'FILE').toUpperCase(),
+          status: '분석대기',
         });
       });
 
@@ -304,6 +361,7 @@
       renderFolderList(completedFolderList, 'completed');
       renderFolderList(readyFolderList, 'ready');
       updateSummary();
+      saveFolderState();
     }
 
     document.querySelectorAll('.folder-title').forEach((button) => {
@@ -338,6 +396,14 @@
       if (!deleteButton) return;
 
       deleteFile(deleteButton.dataset.folderId, deleteButton.dataset.fileId);
+    });
+
+    window.addEventListener('storage', (event) => {
+      if (event.key !== STORAGE_KEY) return;
+      folderState = loadFolderState();
+      Object.keys(folders).forEach((key) => delete folders[key]);
+      Object.assign(folders, folderState.folders);
+      renderFolders();
     });
 
     renderFolders();
