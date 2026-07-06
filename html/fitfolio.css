@@ -886,9 +886,10 @@ button {
 
 .mypage {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 140px;
-  gap: 24px;
+  grid-template-columns: minmax(0, 1fr) 176px;
+  gap: 30px;
   padding: 28px 48px 42px;
+  align-items: start;
 }
 
 .mypage-content {
@@ -933,14 +934,40 @@ button {
 
 .profile-photo .ghost-button {
   min-height: 34px;
-  padding: 0 12px;
+  padding: 0 13px;
   font-size: 12px;
   gap: 6px;
 }
 
-.profile-photo .ghost-button .svg-icon {
-  width: 15px;
-  height: 15px;
+.upload-photo-icon {
+  position: relative;
+  width: 16px;
+  height: 14px;
+  display: inline-block;
+  flex: 0 0 16px;
+}
+
+.upload-photo-icon::before {
+  content: "";
+  position: absolute;
+  left: 1px;
+  top: 4px;
+  width: 14px;
+  height: 9px;
+  border: 1.8px solid currentColor;
+  border-radius: 4px;
+  box-shadow: 3px -4px 0 -2px currentColor;
+}
+
+.upload-photo-icon::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 7px;
+  width: 4px;
+  height: 4px;
+  border: 1.8px solid currentColor;
+  border-radius: 50%;
 }
 
 .avatar-lg {
@@ -990,6 +1017,19 @@ button {
   background: #fff;
 }
 
+.form-field select {
+  appearance: none;
+  padding-right: 42px;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #6f7b91 50%),
+    linear-gradient(135deg, #6f7b91 50%, transparent 50%);
+  background-position:
+    calc(100% - 23px) 18px,
+    calc(100% - 17px) 18px;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+}
+
 .date-control {
   position: relative;
 }
@@ -1017,22 +1057,40 @@ button {
   white-space: nowrap;
 }
 
-.date-trigger-icon {
+.date-trigger-icon,
+.calendar-icon {
+  position: relative;
   display: grid;
   place-items: center;
   flex: 0 0 24px;
+  width: 24px;
   height: 24px;
   border-radius: 6px;
 }
 
-.date-trigger-icon:hover {
+.date-trigger-icon:hover,
+.date-trigger:hover .calendar-icon {
   background: #eef4ff;
 }
 
-.date-trigger-icon .svg-icon {
-  width: 18px;
-  height: 18px;
-  color: #7f8aa0;
+.calendar-icon::before {
+  content: "";
+  width: 15px;
+  height: 14px;
+  border: 1.8px solid #7f8aa0;
+  border-radius: 4px;
+  box-shadow: inset 0 4px 0 rgba(127, 138, 160, 0.15);
+}
+
+.calendar-icon::after {
+  content: "";
+  position: absolute;
+  top: 5px;
+  left: 7px;
+  width: 10px;
+  height: 1.8px;
+  border-radius: 99px;
+  background: #7f8aa0;
 }
 
 .date-picker-panel {
@@ -1107,8 +1165,46 @@ button {
 
 .education-grid {
   display: grid;
-  grid-template-columns: 140px 1fr 1.15fr 1fr 1fr 100px;
+  grid-template-columns: 140px 1fr 1.3fr 1fr 1fr 100px;
   gap: 16px;
+}
+
+.period-range {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.period-month-field {
+  position: relative;
+  min-width: 0;
+}
+
+.period-month-field input {
+  padding-right: 34px;
+}
+
+.period-month-field input::-webkit-calendar-picker-indicator {
+  position: absolute;
+  inset: 0;
+  width: auto;
+  height: auto;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.period-month-field .calendar-icon {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.period-separator {
+  color: #8b96a8;
+  font-weight: 900;
 }
 
 .education-list {
@@ -1158,6 +1254,7 @@ button {
 }
 
 .major-trigger {
+  position: relative;
   width: 100%;
   height: 42px;
   display: flex;
@@ -1166,21 +1263,28 @@ button {
   gap: 8px;
   border: 1px solid var(--line);
   border-radius: 6px;
-  padding: 0 12px 0 14px;
+  padding: 0 40px 0 14px;
   background: #fff;
   color: #273244;
   text-align: left;
 }
 
 .major-trigger span {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.major-trigger .svg-icon {
-  width: 18px;
-  height: 18px;
+.select-chevron {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid #6f7b91;
+  border-bottom: 2px solid #6f7b91;
+  transform: translateY(-62%) rotate(45deg);
 }
 
 .major-menu {
@@ -1304,9 +1408,10 @@ button {
 
 .anchor-menu {
   position: sticky;
-  top: 108px;
+  top: 96px;
   align-self: start;
-  padding: 22px 14px;
+  margin-top: 76px;
+  padding: 22px 18px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fff;

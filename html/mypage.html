@@ -39,7 +39,7 @@
                 <span class="avatar-lg" data-photo-preview></span>
                 <input id="photoInput" class="visually-hidden" type="file" accept="image/*" />
                 <button class="ghost-button" type="button" data-photo-button>
-                  <span aria-hidden="true">↥</span> 사진 변경
+                  <span class="upload-photo-icon" aria-hidden="true"></span> 사진 변경
                 </button>
               </div>
               <div class="form-field">
@@ -59,7 +59,7 @@
                 <div class="date-control" data-date-control>
                   <button class="date-trigger" type="button" data-toggle-date-picker>
                     <span data-birth-display>2001.03.15</span>
-                    <span class="date-trigger-icon" aria-hidden="true">⌄</span>
+                    <span class="calendar-icon" aria-hidden="true"></span>
                   </button>
                   <div data-date-picker></div>
                 </div>
@@ -194,7 +194,8 @@
         {
           schoolType: "대학교 4년",
           school: "부산대학교",
-          period: "2020.03 ~ 2026.02",
+          periodStart: "2020-03",
+          periodEnd: "2026-02",
           major: "컴퓨터공학",
           minor: "",
           gpa: "4.1/4.5"
@@ -315,7 +316,19 @@
             </div>
             <div class="form-field">
               <label>재학기간</label>
-              <input data-edu-field="period" data-edu-index="${index}" type="text" value="${escapeHtml(education.period)}" />
+              <div class="period-range">
+                <label class="period-month-field">
+                  <span class="visually-hidden">재학 시작</span>
+                  <input data-edu-field="periodStart" data-edu-index="${index}" type="month" value="${escapeHtml(education.periodStart || "")}" />
+                  <span class="calendar-icon" aria-hidden="true"></span>
+                </label>
+                <span class="period-separator" aria-hidden="true">~</span>
+                <label class="period-month-field">
+                  <span class="visually-hidden">재학 종료</span>
+                  <input data-edu-field="periodEnd" data-edu-index="${index}" type="month" value="${escapeHtml(education.periodEnd || "")}" />
+                  <span class="calendar-icon" aria-hidden="true"></span>
+                </label>
+              </div>
             </div>
             ${renderMajorPicker(index, "major", "전공", education.major)}
             ${renderMajorPicker(index, "minor", "부전공/연계전공", education.minor)}
@@ -334,7 +347,7 @@
           <label>${label}</label>
           <button class="major-trigger" type="button" data-major-trigger="${index}-${fieldName}">
             <span>${escapeHtml(value || `${label}을 선택하세요`)}</span>
-            <span aria-hidden="true">⌄</span>
+            <span class="select-chevron" aria-hidden="true"></span>
           </button>
           <div class="major-menu" data-major-menu="${index}-${fieldName}">
             ${majors.map((major) => `<button type="button" data-major-option="${index}" data-major-field="${fieldName}" data-major-value="${major}">${major}</button>`).join("")}
@@ -485,7 +498,7 @@
       const addEducation = event.target.closest("[data-add-education]");
       if (addEducation) {
         collectEducationValues();
-        profileState.educations.push({ schoolType: "대학교 4년", school: "", period: "", major: "", minor: "", gpa: "" });
+        profileState.educations.push({ schoolType: "대학교 4년", school: "", periodStart: "", periodEnd: "", major: "", minor: "", gpa: "" });
         renderEducationList();
       }
 
