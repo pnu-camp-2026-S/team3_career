@@ -1,105 +1,18 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>커리어핏 - 로그인</title>
-    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Pretendard', sans-serif; }
-        body { background: linear-gradient(135deg, #e6efff 0%, #f4f7fb 100%); display: flex; align-items: center; justify-content: center; min-height: 100vh; color: #333; padding: 24px; }
-        .auth-card { background: #fff; width: 100%; max-width: 420px; padding: 48px 40px; border-radius: 20px; box-shadow: 0 12px 36px rgba(0,0,0,0.08); text-align: center; }
-        .auth-card h1 { font-size: 28px; font-weight: 800; color: #2563eb; margin-bottom: 8px; }
-        .auth-card p { font-size: 14px; color: #64748b; margin-bottom: 32px; }
-        .form-group { margin-bottom: 20px; text-align: left; }
-        .form-group label { display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 8px; }
-        .form-group input { width: 100%; padding: 14px 16px; font-size: 15px; border: 1.5px solid #e2e8f0; border-radius: 10px; background: #f8fafc; transition: 0.2s; }
-        .form-group input:focus { outline: none; border-color: #2563eb; background: #fff; }
-        .btn-primary { width: 100%; padding: 16px; background: #2563eb; color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; transition: 0.2s; }
-        .btn-primary:hover { background: #1d4ed8; }
-        .divider { display: flex; align-items: center; gap: 12px; margin: 24px 0; color: #94a3b8; font-size: 13px; }
-        .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #e2e8f0; }
-        .social-buttons { display: flex; flex-direction: column; gap: 10px; }
-        .btn-social { width: 100%; padding: 14px 16px; border: 1px solid #e2e8f0; border-radius: 10px; background: #fff; color: #1e293b; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; }
-        .btn-social:hover { border-color: #cbd5e1; background: #f8fafc; }
-        .btn-google .social-mark { color: #4285f4; font-weight: 900; }
-        .btn-naver { background: #03c75a; border-color: #03c75a; color: #fff; }
-        .btn-naver:hover { background: #02b350; border-color: #02b350; }
-        .social-mark { width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; font-size: 16px; }
-        .toggle-link { margin-top: 24px; font-size: 14px; color: #64748b; }
-        .toggle-link a { color: #2563eb; font-weight: 600; text-decoration: none; margin-left: 6px; }
-        .toggle-link a:hover { text-decoration: underline; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Myfitfolio - 로그인</title>
+  <link rel="stylesheet" href="fitfolio.css" />
 </head>
 <body>
-    <div class="auth-card">
-        <h1>CareerFit</h1>
-        <p>나의 학적에 맞는 커리어를 핏하게</p>
-
-        <form onsubmit="return false;">
-            <div class="form-group">
-                <label for="loginEmail">학교 이메일</label>
-                <input type="email" id="loginEmail" placeholder="student@univ.ac.kr" required>
-            </div>
-            <div class="form-group">
-                <label for="loginPassword">비밀번호</label>
-                <input type="password" id="loginPassword" placeholder="비밀번호 입력" required>
-            </div>
-            <button type="button" class="btn-primary" id="loginBtn">로그인</button>
-        </form>
-
-        <div class="divider">또는</div>
-
-        <div class="social-buttons">
-            <button type="button" class="btn-social btn-google" id="googleLoginBtn">
-                <span class="social-mark">G</span>
-                구글로 로그인
-            </button>
-            <button type="button" class="btn-social btn-naver" id="naverLoginBtn">
-                <span class="social-mark">N</span>
-                네이버로 로그인
-            </button>
-        </div>
-
-        <div class="toggle-link">계정이 없으신가요? <a href="signup.html">회원가입</a></div>
-    </div>
-
-    <script>
-        const emailKey = 'careerfit_user_email';
-        const loginBtn = document.getElementById('loginBtn');
-        const googleLoginBtn = document.getElementById('googleLoginBtn');
-        const naverLoginBtn = document.getElementById('naverLoginBtn');
-
-        function goToMain(email) {
-            if (email) localStorage.setItem(emailKey, email);
-            window.location.href = 'main.html';
-        }
-
-        loginBtn.addEventListener('click', function() {
-            const email = document.getElementById('loginEmail').value.trim();
-            const password = document.getElementById('loginPassword').value.trim();
-
-            if (!email || !password) {
-                alert('이메일과 비밀번호를 모두 입력해주세요.');
-                return;
-            }
-
-            goToMain(email);
-        });
-
-        googleLoginBtn.addEventListener('click', function() {
-            goToMain('google-user@careerfit.local');
-        });
-
-        naverLoginBtn.addEventListener('click', function() {
-            goToMain('naver-user@careerfit.local');
-        });
-
-        document.querySelectorAll('input').forEach((input) => {
-            input.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') e.preventDefault();
-            });
-        });
-    </script>
+  <main class="auth-page">
+    <section class="auth-shell">
+      <div class="auth-brand"><div class="auth-brand-content"><h1 class="brand-logo">Myfit<span>folio</span></h1><p class="auth-tagline">나의 경험을 정리하고,<br />더 좋은 기회를 연결하세요.</p></div></div>
+      <div class="auth-panel"><div class="auth-tabs" role="tablist" aria-label="주요 메뉴"><a class="auth-tab active" href="login.html">로그인</a><a class="auth-tab " href="signup.html">회원가입</a></div><section class="auth-content"><h1>로그인</h1><p>소셜 계정으로 안전하게 로그인하세요.</p><div class="social-stack"><button class="social-button" type="button" data-login><span class="social-icon google-icon">G</span><span>Google 로그인</span></button><button class="social-button" type="button" data-login><span class="social-icon naver-icon">N</span><span>Naver 로그인</span></button></div><div class="auth-note">API 연동 전까지 버튼을 누르면 메인으로 이동합니다.</div></section></div>
+    </section>
+  </main>
+  <script>document.querySelectorAll('[data-login]').forEach((button)=>{button.addEventListener('click',()=>{sessionStorage.setItem('myfitfolioLoggedIn','true');window.location.href='main.html';});});</script>
 </body>
 </html>

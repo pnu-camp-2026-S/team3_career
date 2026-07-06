@@ -26,6 +26,11 @@ for (const file of linkedHtmlFiles) {
   );
 }
 
+assert.ok(
+  fs.existsSync(path.join(htmlDir, 'fitfolio.css')),
+  'shared Fitfolio stylesheet should live in the html directory'
+);
+
 for (const file of ['index.html', 'main.html']) {
   assert.ok(
     fs.existsSync(path.join(rootDir, file)),
@@ -34,13 +39,6 @@ for (const file of ['index.html', 'main.html']) {
   assert.ok(
     fs.existsSync(path.join(htmlDir, file)),
     `${file} should also live in the html directory`
-  );
-}
-
-for (const file of ['main_old.html', 'test.html']) {
-  assert.ok(
-    fs.existsSync(path.join(rootDir, file)),
-    `${file} should remain at the project root because it is not an active linked page`
   );
 }
 
