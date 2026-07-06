@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>커리어핏 - 나의 학적에 맞는 커리어를 핏하게</title>
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* --- 공통 스타일 --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Pretendard', sans-serif; }
+        body { background-color: #f4f7fb; color: #333; overflow: hidden; height: 100vh; display: flex; align-items: center; justify-content: center; }
+        
+        /* 화면 전환을 위한 유틸리티 */
+        .screen { display: none; width: 100%; height: 100%; }
+        .screen.active { display: flex; animation: fadeIn 0.4s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- 로그인 & 회원가입 화면 --- */
+        .auth-wrapper { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; background: linear-gradient(135deg, #e6efff 0%, #f4f7fb 100%); }
+        .auth-card { background: #fff; width: 100%; max-width: 420px; padding: 48px 40px; border-radius: 20px; box-shadow: 0 12px 36px rgba(0,0,0,0.08); text-align: center; }
+        .auth-card h1 { font-size: 28px; font-weight: 800; color: #2563eb; margin-bottom: 8px; }
+        .auth-card p { font-size: 14px; color: #64748b; margin-bottom: 32px; }
+        
+        .form-group { margin-bottom: 20px; text-align: left; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 8px; }
+        .form-group input { width: 100%; padding: 14px 16px; font-size: 15px; border: 1.5px solid #e2e8f0; border-radius: 10px; background: #f8fafc; transition: 0.2s; }
+        .form-group input:focus { outline: none; border-color: #2563eb; background: #fff; }
+        
+        .btn-primary { width: 100%; padding: 16px; background: #2563eb; color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .btn-primary:hover { background: #1d4ed8; }
+        
+        .toggle-link { margin-top: 24px; font-size: 14px; color: #64748b; }
+        .toggle-link span { color: #2563eb; font-weight: 600; cursor: pointer; margin-left: 6px; }
+        .toggle-link span:hover { text-decoration: underline; }
+
+        /* --- 메인 대시보드 화면 --- */
+        #main-screen { flex-direction: row; background: #fff; }
+        
+        /* 사이드바 */
+        .sidebar { width: 280px; background: #f8fafc; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column; padding: 24px; }
+        .sidebar-header { margin-bottom: 30px; }
+        .sidebar-header h2 { font-size: 22px; font-weight: 800; color: #2563eb; }
+        .user-info { font-size: 13px; color: #64748b; margin-top: 4px; display: flex; align-items: center; gap: 6px; }
+        
+        .btn-upload { width: 100%; padding: 12px; background: #fff; border: 1px dashed #cbd5e1; border-radius: 8px; color: #475569; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; margin-bottom: 24px; }
+        .btn-upload:hover { border-color: #2563eb; color: #2563eb; background: #eff6ff; }
+        
+        .nav-section { margin-bottom: 24px; }
+        .nav-title { font-size: 12px; font-weight: 700; color: #94a3b8; margin-bottom: 12px; text-transform: uppercase; }
+        .nav-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+        .nav-item { padding: 10px 12px; border-radius: 8px; font-size: 14px; color: #475569; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: 0.2s; }
+        .nav-item:hover { background: #e2e8f0; color: #1e293b; }
+        .nav-item.active { background: #eff6ff; color: #2563eb; font-weight: 600; }
+        .nav-left { display:flex; align-items:center; gap:10px; }
+        .nav-left i { width: 20px; text-align: center; }
+        .nav-right { display:flex; align-items:center; gap:8px; }
+        .drag-handle { color:#94a3b8; font-weight:800; cursor:grab; padding:2px 6px; border-radius:6px; }
+        .delete-text { display:none; color:#dc2626; background:transparent; border:none; padding:0 6px; font-weight:700; cursor:pointer; }
+        /* 삭제모드가 활성화되면 빨간 글씨로 삭제 표시 */
+        #sourceList.delete-mode-active .delete-text { display:inline-block; }
+
+        /* 메인 콘텐츠 영역 */
+        .content-area { flex: 1; display: flex; flex-direction: column; height: 100vh; }
+        
+        /* 상단 탭 */
+        .topbar { height: 64px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; padding: 0 40px; gap: 32px; background: #fff; }
+        .tab-btn { background: none; border: none; font-size: 15px; font-weight: 600; color: #64748b; padding: 22px 0; cursor: pointer; position: relative; }
+        .tab-btn.active { color: #2563eb; }
+        .tab-btn.active::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 100%; height: 3px; background: #2563eb; border-radius: 3px 3px 0 0; }
+        
+        /* 채팅/결과 영역 */
+        .chat-container { flex: 1; padding: 40px; overflow-y: auto; display: flex; flex-direction: column; gap: 24px; background: #fff; }
+        .message { display: flex; gap: 16px; max-width: 860px; margin: 0 auto; width: 100%; animation: fadeIn 0.3s ease; }
+        .avatar { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+        .msg-ai .avatar { background: #eff6ff; color: #2563eb; }
+        .msg-user .avatar { background: #f1f5f9; color: #475569; }
+        .msg-content { flex: 1; padding-top: 8px; line-height: 1.6; color: #334155; font-size: 15px; }
+        .msg-title { font-weight: 700; font-size: 18px; color: #1e293b; margin-bottom: 12px; }
+        
+        /* 결과 카드 UI (포트폴리오, 공모전 추천용) */
+        .result-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-top: 12px; }
+        .tag { display: inline-block; padding: 4px 10px; background: #e0e7ff; color: #4338ca; border-radius: 6px; font-size: 12px; font-weight: 600; margin-right: 6px; margin-bottom: 6px; }
+
+        /* 하단 입력창 */
+        .input-wrapper { padding: 20px 40px 40px; background: linear-gradient(180deg, rgba(255,255,255,0) 0%, #fff 20%); }
+        .input-box { max-width: 860px; margin: 0 auto; display: flex; align-items: flex-end; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); }
+        .input-box textarea { flex: 1; border: none; resize: none; outline: none; font-size: 15px; padding: 6px 0; max-height: 150px; min-height: 24px; }
+        .btn-send { background: #2563eb; color: #fff; border: none; border-radius: 8px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; margin-left: 12px; }
+        .btn-send:hover { background: #1d4ed8; }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen" class="screen active auth-wrapper">
+        <div class="auth-card">
+            <h1>CareerFit</h1>
+            <p>나의 학적에 맞는 커리어를 핏하게</p>
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>학교 이메일</label>
+                    <input type="email" id="loginEmail" value="student@univ.ac.kr" required>
+                </div>
+                <div class="form-group">
+                    <label>비밀번호</label>
+                    <input type="password" value="password123" required>
+                </div>
+                <button type="submit" class="btn-primary">로그인</button>
+            </form>
+            <div class="toggle-link">계정이 없으신가요? <span onclick="switchScreen('signup-screen')">회원가입</span></div>
+        </div>
+    </div>
+
+    <div id="signup-screen" class="screen auth-wrapper">
+        <div class="auth-card">
+            <h1>회원가입</h1>
+            <p>학교 이메일 인증으로 커리어핏을 시작하세요</p>
+            <form onsubmit="handleSignup(event)">
+                <div class="form-group">
+                    <label>이름</label>
+                    <input type="text" required>
+                </div>
+                <div class="form-group">
+                    <label>학교 이메일</label>
+                    <input type="email" required>
+                </div>
+                <div class="form-group">
+                    <label>비밀번호</label>
+                    <input type="password" required>
+                </div>
+                <button type="submit" class="btn-primary">가입하기</button>
+            </form>
+            <div class="toggle-link">이미 계정이 있으신가요? <span onclick="switchScreen('login-screen')">로그인</span></div>
+        </div>
+    </div>
+
+    <div id="main-screen" class="screen">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>CareerFit</h2>
+                <div class="user-info"><i class="fa-solid fa-circle-check" style="color:#10b981;"></i> <span id="displayUserEmail">user@univ.ac.kr</span></div>
+            </div>
+            
+            <button class="btn-upload" onclick="document.getElementById('fileInput').click()">
+                <i class="fa-solid fa-cloud-arrow-up"></i> 학적/포트폴리오 업로드
+            </button>
+            <button id="deleteModeBtn" class="btn-upload" style="margin-bottom:12px;background:#fff;border:1px solid #fee2e2;color:#b91c1c;font-weight:700;" onclick="toggleDeleteMode()">삭제모드</button>
+            <input type="file" id="fileInput" style="display: none;" multiple onchange="addFile(this)">
+
+            <div class="nav-section">
+                <div class="nav-title">내 소스 파일</div>
+                <ul class="nav-list" id="sourceList">
+                    <li class="nav-item" onclick="activateNav(this)">
+                        <div class="nav-left"><i class="fa-regular fa-file-pdf"></i><span class="file-name">컴퓨터비전_졸업과제.pdf</span></div>
+                        <div class="nav-right"><span class="drag-handle">=</span><span class="delete-text" onclick="deleteFile(event,this)">삭제</span></div>
+                    </li>
+                    <li class="nav-item" onclick="activateNav(this)">
+                        <div class="nav-left"><i class="fa-solid fa-code"></i><span class="file-name">Playwright_자동화코드.js</span></div>
+                        <div class="nav-right"><span class="drag-handle">=</span><span class="delete-text" onclick="deleteFile(event,this)">삭제</span></div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-title">최근 대화 기록</div>
+                <ul class="nav-list">
+                    <li class="nav-item active" onclick="activateNav(this)"><i class="fa-regular fa-message"></i> 셀레니움 크롤링 최적화 문의</li>
+                    <li class="nav-item" onclick="activateNav(this)"><i class="fa-regular fa-message"></i> 파이썬 백엔드 직무 면접 팁</li>
+                </ul>
+            </div>
+        </aside>
+
+        <main class="content-area">
+            <header class="topbar">
+                <button class="tab-btn active" onclick="changeTab(this, 'portfolio')">포트폴리오 자동 작성</button>
+                <button class="tab-btn" onclick="location.href='portfolio_manage.html'">포트폴리오 관리</button>
+                <button class="tab-btn" onclick="changeTab(this, 'contest')">교내외 공모전 추천</button>
+                <button class="tab-btn" onclick="changeTab(this, 'chat')">자유 멘토링</button>
+            </header>
+
+            <div class="chat-container" id="chatBox">
+                </div>
+
+            <div class="input-wrapper">
+                <div class="input-box">
+                    <textarea id="chatInput" placeholder="요청사항을 입력하세요... (예: 백엔드 개발자용 포트폴리오로 재구성해 줘)" rows="1" oninput="this.style.height='auto'; this.style.height=this.scrollHeight+'px';"></textarea>
+                    <button class="btn-send" onclick="sendMsg()"><i class="fa-solid fa-arrow-up"></i></button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // --- 화면 전환 로직 ---
+        function switchScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function handleSignup(e) {
+            e.preventDefault();
+            alert('회원가입이 완료되었습니다. 로그인해주세요.');
+            switchScreen('login-screen');
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            document.getElementById('displayUserEmail').innerText = email;
+            switchScreen('main-screen');
+            changeTab(document.querySelector('.tab-btn'), 'portfolio'); // 기본 탭 로드
+        }
+
+        // --- 사이드바 및 탭 인터랙션 ---
+        function activateNav(element) {
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        function addFile(input) {
+            if(input.files.length > 0) {
+                const list = document.getElementById('sourceList');
+                Array.from(input.files).forEach(file => {
+                    const safeName = String(file.name).replace(/</g,'&lt;').replace(/>/g,'&gt;');
+                    const li = document.createElement('li');
+                    li.className = 'nav-item';
+                    li.setAttribute('onclick','activateNav(this)');
+                    li.innerHTML = `
+                        <div class="nav-left"><i class="fa-regular fa-file"></i><span class="file-name">${safeName}</span></div>
+                        <div class="nav-right"><span class="drag-handle">=</span><span class="delete-text" onclick="deleteFile(event,this)">삭제</span></div>
+                    `;
+                    list.appendChild(li);
+                });
+            }
+        }
+
+        function toggleDeleteMode() {
+            const list = document.getElementById('sourceList');
+            list.classList.toggle('delete-mode-active');
+            const btn = document.getElementById('deleteModeBtn');
+            if(list.classList.contains('delete-mode-active')) {
+                btn.style.background = '#fff7f7';
+                btn.style.border = '1px solid #fecaca';
+            } else {
+                btn.style.background = '#fff';
+                btn.style.border = '1px solid transparent';
+            }
+        }
+
+        function deleteFile(e, btn) {
+            e.stopPropagation();
+            const li = btn.closest('li');
+            if(!li) return;
+            li.remove();
+        }
+
+        // --- 탭별 콘텐츠 데이터 (목업) ---
+        const tabContents = {
+            portfolio: `
+                <div class="msg-title">업로드된 소스 기반 포트폴리오 초안 📄</div>
+                <p>좌측에 업로드된 <strong>'컴퓨터비전_졸업과제.pdf'</strong>와 <strong>'Playwright_자동화코드.js'</strong>를 분석하여 개발자 직무에 맞춘 포트폴리오를 구성했습니다.</p>
+                <div class="result-card">
+                    <h4>지원 직무: 자동화 엔지니어 / 백엔드 개발자</h4>
+                    <div style="margin: 10px 0;">
+                        <span class="tag">Python</span><span class="tag">Node.js</span><span class="tag">Playwright</span><span class="tag">Computer Vision</span>
+                    </div>
+                    <ul style="margin-left: 20px; font-size: 14px; margin-top: 10px;">
+                        <li><strong>프로젝트 1:</strong> 웹 크롤링 및 매크로 자동화 시스템 구축 (Playwright 기반)</li>
+                        <li><strong>프로젝트 2:</strong> 졸업과제 - 이미지 프로세싱 기반 객체 탐지 알고리즘 구현</li>
+                    </ul>
+                </div>
+                <p style="margin-top:12px; font-size:14px; color:#64748b;">수정하고 싶은 부분이나 강조하고 싶은 프로젝트가 있다면 말씀해 주세요.</p>
+            `,
+            contest: `
+                <div class="msg-title">학적 & 역량 기반 맞춤 공모전 🏆</div>
+                <p>사용자님의 개발 스택(Python, 자동화)과 학적 정보를 바탕으로 지원하기 좋은 공모전과 교내 프로젝트를 스크래핑했습니다.</p>
+                <div class="result-card">
+                    <h4 style="color:#ea580c;"><i class="fa-solid fa-school"></i> 교내 LINC 3.0 사업단 (매칭률 95%)</h4>
+                    <p style="font-size:14px; margin-top:4px;"><strong>[학사공지]</strong> 2026 하반기 지역사회 문제해결형 SW 프로젝트 모집</p>
+                    <p style="font-size:13px; color:#64748b; margin-top:4px;">* 추천 사유: 파이썬 데이터 분석 및 자동화 역량을 활용하기 좋은 교내 프로젝트입니다.</p>
+                </div>
+                <div class="result-card">
+                    <h4 style="color:#2563eb;"><i class="fa-solid fa-trophy"></i> 외부 해커톤 (매칭률 88%)</h4>
+                    <p style="font-size:14px; margin-top:4px;"><strong>[전국 대학생 IT 연합]</strong> 공공데이터 활용 웹 서비스 개발 공모전</p>
+                </div>
+            `,
+            chat: `
+                <div class="msg-title">커리어 AI 멘토링 💬</div>
+                <p>진로 고민, 이력서 첨삭, 혹은 기술 면접 준비 등 무엇이든 도와드릴 수 있습니다.<br>어떤 도움이 필요하신가요?</p>
+            `
+        };
+
+        function changeTab(btn, tabId) {
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            btn.classList.add('active');
+            
+            const chatBox = document.getElementById('chatBox');
+            chatBox.innerHTML = `
+                <div class="message msg-ai">
+                    <div class="avatar"><i class="fa-solid fa-robot"></i></div>
+                    <div class="msg-content">${tabContents[tabId]}</div>
+                </div>
+            `;
+        }
+
+        // --- 채팅 전송 로직 ---
+        function sendMsg() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const chatBox = document.getElementById('chatBox');
+            
+            // 유저 메시지 렌더링
+            chatBox.innerHTML += `
+                <div class="message msg-user">
+                    <div class="avatar"><i class="fa-solid fa-user"></i></div>
+                    <div class="msg-content"><p>${text}</p></div>
+                </div>
+            `;
+            
+            input.value = '';
+            input.style.height = 'auto';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            // AI 응답 시뮬레이션
+            setTimeout(() => {
+                chatBox.innerHTML += `
+                    <div class="message msg-ai">
+                        <div class="avatar"><i class="fa-solid fa-robot"></i></div>
+                        <div class="msg-content"><p>말씀하신 내용을 바탕으로 데이터를 업데이트하고 있습니다. 추가적인 요구사항이 반영된 결과를 곧 제공해 드리겠습니다.</p></div>
+                    </div>
+                `;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }, 800);
+        }
+
+        // 엔터키 지원
+        document.getElementById('chatInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMsg();
+            }
+        });
+    </script>
+</body>
+</html>
