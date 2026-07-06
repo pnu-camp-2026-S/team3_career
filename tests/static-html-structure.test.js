@@ -123,6 +123,93 @@ assert.ok(
   'old portfolio.html should be renamed to portfolio_create.html'
 );
 
+const contestHtml = fs.readFileSync(path.join(htmlDir, 'contest.html'), 'utf8');
+assert.match(
+  contestHtml,
+  /id="activity-list"/,
+  'contest page should render the activity recommendation list'
+);
+assert.match(
+  contestHtml,
+  /id="keyword-search"/,
+  'contest page should include keyword search for activity recommendations'
+);
+assert.match(
+  contestHtml,
+  /href="contest\.css"/,
+  'contest page should use the recommendation-specific stylesheet'
+);
+assert.match(
+  contestHtml,
+  /src="contest\.js"/,
+  'contest page should use the recommendation-specific script'
+);
+
+assert.ok(
+  fs.existsSync(path.join(htmlDir, 'contest.css')),
+  'contest recommendation stylesheet should live in the html directory'
+);
+assert.ok(
+  fs.existsSync(path.join(htmlDir, 'contest.js')),
+  'contest recommendation script should live in the html directory'
+);
+
+const contestJs = fs.readFileSync(path.join(htmlDir, 'contest.js'), 'utf8');
+const contestCss = fs.readFileSync(path.join(htmlDir, 'contest.css'), 'utf8');
+assert.match(
+  contestJs,
+  /function\s+parseScheduleDate/,
+  'contest schedule should parse saved dates for chronological sorting'
+);
+assert.match(
+  contestJs,
+  /function\s+getSortedSavedSchedules/,
+  'contest schedule should create a date-sorted list before rendering'
+);
+assert.match(
+  contestJs,
+  /getSortedSavedSchedules\(\)\s*[\r\n\s]*\.map/,
+  'contest schedule should render saved activities in date order'
+);
+assert.match(
+  contestJs,
+  /href="https:\/\/chatgpt\.com\/"/,
+  'contest preparation plan link should open an external planning tool'
+);
+assert.match(
+  contestJs,
+  /target="_blank"/,
+  'contest preparation plan link should open in a new tab'
+);
+assert.match(
+  contestJs,
+  /rel="noopener noreferrer"/,
+  'contest external preparation plan link should use safe rel attributes'
+);
+assert.match(
+  contestJs,
+  />활동 신청 사이트로 이동하기<\/a>/,
+  'contest external activity link should say activity application site'
+);
+assert.ok(
+  !contestJs.includes('활동 신청으로 이동하기') && !contestJs.includes('준비 계획 만들기'),
+  'contest should not use older labels for the external activity link'
+);
+assert.ok(
+  !contestJs.includes('href="plan.html"'),
+  'contest preparation plan link should not point to an internal plan.html page'
+);
+assert.match(
+  contestJs,
+  /classList\.toggle\('is-danger',\s*isSaved\)/,
+  'contest save button should toggle a danger state when saved'
+);
+assert.match(
+  contestCss,
+  /\.button\.primary\.is-danger\s*\{[^}]*background:\s*var\(--danger\);/s,
+  'contest saved cancel button should use the red danger background'
+);
+
 for (const file of fs.readdirSync(htmlDir).filter((name) => name.endsWith('.html'))) {
   const html = fs.readFileSync(path.join(htmlDir, file), 'utf8');
   assert.ok(
