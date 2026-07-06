@@ -150,6 +150,44 @@
     readinessReason:
       '현재 일정과 조화를 이루고 있어 자격증 준비에 충분한 시간이 확보됩니다.',
     portfolio: '“실습 중심 자격증 과정을 통해 실무형 기술 역량을 증명했습니다.”'
+  },
+  {
+    id: 9,
+    icon: '🚀',
+    title: '클라우드 서비스 기획 공모전',
+    type: '공모전',
+    industry: 'IT',
+    level: '중',
+    deadline: 'D-90',
+    match: '87%',
+    difficulty: '중간',
+    reason:
+      '90일 뒤 마감되는 활동이라 지금부터 서비스 기획과 기술 이해를 함께 준비하기 좋습니다. 장기 일정으로 포트폴리오 결과물을 안정적으로 만들 수 있습니다.',
+    connection:
+      '기존 웹 프로젝트 경험을 클라우드 기반 서비스 아이디어로 확장해 기획서와 프로토타입으로 연결할 수 있습니다.',
+    readiness: '높음',
+    readinessReason:
+      '준비 기간이 충분해 시장 조사, 기능 정의, 발표 자료 제작까지 단계적으로 진행할 수 있습니다.',
+    portfolio: '“클라우드 서비스 기획 공모전을 통해 장기 프로젝트 관리와 서비스 설계 역량을 강화했습니다.”'
+  },
+  {
+    id: 10,
+    icon: '🤖',
+    title: '협업형 클라우드 아이디어톤',
+    type: '대외활동',
+    industry: 'IT',
+    level: '하',
+    deadline: 'D-90',
+    match: '85%',
+    difficulty: '쉬움',
+    reason:
+      '클라우드 서비스 기획 공모전과 같은 일정에 열리는 협업형 활동입니다. 팀 기반 아이디어 도출과 발표 경험을 함께 쌓기 좋습니다.',
+    connection:
+      '기존 프로젝트 경험을 바탕으로 역할 분담, 서비스 아이디어 검증, 간단한 프로토타입 제작 흐름을 보여줄 수 있습니다.',
+    readiness: '높음',
+    readinessReason:
+      '마감까지 90일이 남아 팀 구성과 아이디어 구체화에 충분한 시간이 있습니다.',
+    portfolio: '“협업형 클라우드 아이디어톤을 통해 팀 기반 서비스 기획과 발표 역량을 강화했습니다.”'
   }
 ];
 
@@ -161,10 +199,16 @@ const keywordInput = document.getElementById('keyword-search');
 const industryFilter = document.getElementById('industry-filter');
 const levelFilter = document.getElementById('level-filter');
 const savedCount = document.getElementById('saved-count');
+const calendarMonthLabel = document.getElementById('calendarMonth');
+const calendarDays = document.getElementById('calendarDays');
+const prevCalendarMonth = document.getElementById('prevCalendarMonth');
+const nextCalendarMonth = document.getElementById('nextCalendarMonth');
 
 let activeTab = 'all';
 let selectedActivityId = null;
 let activeDetailElement = null;
+let visibleCalendarYear = 2026;
+let visibleCalendarMonth = 6;
 const savedSchedules = [];
 
 function clearExpandedDetail() {
@@ -232,19 +276,33 @@ function renderActivities() {
 }
 
 const scheduleDates = {
-  1: '7/12',
-  2: '7/15',
-  3: '7/18',
-  4: '7/9',
-  5: '7/20',
-  6: '7/10',
-  7: '7/22',
-  8: '7/24'
+  1: '2026-07-12',
+  2: '2026-07-15',
+  3: '2026-07-18',
+  4: '2026-07-09',
+  5: '2026-07-20',
+  6: '2026-07-10',
+  7: '2026-07-22',
+  8: '2026-07-24',
+  9: '2026-10-04',
+  10: '2026-10-04'
 };
 
 function parseScheduleDate(date) {
-  const [month, day] = date.split('/').map(Number);
-  return month * 100 + day;
+  const [year, month, day] = date.split('-').map(Number);
+  return year * 10000 + month * 100 + day;
+}
+
+function formatScheduleDate(date) {
+  const [, month, day] = date.split('-').map(Number);
+  return `${month}/${day}`;
+}
+
+function getDateKey(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 function getSortedSavedSchedules() {
@@ -265,6 +323,21 @@ function updateSaveButton(item) {
   saveButton.classList.toggle('is-danger', isSaved);
 }
 
+function showActivityMonth(item) {
+  const activityDate = scheduleDates[item.id];
+  if (!activityDate) return;
+
+  const [year, month] = activityDate.split('-').map(Number);
+  visibleCalendarYear = year;
+  visibleCalendarMonth = month - 1;
+  renderCalendarMonth();
+}
+
+function confirmDuplicateDateSave(item, itemDate) {
+  const hasDuplicateDate = savedSchedules.some((event) => event.id !== item.id && event.date === itemDate);
+  return !hasDuplicateDate || window.confirm('이미 활동이 존재합니다. 추가하시겠습니까?');
+}
+
 function openDetail(id, cardElement) {
   const item = activities.find((activity) => activity.id === Number(id));
   if (!item) return;
@@ -278,6 +351,7 @@ function openDetail(id, cardElement) {
   }
 
   selectedActivityId = item.id;
+  showActivityMonth(item);
 
   clearExpandedDetail();
 
@@ -341,25 +415,64 @@ function updateSelectedCard() {
 
 function renderCalendarHighlight() {
   document.querySelectorAll('.calendar-grid .day').forEach((dayBtn) => {
-    const dayText = dayBtn.textContent.trim();
+    const dateKey = dayBtn.dataset.date;
     const selectedDate = selectedActivityId ? scheduleDates[selectedActivityId] : null;
-    const isSelectedDay = selectedDate ? dayText === selectedDate.split('/').pop() : false;
-    const hasEvent = savedSchedules.some((event) => event.date.split('/').pop() === dayText);
+    const isSelectedDay = selectedDate === dateKey;
+    const hasEvent = savedSchedules.some((event) => event.date === dateKey);
 
     dayBtn.classList.toggle('event', hasEvent || isSelectedDay);
     dayBtn.classList.toggle('active', isSelectedDay);
   });
 }
 
+function renderCalendarMonth() {
+  if (!calendarMonthLabel || !calendarDays) return;
+
+  calendarMonthLabel.textContent = `${visibleCalendarYear}.${String(visibleCalendarMonth + 1).padStart(2, '0')}`;
+  calendarDays.innerHTML = '';
+
+  const firstDay = new Date(visibleCalendarYear, visibleCalendarMonth, 1);
+  const startOffset = firstDay.getDay();
+  const daysInMonth = new Date(visibleCalendarYear, visibleCalendarMonth + 1, 0).getDate();
+  const totalCells = Math.ceil((startOffset + daysInMonth) / 7) * 7;
+
+  for (let index = 0; index < totalCells; index += 1) {
+    const date = new Date(visibleCalendarYear, visibleCalendarMonth, index - startOffset + 1);
+    const dayButton = document.createElement('button');
+    dayButton.className = 'day';
+    dayButton.type = 'button';
+    dayButton.textContent = date.getDate();
+    dayButton.dataset.date = getDateKey(date);
+
+    if (date.getMonth() !== visibleCalendarMonth) {
+      dayButton.classList.add('muted');
+    }
+
+    calendarDays.appendChild(dayButton);
+  }
+
+  renderCalendarHighlight();
+}
+
+function moveCalendarMonth(offset) {
+  const nextMonth = new Date(visibleCalendarYear, visibleCalendarMonth + offset, 1);
+  visibleCalendarYear = nextMonth.getFullYear();
+  visibleCalendarMonth = nextMonth.getMonth();
+  renderCalendarMonth();
+}
+
 function toggleSaveToCalendar(item) {
   const existingIndex = savedSchedules.findIndex((event) => event.id === item.id);
+  const itemDate = scheduleDates[item.id] || '2026-07-21';
 
   if (existingIndex === -1) {
+    if (!confirmDuplicateDateSave(item, itemDate)) return;
+
     savedSchedules.push({
       id: item.id,
       title: item.title,
       note: `${item.type} · ${item.industry}`,
-      date: scheduleDates[item.id] || '7/21'
+      date: itemDate
     });
   } else {
     savedSchedules.splice(existingIndex, 1);
@@ -396,7 +509,7 @@ function renderSchedule() {
     .map(
       (event) => `
         <div class="schedule-item">
-          <div class="schedule-date">${event.date}</div>
+          <div class="schedule-date">${formatScheduleDate(event.date)}</div>
           <div>
             <strong>${event.title}</strong>
             <p>${event.note}</p>
@@ -436,5 +549,9 @@ activityList.addEventListener('click', (event) => {
   if (card) openDetail(card.dataset.id, card);
 });
 
+prevCalendarMonth.addEventListener('click', () => moveCalendarMonth(-1));
+nextCalendarMonth.addEventListener('click', () => moveCalendarMonth(1));
+
+renderCalendarMonth();
 renderSchedule();
 renderActivities();
