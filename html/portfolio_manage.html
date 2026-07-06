@@ -3,163 +3,234 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CareerFit - 포트폴리오 관리</title>
+    <title>Myfitfolio - 포트폴리오 보관함</title>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Pretendard', sans-serif; }
-        body { background: #fff; color: #1e293b; display: flex; height: 100vh; overflow: hidden; }
-        .sidebar { width: 300px; background: #f8fafc; border-right: 1px solid #e2e8f0; padding: 24px; display: flex; flex-direction: column; gap: 24px; }
-        .sidebar-header h2 { font-size: 22px; font-weight: 800; color: #2563eb; }
-        .user-info { font-size: 13px; color: #64748b; margin-top: 6px; display: flex; align-items: center; gap: 6px; }
-        .sidebar-stat { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-        .stat-box { border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; padding: 14px; }
-        .stat-box span { display: block; color: #64748b; font-size: 12px; font-weight: 700; margin-bottom: 8px; }
-        .stat-box strong { font-size: 24px; line-height: 1; color: #1e293b; }
-        .quick-actions { display: flex; flex-direction: column; gap: 8px; }
-        .quick-link { border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; color: #475569; text-decoration: none; padding: 12px; font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
-        .quick-link:hover { border-color: #2563eb; color: #2563eb; background: #eff6ff; }
-        .content-area { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-        .topbar { height: 64px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; padding: 0 40px; gap: 28px; background: #fff; flex-shrink: 0; overflow-x: auto; }
-        .tab-btn { text-decoration: none; font-size: 15px; font-weight: 600; color: #64748b; padding: 22px 0; position: relative; white-space: nowrap; }
-        .tab-btn.active { color: #2563eb; }
-        .tab-btn.active::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 100%; height: 3px; background: #2563eb; border-radius: 3px 3px 0 0; }
-        .main-container { flex: 1; overflow-y: auto; padding: 36px 40px; }
-        .page-title { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 24px; }
-        .page-title h1 { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
-        .page-title p { color: #64748b; font-size: 15px; line-height: 1.6; }
-        .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
-        .search-box { min-width: 260px; flex: 1; max-width: 420px; display: flex; align-items: center; gap: 10px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0 12px; height: 42px; color: #94a3b8; }
-        .search-box input { border: none; outline: none; flex: 1; min-width: 0; font-size: 14px; color: #1e293b; }
-        .segmented { display: flex; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; background: #fff; }
-        .segment-btn { border: none; background: #fff; color: #64748b; padding: 11px 14px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
-        .segment-btn.active { color: #2563eb; background: #eff6ff; }
-        .draft-layout { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 18px; align-items: start; }
-        .list-panel, .detail-panel { border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; min-height: 520px; }
-        .panel-head { height: 58px; border-bottom: 1px solid #e2e8f0; padding: 0 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-        .panel-head h2 { font-size: 16px; font-weight: 800; }
-        .draft-list { display: flex; flex-direction: column; gap: 10px; padding: 14px; max-height: calc(100vh - 250px); overflow-y: auto; }
-        .draft-card { width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; padding: 14px; text-align: left; cursor: pointer; display: grid; gap: 10px; }
-        .draft-card:hover, .draft-card.active { border-color: #2563eb; background: #eff6ff; }
-        .draft-title { font-size: 15px; font-weight: 800; color: #1e293b; line-height: 1.35; overflow-wrap: anywhere; }
-        .draft-preview { color: #64748b; font-size: 13px; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .draft-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; color: #94a3b8; font-size: 12px; font-weight: 700; }
-        .badge { border-radius: 6px; padding: 5px 8px; font-size: 12px; font-weight: 800; white-space: nowrap; }
-        .badge.draft { background: #e0e7ff; color: #4338ca; }
-        .badge.review { background: #fff7ed; color: #c2410c; }
-        .badge.done { background: #dcfce7; color: #15803d; }
-        .detail-body { padding: 22px; display: grid; gap: 18px; }
-        .detail-grid { display: grid; grid-template-columns: 1fr 180px; gap: 14px; }
-        .field { display: grid; gap: 8px; }
-        .field label { color: #475569; font-size: 13px; font-weight: 800; }
-        .field input, .field select, .field textarea { width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; font-size: 14px; color: #1e293b; outline: none; background: #fff; }
-        .field textarea { min-height: 300px; resize: vertical; line-height: 1.6; }
-        .field input:focus, .field select:focus, .field textarea:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12); }
-        .actionbar { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
-        .btn { border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; color: #475569; font-size: 14px; font-weight: 800; padding: 11px 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
-        .btn:hover { border-color: #2563eb; color: #2563eb; background: #eff6ff; }
-        .btn-primary { border-color: #2563eb; background: #2563eb; color: #fff; }
-        .btn-primary:hover { background: #1d4ed8; color: #fff; }
-        .btn-danger { border-color: #fecaca; color: #b91c1c; }
-        .btn-danger:hover { background: #fef2f2; border-color: #ef4444; color: #b91c1c; }
-        .empty-state { min-height: 440px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center; color: #64748b; padding: 28px; }
-        .empty-state i { width: 52px; height: 52px; border-radius: 8px; background: #eff6ff; color: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 22px; }
-        .empty-state strong { color: #1e293b; font-size: 18px; }
-        @media (max-width: 1080px) {
-            body { height: auto; min-height: 100vh; overflow: auto; }
-            .sidebar { display: none; }
-            .draft-layout { grid-template-columns: 1fr; }
-            .draft-list { max-height: none; }
-        }
-        @media (max-width: 760px) {
-            .topbar { padding: 0 20px; gap: 20px; }
-            .main-container { padding: 28px 20px; }
-            .page-title, .toolbar { flex-direction: column; align-items: stretch; }
-            .search-box { max-width: none; min-width: 0; }
-            .segmented { overflow-x: auto; }
-            .detail-grid { grid-template-columns: 1fr; }
+        body { min-height: 100vh; background: radial-gradient(#d1d5db 1px, transparent 1px); background-size: 22px 22px; color: #172033; padding: 34px; }
+        .app-shell { max-width: 1180px; min-height: calc(100vh - 68px); margin: 0 auto; background: rgba(255,255,255,.96); border: 1px solid #dbe2f0; border-radius: 18px; overflow: hidden; box-shadow: 0 24px 70px rgba(79,70,229,.12); }
+        .top-menu { height: 76px; display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 0 34px; border-bottom: 1px solid #e8edf7; background: #fff; }
+        .brand { font-size: 23px; font-weight: 900; color: #111827; letter-spacing: 0; white-space: nowrap; }
+        .brand:empty { width: 0; overflow: hidden; }
+        .brand span { color: #4f46e5; }
+        .nav { display: flex; align-items: center; gap: 6px; min-width: 0; overflow-x: auto; }
+        .nav a { height: 40px; display: inline-flex; align-items: center; gap: 8px; padding: 0 13px; border-radius: 8px; color: #667085; text-decoration: none; font-size: 14px; font-weight: 800; white-space: nowrap; }
+        .nav a.active { color: #4f46e5; background: #eef2ff; }
+        .profile { display: flex; align-items: center; gap: 12px; color: #475569; font-size: 13px; font-weight: 800; white-space: nowrap; }
+        .profile i { color: #64748b; }
+        .avatar { width: 30px; height: 30px; border-radius: 50%; background: #e5e7eb; display: grid; place-items: center; }
+        .layout { display: grid; grid-template-columns: 270px minmax(0, 1fr); min-height: calc(100vh - 144px); }
+        .folder-sidebar { background: #fbfcff; border-right: 1px solid #e8edf7; padding: 34px 24px; }
+        .side-brand { font-size: 32px; font-weight: 950; color: #5b5ce9; letter-spacing: 0; line-height: 1; margin-bottom: 20px; }
+        .side-user { display: flex; align-items: center; gap: 10px; color: #64748b; font-size: 15px; font-weight: 800; margin-bottom: 72px; }
+        .online-dot { width: 13px; height: 13px; border-radius: 50%; background: #7cc96f; box-shadow: 0 0 0 3px #e8f7e6; }
+        .folder-sidebar h2 { font-size: 18px; color: #8b95a8; margin-bottom: 38px; text-decoration: underline; text-underline-offset: 3px; }
+        .folder-list { list-style: none; display: grid; gap: 30px; }
+        .folder-btn { width: 100%; min-height: 52px; border: 1px solid transparent; border-radius: 8px; background: transparent; color: #344054; padding: 8px 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px; cursor: pointer; font-size: 14px; font-weight: 900; text-align: left; }
+        .folder-btn:hover { background: #f4f7ff; }
+        .folder-btn.active { border-color: transparent; background: #eef2ff; color: #5b5ce9; }
+        .folder-main { display: flex; align-items: center; gap: 10px; min-width: 0; }
+        .folder-main span { white-space: normal; overflow: visible; text-overflow: clip; line-height: 1.35; word-break: keep-all; }
+        .folder-main i { color: #f2c94c; font-size: 17px; flex-shrink: 0; }
+        .folder-count { color: #98a2b3; font-size: 15px; font-weight: 900; flex-shrink: 0; }
+        .content { padding: 30px 34px 38px; background: linear-gradient(120deg, #fff 0%, #fff 68%, #f8fbff 100%); }
+        .page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 22px; }
+        .page-head h1 { font-size: 30px; font-weight: 900; color: #111827; margin-bottom: 8px; }
+        .page-head p { color: #667085; font-size: 14px; line-height: 1.6; }
+        .create-btn { height: 42px; padding: 0 18px; border: 0; border-radius: 8px; background: #4f46e5; color: #fff; font-weight: 900; box-shadow: 0 12px 24px rgba(79,70,229,.25); text-decoration: none; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+        .toolbar { display: grid; grid-template-columns: minmax(180px, 1fr) auto; gap: 12px; margin-bottom: 18px; }
+        .search { height: 40px; border: 1px solid #e4e8f2; border-radius: 8px; background: #fff; display: flex; align-items: center; gap: 10px; padding: 0 13px; color: #98a2b3; }
+        .search input { border: 0; outline: 0; width: 100%; background: transparent; color: #475569; font-weight: 700; }
+        .filters { display: flex; gap: 8px; }
+        .filter-btn { min-width: 58px; height: 40px; padding: 0 13px; border: 1px solid #e4e8f2; border-radius: 8px; background: #fff; color: #667085; font-weight: 900; cursor: pointer; white-space: nowrap; }
+        .filter-btn.active { border-color: #6366f1; color: #4f46e5; background: #eef2ff; }
+        .portfolio-list { display: grid; gap: 14px; }
+        .portfolio-card { display: grid; grid-template-columns: 118px minmax(0, 1fr) auto; gap: 20px; align-items: center; border: 1px solid #edf0f7; border-radius: 8px; background: #fff; padding: 16px; box-shadow: 0 8px 24px rgba(17,24,39,.04); }
+        .portfolio-card.draft { cursor: pointer; }
+        .portfolio-card:hover { border-color: #c7d2fe; box-shadow: 0 14px 30px rgba(79,70,229,.1); }
+        .thumb { height: 86px; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; background: #f8fafc; position: relative; }
+        .thumb::before { content: ""; display: block; height: 10px; background: #4f46e5; }
+        .thumb-lines { padding: 14px 12px; display: grid; gap: 8px; }
+        .thumb-line { height: 7px; border-radius: 999px; background: #dbe4ff; }
+        .thumb-line.short { width: 58%; }
+        .thumb-chart { position: absolute; right: 10px; bottom: 12px; width: 30px; height: 30px; border-radius: 50%; background: conic-gradient(#6366f1 0 70%, #e0e7ff 70%); }
+        .info { min-width: 0; }
+        .title-row { display: flex; align-items: center; gap: 9px; margin-bottom: 7px; }
+        .title-row h2 { font-size: 17px; color: #111827; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        .status { border-radius: 6px; padding: 4px 9px; font-size: 12px; font-weight: 900; white-space: nowrap; }
+        .status.done { background: #ecfdf5; color: #059669; }
+        .status.draft { background: #f3f4f6; color: #64748b; }
+        .meta { display: flex; flex-wrap: wrap; gap: 9px; margin-bottom: 9px; color: #64748b; font-size: 12px; font-weight: 700; }
+        .summary { color: #667085; font-size: 13px; line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .actions { display: grid; gap: 9px; justify-items: end; }
+        .like-row { display: flex; gap: 8px; }
+        .action-btn { height: 34px; border: 1px solid #e4e8f2; border-radius: 7px; background: #fff; color: #475569; padding: 0 12px; font-size: 12px; font-weight: 900; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; text-decoration: none; }
+        .action-btn:hover { border-color: #6366f1; color: #4f46e5; background: #f5f7ff; }
+        .action-btn.liked { background: #eef2ff; border-color: #818cf8; color: #4f46e5; }
+        .action-btn.primary { border-color: #6366f1; color: #4f46e5; }
+        .empty-pane { display: none; }
+        .empty { padding: 52px 20px; text-align: center; border: 1px dashed #dbe2f0; border-radius: 8px; color: #64748b; background: #fbfdff; }
+        @media (max-width: 980px) {
+            body { padding: 0; background: #fff; }
+            .app-shell { min-height: 100vh; border-radius: 0; }
+            .top-menu { height: auto; padding: 18px; align-items: flex-start; flex-wrap: wrap; }
+            .nav { order: 3; width: 100%; }
+            .layout { grid-template-columns: 1fr; }
+            .folder-sidebar { border-right: 0; border-bottom: 1px solid #e8edf7; padding: 18px; }
+            .side-brand { font-size: 28px; }
+            .side-user { margin-bottom: 24px; }
+            .folder-sidebar h2 { margin-bottom: 16px; }
+            .folder-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+            .content { padding: 24px; }
+            .toolbar { grid-template-columns: 1fr; }
+            .portfolio-card { grid-template-columns: 92px minmax(0, 1fr); }
+            .actions { grid-column: 1 / -1; justify-items: stretch; display: flex; flex-wrap: wrap; }
         }
     </style>
 </head>
 <body>
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <h2>CareerFit</h2>
-            <div class="user-info"><i class="fa-solid fa-circle-check" style="color:#10b981;"></i> user@univ.ac.kr</div>
-        </div>
-        <div class="sidebar-stat">
-            <div class="stat-box">
-                <span>전체 초안</span>
-                <strong id="totalCount">0</strong>
+    <div class="app-shell">
+        <header class="top-menu">
+            <div class="brand" aria-hidden="true"></div>
+            <nav class="nav" aria-label="상단 메뉴">
+                <a href="blank.html"><i class="fa-solid fa-house"></i> 홈</a>
+                <a href="blank.html"><i class="fa-regular fa-calendar-days"></i> 활동 기록</a>
+                <a class="active" href="portfolio_manage.html"><i class="fa-regular fa-folder"></i> 포트폴리오</a>
+                <a href="blank.html"><i class="fa-regular fa-lightbulb"></i> 공모전 추천</a>
+                <a href="blank.html"><i class="fa-regular fa-user"></i> 마이페이지</a>
+            </nav>
+            <div class="profile">
+                <i class="fa-regular fa-bell"></i>
+                <span class="avatar"><i class="fa-solid fa-user"></i></span>
+                홍길동 <i class="fa-solid fa-chevron-down" style="font-size:10px"></i>
             </div>
-            <div class="stat-box">
-                <span>완료</span>
-                <strong id="doneCount">0</strong>
-            </div>
-        </div>
-        <div class="quick-actions">
-            <a href="portfolio.html" class="quick-link"><i class="fa-solid fa-wand-magic-sparkles"></i><span>새 초안 생성</span></a>
-            <a href="create.html" class="quick-link"><i class="fa-solid fa-file-circle-plus"></i><span>파일 생성</span></a>
-        </div>
-    </aside>
-
-    <main class="content-area">
-        <header class="topbar">
-            <a href="main.html" class="tab-btn">메인</a>
-            <a href="portfolio.html" class="tab-btn">포트폴리오 생성</a>
-            <a href="portfolio_manage.html" class="tab-btn active">포트폴리오 관리</a>
-            <a href="create.html" class="tab-btn">파일 생성</a>
-            <a href="contest.html" class="tab-btn">공모전 추천</a>
-            <a href="mypage.html" class="tab-btn">마이페이지</a>
         </header>
 
-        <div class="main-container">
-            <section class="page-title">
-                <div>
-                    <h1>포트폴리오 관리</h1>
-                    <p>생성된 초안을 검토하고 상태별로 정리한 뒤 제출본으로 저장하세요.</p>
-                </div>
-                <a href="portfolio.html" class="btn btn-primary"><i class="fa-solid fa-plus"></i> 초안 생성</a>
-            </section>
+        <div class="layout">
+            <aside class="folder-sidebar">
+                <div class="side-brand">Myfitfolio</div>
+                <div class="side-user"><span class="online-dot"></span> user@univ.ac.kr</div>
+                <h2>프로젝트 리스트</h2>
+                <ul class="folder-list">
+                    <li><button class="folder-btn active" type="button" data-folder="ai-service"><span class="folder-main"><i class="fa-solid fa-folder"></i><span>AI 포트폴리오 추천 서비스</span></span><span class="folder-count">3</span></button></li>
+                    <li><button class="folder-btn" type="button" data-folder="capstone"><span class="folder-main"><i class="fa-solid fa-folder"></i><span>캡스톤 디자인 팀 프로젝트</span></span><span class="folder-count">3</span></button></li>
+                    <li><button class="folder-btn" type="button" data-folder="contest"><span class="folder-main"><i class="fa-solid fa-folder"></i><span>교내 SW 아이디어 공모전</span></span><span class="folder-count">3</span></button></li>
+                    <li><button class="folder-btn" type="button" data-folder="volunteer"><span class="folder-main"><i class="fa-solid fa-folder"></i><span>봉사 활동 멘토링</span></span><span class="folder-count">2</span></button></li>
+                </ul>
+                <div class="empty-pane" aria-hidden="true"></div>
+            </aside>
 
-            <section class="toolbar" aria-label="포트폴리오 초안 필터">
-                <div class="search-box">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <input id="searchInput" type="search" placeholder="제목, 직무, 내용 검색">
-                </div>
-                <div class="segmented" role="tablist" aria-label="상태 필터">
-                    <button class="segment-btn active" type="button" data-filter="all">전체</button>
-                    <button class="segment-btn" type="button" data-filter="draft">초안</button>
-                    <button class="segment-btn" type="button" data-filter="review">검토 중</button>
-                    <button class="segment-btn" type="button" data-filter="done">완료</button>
-                </div>
-            </section>
-
-            <div class="draft-layout">
-                <section class="list-panel">
-                    <div class="panel-head">
-                        <h2>초안 목록</h2>
-                        <span id="visibleCount" class="badge draft">0개</span>
+            <main class="content">
+                <section class="page-head">
+                    <div>
+                        <h1>포트폴리오 보관함</h1>
+                        <p>완료된 포트폴리오와 임시저장 포트폴리오를 한 페이지에서 확인합니다.</p>
                     </div>
-                    <div class="draft-list" id="draftList"></div>
+                    <a class="create-btn" href="blank.html"><i class="fa-solid fa-plus"></i> 새 포트폴리오 만들기</a>
                 </section>
 
-                <section class="detail-panel" id="detailPanel"></section>
-            </div>
+                <section class="toolbar" aria-label="포트폴리오 필터">
+                    <label class="search">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input id="searchInput" type="search" placeholder="포트폴리오 검색">
+                    </label>
+                    <div class="filters" role="tablist" aria-label="상태 필터">
+                        <button class="filter-btn active" type="button" data-filter="all">전체</button>
+                        <button class="filter-btn" type="button" data-filter="done">완료</button>
+                        <button class="filter-btn" type="button" data-filter="draft">임시저장</button>
+                    </div>
+                </section>
+
+                <section id="portfolioList" class="portfolio-list" aria-label="포트폴리오 목록"></section>
+            </main>
         </div>
-    </main>
+    </div>
 
     <script>
-        const DRAFT_STORAGE_KEY = 'careerfit_portfolio_drafts';
-        const draftList = document.getElementById('draftList');
-        const detailPanel = document.getElementById('detailPanel');
+        const STORAGE_KEY = 'careerfit_portfolios';
+        const LEGACY_DRAFT_KEY = 'careerfit_portfolio_drafts';
+
+        const seedPortfolios = [
+            {
+                id: 'portfolio-data',
+                title: '데이터 분석 직무 포트폴리오',
+                createdAt: '2026-07-02T09:00:00.000Z',
+                purpose: '데이터 분석 직무 지원',
+                summary: '공공데이터와 시각화 프로젝트 경험을 중심으로 정리했어요.',
+                status: 'done',
+                liked: true,
+                content: '데이터 수집, 전처리, 시각화, 인사이트 도출 경험을 한 흐름으로 구성한 포트폴리오입니다.'
+            },
+            {
+                id: 'portfolio-contest',
+                title: '공모전 지원용 포트폴리오',
+                createdAt: '2026-07-01T15:30:00.000Z',
+                purpose: '공모전 제출',
+                summary: '공모전 제출용으로 구성한 간결한 포트폴리오예요.',
+                status: 'done',
+                liked: false,
+                content: '문제 정의, 기획 의도, 팀 내 역할, 결과물을 중심으로 공모전 심사에 맞게 정리했습니다.'
+            },
+            {
+                id: 'portfolio-ux',
+                title: 'UX 프로젝트 중심 포트폴리오',
+                createdAt: '2026-06-30T11:00:00.000Z',
+                purpose: 'UX 리서치 직무 지원',
+                summary: '사용자 조사와 화면 개선 사례를 중심으로 정리했어요.',
+                status: 'done',
+                liked: true,
+                content: '사용자 인터뷰, 페르소나, 와이어프레임, 개선안 검증 과정을 한눈에 볼 수 있게 구성했습니다.'
+            },
+            {
+                id: 'draft-marketing',
+                title: '마케팅 직무 포트폴리오 초안',
+                createdAt: '2026-06-28T18:20:00.000Z',
+                purpose: '마케팅 인턴 지원',
+                summary: '마케팅 관련 경험과 성과를 정리 중인 초안이에요.',
+                status: 'draft',
+                liked: false,
+                content: '콘텐츠 기획 경험, 캠페인 성과, 협업 경험을 추가로 보강해야 합니다.'
+            }
+        ];
+
+        const portfolioList = document.getElementById('portfolioList');
         const searchInput = document.getElementById('searchInput');
-        const visibleCount = document.getElementById('visibleCount');
-        const totalCount = document.getElementById('totalCount');
-        const doneCount = document.getElementById('doneCount');
-        let drafts = [];
-        let selectedDraftId = null;
+        let portfolios = loadPortfolios();
         let currentFilter = 'all';
+        let currentFolder = 'all';
+
+        function loadPortfolios() {
+            const stored = readJson(STORAGE_KEY);
+            if (stored.length) return stored;
+
+            const legacyDrafts = readJson(LEGACY_DRAFT_KEY).map((draft) => ({
+                id: draft.id,
+                title: draft.title || '임시저장 포트폴리오',
+                createdAt: draft.createdAt || draft.updatedAt || new Date().toISOString(),
+                purpose: draft.targetRole || '작성 중',
+                summary: draft.content || '이어서 작성할 임시저장 포트폴리오입니다.',
+                status: draft.status === 'done' ? 'done' : 'draft',
+                liked: Boolean(draft.liked),
+                content: draft.content || ''
+            }));
+            const merged = [...legacyDrafts, ...seedPortfolios];
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+            return merged;
+        }
+
+        function readJson(key) {
+            try {
+                const parsed = JSON.parse(localStorage.getItem(key)) || [];
+                return Array.isArray(parsed) ? parsed : [];
+            } catch {
+                return [];
+            }
+        }
+
+        function savePortfolios() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(portfolios));
+        }
 
         function escapeHtml(value) {
             return String(value || '')
@@ -170,239 +241,164 @@
                 .replace(/'/g, '&#039;');
         }
 
-        function readDrafts() {
-            try {
-                const parsed = JSON.parse(localStorage.getItem(DRAFT_STORAGE_KEY)) || [];
-                return Array.isArray(parsed) ? parsed : [];
-            } catch {
-                return [];
-            }
-        }
-
-        function writeDrafts(nextDrafts) {
-            localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(nextDrafts));
+        function formatDate(value) {
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return '-';
+            return new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(date);
         }
 
         function statusLabel(status) {
-            if (status === 'review') return '검토 중';
-            if (status === 'done') return '완료';
-            return '초안';
+            return status === 'done' ? '완료' : '임시저장';
         }
 
-        function formatDate(isoDate) {
-            if (!isoDate) return '-';
-            const date = new Date(isoDate);
-            if (Number.isNaN(date.getTime())) return '-';
-            return new Intl.DateTimeFormat('ko-KR', {
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-            }).format(date);
+        function folderMatches(portfolio) {
+            if (currentFolder === 'liked') return portfolio.liked;
+            if (currentFolder === 'done') return portfolio.status === 'done';
+            if (currentFolder === 'draft') return portfolio.status === 'draft';
+            return true;
         }
 
-        function getFilteredDrafts() {
+        function getVisiblePortfolios() {
             const query = searchInput.value.trim().toLowerCase();
-            return drafts.filter((draft) => {
-                const matchesStatus = currentFilter === 'all' || draft.status === currentFilter;
-                const haystack = `${draft.title || ''} ${draft.targetRole || ''} ${draft.content || ''}`.toLowerCase();
-                return matchesStatus && (!query || haystack.includes(query));
-            });
-        }
-
-        function renderStats() {
-            totalCount.textContent = drafts.length;
-            doneCount.textContent = drafts.filter((draft) => draft.status === 'done').length;
-        }
-
-        function renderDraftList() {
-            const filtered = getFilteredDrafts();
-            visibleCount.textContent = `${filtered.length}개`;
-            draftList.innerHTML = '';
-
-            if (filtered.length === 0) {
-                selectedDraftId = null;
-                draftList.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fa-regular fa-folder-open"></i>
-                        <strong>표시할 초안이 없습니다</strong>
-                        <span>필터를 바꾸거나 새 초안을 생성해 주세요.</span>
-                    </div>
-                `;
-                return;
-            }
-
-            if (!filtered.some((draft) => draft.id === selectedDraftId)) {
-                selectedDraftId = filtered[0].id;
-            }
-
-            filtered.forEach((draft) => {
-                const card = document.createElement('button');
-                card.type = 'button';
-                card.className = `draft-card${draft.id === selectedDraftId ? ' active' : ''}`;
-                card.dataset.id = draft.id;
-                card.innerHTML = `
-                    <div class="draft-title">${escapeHtml(draft.title || '제목 없는 초안')}</div>
-                    <div class="draft-preview">${escapeHtml(draft.content || '내용 없음')}</div>
-                    <div class="draft-meta">
-                        <span>${escapeHtml(draft.targetRole || '직무 미지정')}</span>
-                        <span>${formatDate(draft.updatedAt || draft.createdAt)}</span>
-                    </div>
-                    <span class="badge ${draft.status || 'draft'}">${statusLabel(draft.status)}</span>
-                `;
-                card.addEventListener('click', () => {
-                    selectedDraftId = draft.id;
-                    render();
+            return portfolios
+                .filter(folderMatches)
+                .filter((portfolio) => currentFilter === 'all' || portfolio.status === currentFilter)
+                .filter((portfolio) => {
+                    const haystack = `${portfolio.title} ${portfolio.purpose} ${portfolio.summary}`.toLowerCase();
+                    return !query || haystack.includes(query);
+                })
+                .sort((a, b) => {
+                    if (a.liked !== b.liked) return a.liked ? -1 : 1;
+                    return new Date(b.createdAt) - new Date(a.createdAt);
                 });
-                draftList.appendChild(card);
-            });
         }
 
-        function renderDetail() {
-            const draft = drafts.find((item) => item.id === selectedDraftId);
+        function renderCounts() {
+            return;
+        }
 
-            if (!draft) {
-                detailPanel.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fa-solid fa-file-lines"></i>
-                        <strong>관리할 초안을 선택하세요</strong>
-                        <span>포트폴리오 생성 화면에서 만든 초안이 여기에 저장됩니다.</span>
-                        <a href="portfolio.html" class="btn btn-primary"><i class="fa-solid fa-wand-magic-sparkles"></i> 포트폴리오 생성</a>
-                    </div>
-                `;
+        function render() {
+            renderCounts();
+            const visible = getVisiblePortfolios();
+            portfolioList.innerHTML = '';
+
+            if (!visible.length) {
+                portfolioList.innerHTML = '<div class="empty">조건에 맞는 포트폴리오가 없습니다.</div>';
                 return;
             }
 
-            detailPanel.innerHTML = `
-                <div class="panel-head">
-                    <h2>초안 편집</h2>
-                    <span class="badge ${draft.status || 'draft'}">${statusLabel(draft.status)}</span>
-                </div>
-                <div class="detail-body">
-                    <div class="detail-grid">
-                        <div class="field">
-                            <label for="draftTitle">제목</label>
-                            <input id="draftTitle" type="text" value="${escapeHtml(draft.title || '')}">
+            visible.forEach((portfolio) => {
+                const card = document.createElement('article');
+                card.className = `portfolio-card ${portfolio.status}`;
+                card.innerHTML = `
+                    <div class="thumb" aria-hidden="true">
+                        <div class="thumb-lines">
+                            <span class="thumb-line"></span>
+                            <span class="thumb-line short"></span>
+                            <span class="thumb-line"></span>
                         </div>
-                        <div class="field">
-                            <label for="draftStatus">상태</label>
-                            <select id="draftStatus">
-                                <option value="draft" ${draft.status === 'draft' ? 'selected' : ''}>초안</option>
-                                <option value="review" ${draft.status === 'review' ? 'selected' : ''}>검토 중</option>
-                                <option value="done" ${draft.status === 'done' ? 'selected' : ''}>완료</option>
-                            </select>
+                        <span class="thumb-chart"></span>
+                    </div>
+                    <div class="info">
+                        <div class="title-row">
+                            <h2>${escapeHtml(portfolio.title)}</h2>
+                            <span class="status ${portfolio.status}">${statusLabel(portfolio.status)}</span>
                         </div>
+                        <div class="meta">
+                            <span>${formatDate(portfolio.createdAt)} 생성</span>
+                            <span>${escapeHtml(portfolio.purpose)}</span>
+                        </div>
+                        <p class="summary">${escapeHtml(portfolio.summary)}</p>
                     </div>
-                    <div class="field">
-                        <label for="draftRole">지원 직무</label>
-                        <input id="draftRole" type="text" value="${escapeHtml(draft.targetRole || '')}" placeholder="예: 백엔드 개발자">
+                    <div class="actions">
+                        ${portfolio.status === 'done' ? `
+                            <div class="like-row">
+                                <button class="action-btn ${portfolio.liked ? 'liked' : ''}" type="button" data-action="like" data-id="${portfolio.id}">
+                                    <i class="fa-solid fa-thumbs-up"></i> 좋아요
+                                </button>
+                            </div>
+                            <a class="action-btn primary" href="portfolio-preview.html?id=${encodeURIComponent(portfolio.id)}">
+                                <i class="fa-regular fa-eye"></i> 열기
+                            </a>
+                            <button class="action-btn" type="button" data-action="ppt" data-id="${portfolio.id}">
+                                <i class="fa-solid fa-download"></i> PPT 저장
+                            </button>
+                        ` : `
+                            <span class="action-btn primary"><i class="fa-regular fa-pen-to-square"></i> 이어서 작성</span>
+                        `}
                     </div>
-                    <div class="field">
-                        <label for="draftContent">초안 내용</label>
-                        <textarea id="draftContent">${escapeHtml(draft.content || '')}</textarea>
-                    </div>
-                    <div class="actionbar">
-                        <button class="btn btn-primary" type="button" id="saveDraftBtn"><i class="fa-solid fa-floppy-disk"></i> 저장</button>
-                        <button class="btn" type="button" id="duplicateDraftBtn"><i class="fa-regular fa-copy"></i> 복제</button>
-                        <button class="btn" type="button" id="exportDraftBtn"><i class="fa-solid fa-download"></i> 텍스트 저장</button>
-                        <button class="btn btn-danger" type="button" id="deleteDraftBtn"><i class="fa-solid fa-trash-can"></i> 삭제</button>
-                    </div>
-                </div>
-            `;
+                `;
 
-            document.getElementById('saveDraftBtn').addEventListener('click', saveSelectedDraft);
-            document.getElementById('duplicateDraftBtn').addEventListener('click', duplicateSelectedDraft);
-            document.getElementById('exportDraftBtn').addEventListener('click', exportSelectedDraft);
-            document.getElementById('deleteDraftBtn').addEventListener('click', deleteSelectedDraft);
+                if (portfolio.status === 'draft') {
+                    card.addEventListener('click', () => {
+                        window.location.href = 'blank.html';
+                    });
+                }
+
+                portfolioList.appendChild(card);
+            });
         }
 
-        function saveSelectedDraft() {
-            const draft = drafts.find((item) => item.id === selectedDraftId);
-            if (!draft) return;
-
-            draft.title = document.getElementById('draftTitle').value.trim() || '제목 없는 초안';
-            draft.status = document.getElementById('draftStatus').value;
-            draft.targetRole = document.getElementById('draftRole').value.trim();
-            draft.content = document.getElementById('draftContent').value.trim();
-            draft.updatedAt = new Date().toISOString();
-            writeDrafts(drafts);
+        function toggleLike(id) {
+            portfolios = portfolios.map((portfolio) =>
+                portfolio.id === id ? { ...portfolio, liked: !portfolio.liked } : portfolio
+            );
+            savePortfolios();
             render();
         }
 
-        function duplicateSelectedDraft() {
-            const draft = drafts.find((item) => item.id === selectedDraftId);
-            if (!draft) return;
-
-            const duplicated = {
-                ...draft,
-                id: `draft-${Date.now()}`,
-                title: `${draft.title || '제목 없는 초안'} 복사본`,
-                status: 'draft',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-            };
-            drafts = [duplicated, ...drafts];
-            selectedDraftId = duplicated.id;
-            writeDrafts(drafts);
-            render();
-        }
-
-        function exportSelectedDraft() {
-            const draft = drafts.find((item) => item.id === selectedDraftId);
-            if (!draft) return;
+        function downloadPpt(id) {
+            const portfolio = portfolios.find((item) => item.id === id);
+            if (!portfolio) return;
 
             const body = [
-                `제목: ${draft.title || '제목 없는 초안'}`,
-                `지원 직무: ${draft.targetRole || '미지정'}`,
-                `상태: ${statusLabel(draft.status)}`,
+                'Myfitfolio Portfolio',
                 '',
-                draft.content || '',
+                `제목: ${portfolio.title}`,
+                `생성 날짜: ${formatDate(portfolio.createdAt)}`,
+                `사용 목적: ${portfolio.purpose}`,
+                '',
+                portfolio.summary,
+                '',
+                portfolio.content
             ].join('\n');
-            const blob = new Blob([body], { type: 'text/plain;charset=utf-8' });
+            const blob = new Blob([body], {
+                type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+            });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = `${draft.title || 'portfolio-draft'}.txt`;
+            link.download = `${portfolio.title.replace(/[\\/:*?"<>|]/g, '_')}.pptx`;
             link.click();
             URL.revokeObjectURL(link.href);
         }
 
-        function deleteSelectedDraft() {
-            const draft = drafts.find((item) => item.id === selectedDraftId);
-            if (!draft) return;
-            if (!confirm('선택한 포트폴리오 초안을 삭제할까요?')) return;
-
-            drafts = drafts.filter((item) => item.id !== selectedDraftId);
-            selectedDraftId = drafts[0]?.id || null;
-            writeDrafts(drafts);
-            render();
-        }
-
-        function render() {
-            renderStats();
-            renderDraftList();
-            renderDetail();
-        }
-
-        document.querySelectorAll('.segment-btn').forEach((button) => {
+        document.querySelectorAll('.filter-btn').forEach((button) => {
             button.addEventListener('click', () => {
                 currentFilter = button.dataset.filter;
-                document.querySelectorAll('.segment-btn').forEach((item) => item.classList.remove('active'));
+                document.querySelectorAll('.filter-btn').forEach((item) => item.classList.remove('active'));
                 button.classList.add('active');
                 render();
             });
         });
 
-        searchInput.addEventListener('input', render);
-        window.addEventListener('storage', (event) => {
-            if (event.key === DRAFT_STORAGE_KEY) {
-                drafts = readDrafts();
-                selectedDraftId = drafts[0]?.id || null;
+        document.querySelectorAll('.folder-btn').forEach((button) => {
+            button.addEventListener('click', () => {
+                currentFolder = button.dataset.folder;
+                document.querySelectorAll('.folder-btn').forEach((item) => item.classList.remove('active'));
+                button.classList.add('active');
                 render();
-            }
+            });
         });
 
-        drafts = readDrafts();
-        selectedDraftId = drafts[0]?.id || null;
+        portfolioList.addEventListener('click', (event) => {
+            const button = event.target.closest('[data-action]');
+            if (!button) return;
+            event.stopPropagation();
+            if (button.dataset.action === 'like') toggleLike(button.dataset.id);
+            if (button.dataset.action === 'ppt') downloadPpt(button.dataset.id);
+        });
+
+        searchInput.addEventListener('input', render);
         render();
     </script>
 </body>

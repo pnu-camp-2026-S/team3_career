@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Myfitfolio - 포트폴리오 미리보기</title>
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', sans-serif; }
+        body { min-height: 100vh; background: #f6f8fc; color: #111827; padding: 34px; }
+        .preview { max-width: 900px; margin: 0 auto; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; box-shadow: 0 18px 50px rgba(17,24,39,.08); }
+        header { padding: 28px 34px; border-bottom: 1px solid #edf0f7; display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; }
+        h1 { font-size: 30px; margin-bottom: 10px; }
+        .meta { color: #64748b; font-size: 14px; line-height: 1.7; }
+        a { height: 38px; padding: 0 14px; border: 1px solid #c7d2fe; border-radius: 8px; color: #4f46e5; text-decoration: none; font-weight: 800; display: inline-flex; align-items: center; white-space: nowrap; }
+        main { padding: 34px; display: grid; gap: 24px; }
+        section { border: 1px solid #edf0f7; border-radius: 8px; padding: 22px; }
+        h2 { font-size: 18px; margin-bottom: 12px; }
+        p { color: #475569; line-height: 1.8; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <article class="preview">
+        <header>
+            <div>
+                <h1 id="title">포트폴리오 미리보기</h1>
+                <div id="meta" class="meta"></div>
+            </div>
+            <a href="portfolio_manage.html">목록으로</a>
+        </header>
+        <main>
+            <section>
+                <h2>간단 요약</h2>
+                <p id="summary"></p>
+            </section>
+            <section>
+                <h2>상세 내용</h2>
+                <p id="content"></p>
+            </section>
+        </main>
+    </article>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get('id');
+        let portfolios = [];
+        try {
+            portfolios = JSON.parse(localStorage.getItem('careerfit_portfolios')) || [];
+        } catch {
+            portfolios = [];
+        }
+        const portfolio = portfolios.find((item) => item.id === id) || portfolios[0];
+
+        function formatDate(value) {
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return '-';
+            return new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(date);
+        }
+
+        if (portfolio) {
+            document.getElementById('title').textContent = portfolio.title;
+            document.getElementById('meta').textContent = `${formatDate(portfolio.createdAt)} 생성 · ${portfolio.purpose}`;
+            document.getElementById('summary').textContent = portfolio.summary || '요약이 없습니다.';
+            document.getElementById('content').textContent = portfolio.content || '상세 내용이 없습니다.';
+        } else {
+            document.getElementById('summary').textContent = '표시할 포트폴리오가 없습니다.';
+            document.getElementById('content').textContent = '포트폴리오 관리 페이지에서 포트폴리오를 먼저 선택해 주세요.';
+        }
+    </script>
+</body>
+</html>
