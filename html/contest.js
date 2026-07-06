@@ -198,7 +198,6 @@ const tabs = Array.from(document.querySelectorAll('.tab'));
 const keywordInput = document.getElementById('keyword-search');
 const industryFilter = document.getElementById('industry-filter');
 const levelFilter = document.getElementById('level-filter');
-const savedCount = document.getElementById('saved-count');
 const calendarMonthLabel = document.getElementById('calendarMonth');
 const calendarDays = document.getElementById('calendarDays');
 const prevCalendarMonth = document.getElementById('prevCalendarMonth');
@@ -209,6 +208,7 @@ let selectedActivityId = null;
 let activeDetailElement = null;
 let visibleCalendarYear = 2026;
 let visibleCalendarMonth = 6;
+const visibleScheduleLimit = 5;
 const savedSchedules = [];
 
 function clearExpandedDetail() {
@@ -228,12 +228,12 @@ function clearExpandedDetail() {
   }
 }
 
-function renderActivities() {
+function getFilteredActivities() {
   const keyword = keywordInput.value.trim().toLowerCase();
   const industry = industryFilter.value;
   const level = levelFilter.value;
 
-  const filtered = activities.filter((item) => {
+  return activities.filter((item) => {
     const matchesTab = activeTab === 'all' || item.type === activeTab;
     const matchesKeyword =
       !keyword ||
@@ -244,9 +244,18 @@ function renderActivities() {
 
     return matchesTab && matchesKeyword && matchesIndustry && matchesLevel;
   });
+}
+
+function isActivitySaved(id) {
+  return savedSchedules.some((event) => event.id === id);
+}
+
+function renderActivities() {
+  const filtered = getFilteredActivities();
 
   if (!filtered.length) {
     clearExpandedDetail();
+    selectedActivityId = null;
     activityList.innerHTML = '<div class="activity-card"><p>조건에 맞는 활동이 없습니다.</p></div>';
     return;
   }
@@ -257,7 +266,7 @@ function renderActivities() {
   activityList.innerHTML = filtered
     .map(
       (item) => `
-        <article class="activity-card" data-id="${item.id}">
+        <article class="activity-card ${isActivitySaved(item.id) ? 'is-saved' : ''}" data-id="${item.id}">
           <div class="card-top">
             <span class="card-chip">${item.icon} ${item.industry}</span>
             <span class="deadline-tag">${item.deadline}</span>
@@ -273,6 +282,8 @@ function renderActivities() {
       `
     )
     .join('');
+
+  updateSelectedCard();
 }
 
 const scheduleDates = {
@@ -321,6 +332,22 @@ function updateSaveButton(item) {
   saveButton.disabled = false;
   saveButton.textContent = isSaved ? '저장 취소' : '저장하기';
   saveButton.classList.toggle('is-danger', isSaved);
+
+  document
+    .querySelectorAll(`.activity-card[data-id="${item.id}"]`)
+    .forEach((card) => card.classList.toggle('is-saved', isSaved));
+}
+
+function animateCalendarTurn(direction) {
+  if (!calendarDays || !direction) return;
+
+  calendarDays.classList.remove('calendar-turn-next', 'calendar-turn-prev');
+  void calendarDays.offsetWidth;
+  calendarDays.classList.add(`calendar-turn-${direction}`);
+
+  window.setTimeout(() => {
+    calendarDays.classList.remove('calendar-turn-next', 'calendar-turn-prev');
+  }, 280);
 }
 
 function showActivityMonth(item) {
@@ -328,9 +355,17 @@ function showActivityMonth(item) {
   if (!activityDate) return;
 
   const [year, month] = activityDate.split('-').map(Number);
+  const currentMonthIndex = visibleCalendarYear * 12 + visibleCalendarMonth;
+  const targetMonthIndex = year * 12 + month - 1;
+  const direction = targetMonthIndex > currentMonthIndex ? 'next' : 'prev';
+
   visibleCalendarYear = year;
   visibleCalendarMonth = month - 1;
   renderCalendarMonth();
+
+  if (targetMonthIndex !== currentMonthIndex) {
+    animateCalendarTurn(direction);
+  }
 }
 
 function confirmDuplicateDateSave(item, itemDate) {
@@ -352,7 +387,6 @@ function openDetail(id, cardElement) {
 
   selectedActivityId = item.id;
   showActivityMonth(item);
-
   clearExpandedDetail();
 
   const detail = document.createElement('div');
@@ -403,7 +437,7 @@ function openDetail(id, cardElement) {
   renderCalendarHighlight();
 
   setTimeout(() => {
-    detail.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }, 0);
 }
 
@@ -459,6 +493,7 @@ function moveCalendarMonth(offset) {
   visibleCalendarYear = nextMonth.getFullYear();
   visibleCalendarMonth = nextMonth.getMonth();
   renderCalendarMonth();
+  animateCalendarTurn(offset > 0 ? 'next' : 'prev');
 }
 
 function toggleSaveToCalendar(item) {
@@ -484,10 +519,6 @@ function toggleSaveToCalendar(item) {
 }
 
 function renderSchedule() {
-  if (savedCount) {
-    savedCount.innerHTML = `${savedSchedules.length}<span class="stat-unit">개</span>`;
-  }
-
   if (!savedSchedules.length) {
     scheduleList.innerHTML = `
       <div class="schedule-item">
@@ -505,7 +536,18 @@ function renderSchedule() {
     return;
   }
 
-  scheduleList.innerHTML = getSortedSavedSchedules()
+  const sortedSchedules = getSortedSavedSchedules();
+  const visibleSchedules = sortedSchedules.slice(0, visibleScheduleLimit);
+  const moreScheduleLink =
+    savedSchedules.length > visibleScheduleLimit
+      ? `
+        <a class="schedule-more" href="https://calendar.google.com/calendar/u/0/r" target="_blank" rel="noopener noreferrer">
+          더보기
+        </a>
+      `
+      : '';
+
+  scheduleList.innerHTML = `${visibleSchedules
     .map(
       (event) => `
         <div class="schedule-item">
@@ -518,7 +560,7 @@ function renderSchedule() {
         </div>
       `
     )
-    .join('');
+    .join('')}${moreScheduleLink}`;
 
   renderCalendarHighlight();
 }
