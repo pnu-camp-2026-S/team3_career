@@ -266,6 +266,44 @@ assert.match(
 );
 assert.match(
   contestJs,
+  /cardElement\.insertAdjacentElement\('afterend',\s*detail\)/,
+  'contest should show the selected detail directly below the clicked activity card'
+);
+assert.match(
+  contestJs,
+  /detail\.scrollIntoView\(\{\s*behavior:\s*'smooth',\s*block:\s*'nearest'\s*\}\)/s,
+  'contest should reveal the detail without forcing the activity list to the top'
+);
+assert.ok(
+  !contestJs.includes('prioritizeSelectedActivity'),
+  'contest should keep the visible activity order after a card is clicked'
+);
+assert.ok(
+  !contestJs.includes('scrollActivityListIntoView'),
+  'contest should not force-scroll the selected activity to the top'
+);
+assert.match(
+  contestJs,
+  /function\s+animateCalendarTurn/,
+  'contest calendar should animate when moving between months'
+);
+assert.match(
+  contestJs,
+  /calendar-turn-(next|prev)/,
+  'contest calendar animation should track the month movement direction'
+);
+assert.match(
+  contestCss,
+  /\.calendar-days\.calendar-turn-next/s,
+  'contest calendar should style next-month turn animation'
+);
+assert.match(
+  contestCss,
+  /\.calendar-days\.calendar-turn-prev/s,
+  'contest calendar should style previous-month turn animation'
+);
+assert.match(
+  contestJs,
   /href="https:\/\/chatgpt\.com\/"/,
   'contest preparation plan link should open an external planning tool'
 );

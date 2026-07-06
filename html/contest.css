@@ -568,7 +568,50 @@ select {
 }
 
 .calendar-days {
-  display: contents;
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+  transform-origin: center;
+}
+
+.calendar-days.calendar-turn-next {
+  animation: calendarTurnNext 260ms ease;
+}
+
+.calendar-days.calendar-turn-prev {
+  animation: calendarTurnPrev 260ms ease;
+}
+
+@keyframes calendarTurnNext {
+  0% {
+    opacity: 0;
+    transform: translateX(18px) rotateY(-8deg);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(0) rotateY(0);
+  }
+}
+
+@keyframes calendarTurnPrev {
+  0% {
+    opacity: 0;
+    transform: translateX(-18px) rotateY(8deg);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(0) rotateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .calendar-days.calendar-turn-next,
+  .calendar-days.calendar-turn-prev {
+    animation: none;
+  }
 }
 
 .day-label {

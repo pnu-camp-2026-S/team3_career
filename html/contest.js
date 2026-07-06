@@ -228,12 +228,12 @@ function clearExpandedDetail() {
   }
 }
 
-function renderActivities() {
+function getFilteredActivities() {
   const keyword = keywordInput.value.trim().toLowerCase();
   const industry = industryFilter.value;
   const level = levelFilter.value;
 
-  const filtered = activities.filter((item) => {
+  return activities.filter((item) => {
     const matchesTab = activeTab === 'all' || item.type === activeTab;
     const matchesKeyword =
       !keyword ||
@@ -244,9 +244,14 @@ function renderActivities() {
 
     return matchesTab && matchesKeyword && matchesIndustry && matchesLevel;
   });
+}
+
+function renderActivities() {
+  const filtered = getFilteredActivities();
 
   if (!filtered.length) {
     clearExpandedDetail();
+    selectedActivityId = null;
     activityList.innerHTML = '<div class="activity-card"><p>조건에 맞는 활동이 없습니다.</p></div>';
     return;
   }
@@ -273,6 +278,8 @@ function renderActivities() {
       `
     )
     .join('');
+
+  updateSelectedCard();
 }
 
 const scheduleDates = {
@@ -323,14 +330,34 @@ function updateSaveButton(item) {
   saveButton.classList.toggle('is-danger', isSaved);
 }
 
+function animateCalendarTurn(direction) {
+  if (!calendarDays || !direction) return;
+
+  calendarDays.classList.remove('calendar-turn-next', 'calendar-turn-prev');
+  void calendarDays.offsetWidth;
+  calendarDays.classList.add(`calendar-turn-${direction}`);
+
+  window.setTimeout(() => {
+    calendarDays.classList.remove('calendar-turn-next', 'calendar-turn-prev');
+  }, 280);
+}
+
 function showActivityMonth(item) {
   const activityDate = scheduleDates[item.id];
   if (!activityDate) return;
 
   const [year, month] = activityDate.split('-').map(Number);
+  const currentMonthIndex = visibleCalendarYear * 12 + visibleCalendarMonth;
+  const targetMonthIndex = year * 12 + month - 1;
+  const direction = targetMonthIndex > currentMonthIndex ? 'next' : 'prev';
+
   visibleCalendarYear = year;
   visibleCalendarMonth = month - 1;
   renderCalendarMonth();
+
+  if (targetMonthIndex !== currentMonthIndex) {
+    animateCalendarTurn(direction);
+  }
 }
 
 function confirmDuplicateDateSave(item, itemDate) {
@@ -352,7 +379,6 @@ function openDetail(id, cardElement) {
 
   selectedActivityId = item.id;
   showActivityMonth(item);
-
   clearExpandedDetail();
 
   const detail = document.createElement('div');
@@ -403,7 +429,7 @@ function openDetail(id, cardElement) {
   renderCalendarHighlight();
 
   setTimeout(() => {
-    detail.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }, 0);
 }
 
@@ -459,6 +485,7 @@ function moveCalendarMonth(offset) {
   visibleCalendarYear = nextMonth.getFullYear();
   visibleCalendarMonth = nextMonth.getMonth();
   renderCalendarMonth();
+  animateCalendarTurn(offset > 0 ? 'next' : 'prev');
 }
 
 function toggleSaveToCalendar(item) {
