@@ -8,8 +8,32 @@
 </head>
 <body>
   <div class="app-shell">
-    <header class="top-nav"><a class="brand-word" href="main.html">Myfit<span>folio</span></a><nav class="nav-tabs" aria-label="주요 메뉴"><a class="nav-tab " href="main.html">메인</a><a class="nav-tab " href="portfolio.html">포트폴리오 생성</a><a class="nav-tab active" href="portfolio_manage.html">포트폴리오 관리</a><a class="nav-tab " href="create.html">파일 생성</a><a class="nav-tab " href="contest.html">활동 추천</a><a class="nav-tab " href="mypage.html">마이페이지</a></nav><div class="nav-actions"><button class="icon-button" type="button" aria-label="알림">!</button><a class="user-chip" href="mypage.html" aria-label="마이페이지로 이동"><span class="avatar"></span></a></div></header>
-    <main class="page-shell"><h1 class="page-title">포트폴리오 관리</h1><p class="page-subtitle">생성한 초안과 제출용 포트폴리오를 한 곳에서 관리합니다.</p><section class="static-empty"><div><strong>아직 저장된 포트폴리오가 없어요.</strong><span>새 초안을 생성하면 이곳에 목록이 표시됩니다.</span><div class="form-actions"><a class="primary-button" href="portfolio.html">새 초안 생성</a></div></div></section></main>
+    <header class="top-nav">
+      <a class="brand-word" href="main.html">Myfit<span>folio</span></a>
+      <nav class="nav-tabs" aria-label="주요 메뉴">
+        <a class="nav-tab" href="main.html">메인</a>
+        <a class="nav-tab" href="portfolio_create.html">포트폴리오 생성</a>
+        <a class="nav-tab active" href="portfolio_manage.html">포트폴리오 관리</a>
+        <a class="nav-tab" href="create.html">파일 생성</a>
+        <a class="nav-tab" href="contest.html">활동 추천</a>
+        <a class="nav-tab" href="mypage.html">마이페이지</a>
+      </nav>
+      <div class="nav-actions">
+        <button class="icon-button" type="button" aria-label="알림">!</button>
+        <a class="user-chip" href="mypage.html" aria-label="마이페이지로 이동"><span class="avatar"></span></a>
+      </div>
+    </header>
+    <main class="page-shell">
+      <h1 class="page-title">포트폴리오 관리</h1>
+      <p class="page-subtitle">생성한 초안과 제출용 포트폴리오를 한 곳에서 관리합니다.</p>
+      <section class="static-empty">
+        <div>
+          <strong>아직 저장된 포트폴리오가 없어요.</strong>
+          <span>새 초안을 생성하면 이곳에 목록이 표시됩니다.</span>
+          <div class="form-actions"><a class="primary-button" href="portfolio_create.html">새 초안 생성</a></div>
+        </div>
+      </section>
+    </main>
   </div>
   <script>document.querySelectorAll('.folder-title').forEach((button)=>{button.addEventListener('click',()=>button.closest('.folder-section')?.classList.toggle('open'));});</script>
 </body>

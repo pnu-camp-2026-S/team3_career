@@ -8,8 +8,29 @@
 </head>
 <body>
   <div class="app-shell">
-    <header class="top-nav"><a class="brand-word" href="main.html">Myfit<span>folio</span></a><nav class="nav-tabs" aria-label="주요 메뉴"><a class="nav-tab " href="main.html">메인</a><a class="nav-tab " href="portfolio.html">포트폴리오 생성</a><a class="nav-tab " href="portfolio_manage.html">포트폴리오 관리</a><a class="nav-tab " href="create.html">파일 생성</a><a class="nav-tab active" href="contest.html">활동 추천</a><a class="nav-tab " href="mypage.html">마이페이지</a></nav><div class="nav-actions"><button class="icon-button" type="button" aria-label="알림">!</button><a class="user-chip" href="mypage.html" aria-label="마이페이지로 이동"><span class="avatar"></span></a></div></header>
-    <main class="page-shell"><h1 class="page-title">활동 추천</h1><p class="page-subtitle">프로필과 관심 분야를 기반으로 공모전과 대외활동을 추천합니다.</p><section class="content-grid"><article class="work-card"><h3>공공데이터 활용 공모전</h3><p>??? ??? ??? ?? ??? ?? ???? ?? ?????.</p></article><article class="work-card"><h3>지역사회 문제해결 프로젝트</h3><p>?? ??? ?????? ???? ?? ??? ???????.</p></article></section></main>
+    <header class="top-nav">
+      <a class="brand-word" href="main.html">Myfit<span>folio</span></a>
+      <nav class="nav-tabs" aria-label="주요 메뉴">
+        <a class="nav-tab" href="main.html">메인</a>
+        <a class="nav-tab" href="portfolio_create.html">포트폴리오 생성</a>
+        <a class="nav-tab" href="portfolio_manage.html">포트폴리오 관리</a>
+        <a class="nav-tab" href="create.html">파일 생성</a>
+        <a class="nav-tab active" href="contest.html">활동 추천</a>
+        <a class="nav-tab" href="mypage.html">마이페이지</a>
+      </nav>
+      <div class="nav-actions">
+        <button class="icon-button" type="button" aria-label="알림">!</button>
+        <a class="user-chip" href="mypage.html" aria-label="마이페이지로 이동"><span class="avatar"></span></a>
+      </div>
+    </header>
+    <main class="page-shell">
+      <h1 class="page-title">활동 추천</h1>
+      <p class="page-subtitle">프로필과 관심 분야를 기반으로 공모전과 대외활동을 추천합니다.</p>
+      <section class="content-grid">
+        <article class="work-card"><h3>공공데이터 활용 공모전</h3><p>데이터 분석 경험을 포트폴리오로 확장하기 좋은 활동입니다.</p></article>
+        <article class="work-card"><h3>사회문제 해결 프로젝트</h3><p>협업 경험과 문제 해결 역량을 함께 보여줄 수 있습니다.</p></article>
+      </section>
+    </main>
   </div>
   <script>document.querySelectorAll('.folder-title').forEach((button)=>{button.addEventListener('click',()=>button.closest('.folder-section')?.classList.toggle('open'));});</script>
 </body>

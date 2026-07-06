@@ -117,6 +117,9 @@ button {
 
 .auth-tab {
   height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border: 0;
   border-bottom: 3px solid transparent;
   color: #7b8493;
@@ -446,6 +449,170 @@ button {
 
 .folder-count {
   color: #7d8796;
+}
+
+.layout-main {
+  position: relative;
+  transition: grid-template-columns 180ms ease;
+}
+
+.layout-main.sidebar-collapsed {
+  grid-template-columns: 0 minmax(0, 1fr);
+}
+
+.layout-main.sidebar-collapsed .sidebar {
+  width: 0;
+  min-width: 0;
+  padding-left: 0;
+  padding-right: 0;
+  overflow: hidden;
+  border-right-color: transparent;
+}
+
+.layout-main.sidebar-collapsed .sidebar > * {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sidebar {
+  transition: width 180ms ease, min-width 180ms ease, padding 180ms ease, border-color 180ms ease;
+}
+
+.sidebar > * {
+  transition: opacity 120ms ease;
+}
+
+.sidebar-toggle {
+  position: absolute;
+  left: 270px;
+  top: 18px;
+  z-index: 25;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: #7d8796;
+  box-shadow: 0 8px 20px rgba(31, 36, 62, 0.08);
+  transition: left 180ms ease, color 160ms ease, border-color 160ms ease;
+}
+
+.sidebar-toggle:hover {
+  color: var(--brand);
+  border-color: #b9c8f5;
+}
+
+.sidebar-toggle span {
+  width: 9px;
+  height: 9px;
+  border-left: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+}
+
+.layout-main.sidebar-collapsed .sidebar-toggle {
+  left: 14px;
+}
+
+.layout-main.sidebar-collapsed .sidebar-toggle span {
+  transform: rotate(225deg);
+}
+
+.sidebar-action-button {
+  width: 100%;
+  min-height: 42px;
+  margin: 20px 0 -12px;
+  color: #8b4b58;
+  border-color: #f4cdd5;
+  background: #fff;
+  box-shadow: none;
+}
+
+.delete-mode-active .delete-mode-button {
+  border-color: #f05265;
+  color: #bf2940;
+  background: #fff0f3;
+}
+
+.drop-folder {
+  min-height: 38px;
+  align-items: start;
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+
+.drop-folder:hover,
+.drop-folder.active {
+  background: #eef2ff;
+  color: var(--brand);
+}
+
+.drop-folder.drop-over {
+  outline: 2px dashed #9eb8ff;
+  outline-offset: -2px;
+  background: #f4f7ff;
+}
+
+.drop-folder .mini-folder,
+.drop-folder .folder-count {
+  margin-top: 2px;
+}
+
+.folder-label {
+  min-width: 0;
+}
+
+.uploaded-file-list {
+  grid-column: 2 / 4;
+  display: grid;
+  gap: 6px;
+  min-height: 16px;
+  margin-top: 8px;
+}
+
+.empty-folder {
+  color: #9aa5b5;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.uploaded-file {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 30px;
+  border: 1px solid #edf0f7;
+  border-radius: 8px;
+  padding: 0 8px;
+  background: #fff;
+  color: #536176;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.uploaded-file-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-delete-btn {
+  display: none;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: #d33d51;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.delete-mode-active .file-delete-btn {
+  display: inline-flex;
 }
 
 .ai-helper {
@@ -1505,6 +1672,9 @@ body {
 
 .auth-tab {
   height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-bottom: 0;
   border-radius: 11px;
   color: #656b7f;
@@ -1944,7 +2114,7 @@ a.auth-tab {
   display: flex;
   grid-template-columns: none;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   gap: 18px;
   padding: 0 24px;
   background: #fff;
@@ -1966,6 +2136,8 @@ a.auth-tab {
 .social-stack .social-icon {
   flex: 0 0 32px;
   justify-self: auto;
+  line-height: 1;
+  text-align: center;
 }
 .mini-folder,
 .metric-symbol {
@@ -2053,4 +2225,44 @@ a.auth-tab {
   border-right: 2px solid currentColor;
   border-bottom: 2px solid currentColor;
   transform: rotate(45deg);
+}
+
+/* Interactive sidebar additions */
+.layout-main {
+  position: relative;
+}
+
+.layout-main.sidebar-collapsed {
+  grid-template-columns: 0 minmax(0, 1fr);
+}
+
+.layout-main.sidebar-collapsed .sidebar {
+  width: 0;
+  min-width: 0;
+  padding-left: 0;
+  padding-right: 0;
+  overflow: hidden;
+  border-right-color: transparent;
+}
+
+.layout-main.sidebar-collapsed .sidebar > * {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.drop-folder {
+  align-items: start;
+  cursor: pointer;
+}
+
+.drop-folder.drop-over {
+  outline: 2px dashed #9eb8ff;
+  outline-offset: -2px;
+  background: #f4f7ff;
+}
+
+.drop-folder.active,
+.drop-folder:hover {
+  background: #eef2ff;
+  color: var(--brand);
 }

@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
@@ -1860,172 +1860,172 @@ body {
 const app = document.querySelector("#app");
 
 const routes = {
-  main: "메인",
-  portfolioCreate: "포트폴리오 생성",
-  portfolioManage: "포트폴리오 관리",
-  recommend: "활동 추천",
-  mypage: "마이페이지",
+  main: "",
+  portfolioCreate: "Ʈ ",
+  portfolioManage: "Ʈ ",
+  recommend: "Ȱ õ",
+  mypage: "",
 };
 
-const folderNames = ["공모전", "대외활동", "봉사활동", "자격증", "교육활동"];
+const folderNames = ["", "Ȱ", "Ȱ", "ڰ", "Ȱ"];
 const jobs = [
-  "기획/전략/경영",
-  "인사/총무",
-  "재무/회계",
-  "마케팅/운영/홍보",
-  "전시/컨벤션",
-  "영업/고객상담",
-  "상품기획/MD",
-  "구매/자재/재고",
-  "무역사무/수출입",
-  "디자인",
-  "생산/제조",
-  "자동차/조선/기계",
-  "반도체/디스플레이",
-  "연구개발/설계",
-  "IT/개발/데이터",
-  "금융권",
+  "ȹ//濵",
+  "λ/ѹ",
+  "繫/ȸ",
+  "//ȫ",
+  "/",
+  "/",
+  "ǰȹ/MD",
+  "//",
+  "繫/",
+  "",
+  "/",
+  "ڵ//",
+  "ݵü/÷",
+  "/",
+  "IT//",
+  "",
 ];
 const companies = [
-  "삼성전자",
-  "SK하이닉스",
-  "현대자동차",
-  "LG전자",
-  "포스코",
-  "롯데",
-  "한화",
-  "신세계",
+  "Ｚ",
+  "SK̴н",
+  "ڵ",
+  "LG",
+  "",
+  "Ե",
+  "ȭ",
+  "ż",
   "CJ",
-  "네이버",
-  "우아한",
+  "̹",
+  "",
 ];
 const industries = [
-  "반도체",
-  "디스플레이",
-  "이차전지/배터리",
-  "자동차/모빌리티",
+  "ݵü",
+  "÷",
+  "/͸",
+  "ڵ/Ƽ",
   "IT/SW",
-  "바이오/제약",
-  "화학/에너지",
-  "방산/항공우주",
-  "조선/해양",
-  "기계/로봇/자동화",
-  "헬스케어",
-  "금융/보험",
-  "미디어/엔터",
-  "유통/커머스",
-  "교육",
-  "공공/비영리",
+  "̿/",
+  "ȭ/",
+  "/װ",
+  "/ؾ",
+  "/κ/ڵȭ",
+  "ｺɾ",
+  "/",
+  "̵/",
+  "/Ŀӽ",
+  "",
+  "/񿵸",
 ];
 
-const schoolTypes = ["대학교 2,3년", "대학교 4년", "대학원 석사", "대학원 박사"];
+const schoolTypes = ["б 2,3", "б 4", "п ", "п ڻ"];
 const majors = [
-  "경영학과",
-  "경제학과",
-  "국어국문학과",
-  "영어영문학과",
-  "심리학과",
-  "사회학과",
-  "정치외교학과",
-  "행정학과",
-  "컴퓨터공학과",
-  "소프트웨어학과",
-  "인공지능학과",
-  "데이터사이언스학과",
-  "전기공학과",
-  "전자공학과",
-  "기계공학과",
-  "산업공학과",
-  "화학공학과",
-  "신소재공학과",
-  "건축학과",
-  "디자인학과",
-  "간호학과",
-  "생명과학과",
+  "濵а",
+  "а",
+  "а",
+  "а",
+  "ɸа",
+  "ȸа",
+  "ġܱа",
+  "а",
+  "ǻͰа",
+  "Ʈа",
+  "ΰа",
+  "ͻ̾а",
+  "а",
+  "ڰа",
+  "а",
+  "а",
+  "ȭаа",
+  "żа",
+  "а",
+  "а",
+  "ȣа",
+  "а",
 ];
 
 const detailJobsByJob = {
-  "기획/전략/경영": ["서비스 기획", "사업 기획", "전략 기획", "프로덕트 매니저", "프로젝트 매니저"],
-  "인사/총무": ["인사 기획", "채용", "교육 운영", "조직문화", "총무"],
-  "재무/회계": ["재무 분석", "회계", "세무", "자금 관리", "경영관리"],
-  "마케팅/운영/홍보": ["마케팅 기획", "브랜드 마케팅", "콘텐츠 마케팅", "CRM", "서비스 운영"],
-  "전시/컨벤션": ["전시 기획", "행사 운영", "컨벤션 기획", "프로모션 운영"],
-  "영업/고객상담": ["영업 관리", "B2B 영업", "해외영업", "고객 성공", "고객 상담"],
-  "상품기획/MD": ["상품 기획", "온라인 MD", "리테일 MD", "카테고리 매니저"],
-  "구매/자재/재고": ["구매", "자재 관리", "물류 관리", "재고 관리", "SCM"],
-  "무역사무/수출입": ["무역 사무", "수출입 관리", "해외 물류", "통관"],
-  디자인: ["UX/UI 디자인", "브랜드 디자인", "그래픽 디자인", "제품 디자인"],
-  "생산/제조": ["생산 관리", "공정 관리", "품질 관리", "설비 관리"],
-  "자동차/조선/기계": ["기계 설계", "차량 제어", "생산기술", "품질 보증"],
-  "반도체/디스플레이": ["공정 엔지니어", "장비 엔지니어", "소자 개발", "품질 분석"],
-  "연구개발/설계": ["제품 개발", "회로 설계", "기구 설계", "실험 평가"],
-  "IT/개발/데이터": ["프론트엔드 개발", "백엔드 개발", "앱 개발", "데이터 분석", "데이터 엔지니어", "AI/머신러닝"],
-  금융권: ["금융 상품 기획", "리스크 관리", "투자 분석", "디지털 금융", "여신 심사"],
+  "ȹ//濵": [" ȹ", " ȹ", " ȹ", "δƮ Ŵ", "Ʈ Ŵ"],
+  "λ/ѹ": ["λ ȹ", "ä", " ", "ȭ", "ѹ"],
+  "繫/ȸ": ["繫 м", "ȸ", "", "ڱ ", "濵"],
+  "//ȫ": [" ȹ", "귣 ", " ", "CRM", " "],
+  "/": [" ȹ", " ", " ȹ", "θ "],
+  "/": [" ", "B2B ", "ؿܿ", " ", " "],
+  "ǰȹ/MD": ["ǰ ȹ", "¶ MD", " MD", "īװ Ŵ"],
+  "//": ["", " ", " ", " ", "SCM"],
+  "繫/": [" 繫", " ", "ؿ ", ""],
+  : ["UX/UI ", "귣 ", "׷ ", "ǰ "],
+  "/": [" ", " ", "ǰ ", " "],
+  "ڵ//": [" ", " ", "", "ǰ "],
+  "ݵü/÷": [" Ͼ", " Ͼ", " ", "ǰ м"],
+  "/": ["ǰ ", "ȸ ", "ⱸ ", " "],
+  "IT//": ["Ʈ ", "鿣 ", " ", " м", " Ͼ", "AI/ӽŷ"],
+  : [" ǰ ȹ", "ũ ", " м", " ", " ɻ"],
 };
 
 const workIndustries = [
   "IT/SW",
-  "반도체",
-  "디스플레이",
-  "이차전지/배터리",
-  "자동차/모빌리티",
-  "금융/보험",
-  "바이오/제약",
-  "화학/에너지",
-  "미디어/엔터",
-  "유통/커머스",
-  "교육",
-  "공공/비영리",
+  "ݵü",
+  "÷",
+  "/͸",
+  "ڵ/Ƽ",
+  "/",
+  "̿/",
+  "ȭ/",
+  "̵/",
+  "/Ŀӽ",
+  "",
+  "/񿵸",
 ];
 
 const workRegions = [
-  "서울",
-  "경기",
-  "인천",
-  "부산",
-  "대구",
-  "대전",
-  "광주",
-  "울산",
-  "세종",
-  "강원",
-  "충북",
-  "충남",
-  "전북",
-  "전남",
-  "경북",
-  "경남",
-  "제주",
-  "전국",
-  "해외",
+  "",
+  "",
+  "õ",
+  "λ",
+  "뱸",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "泲",
+  "",
+  "",
+  "",
+  "泲",
+  "",
+  "",
+  "ؿ",
 ];
 
 const salaryRanges = [
-  "회사 내규에 따름",
-  "협의 후 결정",
-  "2,400만원 이상",
-  "3,000만원 이상",
-  "3,600만원 이상",
-  "4,200만원 이상",
-  "5,000만원 이상",
-  "6,000만원 이상",
-  "7,000만원 이상",
+  "ȸ Կ ",
+  "  ",
+  "2,400 ̻",
+  "3,000 ̻",
+  "3,600 ̻",
+  "4,200 ̻",
+  "5,000 ̻",
+  "6,000 ̻",
+  "7,000 ̻",
 ];
 
 const searchConfigs = {
   detailJob: {
-    label: "세부직무",
-    placeholder: "세부직무를 검색하세요",
+    label: "",
+    placeholder: " ˻ϼ",
     options: () => getDetailJobOptions(),
   },
   workIndustry: {
-    label: "희망 업종",
-    placeholder: "업종을 검색하세요",
+    label: " ",
+    placeholder: " ˻ϼ",
     options: () => workIndustries,
   },
   workRegion: {
-    label: "희망근무지역",
-    placeholder: "지역을 검색하세요",
+    label: "ٹ",
+    placeholder: " ˻ϼ",
     options: () => workRegions,
   },
 };
@@ -2034,11 +2034,11 @@ const profileState = {
   photo: localStorage.getItem("myfitfolioPhoto") || "",
   educations: [
     {
-      schoolType: "대학교 4년",
-      school: "부산대학교",
-      period: "2021.03 ~ 재학중",
-      major: "전기공학과",
-      minor: "소프트웨어학과",
+      schoolType: "б 4",
+      school: "λб",
+      period: "2021.03 ~ ",
+      major: "а",
+      minor: "Ʈа",
       gpa: "4.12 / 4.5",
     },
   ],
@@ -2048,11 +2048,11 @@ const profileState = {
     detailJob: "",
     workIndustry: "",
     workRegion: "",
-    salary: "회사 내규에 따름",
+    salary: "ȸ Կ ",
   },
   chips: {
-    jobs: new Set(["IT/개발/데이터", "금융권"]),
-    interestFields: new Set(["채용"]),
+    jobs: new Set(["IT//", ""]),
+    interestFields: new Set(["ä"]),
     companies: new Set(),
     industries: new Set(),
   },
@@ -2101,35 +2101,35 @@ function renderAuth(mode = "signup") {
         <div class="auth-brand">
           <div class="auth-brand-content">
             <h1 class="brand-logo">Myfit<span>folio</span></h1>
-            <p class="auth-tagline">나의 경험을 정리하고,<br />더 좋은 기회를 연결하세요.</p>
+            <p class="auth-tagline">  ϰ,<br />  ȸ ϼ.</p>
           </div>
         </div>
         <div class="auth-panel">
-          <div class="auth-tabs" role="tablist" aria-label="인증 방식">
-            <button class="auth-tab ${isSignup ? "" : "active"}" type="button" data-auth-tab="login">로그인</button>
-            <button class="auth-tab ${isSignup ? "active" : ""}" type="button" data-auth-tab="signup">회원가입</button>
+          <div class="auth-tabs" role="tablist" aria-label=" ">
+            <button class="auth-tab ${isSignup ? "" : "active"}" type="button" data-auth-tab="login">α</button>
+            <button class="auth-tab ${isSignup ? "active" : ""}" type="button" data-auth-tab="signup">ȸ</button>
           </div>
           <section class="auth-content">
-            <h1>로그인 / 회원가입</h1>
-            <p>소셜 계정으로 간편하게 시작합니다. 처음 방문한 계정은 자동으로 회원가입 처리됩니다.</p>
+            <h1>α / ȸ</h1>
+            <p>Ҽ  ϰ մϴ. ó 湮  ڵ ȸ ó˴ϴ.</p>
             <div class="social-stack">
               <button class="social-button" type="button" data-login>
                 <span class="social-icon google-icon">G</span>
-                <span>Google로 시작하기</span>
+                <span>Google ϱ</span>
                 <span></span>
               </button>
               <button class="social-button" type="button" data-login>
                 <span class="social-icon kakao-icon"></span>
-                <span>카카오로 시작하기</span>
+                <span>īī ϱ</span>
                 <span></span>
               </button>
               <button class="social-button" type="button" data-login>
                 <span class="social-icon naver-icon">N</span>
-                <span>네이버로 시작하기</span>
+                <span>̹ ϱ</span>
                 <span></span>
               </button>
             </div>
-            <div class="auth-note">가입과 로그인은 선택한 소셜 계정으로 연동됩니다.</div>
+            <div class="auth-note">԰ α  Ҽ  ˴ϴ.</div>
           </section>
         </div>
       </section>
@@ -2148,7 +2148,7 @@ function renderNav(activeRoute) {
   return `
     <header class="top-nav">
       <button class="brand-word" type="button" data-route="main">Myfit<span>folio</span></button>
-      <nav class="nav-tabs" aria-label="주요 메뉴">
+      <nav class="nav-tabs" aria-label="ֿ ޴">
         ${Object.entries(routes)
           .map(
             ([key, label]) =>
@@ -2157,8 +2157,8 @@ function renderNav(activeRoute) {
           .join("")}
       </nav>
       <div class="nav-actions">
-        <button class="icon-button" type="button" aria-label="알림">${icon("bell")}</button>
-        <button class="user-chip" type="button" data-route="mypage" aria-label="마이페이지로 이동">
+        <button class="icon-button" type="button" aria-label="˸">${icon("bell")}</button>
+        <button class="user-chip" type="button" data-route="mypage" aria-label=" ̵">
           <span class="avatar"></span>
           ${icon("chevron")}
         </button>
@@ -2209,13 +2209,13 @@ function renderSidebar() {
   return `
     <aside class="sidebar">
       <div class="sidebar-email"><span class="avatar online"></span><span>user@univ.ac.kr</span></div>
-      <button class="primary-button upload-button" type="button">${icon("upload")} 활동 자료 업로드</button>
-      ${folderBlock("완료된 활동 폴더", "completed")}
-      ${folderBlock("준비된 활동 폴더", "ready")}
+      <button class="primary-button upload-button" type="button">${icon("upload")} Ȱ ڷ ε</button>
+      ${folderBlock("Ϸ Ȱ ", "completed")}
+      ${folderBlock("غ Ȱ ", "ready")}
       <section class="ai-helper">
-        <div class="ai-title">${icon("ai")} AI 분석 도우미</div>
-        <p>폴더에 업로드한 파일을 AI가 분석해 활동을 정리해드려요.</p>
-        <button class="primary-button upload-button" type="button">분석 시작</button>
+        <div class="ai-title">${icon("ai")} AI м </div>
+        <p> ε  AI м Ȱ ص.</p>
+        <button class="primary-button upload-button" type="button">м </button>
       </section>
     </aside>
   `;
@@ -2239,23 +2239,23 @@ function renderDashboard() {
       <main class="dashboard dashboard-empty">
         <div class="dashboard-head">
           <div>
-            <h1 class="page-title">나의 활동 대시보드</h1>
-            <p class="page-subtitle">업로드한 활동 자료를 기반으로 프로젝트, 공모전, 수상 이력을 한눈에 확인하세요.</p>
+            <h1 class="page-title"> Ȱ ú</h1>
+            <p class="page-subtitle">ε Ȱ ڷḦ  Ʈ, ,  ̷ Ѵ Ȯϼ.</p>
           </div>
-          <button class="primary-button dashboard-cta" type="button" data-route="mypage">정보 입력하기</button>
+          <button class="primary-button dashboard-cta" type="button" data-route="mypage"> Էϱ</button>
         </div>
         <section class="profile-needed-card">
           <div class="profile-needed-icon">!</div>
           <div>
-            <h2>정보를 입력해주세요</h2>
+            <h2> Էּ</h2>
             <p>
-              아직 저장된 개인정보가 없어서 전체 분석 결과를 만들 수 없어요.
-              마이페이지에서 기본 정보와 희망 직무를 저장하면 진척도, 부족한 활동,
-              추천 공모전이 자동으로 표시됩니다.
+                  ü м    .
+               ⺻    ϸ ô,  Ȱ,
+              õ  ڵ ǥõ˴ϴ.
             </p>
             <div class="btn-row">
-              <button class="primary-button" type="button" data-route="mypage">마이페이지에서 정보 저장</button>
-              <button class="outline-button" type="button">활동기록 먼저 정리하기</button>
+              <button class="primary-button" type="button" data-route="mypage">  </button>
+              <button class="outline-button" type="button">Ȱ  ϱ</button>
             </div>
           </div>
         </section>
@@ -2265,19 +2265,19 @@ function renderDashboard() {
 
   return `
     <main class="dashboard">
-      <h1 class="page-title">나의 활동 대시보드</h1>
-      <p class="page-subtitle">업로드된 활동 자료와 프로필 정보를 기반으로 체계적으로 정리해드려요.</p>
+      <h1 class="page-title"> Ȱ ú</h1>
+      <p class="page-subtitle">ε Ȱ ڷ    ü ص.</p>
       <section class="stats-grid">
-        ${statCard("완료된 활동", "0", "개", "document")}
-        ${statCard("준비된 활동", "0", "개", "checklist", "green")}
-        ${statCard("공모전 참여", "0", "회", "trophy", "orange")}
-        ${statCard("봉사활동", "0", "회", "heart", "red")}
+        ${statCard("Ϸ Ȱ", "0", "", "document")}
+        ${statCard("غ Ȱ", "0", "", "checklist", "green")}
+        ${statCard(" ", "0", "ȸ", "trophy", "orange")}
+        ${statCard("Ȱ", "0", "ȸ", "heart", "red")}
       </section>
       <section class="panel">
-        <h2 class="panel-title">AI 전체 분석</h2>
+        <h2 class="panel-title">AI ü м</h2>
         <div class="analysis-grid">
           <article class="analysis-card">
-            <h3 class="small-title">커리어 준비도 ⓘ</h3>
+            <h3 class="small-title">Ŀ غ </h3>
             <div class="donut-row">
               <div class="donut"></div>
               <div class="skeleton-list">
@@ -2289,13 +2289,13 @@ function renderDashboard() {
             </div>
           </article>
           <article class="analysis-card">
-            <h3 class="small-title">분석된 자료 ⓘ</h3>
-            <div class="stat-value"><span class="metric-icon">${icon("calendar")}</span><span class="stat-number">0</span><span class="stat-unit">개</span></div>
+            <h3 class="small-title">м ڷ </h3>
+            <div class="stat-value"><span class="metric-icon">${icon("calendar")}</span><span class="stat-number">0</span><span class="stat-unit"></span></div>
             <div class="skeleton-line" style="margin-top:22px"></div>
-            <div class="legend-line"><span class="dot"></span><span>완료된 활동</span><strong>0</strong><span class="dot green" style="margin-left:28px"></span><span>준비된 활동</span><strong>0</strong></div>
+            <div class="legend-line"><span class="dot"></span><span>Ϸ Ȱ</span><strong>0</strong><span class="dot green" style="margin-left:28px"></span><span>غ Ȱ</span><strong>0</strong></div>
           </article>
           <article class="analysis-card">
-            <h3 class="small-title">활동 분류 현황 ⓘ <span class="chip" style="margin-left:auto;min-width:54px">분석 전</span></h3>
+            <h3 class="small-title">Ȱ з Ȳ  <span class="chip" style="margin-left:auto;min-width:54px">м </span></h3>
             <div class="donut-row">
               <div class="donut"></div>
               <div class="skeleton-list">
@@ -2310,20 +2310,20 @@ function renderDashboard() {
         <div class="analysis-card empty-analysis" style="margin-top:18px">
           <div class="metric-icon">${icon("search")}</div>
           <div>
-            <h3>아직 분석된 결과가 없어요.</h3>
-            <p>폴더에 파일을 업로드한 뒤 분석을 시작해보세요.</p>
+            <h3> м  .</h3>
+            <p>  ε  м غ.</p>
           </div>
         </div>
       </section>
       <section class="next-card">
         <div class="metric-icon">${icon("id")}</div>
         <div>
-          <h3>가장 먼저, 내 정보를 입력해주세요!</h3>
-          <p>학과, 학년, 전공, 희망 직무 정보를 입력하면<br />맞춤형 분석과 활동 추천 기능을 이용할 수 있어요.</p>
+          <h3> ,   Էּ!</h3>
+          <p>а, г, ,    Էϸ<br /> м Ȱ õ  ̿  ־.</p>
         </div>
         <div class="next-actions">
-          <button class="primary-button" type="button" data-route="mypage">내 정보 작성하기 ${icon("chevron")}</button>
-          <button class="outline-button" type="button" data-route="mypage">마이페이지로 이동</button>
+          <button class="primary-button" type="button" data-route="mypage">  ۼϱ ${icon("chevron")}</button>
+          <button class="outline-button" type="button" data-route="mypage"> ̵</button>
         </div>
       </section>
     </main>
@@ -2396,15 +2396,15 @@ function renderDatePicker() {
     <div class="date-picker-panel">
       <div class="date-picker-selects">
         <label>
-          <span>년도</span>
+          <span>⵵</span>
           <select data-date-part="year">
-            ${years.map((item) => `<option value="${item}" ${item === year ? "selected" : ""}>${item}년</option>`).join("")}
+            ${years.map((item) => `<option value="${item}" ${item === year ? "selected" : ""}>${item}</option>`).join("")}
           </select>
         </label>
         <label>
-          <span>월</span>
+          <span></span>
           <select data-date-part="month">
-            ${months.map((item) => `<option value="${item}" ${item === month ? "selected" : ""}>${item}월</option>`).join("")}
+            ${months.map((item) => `<option value="${item}" ${item === month ? "selected" : ""}>${item}</option>`).join("")}
           </select>
         </label>
       </div>
@@ -2463,7 +2463,7 @@ function renderMajorPicker(index, fieldName, label, value) {
     <div class="form-field major-field">
       <label>${label}</label>
       <button class="major-trigger" type="button" data-major-trigger="${index}-${fieldName}">
-        <span>${value || `${label}을 선택하세요`}</span>
+        <span>${value || `${label} ϼ`}</span>
         ${icon("chevron")}
       </button>
       <div class="major-menu" data-major-menu="${index}-${fieldName}">
@@ -2478,28 +2478,28 @@ function renderEducationItem(education, index) {
     <div class="education-item ${index > 0 ? "has-delete" : ""}" data-education-index="${index}">
       ${
         index > 0
-          ? `<button class="delete-education" type="button" data-delete-education="${index}" aria-label="학력 항목 삭제">${icon("trash")}</button>`
+          ? `<button class="delete-education" type="button" data-delete-education="${index}" aria-label="з ׸ ">${icon("trash")}</button>`
           : ""
       }
       <div class="education-grid">
         <div class="form-field">
-          <label>학교 구분</label>
+          <label>б </label>
           <select data-edu-field="schoolType" data-edu-index="${index}">
             ${schoolTypes.map((type) => `<option ${type === education.schoolType ? "selected" : ""}>${type}</option>`).join("")}
           </select>
         </div>
         <div class="form-field">
-          <label>학교명</label>
+          <label>б</label>
           <input data-edu-field="school" data-edu-index="${index}" type="text" value="${education.school}" />
         </div>
         <div class="form-field">
-          <label>재학기간</label>
+          <label>бⰣ</label>
           <input data-edu-field="period" data-edu-index="${index}" type="text" value="${education.period}" />
         </div>
-        ${renderMajorPicker(index, "major", "전공", education.major)}
-        ${renderMajorPicker(index, "minor", "부전공/연계전공", education.minor)}
+        ${renderMajorPicker(index, "major", "", education.major)}
+        ${renderMajorPicker(index, "minor", "/", education.minor)}
         <div class="form-field">
-          <label>학점</label>
+          <label></label>
           <input data-edu-field="gpa" data-edu-index="${index}" type="text" value="${education.gpa}" />
         </div>
       </div>
@@ -2523,7 +2523,7 @@ function renderSearchOptions(type, query = "") {
   const options = config.options().filter((option) => option.toLowerCase().includes(normalizedQuery));
 
   if (!options.length) {
-    return `<div class="empty-options">검색 결과가 없어요.</div>`;
+    return `<div class="empty-options">˻  .</div>`;
   }
 
   return options
@@ -2568,18 +2568,18 @@ function renderSearchModal(type) {
   if (!config || !modalRoot) return;
   const helperText =
     type === "detailJob" && profileState.chips.jobs.size
-      ? `선택한 희망 직무: ${[...profileState.chips.jobs].join(", ")}`
-      : "검색하거나 아래 목록에서 선택하세요.";
+      ? `  : ${[...profileState.chips.jobs].join(", ")}`
+      : "˻ϰų Ʒ Ͽ ϼ.";
 
   modalRoot.innerHTML = `
     <div class="modal-backdrop" data-modal-backdrop></div>
-    <section class="search-modal" role="dialog" aria-modal="true" aria-label="${config.label} 선택">
+    <section class="search-modal" role="dialog" aria-modal="true" aria-label="${config.label} ">
       <div class="search-modal-head">
         <div>
-          <h3>${config.label} 선택</h3>
+          <h3>${config.label} </h3>
           <p>${helperText}</p>
         </div>
-        <button class="icon-button modal-close" type="button" data-close-modal aria-label="닫기">×</button>
+        <button class="icon-button modal-close" type="button" data-close-modal aria-label="ݱ"></button>
       </div>
       <div class="modal-search-box">
         ${icon("search")}
@@ -2613,7 +2613,7 @@ function wireMypage() {
       profileState.photo = String(reader.result || "");
       localStorage.setItem("myfitfolioPhoto", profileState.photo);
       if (photoPreview) {
-        photoPreview.innerHTML = `<img src="${profileState.photo}" alt="프로필 사진" />`;
+        photoPreview.innerHTML = `<img src="${profileState.photo}" alt=" " />`;
         photoPreview.classList.add("has-photo");
       }
     });
@@ -2623,7 +2623,7 @@ function wireMypage() {
   document.querySelector("[data-add-education]")?.addEventListener("click", () => {
     collectEducationValues();
     profileState.educations.push({
-      schoolType: "대학교 4년",
+      schoolType: "б 4",
       school: "",
       period: "",
       major: "",
@@ -2758,54 +2758,54 @@ function renderMypage() {
       ${renderNav("mypage")}
       <main class="mypage">
         <div class="mypage-content">
-          <h1 class="page-title">마이페이지</h1>
-          <p class="page-subtitle">내 정보를 입력하고 취업 조건을 관리해보세요.</p>
+          <h1 class="page-title"></h1>
+          <p class="page-subtitle">  Էϰ   غ.</p>
           <div class="section-stack">
             <section class="profile-section" id="basic">
-              <h2 class="section-heading">기본 정보</h2>
+              <h2 class="section-heading">⺻ </h2>
               <div class="field-grid">
                 <div class="profile-photo">
                   <span class="avatar-lg ${profileState.photo ? "has-photo" : ""}" data-photo-preview>
-                    ${profileState.photo ? `<img src="${profileState.photo}" alt="프로필 사진" />` : ""}
+                    ${profileState.photo ? `<img src="${profileState.photo}" alt=" " />` : ""}
                   </span>
                   <input id="photoInput" class="visually-hidden" type="file" accept="image/*" />
-                  <button class="ghost-button" type="button" data-photo-button>${icon("upload")} 사진 변경</button>
+                  <button class="ghost-button" type="button" data-photo-button>${icon("upload")}  </button>
                 </div>
-                ${field("이름", "김예지")}
-                ${selectField("성별", "여성", ["여성", "남성"])}
-                ${dateField("생년월일", profileState.birthDate)}
+                ${field("̸", "迹")}
+                ${selectField("", "", ["", ""])}
+                ${dateField("", profileState.birthDate)}
               </div>
             </section>
             <section class="profile-section" id="contact">
-              <h2 class="section-heading">연락처 정보 <span style="color:#98a4b5;font-size:12px">ⓘ 소셜 계정에서 가져온 정보입니다.</span></h2>
+              <h2 class="section-heading">ó  <span style="color:#98a4b5;font-size:12px"> Ҽ   Դϴ.</span></h2>
               <div class="inline-fields">
-                ${field("이메일", "user@univ.ac.kr")}
-                ${field("휴대폰번호", "010-1234-5678")}
-                ${field("주소", "부산광역시 금정구 장전동")}
+                ${field("̸", "user@univ.ac.kr")}
+                ${field("޴ȣ", "010-1234-5678")}
+                ${field("ּ", "λ걤  ")}
               </div>
             </section>
             <section class="profile-section" id="school">
-              <h2 class="section-heading">학력</h2>
+              <h2 class="section-heading">з</h2>
               <div class="education-list">
                 ${profileState.educations.map(renderEducationItem).join("")}
               </div>
-              <button class="ghost-button" type="button" data-add-education style="margin-top:16px">+ 항목 추가</button>
+              <button class="ghost-button" type="button" data-add-education style="margin-top:16px">+ ׸ ߰</button>
             </section>
             <section class="profile-section" id="condition">
-              <h2 class="section-heading">희망근무조건</h2>
+              <h2 class="section-heading">ٹ</h2>
               <div class="job-grid">
                 <div class="form-field">
-                  <label>희망 직무</label>
+                  <label> </label>
                   <div class="chip-row">
                     ${jobs.map((job) => chip(job, "jobs", profileState.chips.jobs.has(job))).join("")}
                   </div>
                 </div>
                 <div class="search-row">
-                  ${pickerField("세부직무 선택", "detailJob", profileState.preferences.detailJob, "검색하여 선택")}
-                  ${pickerField("희망 업종", "workIndustry", profileState.preferences.workIndustry, "검색하여 선택")}
-                  ${pickerField("희망근무지역", "workRegion", profileState.preferences.workRegion, "검색하여 선택")}
+                  ${pickerField(" ", "detailJob", profileState.preferences.detailJob, "˻Ͽ ")}
+                  ${pickerField(" ", "workIndustry", profileState.preferences.workIndustry, "˻Ͽ ")}
+                  ${pickerField("ٹ", "workRegion", profileState.preferences.workRegion, "˻Ͽ ")}
                   <div class="form-field">
-                    <label>희망연봉</label>
+                    <label></label>
                     <select data-salary-select>
                       ${salaryRanges.map((range) => `<option ${range === profileState.preferences.salary ? "selected" : ""}>${range}</option>`).join("")}
                     </select>
@@ -2814,39 +2814,39 @@ function renderMypage() {
               </div>
             </section>
             <section class="profile-section" id="interest">
-              <h2 class="section-heading">관심분야</h2>
+              <h2 class="section-heading">ɺо</h2>
               <div class="section-stack">
                 <div class="form-field">
-                  <label>관심 분야</label>
+                  <label> о</label>
                   <div class="chip-row">
-                    ${chip("채용", "interestFields", profileState.chips.interestFields.has("채용"), icon("users"))}
-                    ${chip("대외활동", "interestFields", profileState.chips.interestFields.has("대외활동"), icon("flag"))}
-                    ${chip("공모전", "interestFields", profileState.chips.interestFields.has("공모전"), icon("trophy"))}
-                    ${chip("교육", "interestFields", profileState.chips.interestFields.has("교육"), icon("book"))}
+                    ${chip("ä", "interestFields", profileState.chips.interestFields.has("ä"), icon("users"))}
+                    ${chip("Ȱ", "interestFields", profileState.chips.interestFields.has("Ȱ"), icon("flag"))}
+                    ${chip("", "interestFields", profileState.chips.interestFields.has(""), icon("trophy"))}
+                    ${chip("", "interestFields", profileState.chips.interestFields.has(""), icon("book"))}
                   </div>
                 </div>
                 <div class="form-field">
-                  <label>관심 기업</label>
+                  <label> </label>
                   <div class="chip-row">${companies.map((item) => chip(item, "companies", profileState.chips.companies.has(item))).join("")}</div>
                 </div>
                 <div class="form-field">
-                  <label>관심 산업</label>
+                  <label> </label>
                   <div class="chip-row">${industries.map((item) => chip(item, "industries", profileState.chips.industries.has(item))).join("")}</div>
                 </div>
               </div>
             </section>
             <div class="form-actions">
-              <button class="ghost-button" type="button">임시저장</button>
-              <button class="primary-button" type="button" data-save-profile>저장</button>
+              <button class="ghost-button" type="button">ӽ</button>
+              <button class="primary-button" type="button" data-save-profile></button>
             </div>
           </div>
         </div>
-        <aside class="anchor-menu" aria-label="마이페이지 섹션">
-          <button class="active" type="button" data-anchor-target="basic">기본 정보</button>
-          <button type="button" data-anchor-target="contact">연락처 정보</button>
-          <button type="button" data-anchor-target="school">학력</button>
-          <button type="button" data-anchor-target="condition">희망근무조건</button>
-          <button type="button" data-anchor-target="interest">관심분야</button>
+        <aside class="anchor-menu" aria-label=" ">
+          <button class="active" type="button" data-anchor-target="basic">⺻ </button>
+          <button type="button" data-anchor-target="contact">ó </button>
+          <button type="button" data-anchor-target="school">з</button>
+          <button type="button" data-anchor-target="condition">ٹ</button>
+          <button type="button" data-anchor-target="interest">ɺо</button>
         </aside>
       </main>
       <div id="modalRoot"></div>
@@ -2860,7 +2860,7 @@ function renderBlank(route) {
   app.innerHTML = `
     <div class="app-shell">
       ${renderNav(route)}
-      <main class="blank-page" aria-label="${routes[route]} 빈 화면"></main>
+      <main class="blank-page" aria-label="${routes[route]}  ȭ"></main>
     </div>
   `;
   wireRoutes();

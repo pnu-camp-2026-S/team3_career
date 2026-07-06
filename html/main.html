@@ -8,9 +8,340 @@
 </head>
 <body>
   <div class="app-shell">
-    <header class="top-nav"><a class="brand-word" href="main.html">Myfit<span>folio</span></a><nav class="nav-tabs" aria-label="주요 메뉴"><a class="nav-tab active" href="main.html">메인</a><a class="nav-tab " href="portfolio.html">포트폴리오 생성</a><a class="nav-tab " href="portfolio_manage.html">포트폴리오 관리</a><a class="nav-tab " href="create.html">파일 생성</a><a class="nav-tab " href="contest.html">활동 추천</a><a class="nav-tab " href="mypage.html">마이페이지</a></nav><div class="nav-actions"><button class="icon-button" type="button" aria-label="알림">!</button><a class="user-chip" href="mypage.html" aria-label="마이페이지로 이동"><span class="avatar"></span></a></div></header>
-    <div class="layout-main"><aside class="sidebar"><div class="sidebar-email"><span class="avatar online"></span><span>user@univ.ac.kr</span></div><button class="primary-button upload-button" type="button">활동 자료 업로드</button><section class="folder-section open"><button class="folder-title" type="button"><span>완료된 활동 폴더</span><span class="folder-chevron" aria-hidden="true"></span></button><div class="folder-list"><div class="folder-item"><span class="mini-folder" aria-hidden="true"></span><span>공모전</span><span class="folder-count">0</span></div><div class="folder-item"><span class="mini-folder" aria-hidden="true"></span><span>대외활동</span><span class="folder-count">0</span></div><div class="folder-item"><span class="mini-folder" aria-hidden="true"></span><span>봉사활동</span><span class="folder-count">0</span></div><div class="folder-item"><span class="mini-folder" aria-hidden="true"></span><span>자격증</span><span class="folder-count">0</span></div><div class="folder-item"><span class="mini-folder" aria-hidden="true"></span><span>교육활동</span><span class="folder-count">0</span></div></div></section><section class="folder-section open"><button class="folder-title" type="button"><span>준비된 활동 폴더</span><span class="folder-chevron" aria-hidden="true"></span></button><div class="folder-list"><div class="folder-item"><span class="mini-folder" aria-hidden="true"></span><span>공모전</span><span class="folder-count">0</span></div><div class="folder-item"><span class="mini-folder" aria-hidden="true"></span><span>대외활동</span><span class="folder-count">0</span></div><div class="folder-item"><span class="mini-folder" aria-hidden="true"></span><span>봉사활동</span><span class="folder-count">0</span></div><div class="folder-item"><span class="mini-folder" aria-hidden="true"></span><span>자격증</span><span class="folder-count">0</span></div><div class="folder-item"><span class="mini-folder" aria-hidden="true"></span><span>교육활동</span><span class="folder-count">0</span></div></div></section><section class="ai-helper"><div class="ai-title">AI 분석 도우미</div><p>폴더에 업로드한 파일을 AI가 분석해 활동을 정리해드려요.</p><button class="primary-button upload-button" type="button">분석 시작</button></section></aside><main class="dashboard"><h1 class="page-title">나의 활동 대시보드</h1><p class="page-subtitle">업로드된 활동 자료와 프로필 정보를 기반으로 체계적으로 정리해드려요.</p><section class="stats-grid"><article class="stat-card"><div class="metric-icon"><span class="metric-symbol document" aria-hidden="true"></span></div><div><div class="stat-label">완료된 활동</div><div class="stat-value"><span class="stat-number">0</span><span class="stat-unit">개</span></div></div></article><article class="stat-card"><div class="metric-icon green"><span class="metric-symbol check" aria-hidden="true"></span></div><div><div class="stat-label">준비된 활동</div><div class="stat-value"><span class="stat-number">0</span><span class="stat-unit">개</span></div></div></article><article class="stat-card"><div class="metric-icon orange"><span class="metric-symbol star" aria-hidden="true"></span></div><div><div class="stat-label">공모전 참여</div><div class="stat-value"><span class="stat-number">0</span><span class="stat-unit">회</span></div></div></article><article class="stat-card"><div class="metric-icon red"><span class="metric-symbol heart" aria-hidden="true"></span></div><div><div class="stat-label">봉사활동</div><div class="stat-value"><span class="stat-number">0</span><span class="stat-unit">회</span></div></div></article></section><section class="panel"><h2 class="panel-title">AI 전체 분석</h2><div class="analysis-grid"><article class="analysis-card"><h3 class="small-title">커리어 준비도 ⓘ</h3><div class="donut-row"><div class="donut"></div><div class="skeleton-list"><div class="skeleton-line"></div><div class="skeleton-line short"></div><div class="skeleton-line"></div></div></div></article><article class="analysis-card"><h3 class="small-title">분석된 자료 ⓘ</h3><div class="stat-value"><span class="stat-number">0</span><span class="stat-unit">개</span></div><div class="skeleton-line" style="margin-top:22px"></div></article><article class="analysis-card"><h3 class="small-title">활동 분류 현황 ⓘ</h3><div class="donut-row"><div class="donut"></div><div class="skeleton-list"><div class="skeleton-line short"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div></div></div></article></div></section><section class="next-card"><div class="metric-icon">!</div><div><h2>내 정보 입력이 필요해요</h2><p>마이페이지에서 기본 정보와 희망 직무를 저장하면 추천과 분석이 더 정확해집니다.</p></div><div class="next-actions"><a class="primary-button" href="mypage.html">내 정보 작성하기</a><a class="outline-button" href="portfolio.html">활동기록 먼저 정리하기</a></div></section></main></div>
+    <header class="top-nav">
+      <a class="brand-word" href="main.html">Myfit<span>folio</span></a>
+      <nav class="nav-tabs" aria-label="주요 메뉴">
+        <a class="nav-tab active" href="main.html">메인</a>
+        <a class="nav-tab" href="portfolio_create.html">포트폴리오 생성</a>
+        <a class="nav-tab" href="portfolio_manage.html">포트폴리오 관리</a>
+        <a class="nav-tab" href="create.html">파일 생성</a>
+        <a class="nav-tab" href="contest.html">활동 추천</a>
+        <a class="nav-tab" href="mypage.html">마이페이지</a>
+      </nav>
+      <div class="nav-actions">
+        <button class="icon-button" type="button" aria-label="알림">!</button>
+        <a class="user-chip" href="mypage.html" aria-label="마이페이지로 이동">
+          <span class="avatar"></span>
+        </a>
+      </div>
+    </header>
+
+    <div class="layout-main" id="mainLayout">
+      <button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="사이드바 닫기">
+        <span aria-hidden="true"></span>
+      </button>
+
+      <aside class="sidebar" id="activitySidebar">
+        <div class="sidebar-email">
+          <span class="avatar online"></span>
+          <span>user@univ.ac.kr</span>
+        </div>
+
+        <input class="visually-hidden" id="fileInput" type="file" multiple />
+        <button class="ghost-button sidebar-action-button delete-mode-button" id="deleteModeBtn" type="button">
+          삭제 모드
+        </button>
+        <button class="primary-button upload-button" id="uploadButton" type="button">
+          활동 자료 업로드
+        </button>
+
+        <section class="folder-section open" data-folder-section="completed">
+          <button class="folder-title" type="button" aria-expanded="true">
+            <span>완료된 활동 폴더</span>
+            <span class="folder-chevron" aria-hidden="true"></span>
+          </button>
+          <div class="folder-list" id="completedFolderList"></div>
+        </section>
+
+        <section class="folder-section open" data-folder-section="ready">
+          <button class="folder-title" type="button" aria-expanded="true">
+            <span>준비된 활동 폴더</span>
+            <span class="folder-chevron" aria-hidden="true"></span>
+          </button>
+          <div class="folder-list" id="readyFolderList"></div>
+        </section>
+
+        <section class="ai-helper">
+          <div class="ai-title">AI 분석 도우미</div>
+          <p>폴더에 업로드한 파일을 AI가 분석해 활동을 정리해드려요.</p>
+          <button class="primary-button upload-button" type="button">분석 시작</button>
+        </section>
+      </aside>
+
+      <main class="dashboard">
+        <h1 class="page-title">나의 활동 대시보드</h1>
+        <p class="page-subtitle">업로드된 활동 자료와 프로필 정보를 기반으로 체계적으로 정리해드려요.</p>
+
+        <section class="stats-grid">
+          <article class="stat-card">
+            <div class="metric-icon"><span class="metric-symbol document" aria-hidden="true"></span></div>
+            <div>
+              <div class="stat-label">개인 프로젝트</div>
+              <div class="stat-value"><span class="stat-number" id="personalTotal">0</span><span class="stat-unit">개</span></div>
+            </div>
+          </article>
+          <article class="stat-card">
+            <div class="metric-icon green"><span class="metric-symbol check" aria-hidden="true"></span></div>
+            <div>
+              <div class="stat-label">팀 프로젝트</div>
+              <div class="stat-value"><span class="stat-number" id="teamTotal">0</span><span class="stat-unit">개</span></div>
+            </div>
+          </article>
+          <article class="stat-card">
+            <div class="metric-icon orange"><span class="metric-symbol star" aria-hidden="true"></span></div>
+            <div>
+              <div class="stat-label">공모전</div>
+              <div class="stat-value"><span class="stat-number" id="contestTotal">0</span><span class="stat-unit">회</span></div>
+            </div>
+          </article>
+          <article class="stat-card">
+            <div class="metric-icon red"><span class="metric-symbol heart" aria-hidden="true"></span></div>
+            <div>
+              <div class="stat-label">자격증</div>
+              <div class="stat-value"><span class="stat-number" id="certificateTotal">0</span><span class="stat-unit">개</span></div>
+            </div>
+          </article>
+          <article class="stat-card">
+            <div class="metric-icon"><span class="metric-symbol star" aria-hidden="true"></span></div>
+            <div>
+              <div class="stat-label">수상 경력</div>
+              <div class="stat-value"><span class="stat-number" id="awardTotal">0</span><span class="stat-unit">회</span></div>
+            </div>
+          </article>
+        </section>
+
+        <section class="panel">
+          <h2 class="panel-title">AI 전체 분석</h2>
+          <div class="analysis-grid">
+            <article class="analysis-card">
+              <h3 class="small-title">커리어 준비도 ⓘ</h3>
+              <div class="donut-row">
+                <div class="donut"></div>
+                <div class="skeleton-list">
+                  <div class="skeleton-line"></div>
+                  <div class="skeleton-line short"></div>
+                  <div class="skeleton-line"></div>
+                </div>
+              </div>
+            </article>
+            <article class="analysis-card">
+              <h3 class="small-title">분석된 자료 ⓘ</h3>
+              <div class="stat-value"><span class="stat-number" id="analyzedTotal">0</span><span class="stat-unit">개</span></div>
+              <div class="skeleton-line" style="margin-top:22px"></div>
+            </article>
+            <article class="analysis-card">
+              <h3 class="small-title">활동 분류 현황 ⓘ</h3>
+              <div class="donut-row">
+                <div class="donut"></div>
+                <div class="skeleton-list">
+                  <div class="skeleton-line short"></div>
+                  <div class="skeleton-line"></div>
+                  <div class="skeleton-line short"></div>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="next-card">
+          <div class="metric-icon">!</div>
+          <div>
+            <h2>내 정보 입력이 필요해요</h2>
+            <p>마이페이지에서 기본 정보와 희망 직무를 저장하면 추천과 분석이 더 정확해집니다.</p>
+          </div>
+          <div class="next-actions">
+            <a class="primary-button" href="mypage.html">내 정보 작성하기</a>
+            <a class="outline-button" href="portfolio_create.html">활동기록 먼저 정리하기</a>
+          </div>
+        </section>
+      </main>
+    </div>
   </div>
-  <script>document.querySelectorAll('.folder-title').forEach((button)=>{button.addEventListener('click',()=>button.closest('.folder-section')?.classList.toggle('open'));});</script>
+
+  <script>
+    const folderTypes = [
+      { key: 'personal', label: '개인 프로젝트' },
+      { key: 'team', label: '팀 프로젝트' },
+      { key: 'contest', label: '공모전' },
+      { key: 'certificate', label: '자격증' },
+      { key: 'education', label: '교육' },
+      { key: 'volunteer', label: '봉사' },
+    ];
+
+    const folders = {};
+    const awardRecords = [];
+    const fileInput = document.getElementById('fileInput');
+    const uploadButton = document.getElementById('uploadButton');
+    const deleteModeBtn = document.getElementById('deleteModeBtn');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const mainLayout = document.getElementById('mainLayout');
+    const completedFolderList = document.getElementById('completedFolderList');
+    const readyFolderList = document.getElementById('readyFolderList');
+
+    let selectedFolderId = 'completed-personal';
+
+    folderTypes.forEach((type) => {
+      folders[`completed-${type.key}`] = { status: 'completed', label: type.label, files: [] };
+      folders[`ready-${type.key}`] = { status: 'ready', label: type.label, files: [] };
+    });
+
+    function createFileId(fileName) {
+      return `${Date.now()}-${Math.random().toString(16).slice(2)}-${fileName}`;
+    }
+
+    function escapeHtml(value) {
+      return value.replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;',
+      })[char]);
+    }
+
+    function addFilesToFolder(folderId, fileList) {
+      const targetFolder = folders[folderId];
+      if (!targetFolder) return;
+
+      Array.from(fileList).forEach((file) => {
+        targetFolder.files.push({
+          id: createFileId(file.name),
+          name: file.name,
+        });
+      });
+
+      selectedFolderId = folderId;
+      renderFolders();
+    }
+
+    function deleteFile(folderId, fileId) {
+      const targetFolder = folders[folderId];
+      if (!targetFolder) return;
+
+      targetFolder.files = targetFolder.files.filter((file) => file.id !== fileId);
+      renderFolders();
+    }
+
+    function getSectionTotal(status) {
+      return Object.values(folders)
+        .filter((folder) => folder.status === status)
+        .reduce((total, folder) => total + folder.files.length, 0);
+    }
+
+    function getTypeTotal(typeKey) {
+      return ['completed', 'ready'].reduce((total, status) => (
+        total + folders[`${status}-${typeKey}`].files.length
+      ), 0);
+    }
+
+    function updateSummary() {
+      const analyzedTotal = getSectionTotal('completed') + getSectionTotal('ready');
+
+      document.getElementById('personalTotal').textContent = getTypeTotal('personal');
+      document.getElementById('teamTotal').textContent = getTypeTotal('team');
+      document.getElementById('contestTotal').textContent = getTypeTotal('contest');
+      document.getElementById('certificateTotal').textContent = getTypeTotal('certificate');
+      document.getElementById('awardTotal').textContent = awardRecords.length;
+      document.getElementById('analyzedTotal').textContent = analyzedTotal;
+    }
+
+    function renderFolderList(container, status) {
+      container.innerHTML = '';
+
+      folderTypes.forEach((type) => {
+        const folderId = `${status}-${type.key}`;
+        const folder = folders[folderId];
+        const folderItem = document.createElement('div');
+        folderItem.className = folderId === selectedFolderId ? 'folder-item drop-folder active' : 'folder-item drop-folder';
+        folderItem.dataset.folderId = folderId;
+
+        folderItem.innerHTML = `
+          <span class="mini-folder" aria-hidden="true"></span>
+          <span class="folder-label">${folder.label}</span>
+          <span class="folder-count">${folder.files.length}</span>
+          <div class="uploaded-file-list"></div>
+        `;
+
+        const fileList = folderItem.querySelector('.uploaded-file-list');
+        if (folder.files.length === 0) {
+          fileList.innerHTML = '<div class="empty-folder">파일을 이 폴더로 끌어오세요</div>';
+        } else {
+          fileList.innerHTML = folder.files.map((file) => `
+            <div class="uploaded-file" draggable="true" data-file-id="${escapeHtml(file.id)}">
+              <span class="uploaded-file-name" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</span>
+              <button class="file-delete-btn" type="button" data-folder-id="${folderId}" data-file-id="${escapeHtml(file.id)}" aria-label="${escapeHtml(file.name)} 삭제">삭제</button>
+            </div>
+          `).join('');
+        }
+
+        folderItem.addEventListener('click', (event) => {
+          if (event.target.closest('.file-delete-btn')) return;
+          selectedFolderId = folderId;
+          renderFolders();
+        });
+
+        folderItem.addEventListener('dragover', (event) => {
+          if (!Array.from(event.dataTransfer.types).includes('Files')) return;
+          event.preventDefault();
+          folderItem.classList.add('drop-over');
+        });
+
+        folderItem.addEventListener('dragleave', () => {
+          folderItem.classList.remove('drop-over');
+        });
+
+        folderItem.addEventListener('drop', (event) => {
+          if (!event.dataTransfer.files.length) return;
+          event.preventDefault();
+          folderItem.classList.remove('drop-over');
+          addFilesToFolder(folderId, event.dataTransfer.files);
+        });
+
+        container.appendChild(folderItem);
+      });
+    }
+
+    function renderFolders() {
+      renderFolderList(completedFolderList, 'completed');
+      renderFolderList(readyFolderList, 'ready');
+      updateSummary();
+    }
+
+    document.querySelectorAll('.folder-title').forEach((button) => {
+      button.addEventListener('click', () => {
+        const section = button.closest('.folder-section');
+        const isOpen = section?.classList.toggle('open') ?? false;
+        button.setAttribute('aria-expanded', String(isOpen));
+      });
+    });
+
+    uploadButton.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', (event) => {
+      if (event.target.files.length > 0) {
+        addFilesToFolder(selectedFolderId, event.target.files);
+        event.target.value = '';
+      }
+    });
+
+    deleteModeBtn.addEventListener('click', () => {
+      const isActive = document.body.classList.toggle('delete-mode-active');
+      deleteModeBtn.textContent = isActive ? '삭제 모드 종료' : '삭제 모드';
+    });
+
+    sidebarToggle.addEventListener('click', () => {
+      const isCollapsed = mainLayout.classList.toggle('sidebar-collapsed');
+      sidebarToggle.setAttribute('aria-label', isCollapsed ? '사이드바 열기' : '사이드바 닫기');
+    });
+
+    document.addEventListener('click', (event) => {
+      const deleteButton = event.target.closest('.file-delete-btn');
+      if (!deleteButton) return;
+
+      deleteFile(deleteButton.dataset.folderId, deleteButton.dataset.fileId);
+    });
+
+    renderFolders();
+  </script>
 </body>
 </html>
