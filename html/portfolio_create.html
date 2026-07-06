@@ -630,6 +630,32 @@
       return nextPortfolio;
     }
 
+    function openPortfolioEditorFromQuery() {
+      const editId = new URLSearchParams(window.location.search).get('edit');
+      if (!editId) return;
+
+      const portfolio = readPortfolioStore().find((item) => item.id === editId);
+      if (!portfolio) return;
+
+      document.getElementById('pfSetupScreen').classList.add('hidden');
+      document.getElementById('pfLoadingScreen').classList.add('hidden');
+      document.getElementById('pfWorkspaceScreen').classList.remove('hidden');
+      document.getElementById('workspaceTitle').textContent = portfolio.title || '포트폴리오 수정';
+      document.getElementById('workspaceContent').innerHTML = portfolio.content
+        ? portfolio.content.split(/\n{2,}/).map((block, index) => `
+          <div class="portfolio-block">
+            <h3>${index + 1}. 저장된 내용</h3>
+            <p>${escapeHtml(block)}</p>
+          </div>
+        `).join('')
+        : `
+          <div class="portfolio-block">
+            <h3>1. 포트폴리오 내용</h3>
+            <p>${escapeHtml(portfolio.summary || '저장된 포트폴리오입니다.')}</p>
+          </div>
+        `;
+    }
+
     function handlePortfolioAction(action) {
       const messages = {
         save: '포트폴리오 보관함에 저장했습니다.',
@@ -679,6 +705,8 @@
       toast.classList.add('show');
       window.setTimeout(() => toast.classList.remove('show'), 1800);
     }
+
+    openPortfolioEditorFromQuery();
   </script>
 </body>
 </html>
