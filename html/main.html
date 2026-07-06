@@ -14,7 +14,7 @@
         <a class="nav-tab active" href="main.html">메인</a>
         <a class="nav-tab" href="portfolio_create.html">포트폴리오 생성</a>
         <a class="nav-tab" href="portfolio_manage.html">포트폴리오 관리</a>
-        <a class="nav-tab" href="create.html">파일 생성</a>
+        <a class="nav-tab" href="create.html">파일 관리</a>
         <a class="nav-tab" href="contest.html">활동 추천</a>
         <a class="nav-tab" href="mypage.html">마이페이지</a>
       </nav>
@@ -151,7 +151,7 @@
           </div>
           <div class="next-actions">
             <a class="primary-button" href="mypage.html">내 정보 작성하기</a>
-            <a class="outline-button" href="portfolio_create.html">활동기록 먼저 정리하기</a>
+            <a class="outline-button" href="create.html">활동기록 먼저 정리하기</a>
           </div>
         </section>
       </main>
@@ -276,8 +276,7 @@
 
         folderItem.addEventListener('click', (event) => {
           if (event.target.closest('.file-delete-btn')) return;
-          selectedFolderId = folderId;
-          renderFolders();
+          window.location.href = `create.html?folder=${encodeURIComponent(folderId)}`;
         });
 
         folderItem.addEventListener('dragover', (event) => {
