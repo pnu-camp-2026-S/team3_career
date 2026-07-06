@@ -1176,30 +1176,39 @@ button {
   gap: 8px;
 }
 
-.period-month-field {
-  position: relative;
+.period-date-control {
   min-width: 0;
 }
 
-.period-month-field input {
-  padding-right: 34px;
+.period-date-control .date-trigger {
+  font-size: 13px;
+  font-weight: 850;
 }
 
-.period-month-field input::-webkit-calendar-picker-indicator {
-  position: absolute;
-  inset: 0;
-  width: auto;
-  height: auto;
-  opacity: 0;
-  cursor: pointer;
+.period-picker-panel {
+  width: 252px;
 }
 
-.period-month-field .calendar-icon {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  pointer-events: none;
-  transform: translateY(-50%);
+.period-month-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.period-month-grid button {
+  height: 32px;
+  border: 0;
+  border-radius: 6px;
+  background: #f5f7fb;
+  color: #344055;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.period-month-grid button:hover,
+.period-month-grid button.selected {
+  background: var(--brand);
+  color: #fff;
 }
 
 .period-separator {

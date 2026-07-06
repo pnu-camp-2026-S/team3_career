@@ -189,6 +189,7 @@
     const profileState = {
       birthDate: "2001-03-15",
       datePickerOpen: false,
+      periodPicker: null,
       photo: localStorage.getItem("myfitfolioPhoto") || "",
       educations: [
         {
@@ -251,6 +252,17 @@
     function formatDateDisplay(value) {
       const { year, month, day } = getDateParts(value);
       return `${year}.${String(month).padStart(2, "0")}.${String(day).padStart(2, "0")}`;
+    }
+
+    function getMonthParts(value) {
+      const [year, month] = (value || "2026-01").split("-").map(Number);
+      return { year: year || 2026, month: month || 1 };
+    }
+
+    function formatMonthDisplay(value) {
+      if (!value) return "선택";
+      const { year, month } = getMonthParts(value);
+      return `${year}년 ${String(month).padStart(2, "0")}월`;
     }
 
     function escapeHtml(value) {
@@ -317,17 +329,9 @@
             <div class="form-field">
               <label>재학기간</label>
               <div class="period-range">
-                <label class="period-month-field">
-                  <span class="visually-hidden">재학 시작</span>
-                  <input data-edu-field="periodStart" data-edu-index="${index}" type="month" value="${escapeHtml(education.periodStart || "")}" />
-                  <span class="calendar-icon" aria-hidden="true"></span>
-                </label>
+                ${renderPeriodPicker(index, "periodStart", "재학 시작", education.periodStart)}
                 <span class="period-separator" aria-hidden="true">~</span>
-                <label class="period-month-field">
-                  <span class="visually-hidden">재학 종료</span>
-                  <input data-edu-field="periodEnd" data-edu-index="${index}" type="month" value="${escapeHtml(education.periodEnd || "")}" />
-                  <span class="calendar-icon" aria-hidden="true"></span>
-                </label>
+                ${renderPeriodPicker(index, "periodEnd", "재학 종료", education.periodEnd)}
               </div>
             </div>
             ${renderMajorPicker(index, "major", "전공", education.major)}
@@ -339,6 +343,39 @@
           </div>
         </div>
       `).join("");
+    }
+
+    function renderPeriodPicker(index, fieldName, label, value) {
+      const isOpen = profileState.periodPicker?.index === index && profileState.periodPicker?.fieldName === fieldName;
+      const { year, month } = getMonthParts(value);
+      const years = Array.from({ length: 31 }, (_, yearIndex) => 2000 + yearIndex);
+      const months = Array.from({ length: 12 }, (_, monthIndex) => monthIndex + 1);
+
+      return `
+        <div class="date-control period-date-control">
+          <button class="date-trigger" type="button" data-toggle-period-picker data-period-index="${index}" data-period-field="${fieldName}" aria-label="${label}">
+            <span>${formatMonthDisplay(value)}</span>
+            <span class="calendar-icon" aria-hidden="true"></span>
+          </button>
+          ${
+            isOpen
+              ? `<div class="date-picker-panel period-picker-panel">
+                  <div class="date-picker-selects">
+                    <label><span>년도</span><select data-period-part="year" data-period-index="${index}" data-period-field="${fieldName}">
+                      ${years.map((item) => `<option value="${item}" ${item === year ? "selected" : ""}>${item}년</option>`).join("")}
+                    </select></label>
+                    <label><span>월</span><select data-period-part="month" data-period-index="${index}" data-period-field="${fieldName}">
+                      ${months.map((item) => `<option value="${item}" ${item === month ? "selected" : ""}>${item}월</option>`).join("")}
+                    </select></label>
+                  </div>
+                  <div class="period-month-grid">
+                    ${months.map((item) => `<button class="${item === month ? "selected" : ""}" type="button" data-period-month="${item}" data-period-index="${index}" data-period-field="${fieldName}">${item}월</button>`).join("")}
+                  </div>
+                </div>`
+              : ""
+          }
+        </div>
+      `;
     }
 
     function renderMajorPicker(index, fieldName, label, value) {
@@ -498,6 +535,7 @@
       const addEducation = event.target.closest("[data-add-education]");
       if (addEducation) {
         collectEducationValues();
+        profileState.periodPicker = null;
         profileState.educations.push({ schoolType: "대학교 4년", school: "", periodStart: "", periodEnd: "", major: "", minor: "", gpa: "" });
         renderEducationList();
       }
@@ -511,6 +549,7 @@
 
       const majorTrigger = event.target.closest("[data-major-trigger]");
       if (majorTrigger) {
+        profileState.periodPicker = null;
         const menu = document.querySelector(`[data-major-menu="${majorTrigger.dataset.majorTrigger}"]`);
         document.querySelectorAll(".major-menu.open").forEach((openMenu) => {
           if (openMenu !== menu) openMenu.classList.remove("open");
@@ -524,6 +563,27 @@
         const fieldName = majorOption.dataset.majorField || "major";
         const value = majorOption.dataset.majorValue || "";
         profileState.educations[index][fieldName] = value;
+        renderEducationList();
+      }
+
+      const periodTrigger = event.target.closest("[data-toggle-period-picker]");
+      if (periodTrigger) {
+        collectEducationValues();
+        const index = Number(periodTrigger.dataset.periodIndex);
+        const fieldName = periodTrigger.dataset.periodField;
+        const current = profileState.periodPicker;
+        profileState.periodPicker = current?.index === index && current?.fieldName === fieldName ? null : { index, fieldName };
+        renderEducationList();
+      }
+
+      const periodMonth = event.target.closest("[data-period-month]");
+      if (periodMonth) {
+        const index = Number(periodMonth.dataset.periodIndex);
+        const fieldName = periodMonth.dataset.periodField;
+        const { year } = getMonthParts(profileState.educations[index][fieldName]);
+        const month = Number(periodMonth.dataset.periodMonth);
+        profileState.educations[index][fieldName] = `${year}-${String(month).padStart(2, "0")}`;
+        profileState.periodPicker = null;
         renderEducationList();
       }
 
@@ -596,6 +656,18 @@
         profileState.birthDate = `${nextYear}-${String(nextMonth).padStart(2, "0")}-${String(nextDay).padStart(2, "0")}`;
         profileState.datePickerOpen = true;
         renderDatePicker();
+      }
+
+      const periodPart = event.target.closest("[data-period-part]");
+      if (periodPart) {
+        const index = Number(periodPart.dataset.periodIndex);
+        const fieldName = periodPart.dataset.periodField;
+        const { year, month } = getMonthParts(profileState.educations[index][fieldName]);
+        const nextYear = periodPart.dataset.periodPart === "year" ? Number(periodPart.value) : year;
+        const nextMonth = periodPart.dataset.periodPart === "month" ? Number(periodPart.value) : month;
+        profileState.educations[index][fieldName] = `${nextYear}-${String(nextMonth).padStart(2, "0")}`;
+        profileState.periodPicker = { index, fieldName };
+        renderEducationList();
       }
 
       const eduInput = event.target.closest("[data-edu-field]");
