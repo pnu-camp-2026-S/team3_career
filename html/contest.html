@@ -6,50 +6,29 @@
   <title>Myfitfolio - 활동 추천</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="fitfolio.css" />
   <link rel="stylesheet" href="contest.css" />
 </head>
 <body>
   <div class="app-shell">
-    <aside class="sidebar">
-      <div class="sidebar-header">
-        <h2>Myfitfolio</h2>
-        <div class="user-info">
-          <i class="fa-solid fa-circle-check"></i>
-          user@univ.ac.kr
-        </div>
+    <header class="top-nav">
+      <a class="brand-word" href="main.html">Myfit<span>folio</span></a>
+      <nav class="nav-tabs" aria-label="주요 메뉴">
+        <a class="nav-tab" href="main.html">메인</a>
+        <a class="nav-tab" href="portfolio_create.html">포트폴리오 생성</a>
+        <a class="nav-tab" href="portfolio_manage.html">포트폴리오 관리</a>
+        <a class="nav-tab" href="create.html">파일 생성</a>
+        <a class="nav-tab active" href="contest.html">활동 추천</a>
+        <a class="nav-tab" href="mypage.html">마이페이지</a>
+      </nav>
+      <div class="nav-actions">
+        <button class="icon-button" type="button" aria-label="알림">!</button>
+        <a class="user-chip" href="mypage.html" aria-label="마이페이지로 이동">
+          <span class="avatar"></span>
+        </a>
       </div>
-
-      <button class="btn-upload" type="button">
-        <i class="fa-solid fa-wand-magic-sparkles"></i>
-        추천 기준 다시 분석
-      </button>
-
-      <div class="nav-section">
-        <div class="nav-title">추천 카테고리</div>
-        <ul class="tag-list">
-          <li><span><i class="fa-solid fa-trophy"></i> 공모전</span><span class="badge">6</span></li>
-          <li><span><i class="fa-solid fa-people-group"></i> 대외활동</span><span class="badge">8</span></li>
-          <li><span><i class="fa-solid fa-certificate"></i> 자격증</span><span class="badge">4</span></li>
-          <li><span><i class="fa-solid fa-graduation-cap"></i> 교육</span><span class="badge">5</span></li>
-        </ul>
-      </div>
-
-      <div class="sidebar-footer">
-        <strong>추천 기준</strong>
-        <p>업로드한 경험과 부족 역량을 기준으로 포트폴리오에 연결 가능한 활동을 우선 추천합니다.</p>
-      </div>
-    </aside>
-
+    </header>
     <main class="content-area">
-      <header class="topbar">
-        <a href="main.html" class="tab-btn">메인</a>
-        <a href="portfolio_create.html" class="tab-btn">포트폴리오 생성</a>
-        <a href="portfolio_manage.html" class="tab-btn">포트폴리오 관리</a>
-        <a href="create.html" class="tab-btn">파일 생성</a>
-        <a href="contest.html" class="tab-btn active">활동 추천</a>
-        <a href="mypage.html" class="tab-btn">마이페이지</a>
-      </header>
-
       <div class="main-container">
         <section class="page-title">
           <div>
@@ -67,7 +46,7 @@
           <article class="stat-card">
             <div class="stat-icon"><i class="fa-solid fa-bullseye"></i></div>
             <div class="stat-label">추천 활동</div>
-            <div class="stat-value">8<span class="stat-unit">개</span></div>
+            <div class="stat-value">10<span class="stat-unit">개</span></div>
           </article>
           <article class="stat-card">
             <div class="stat-icon"><i class="fa-solid fa-chart-line"></i></div>
@@ -131,7 +110,15 @@
                 <h2>내 일정 캘린더</h2>
                 <p class="calendar-subtitle">추천 활동을 저장하면 일정에 표시됩니다.</p>
               </div>
-              <span class="calendar-month">2026.07</span>
+              <div class="calendar-controls" aria-label="캘린더 월 이동">
+                <button id="prevCalendarMonth" class="calendar-nav" type="button" aria-label="이전 달">
+                  <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <span id="calendarMonth" class="calendar-month">2026.07</span>
+                <button id="nextCalendarMonth" class="calendar-nav" type="button" aria-label="다음 달">
+                  <i class="fa-solid fa-chevron-right"></i>
+                </button>
+              </div>
             </div>
 
             <div class="calendar-grid" aria-label="캘린더">
@@ -142,40 +129,7 @@
               <span class="day-label">목</span>
               <span class="day-label">금</span>
               <span class="day-label">토</span>
-              <button class="day muted">29</button>
-              <button class="day muted">30</button>
-              <button class="day">1</button>
-              <button class="day">2</button>
-              <button class="day">3</button>
-              <button class="day">4</button>
-              <button class="day">5</button>
-              <button class="day">6</button>
-              <button class="day">7</button>
-              <button class="day">8</button>
-              <button class="day">9</button>
-              <button class="day">10</button>
-              <button class="day">11</button>
-              <button class="day active">12</button>
-              <button class="day">13</button>
-              <button class="day">14</button>
-              <button class="day">15</button>
-              <button class="day">16</button>
-              <button class="day">17</button>
-              <button class="day">18</button>
-              <button class="day">19</button>
-              <button class="day">20</button>
-              <button class="day">21</button>
-              <button class="day">22</button>
-              <button class="day">23</button>
-              <button class="day">24</button>
-              <button class="day">25</button>
-              <button class="day">26</button>
-              <button class="day">27</button>
-              <button class="day">28</button>
-              <button class="day">29</button>
-              <button class="day">30</button>
-              <button class="day">31</button>
-              <button class="day muted">1</button>
+              <div id="calendarDays" class="calendar-days"></div>
             </div>
 
             <div id="schedule-list" class="schedule-list"></div>

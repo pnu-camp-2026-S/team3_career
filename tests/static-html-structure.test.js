@@ -141,8 +141,46 @@ assert.match(
 );
 assert.match(
   contestHtml,
+  /href="fitfolio\.css"/,
+  'contest page should load the shared Fitfolio stylesheet for the top navigation'
+);
+assert.match(
+  contestHtml,
   /src="contest\.js"/,
   'contest page should use the recommendation-specific script'
+);
+assert.match(
+  contestHtml,
+  /<header class="top-nav">/,
+  'contest page should use the shared top navigation'
+);
+assert.match(
+  contestHtml,
+  /<a class="brand-word" href="main\.html">Myfit<span>folio<\/span><\/a>/,
+  'contest page should show the shared Myfitfolio brand link'
+);
+assert.ok(
+  !contestHtml.includes('<aside class="sidebar"'),
+  'contest page should not render the old recommendation sidebar'
+);
+assert.ok(
+  !contestHtml.includes('<header class="topbar"'),
+  'contest page should not use the standalone recommendation topbar'
+);
+assert.match(
+  contestHtml,
+  /id="prevCalendarMonth"/,
+  'contest calendar should include a previous month button'
+);
+assert.match(
+  contestHtml,
+  /id="nextCalendarMonth"/,
+  'contest calendar should include a next month button'
+);
+assert.match(
+  contestHtml,
+  /id="calendarDays"/,
+  'contest calendar should render its days dynamically'
 );
 
 assert.ok(
@@ -170,6 +208,61 @@ assert.match(
   contestJs,
   /getSortedSavedSchedules\(\)\s*[\r\n\s]*\.map/,
   'contest schedule should render saved activities in date order'
+);
+assert.match(
+  contestJs,
+  /D-90/,
+  'contest recommendations should include an activity 90 days away'
+);
+assert.match(
+  contestJs,
+  /2026-10-04/,
+  'contest future activity should be scheduled 90 days later on 2026-10-04'
+);
+assert.match(
+  contestJs,
+  /협업형 클라우드 아이디어톤/,
+  'contest recommendations should include a second activity on an existing date'
+);
+assert.match(
+  contestJs,
+  /10:\s*'2026-10-04'/,
+  'contest duplicate-date activity should share the 90-day activity date'
+);
+assert.match(
+  contestJs,
+  /function\s+confirmDuplicateDateSave/,
+  'contest saving should check for duplicate activity dates'
+);
+assert.match(
+  contestJs,
+  /이미 활동이 존재합니다\. 추가하시겠습니까\?/,
+  'contest duplicate-date save warning should use the requested message'
+);
+assert.match(
+  contestJs,
+  /if\s*\(!confirmDuplicateDateSave\(item,\s*itemDate\)\)\s*return;/,
+  'contest should stop saving when duplicate-date confirmation is cancelled'
+);
+assert.match(
+  contestJs,
+  /function\s+renderCalendarMonth/,
+  'contest calendar should render the visible month from state'
+);
+assert.match(
+  contestJs,
+  /function\s+moveCalendarMonth/,
+  'contest calendar should move between months with arrow buttons'
+);
+assert.match(
+  contestJs,
+  /function\s+showActivityMonth/,
+  'contest calendar should jump to the selected activity month'
+);
+assert.match(
+  contestJs,
+  /showActivityMonth\(item\)/,
+  'contest should move the calendar to an activity month when selected'
 );
 assert.match(
   contestJs,
