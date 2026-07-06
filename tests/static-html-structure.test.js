@@ -148,13 +148,19 @@ assert.match(
 );
 assert.match(
   createHtml,
-  /href="create\.html"[^>]*>파일 관리<\/a>/,
+  /href="create\.html"[^>]*>파일관리<\/a>/,
   'file management should keep the shared file management nav link'
 );
-for (const text of ['파일 관리', '폴더 목록', '자료 추가', '미리보기', 'AI 요약', '분석하기', 'GitHub 동기화']) {
+for (const text of ['파일 관리', 'AI 정리 상태', '폴더 목록', '자료 추가', '미리보기', 'AI 요약', '세부 폴더 추가', 'Git 연결']) {
   assert.ok(
     createHtml.includes(text),
     `file management page should include ${text}`
+  );
+}
+for (const removedText of ['전체 자료', '분석 완료', '선택된 폴더', '최근 변경 상태', '분석하기', 'AI 대화창']) {
+  assert.ok(
+    !createHtml.includes(removedText),
+    `file management page should remove ${removedText}`
   );
 }
 assert.match(
@@ -166,6 +172,21 @@ assert.match(
   createHtml,
   /data-folder-id="\$\{folderId\}"/,
   'file management folder buttons should expose folder ids'
+);
+assert.match(
+  createHtml,
+  /const\s+STORAGE_KEY\s*=\s*'myfitfolioFolderState'/,
+  'file management should use shared folder state'
+);
+assert.match(
+  createHtml,
+  /subfolders:\s*\[/,
+  'file management should store subfolders in the folder structure'
+);
+assert.match(
+  createHtml,
+  /function\s+connectGit/,
+  'file management should connect Git repositories by subfolder'
 );
 assert.match(
   fitfolioCss,
