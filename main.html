@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareerFit - 메인</title>
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Pretendard', sans-serif; }
+        body { background: #fff; color: #333; display: flex; height: 100vh; overflow: hidden; }
+        .sidebar { width: 320px; background: #f8fafc; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column; padding: 24px; overflow-y: auto; transition: width 0.25s ease, padding 0.25s ease, border-color 0.25s ease; }
+        body.sidebar-collapsed .sidebar { width: 0; padding-left: 0; padding-right: 0; border-color: transparent; overflow: hidden; }
+        body.sidebar-collapsed .sidebar > * { opacity: 0; pointer-events: none; }
+        .sidebar > * { transition: opacity 0.15s ease; }
+        .sidebar-toggle { position: fixed; left: 300px; top: 18px; z-index: 20; width: 36px; height: 36px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; color: #475569; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08); transition: left 0.25s ease, color 0.2s, border-color 0.2s; }
+        .sidebar-toggle:hover { color: #2563eb; border-color: #2563eb; }
+        body.sidebar-collapsed .sidebar-toggle { left: 16px; }
+        body.sidebar-collapsed .sidebar-toggle i { transform: rotate(180deg); }
+        .sidebar-header { margin-bottom: 24px; }
+        .sidebar-header h2 { font-size: 22px; font-weight: 800; color: #2563eb; }
+        .user-info { font-size: 13px; color: #64748b; margin-top: 6px; display: flex; align-items: center; gap: 6px; }
+        .btn-upload { width: 100%; padding: 12px; background: #fff; border: 1px dashed #cbd5e1; border-radius: 8px; color: #475569; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; margin-bottom: 24px; }
+        .btn-upload:hover { border-color: #2563eb; color: #2563eb; background: #eff6ff; }
+        .btn-analyze { width: 100%; padding: 12px; background: #2563eb; border: none; border-radius: 8px; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; margin: -8px 0 24px; }
+        .btn-analyze:hover { background: #1d4ed8; }
+        .nav-section { margin-bottom: 24px; }
+        .nav-title { font-size: 12px; font-weight: 700; color: #94a3b8; margin-bottom: 12px; text-transform: uppercase; }
+        .folder-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+        .folder-group { border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; overflow: hidden; transition: 0.2s; }
+        .folder-group.drop-over { border-color: #2563eb; background: #eff6ff; }
+        .folder-header { width: 100%; border: none; background: transparent; padding: 10px 12px; color: #475569; font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 10px; cursor: pointer; text-align: left; }
+        .folder-header:hover { background: #f1f5f9; color: #1e293b; }
+        .folder-header.active { background: #eff6ff; color: #2563eb; }
+        .folder-header i { width: 16px; text-align: center; }
+        .folder-count { margin-left: auto; font-size: 12px; color: #94a3b8; font-weight: 700; }
+        .file-list { list-style: none; display: flex; flex-direction: column; gap: 4px; padding: 0 8px 8px 30px; min-height: 14px; }
+        .file-item { padding: 7px 8px; border-radius: 6px; color: #64748b; font-size: 12px; display: flex; align-items: center; gap: 8px; cursor: grab; transition: 0.2s; }
+        .file-item:hover { background: #f1f5f9; color: #334155; }
+        .file-item.dragging { opacity: 0.45; background: #dbeafe; }
+        .file-item i { color: #94a3b8; width: 14px; text-align: center; }
+        .file-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .empty-folder { padding: 7px 8px; color: #94a3b8; font-size: 12px; }
+        .sidebar-footer { margin-top: auto; padding: 14px; border-radius: 8px; background: #eef6ff; color: #475569; font-size: 13px; line-height: 1.5; }
+        .sidebar-footer strong { color: #2563eb; }
+
+        .content-area { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        .topbar { height: 64px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; padding: 0 40px; gap: 32px; background: #fff; flex-shrink: 0; }
+        .tab-btn { text-decoration: none; font-size: 15px; font-weight: 600; color: #64748b; padding: 22px 0; position: relative; }
+        .tab-btn.active { color: #2563eb; }
+        .tab-btn.active::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 100%; height: 3px; background: #2563eb; border-radius: 3px 3px 0 0; }
+
+        .main-container { flex: 1; overflow-y: auto; padding: 40px; background: #fff; }
+        .dashboard { max-width: 980px; margin: 0 auto; }
+        .page-title { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 28px; }
+        .page-title h1 { font-size: 28px; font-weight: 800; color: #1e293b; margin-bottom: 8px; }
+        .page-title p { color: #64748b; font-size: 15px; line-height: 1.6; }
+        .btn-primary { border: none; border-radius: 8px; background: #2563eb; color: #fff; font-size: 14px; font-weight: 700; padding: 12px 16px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+        .btn-primary:hover { background: #1d4ed8; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(4, minmax(150px, 1fr)); gap: 16px; margin-bottom: 28px; }
+        .stat-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; }
+        .stat-icon { width: 38px; height: 38px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; font-size: 17px; }
+        .stat-card:nth-child(1) .stat-icon { background: #eff6ff; color: #2563eb; }
+        .stat-card:nth-child(2) .stat-icon { background: #ecfdf5; color: #059669; }
+        .stat-card:nth-child(3) .stat-icon { background: #fff7ed; color: #ea580c; }
+        .stat-card:nth-child(4) .stat-icon { background: #fef2f2; color: #dc2626; }
+        .stat-label { color: #64748b; font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+        .stat-value { color: #1e293b; font-size: 32px; font-weight: 800; line-height: 1; }
+        .stat-unit { color: #64748b; font-size: 14px; font-weight: 600; margin-left: 2px; }
+
+        .section-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 18px; }
+        .panel { border: 1px solid #e2e8f0; border-radius: 8px; padding: 22px; background: #fff; }
+        .panel h2 { font-size: 18px; font-weight: 800; color: #1e293b; margin-bottom: 16px; }
+        .activity-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+        .activity-item { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px; border-radius: 8px; background: #f8fafc; border: 1px solid #e2e8f0; }
+        .activity-main { display: flex; align-items: center; gap: 12px; min-width: 0; }
+        .activity-main i { color: #2563eb; width: 18px; text-align: center; }
+        .activity-text strong { display: block; color: #1e293b; font-size: 14px; margin-bottom: 3px; }
+        .activity-text span { color: #64748b; font-size: 13px; }
+        .status-badge { border-radius: 6px; background: #e0e7ff; color: #4338ca; padding: 5px 9px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+
+        .folder-summary { display: grid; gap: 10px; }
+        .folder-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e2e8f0; color: #475569; font-size: 14px; }
+        .folder-row:last-child { border-bottom: none; }
+        .folder-name { display: flex; align-items: center; gap: 10px; font-weight: 700; color: #334155; }
+        .folder-name i { color: #2563eb; }
+
+        @media (max-width: 980px) {
+            body { overflow: auto; height: auto; min-height: 100vh; }
+            .sidebar { display: none; }
+            .sidebar-toggle { display: none; }
+            .content-area { min-height: 100vh; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .section-grid { grid-template-columns: 1fr; }
+            .page-title { flex-direction: column; }
+            .topbar { padding: 0 24px; }
+            .main-container { padding: 28px 24px; }
+        }
+    </style>
+</head>
+<body>
+    <button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="사이드바 닫기">
+        <i class="fa-solid fa-chevron-left"></i>
+    </button>
+
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2>CareerFit</h2>
+            <div class="user-info"><i class="fa-solid fa-circle-check" style="color:#10b981;"></i> user@univ.ac.kr</div>
+        </div>
+
+        <input type="file" id="fileInput" style="display: none;" multiple>
+        <button class="btn-upload" id="uploadButton">
+            <i class="fa-solid fa-cloud-arrow-up"></i> 선택한 폴더에 업로드
+        </button>
+
+        <div class="nav-section">
+            <div class="nav-title">끝난 활동</div>
+            <ul class="folder-list" id="finishedFolderList"></ul>
+        </div>
+
+        <button class="btn-analyze" id="analyzeButton" type="button">
+            <i class="fa-solid fa-chart-simple"></i> 분석하기
+        </button>
+
+        <div class="nav-section">
+            <div class="nav-title">진행중인 활동</div>
+            <ul class="folder-list" id="ongoingFolderList"></ul>
+        </div>
+
+        <div class="sidebar-footer">
+            <strong>사용 방법</strong><br>
+            PC 파일을 원하는 폴더 위로 끌어다 놓으면 업로드되고, 폴더 안 파일은 드래그로 순서를 바꿀 수 있습니다.
+        </div>
+    </aside>
+
+    <main class="content-area">
+        <header class="topbar">
+            <a href="main.html" class="tab-btn active">메인</a>
+            <a href="portfolio.html" class="tab-btn">포트폴리오 자동 작성</a>
+            <a href="contest.html" class="tab-btn">교내외 공모전 추천</a>
+        </header>
+
+        <div class="main-container">
+            <section class="dashboard">
+                <div class="page-title">
+                    <div>
+                        <h1>나의 활동 대시보드</h1>
+                        <p>업로드된 활동 자료를 기반으로 프로젝트, 공모전, 자격증, 봉사 및 수상 이력을 한눈에 확인하세요.</p>
+                    </div>
+                    <button class="btn-primary" id="mainUploadButton">
+                        <i class="fa-solid fa-plus"></i> 자료 추가
+                    </button>
+                </div>
+
+                <div class="stats-grid">
+                    <article class="stat-card">
+                        <div class="stat-icon"><i class="fa-solid fa-laptop-code"></i></div>
+                        <div class="stat-label">개인 프로젝트</div>
+                        <div class="stat-value"><span id="personalProjectCount">0</span><span class="stat-unit">회</span></div>
+                    </article>
+                    <article class="stat-card">
+                        <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+                        <div class="stat-label">팀 프로젝트</div>
+                        <div class="stat-value"><span id="teamProjectCount">0</span><span class="stat-unit">회</span></div>
+                    </article>
+                    <article class="stat-card">
+                        <div class="stat-icon"><i class="fa-solid fa-medal"></i></div>
+                        <div class="stat-label">공모전 참여</div>
+                        <div class="stat-value">3<span class="stat-unit">회</span></div>
+                    </article>
+                    <article class="stat-card">
+                        <div class="stat-icon"><i class="fa-solid fa-trophy"></i></div>
+                        <div class="stat-label">수상 경력</div>
+                        <div class="stat-value">2<span class="stat-unit">회</span></div>
+                    </article>
+                </div>
+
+                <div class="section-grid">
+                    <section class="panel">
+                        <h2>최근 활동</h2>
+                        <ul class="activity-list">
+                            <li class="activity-item">
+                                <div class="activity-main">
+                                    <i class="fa-solid fa-laptop-code"></i>
+                                    <div class="activity-text">
+                                        <strong>AI 포트폴리오 추천 서비스</strong>
+                                        <span>개인 프로젝트 · 기획/프론트엔드</span>
+                                    </div>
+                                </div>
+                                <span class="status-badge">진행중</span>
+                            </li>
+                            <li class="activity-item">
+                                <div class="activity-main">
+                                    <i class="fa-solid fa-users"></i>
+                                    <div class="activity-text">
+                                        <strong>캡스톤 디자인 팀 프로젝트</strong>
+                                        <span>팀 프로젝트 · 백엔드/API</span>
+                                    </div>
+                                </div>
+                                <span class="status-badge">진행중</span>
+                            </li>
+                            <li class="activity-item">
+                                <div class="activity-main">
+                                    <i class="fa-solid fa-medal"></i>
+                                    <div class="activity-text">
+                                        <strong>교내 SW 아이디어 공모전</strong>
+                                        <span>공모전 참여 · 발표 자료 업로드</span>
+                                    </div>
+                                </div>
+                                <span class="status-badge">완료</span>
+                            </li>
+                        </ul>
+                    </section>
+
+                    <section class="panel">
+                        <h2>폴더별 자료 현황</h2>
+                        <div class="folder-summary">
+                            <div class="folder-row"><span class="folder-name"><i class="fa-solid fa-folder-open"></i> 진행중인 활동</span><strong id="ongoingTotal">0개</strong></div>
+                            <div class="folder-row"><span class="folder-name"><i class="fa-solid fa-folder"></i> 끝난 활동</span><strong id="finishedTotal">0개</strong></div>
+                            <div class="folder-row"><span class="folder-name"><i class="fa-solid fa-certificate"></i> 자격증</span><strong id="certificateTotal">0개</strong></div>
+                            <div class="folder-row"><span class="folder-name"><i class="fa-solid fa-hand-holding-heart"></i> 봉사</span><strong id="volunteerTotal">0개</strong></div>
+                        </div>
+                    </section>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        const folderTypes = [
+            { key: 'personal', label: '개인 프로젝트', icon: 'fa-laptop-code' },
+            { key: 'team', label: '팀 프로젝트', icon: 'fa-users' },
+            { key: 'contest', label: '공모전', icon: 'fa-medal' },
+            { key: 'certificate', label: '자격증', icon: 'fa-certificate' },
+            { key: 'volunteer', label: '봉사', icon: 'fa-hand-holding-heart' },
+        ];
+
+        const folders = {};
+        let selectedFolderId = 'finished-personal';
+        let draggingFile = null;
+
+        folderTypes.forEach((type) => {
+            folders[`ongoing-${type.key}`] = {
+                status: 'ongoing',
+                label: type.label,
+                icon: type.icon,
+                files: [],
+            };
+            folders[`finished-${type.key}`] = {
+                status: 'finished',
+                label: type.label,
+                icon: type.icon,
+                files: [],
+            };
+        });
+
+        folders['finished-personal'].files = [
+            { id: 'sample-personal-1', name: 'AI_포트폴리오_기획서.pdf' },
+            { id: 'sample-personal-2', name: '개인프로젝트_회고.md' },
+            { id: 'sample-personal-3', name: '자동화_스크립트.js' },
+            { id: 'sample-personal-4', name: '데이터분석_결과.pdf' },
+            { id: 'sample-personal-5', name: '웹서비스_화면설계.png' },
+            { id: 'sample-personal-6', name: '프로젝트_최종보고서.docx' },
+        ];
+        folders['finished-team'].files = [
+            { id: 'sample-team-1', name: '캡스톤_API_명세서.md' },
+            { id: 'sample-team-2', name: '팀프로젝트_발표자료.pdf' },
+            { id: 'sample-team-3', name: '협업_역할정리.xlsx' },
+            { id: 'sample-team-4', name: '서비스_테스트결과.csv' },
+        ];
+        folders['ongoing-personal'].files = [{ id: 'sample-ongoing-1', name: '진행중_개인프로젝트_메모.md' }];
+        folders['ongoing-team'].files = [{ id: 'sample-ongoing-2', name: '진행중_팀회의록.md' }];
+        folders['finished-contest'].files = [{ id: 'sample-contest-1', name: 'SW_공모전_발표자료.pdf' }];
+
+        const fileInput = document.getElementById('fileInput');
+        const uploadButton = document.getElementById('uploadButton');
+        const mainUploadButton = document.getElementById('mainUploadButton');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const analyzeButton = document.getElementById('analyzeButton');
+        const ongoingFolderList = document.getElementById('ongoingFolderList');
+        const finishedFolderList = document.getElementById('finishedFolderList');
+
+        function createFileId(fileName) {
+            return `${Date.now()}-${Math.random().toString(16).slice(2)}-${fileName}`;
+        }
+
+        function getFileIcon(fileName) {
+            if (/\.pdf$/i.test(fileName)) return 'fa-file-pdf';
+            if (/\.(jpg|jpeg|png|gif|webp)$/i.test(fileName)) return 'fa-file-image';
+            if (/\.(js|py|html|css|json|md)$/i.test(fileName)) return 'fa-file-code';
+            if (/\.(doc|docx)$/i.test(fileName)) return 'fa-file-word';
+            if (/\.(xls|xlsx|csv)$/i.test(fileName)) return 'fa-file-excel';
+            return 'fa-file';
+        }
+
+        function addFilesToFolder(folderId, fileList) {
+            const targetFolder = folders[folderId];
+            if (!targetFolder) return;
+
+            Array.from(fileList).forEach((file) => {
+                targetFolder.files.push({
+                    id: createFileId(file.name),
+                    name: file.name,
+                });
+            });
+
+            selectedFolderId = folderId;
+            renderFolders();
+        }
+
+        function moveFileWithinFolder(folderId, fromIndex, toIndex) {
+            const files = folders[folderId].files;
+            if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0) return;
+
+            const [movedFile] = files.splice(fromIndex, 1);
+            files.splice(toIndex, 0, movedFile);
+            renderFolders();
+        }
+
+        function getSectionTotal(status) {
+            return Object.values(folders)
+                .filter((folder) => folder.status === status)
+                .reduce((total, folder) => total + folder.files.length, 0);
+        }
+
+        function getTypeTotal(typeKey) {
+            return ['ongoing', 'finished'].reduce((total, status) => {
+                return total + folders[`${status}-${typeKey}`].files.length;
+            }, 0);
+        }
+
+        function updateSummary() {
+            document.getElementById('personalProjectCount').textContent = folders['finished-personal'].files.length;
+            document.getElementById('teamProjectCount').textContent = folders['finished-team'].files.length;
+            document.getElementById('ongoingTotal').textContent = `${getSectionTotal('ongoing')}개`;
+            document.getElementById('finishedTotal').textContent = `${getSectionTotal('finished')}개`;
+            document.getElementById('certificateTotal').textContent = `${getTypeTotal('certificate')}개`;
+            document.getElementById('volunteerTotal').textContent = `${getTypeTotal('volunteer')}개`;
+        }
+
+        function renderFolderList(container, status) {
+            container.innerHTML = '';
+
+            folderTypes.forEach((type) => {
+                const folderId = `${status}-${type.key}`;
+                const folder = folders[folderId];
+                const group = document.createElement('li');
+                group.className = 'folder-group';
+                group.dataset.folderId = folderId;
+
+                const header = document.createElement('button');
+                header.className = folderId === selectedFolderId ? 'folder-header active' : 'folder-header';
+                header.type = 'button';
+                header.innerHTML = `
+                    <i class="fa-solid ${folder.icon}"></i>
+                    <span>${folder.label}</span>
+                    <span class="folder-count">${folder.files.length}</span>
+                `;
+                header.addEventListener('click', () => {
+                    selectedFolderId = folderId;
+                    renderFolders();
+                });
+
+                group.addEventListener('dragover', (event) => {
+                    if (Array.from(event.dataTransfer.types).includes('Files')) {
+                        event.preventDefault();
+                        group.classList.add('drop-over');
+                    }
+                });
+                group.addEventListener('dragleave', () => group.classList.remove('drop-over'));
+                group.addEventListener('drop', (event) => {
+                    if (!event.dataTransfer.files.length) return;
+                    event.preventDefault();
+                    group.classList.remove('drop-over');
+                    addFilesToFolder(folderId, event.dataTransfer.files);
+                });
+
+                const fileList = document.createElement('ul');
+                fileList.className = 'file-list';
+
+                if (folder.files.length === 0) {
+                    const emptyItem = document.createElement('li');
+                    emptyItem.className = 'empty-folder';
+                    emptyItem.textContent = '파일을 드래그해 업로드';
+                    fileList.appendChild(emptyItem);
+                }
+
+                folder.files.forEach((file, index) => {
+                    const fileItem = document.createElement('li');
+                    fileItem.className = 'file-item';
+                    fileItem.draggable = true;
+                    fileItem.dataset.folderId = folderId;
+                    fileItem.dataset.index = index;
+                    fileItem.innerHTML = `
+                        <i class="fa-regular ${getFileIcon(file.name)}"></i>
+                        <span class="file-name" title="${file.name}">${file.name}</span>
+                    `;
+
+                    fileItem.addEventListener('dragstart', (event) => {
+                        draggingFile = { folderId, index };
+                        event.dataTransfer.effectAllowed = 'move';
+                        fileItem.classList.add('dragging');
+                    });
+
+                    fileItem.addEventListener('dragend', () => {
+                        draggingFile = null;
+                        fileItem.classList.remove('dragging');
+                    });
+
+                    fileItem.addEventListener('dragover', (event) => {
+                        if (draggingFile && draggingFile.folderId === folderId) {
+                            event.preventDefault();
+                            event.dataTransfer.dropEffect = 'move';
+                        }
+                    });
+
+                    fileItem.addEventListener('drop', (event) => {
+                        if (!draggingFile || draggingFile.folderId !== folderId) return;
+                        event.preventDefault();
+                        moveFileWithinFolder(folderId, draggingFile.index, index);
+                    });
+
+                    fileList.appendChild(fileItem);
+                });
+
+                group.appendChild(header);
+                group.appendChild(fileList);
+                container.appendChild(group);
+            });
+        }
+
+        function renderFolders() {
+            renderFolderList(finishedFolderList, 'finished');
+            renderFolderList(ongoingFolderList, 'ongoing');
+            updateSummary();
+        }
+
+        uploadButton.addEventListener('click', () => fileInput.click());
+        mainUploadButton.addEventListener('click', () => fileInput.click());
+        sidebarToggle.addEventListener('click', () => {
+            const isCollapsed = document.body.classList.toggle('sidebar-collapsed');
+            sidebarToggle.setAttribute('aria-label', isCollapsed ? '사이드바 열기' : '사이드바 닫기');
+        });
+        analyzeButton.addEventListener('click', () => {
+            alert('끝난 활동 자료를 기준으로 포트폴리오 분석을 시작합니다.');
+        });
+
+        fileInput.addEventListener('change', (event) => {
+            if (event.target.files.length > 0) {
+                addFilesToFolder(selectedFolderId, event.target.files);
+                event.target.value = '';
+            }
+        });
+
+        renderFolders();
+    </script>
+</body>
+</html>
