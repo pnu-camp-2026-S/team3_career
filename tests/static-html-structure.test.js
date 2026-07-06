@@ -272,13 +272,53 @@ assert.match(
 );
 assert.match(
   contestJs,
-  /D-90/,
-  'contest recommendations should include an activity 90 days away'
+  /function\s+getTodayDate/,
+  'contest should read the current date before calculating D-day labels'
+);
+assert.match(
+  contestJs,
+  /new Date\(\)/,
+  'contest D-day calculation should use the browser current date'
+);
+assert.match(
+  contestJs,
+  /function\s+calculateDeadline/,
+  'contest should calculate D-day labels from activity schedule dates'
+);
+assert.match(
+  contestJs,
+  /getActivityDeadline\(item\.id\)/,
+  'contest cards should render D-day labels from the schedule date'
+);
+assert.match(
+  contestJs,
+  /function\s+getReadinessScheduleText/,
+  'contest should create readiness copy from the calculated schedule date'
+);
+assert.match(
+  contestJs,
+  /getReadinessScheduleText\(item\.id,\s*item\.readinessReason\)/,
+  'contest readiness detail should render date-aware preparation copy'
 );
 assert.match(
   contestJs,
   /2026-10-04/,
   'contest future activity should be scheduled 90 days later on 2026-10-04'
+);
+assert.match(
+  contestJs,
+  /1:\s*'2026-07-12'[\s\S]*2:\s*'2026-07-12'/,
+  'contest should place two July activities on the same date'
+);
+assert.match(
+  contestJs,
+  /3:\s*'2026-08-05'[\s\S]*4:\s*'2026-08-12'[\s\S]*5:\s*'2026-08-19'[\s\S]*6:\s*'2026-08-26'/,
+  'contest should schedule four activities in August'
+);
+assert.match(
+  contestJs,
+  /7:\s*'2026-09-09'[\s\S]*8:\s*'2026-09-23'/,
+  'contest should schedule two activities in September'
 );
 assert.match(
   contestJs,
@@ -403,6 +443,26 @@ assert.match(
 );
 assert.match(
   contestJs,
+  /<button class="deadline-tag" type="button"/,
+  'contest D-day bookmark should be a clickable button'
+);
+assert.match(
+  contestJs,
+  /function\s+toggleBookmarkSave/,
+  'contest should save or remove an activity from the bookmark without opening details'
+);
+assert.match(
+  contestJs,
+  /event\.target\.closest\('\.deadline-tag'\)/,
+  'contest should handle bookmark clicks separately from card clicks'
+);
+assert.match(
+  contestJs,
+  /event\.stopPropagation\(\)/,
+  'contest bookmark clicks should not expand the activity card'
+);
+assert.match(
+  contestJs,
   /activity-card \$\{isActivitySaved\(item\.id\) \? 'is-saved' : ''\}/,
   'contest activity cards should reflect saved bookmark state'
 );
@@ -425,6 +485,41 @@ assert.match(
   contestJs,
   /href="https:\/\/calendar\.google\.com\/calendar\/u\/0\/r"/,
   'contest more schedules link should open Google Calendar'
+);
+assert.match(
+  contestJs,
+  /class="text-button schedule-view"/,
+  'contest saved schedule view buttons should be identifiable'
+);
+assert.match(
+  contestJs,
+  /data-date="\$\{event\.date\}"/,
+  'contest saved schedule view buttons should carry the saved date'
+);
+assert.match(
+  contestJs,
+  /function\s+showScheduleDate/,
+  'contest should move the calendar to a saved schedule date'
+);
+assert.match(
+  contestJs,
+  /focusedScheduleDate\s*=\s*null;[\s\S]*showActivityMonth\(item\)/,
+  'contest activity selection should clear the saved schedule date highlight'
+);
+assert.match(
+  contestJs,
+  /selectedActivityId\s*=\s*null;[\s\S]*focusedScheduleDate\s*=\s*date;/,
+  'contest saved schedule view should clear the selected activity highlight'
+);
+assert.match(
+  contestJs,
+  /scheduleList\.addEventListener\('click'/,
+  'contest should handle saved schedule view button clicks'
+);
+assert.match(
+  contestJs,
+  /event\.target\.closest\('\.schedule-view'\)/,
+  'contest should detect saved schedule view button clicks'
 );
 assert.match(
   contestCss,

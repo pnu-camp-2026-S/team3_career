@@ -208,6 +208,7 @@ let selectedActivityId = null;
 let activeDetailElement = null;
 let visibleCalendarYear = 2026;
 let visibleCalendarMonth = 6;
+let focusedScheduleDate = null;
 const visibleScheduleLimit = 5;
 const savedSchedules = [];
 
@@ -269,7 +270,9 @@ function renderActivities() {
         <article class="activity-card ${isActivitySaved(item.id) ? 'is-saved' : ''}" data-id="${item.id}">
           <div class="card-top">
             <span class="card-chip">${item.icon} ${item.industry}</span>
-            <span class="deadline-tag">${item.deadline}</span>
+            <button class="deadline-tag" type="button" data-id="${item.id}" aria-label="${item.title} 일정 저장">
+              ${getActivityDeadline(item.id)}
+            </button>
           </div>
           <h3 class="activity-title">${item.title}</h3>
           <p class="activity-meta">${item.type} · 준비 난이도 ${item.level}</p>
@@ -288,13 +291,13 @@ function renderActivities() {
 
 const scheduleDates = {
   1: '2026-07-12',
-  2: '2026-07-15',
-  3: '2026-07-18',
-  4: '2026-07-09',
-  5: '2026-07-20',
-  6: '2026-07-10',
-  7: '2026-07-22',
-  8: '2026-07-24',
+  2: '2026-07-12',
+  3: '2026-08-05',
+  4: '2026-08-12',
+  5: '2026-08-19',
+  6: '2026-08-26',
+  7: '2026-09-09',
+  8: '2026-09-23',
   9: '2026-10-04',
   10: '2026-10-04'
 };
@@ -316,6 +319,48 @@ function getDateKey(date) {
   return `${year}-${month}-${day}`;
 }
 
+function getTodayDate() {
+  const today = new Date();
+  return new Date(today.getFullYear(), today.getMonth(), today.getDate());
+}
+
+function parseDateValue(date) {
+  const [year, month, day] = date.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
+
+function calculateDeadline(scheduleDate, today = getTodayDate()) {
+  if (!scheduleDate) return 'D-?';
+
+  const targetDate = parseDateValue(scheduleDate);
+  const diffDays = Math.ceil((targetDate - today) / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return 'D-Day';
+  if (diffDays > 0) return `D-${diffDays}`;
+  return `D+${Math.abs(diffDays)}`;
+}
+
+function getActivityDeadline(id) {
+  return calculateDeadline(scheduleDates[id]);
+}
+
+function getReadinessScheduleText(id, readinessReason) {
+  const scheduleDate = scheduleDates[id];
+  if (!scheduleDate) return readinessReason;
+
+  const targetDate = parseDateValue(scheduleDate);
+  const diffDays = Math.ceil((targetDate - getTodayDate()) / (1000 * 60 * 60 * 24));
+  const cleanReason = readinessReason
+    .replace(/마감까지\s*\d+일(?:이)?\s*남았고,\s*/, '')
+    .replace(/마감까지\s*\d+일(?:이)?\s*남아\s*/, '')
+    .replace(/\d+일\s*뒤\s*마감되는\s*활동이라\s*/, '')
+    .trim();
+
+  if (diffDays === 0) return `오늘 마감이라 ${cleanReason}`;
+  if (diffDays > 0) return `마감까지 ${diffDays}일 남아, ${cleanReason}`;
+  return `마감일이 ${Math.abs(diffDays)}일 지났지만, ${cleanReason}`;
+}
+
 function getSortedSavedSchedules() {
   return savedSchedules
     .map((event, index) => ({ ...event, savedIndex: index }))
@@ -323,19 +368,20 @@ function getSortedSavedSchedules() {
 }
 
 function updateSaveButton(item) {
+  const isSaved = savedSchedules.some((event) => event.id === item.id);
+
+  document
+    .querySelectorAll(`.activity-card[data-id="${item.id}"]`)
+    .forEach((card) => card.classList.toggle('is-saved', isSaved));
+
   if (!activeDetailElement) return;
 
   const saveButton = activeDetailElement.querySelector('#save-calendar');
   if (!saveButton) return;
 
-  const isSaved = savedSchedules.some((event) => event.id === item.id);
   saveButton.disabled = false;
   saveButton.textContent = isSaved ? '저장 취소' : '저장하기';
   saveButton.classList.toggle('is-danger', isSaved);
-
-  document
-    .querySelectorAll(`.activity-card[data-id="${item.id}"]`)
-    .forEach((card) => card.classList.toggle('is-saved', isSaved));
 }
 
 function animateCalendarTurn(direction) {
@@ -386,6 +432,7 @@ function openDetail(id, cardElement) {
   }
 
   selectedActivityId = item.id;
+  focusedScheduleDate = null;
   showActivityMonth(item);
   clearExpandedDetail();
 
@@ -396,7 +443,7 @@ function openDetail(id, cardElement) {
     <div class="detail-meta">
       <span>${item.type}</span>
       <span>${item.industry}</span>
-      <span>${item.deadline}</span>
+      <span>${getActivityDeadline(item.id)}</span>
       <span>난이도 ${item.level}</span>
     </div>
     <section>
@@ -409,7 +456,7 @@ function openDetail(id, cardElement) {
     </section>
     <section>
       <h4>준비 가능성</h4>
-      <p>${item.readiness} · ${item.readinessReason}</p>
+      <p>${item.readiness} · ${getReadinessScheduleText(item.id, item.readinessReason)}</p>
     </section>
     <section>
       <h4>포트폴리오 활용 예시</h4>
@@ -451,12 +498,32 @@ function renderCalendarHighlight() {
   document.querySelectorAll('.calendar-grid .day').forEach((dayBtn) => {
     const dateKey = dayBtn.dataset.date;
     const selectedDate = selectedActivityId ? scheduleDates[selectedActivityId] : null;
-    const isSelectedDay = selectedDate === dateKey;
+    const isSelectedDay = selectedDate === dateKey || focusedScheduleDate === dateKey;
     const hasEvent = savedSchedules.some((event) => event.date === dateKey);
 
     dayBtn.classList.toggle('event', hasEvent || isSelectedDay);
     dayBtn.classList.toggle('active', isSelectedDay);
   });
+}
+
+function showScheduleDate(date) {
+  if (!date) return;
+
+  const [year, month] = date.split('-').map(Number);
+  const currentMonthIndex = visibleCalendarYear * 12 + visibleCalendarMonth;
+  const targetMonthIndex = year * 12 + month - 1;
+  const direction = targetMonthIndex > currentMonthIndex ? 'next' : 'prev';
+
+  selectedActivityId = null;
+  focusedScheduleDate = date;
+  visibleCalendarYear = year;
+  visibleCalendarMonth = month - 1;
+  renderCalendarMonth();
+  updateSelectedCard();
+
+  if (targetMonthIndex !== currentMonthIndex) {
+    animateCalendarTurn(direction);
+  }
 }
 
 function renderCalendarMonth() {
@@ -518,6 +585,13 @@ function toggleSaveToCalendar(item) {
   updateSaveButton(item);
 }
 
+function toggleBookmarkSave(id) {
+  const item = activities.find((activity) => activity.id === Number(id));
+  if (!item) return;
+
+  toggleSaveToCalendar(item);
+}
+
 function renderSchedule() {
   if (!savedSchedules.length) {
     scheduleList.innerHTML = `
@@ -556,7 +630,7 @@ function renderSchedule() {
             <strong>${event.title}</strong>
             <p>${event.note}</p>
           </div>
-          <button class="text-button" type="button">보기</button>
+          <button class="text-button schedule-view" type="button" data-date="${event.date}">보기</button>
         </div>
       `
     )
@@ -587,8 +661,22 @@ tabs.forEach((tab) => {
 });
 
 activityList.addEventListener('click', (event) => {
+  const bookmarkButton = event.target.closest('.deadline-tag');
+  if (bookmarkButton) {
+    event.stopPropagation();
+    toggleBookmarkSave(bookmarkButton.dataset.id);
+    return;
+  }
+
   const card = event.target.closest('.activity-card');
   if (card) openDetail(card.dataset.id, card);
+});
+
+scheduleList.addEventListener('click', (event) => {
+  const viewButton = event.target.closest('.schedule-view');
+  if (!viewButton) return;
+
+  showScheduleDate(viewButton.dataset.date);
 });
 
 prevCalendarMonth.addEventListener('click', () => moveCalendarMonth(-1));
