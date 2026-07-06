@@ -13,6 +13,7 @@ const linkedHtmlFiles = [
   'portfolio_create.html',
   'portfolio_manage.html',
   'signup.html',
+  'withdraw.html',
 ];
 
 for (const file of linkedHtmlFiles) {
@@ -29,6 +30,10 @@ for (const file of linkedHtmlFiles) {
 assert.ok(
   fs.existsSync(path.join(htmlDir, 'fitfolio.css')),
   'shared Fitfolio stylesheet should live in the html directory'
+);
+assert.ok(
+  fs.existsSync(path.join(htmlDir, 'auth-nav.js')),
+  'shared auth navigation script should live in the html directory'
 );
 
 const fitfolioCss = fs.readFileSync(path.join(htmlDir, 'fitfolio.css'), 'utf8');
@@ -67,6 +72,31 @@ assert.match(
 );
 
 const mainHtml = fs.readFileSync(path.join(htmlDir, 'main.html'), 'utf8');
+const authNavJs = fs.readFileSync(path.join(htmlDir, 'auth-nav.js'), 'utf8');
+assert.match(
+  mainHtml,
+  /data-page="main"/,
+  'main page should expose its page type for logged-out rendering'
+);
+assert.match(
+  authNavJs,
+  /localStorage\.clear\(\)/,
+  'logout should clear locally stored user data'
+);
+assert.match(
+  authNavJs,
+  /sessionStorage\.clear\(\)/,
+  'logout should clear the login session'
+);
+assert.match(
+  authNavJs,
+  /로그인이 필요해요/,
+  'main should render a login-required prompt after logout'
+);
+assert.ok(
+  !authNavJs.includes('profile-needed-icon" aria-hidden="true">!'),
+  'login-required prompt should not render an exclamation mark icon'
+);
 assert.match(
   mainHtml,
   /id="sidebarToggle"/,
@@ -533,3 +563,69 @@ assert.match(
   /const\s+loadingDuration\s*=\s*3000/,
   'portfolio_create loading progress should run for 3 seconds'
 );
+
+const loginHtml = fs.readFileSync(path.join(htmlDir, 'login.html'), 'utf8');
+const signupHtml = fs.readFileSync(path.join(htmlDir, 'signup.html'), 'utf8');
+const mypageHtml = fs.readFileSync(path.join(htmlDir, 'mypage.html'), 'utf8');
+const withdrawHtml = fs.readFileSync(path.join(htmlDir, 'withdraw.html'), 'utf8');
+
+for (const [fileName, html] of Object.entries({
+  'main.html': mainHtml,
+  'contest.html': contestHtml,
+  'create.html': createHtml,
+  'mypage.html': mypageHtml,
+  'portfolio_create.html': portfolioCreateHtml,
+  'portfolio_manage.html': fs.readFileSync(path.join(htmlDir, 'portfolio_manage.html'), 'utf8'),
+})) {
+  assert.ok(
+    !html.includes('aria-label="알림">!</button>'),
+    `${fileName} should not show the old exclamation notification button`
+  );
+  assert.match(
+    html,
+    /data-profile-toggle/,
+    `${fileName} should expose the profile dropdown toggle`
+  );
+  assert.match(
+    html,
+    /data-logout/,
+    `${fileName} should expose logout in the profile menu`
+  );
+  assert.match(
+    html,
+    /src="auth-nav\.js"/,
+    `${fileName} should load the shared auth navigation script`
+  );
+}
+
+assert.match(
+  loginHtml,
+  /href="withdraw\.html"[^>]*>회원 탈퇴<\/a>/,
+  'login page should link to account withdrawal'
+);
+assert.match(
+  signupHtml,
+  /href="withdraw\.html"[^>]*>회원 탈퇴<\/a>/,
+  'signup page should link to account withdrawal'
+);
+assert.match(
+  withdrawHtml,
+  /id="withdrawConfirm"/,
+  'withdrawal page should require an explicit confirmation checkbox'
+);
+assert.match(
+  withdrawHtml,
+  /localStorage\.clear\(\)/,
+  'withdrawal should clear locally stored profile data'
+);
+assert.match(
+  mypageHtml,
+  /const majors = \["전기공학과", "정보컴퓨터공학과", "화공생명공학과", "산업공학과"\]/,
+  'mypage major pickers should use the requested department list'
+);
+for (const jobLabel of ['AI/머신러닝', '네트워크/인프라', '전기/전자', '화학/바이오', '금융/보험', '미디어/콘텐츠']) {
+  assert.ok(
+    mypageHtml.includes(`"${jobLabel}"`),
+    `mypage job list should include ${jobLabel}`
+  );
+}
