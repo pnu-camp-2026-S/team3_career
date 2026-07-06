@@ -2090,7 +2090,7 @@ function login() {
 }
 
 function isProfileSaved() {
-  return localStorage.getItem("myfitfolioProfileSaved") === "true";
+  return sessionStorage.getItem("myfitfolioProfileSaved") === "true";
 }
 
 function renderAuth(mode = "signup") {
@@ -2695,7 +2695,7 @@ function wireMypage() {
   });
 
   document.querySelector("[data-save-profile]")?.addEventListener("click", () => {
-    localStorage.setItem("myfitfolioProfileSaved", "true");
+    sessionStorage.setItem("myfitfolioProfileSaved", "true");
     setRoute("main");
   });
 
