@@ -75,15 +75,17 @@
         </button>
         
         <div class="nav-title">내 소스 파일</div>
-        <ul class="nav-list" id="sourceList">
-            </ul>
+        <ul class="nav-list" id="sourceList"></ul>
     </aside>
 
     <main class="content-area">
         <header class="topbar">
             <a href="main.html" class="tab-btn">메인</a>
-            <a href="portfolio.html" class="tab-btn active">포트폴리오 자동 작성</a>
-            <a href="contest.html" class="tab-btn">교내외 공모전 추천</a>
+            <a href="portfolio.html" class="tab-btn active">포트폴리오 생성</a>
+            <a href="portfolio_manage.html" class="tab-btn">포트폴리오 관리</a>
+            <a href="create.html" class="tab-btn">파일 생성</a>
+            <a href="contest.html" class="tab-btn">공모전 추천</a>
+            <a href="mypage.html" class="tab-btn">마이페이지</a>
         </header>
 
         <div class="chat-container" id="chatContainer">
@@ -104,9 +106,71 @@
         </div>
     </main>
 
+    <div id="hoverTooltip" class="hover-tooltip hidden">구체적인 활동 증빙 자료가 없어요</div>
+
     <script>
-        // 1. 상태(State) 관리: 업로드된 파일들을 저장할 배열
+        const STORAGE_KEY = 'careerfit_source_files';
+        const DRAFT_STORAGE_KEY = 'careerfit_portfolio_drafts';
         let uploadedFiles = [];
+
+        function getStoredFiles() {
+            try {
+                return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+            } catch {
+                return [];
+            }
+        }
+
+        function saveStoredFiles(files) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(files));
+        }
+
+        function getStoredDrafts() {
+            try {
+                const parsed = JSON.parse(localStorage.getItem(DRAFT_STORAGE_KEY)) || [];
+                return Array.isArray(parsed) ? parsed : [];
+            } catch {
+                return [];
+            }
+        }
+
+        function buildDraftTitle(prompt, reply) {
+            const firstLine = String(reply || '')
+                .split(/\r?\n/)
+                .map((line) => line.trim())
+                .find(Boolean);
+            const baseTitle = (firstLine || prompt || '포트폴리오 초안')
+                .replace(/^#+\s*/, '')
+                .replace(/[*_`]/g, '')
+                .trim();
+            return baseTitle.length > 48 ? `${baseTitle.slice(0, 48)}...` : baseTitle;
+        }
+
+        function savePortfolioDraft(prompt, reply) {
+            if (!reply) return;
+
+            const now = new Date().toISOString();
+            const drafts = getStoredDrafts();
+            const sourceFiles = getStoredFiles().map((file) => file.name);
+
+            drafts.unshift({
+                id: `draft-${Date.now()}`,
+                title: buildDraftTitle(prompt, reply),
+                status: 'draft',
+                targetRole: '',
+                content: reply,
+                prompt,
+                sourceFiles,
+                createdAt: now,
+                updatedAt: now,
+            });
+
+            localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(drafts));
+        }
+
+        function loadStoredFiles() {
+            uploadedFiles = getStoredFiles();
+        }
 
         // DOM 요소 할당
         const dragOverlay = document.getElementById('dragOverlay');
@@ -172,7 +236,12 @@
                     throw new Error(data.error || 'AI 응답을 가져오지 못했습니다.');
                 }
 
-                loadingMessage.querySelector('p').textContent = data.reply || '응답이 비어 있습니다.';
+                const reply = data.reply || '응답이 비어 있습니다.';
+                loadingMessage.querySelector('p').textContent = reply;
+
+                if (data.reply) {
+                    savePortfolioDraft(message, reply);
+                }
             } catch (error) {
                 loadingMessage.querySelector('p').textContent = error.message;
             } finally {
@@ -210,17 +279,22 @@
 
         // 3. 파일 추가 로직
         function addFiles(files) {
+            const currentFiles = getStoredFiles();
             Array.from(files).forEach(file => {
-                // 중복 파일 필터링 로직이 필요하다면 여기에 추가 가능
-                uploadedFiles.push(file);
+                currentFiles.push({ name: file.name, type: file.type });
             });
+            saveStoredFiles(currentFiles);
+            loadStoredFiles();
             renderFileList();
         }
 
         // 4. 파일 삭제 로직 (인덱스 기반)
         window.deleteFile = function(index) {
-            uploadedFiles.splice(index, 1); // 배열에서 해당 인덱스의 파일 1개 제거
-            renderFileList(); // 화면 다시 그리기
+            const currentFiles = getStoredFiles();
+            currentFiles.splice(index, 1);
+            saveStoredFiles(currentFiles);
+            loadStoredFiles();
+            renderFileList();
         };
 
         // --- 이벤트 리스너 설정 ---
@@ -247,6 +321,16 @@
             }
         });
 
+        window.addEventListener('storage', (event) => {
+            if (event.key === STORAGE_KEY) {
+                loadStoredFiles();
+                renderFileList();
+            }
+        });
+
+        loadStoredFiles();
+        renderFileList();
+
         // (2) 드래그 앤 드롭 이벤트 처리
         // 파일을 브라우저 화면 안으로 끌고 들어올 때 오버레이 표시
         window.addEventListener('dragover', (e) => {
@@ -269,6 +353,27 @@
                 addFiles(e.dataTransfer.files);
             }
         });
+    </script>
+    <script>
+        (function(){
+            const createTab = document.querySelector('a[href="create.html"]');
+            const tooltip = document.getElementById('hoverTooltip');
+            if (!createTab || !tooltip) return;
+
+            function positionTooltip(e) {
+                const x = e.clientX;
+                const y = e.clientY;
+                tooltip.style.left = x + 'px';
+                tooltip.style.top = (y - 12) + 'px';
+            }
+
+            createTab.addEventListener('mouseenter', (e) => {
+                tooltip.classList.remove('hidden');
+                positionTooltip(e);
+            });
+            createTab.addEventListener('mousemove', (e) => positionTooltip(e));
+            createTab.addEventListener('mouseleave', () => tooltip.classList.add('hidden'));
+        })();
     </script>
 </body>
 </html>

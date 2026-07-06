@@ -41,18 +41,20 @@
         <div class="sidebar-header">
             <h2>CareerFit</h2>
         </div>
-        <button class="btn-upload"><i class="fa-solid fa-cloud-arrow-up"></i> 학적/포트폴리오 업로드</button>
+        <input type="file" id="hiddenFileInput" style="display:none;" multiple>
+        <button class="btn-upload" id="uploadButton" type="button"><i class="fa-solid fa-cloud-arrow-up"></i> 학적/포트폴리오 업로드</button>
         <div class="nav-title">내 소스 파일</div>
-        <ul class="nav-list">
-            <li class="nav-item"><i class="fa-regular fa-file-pdf"></i> 성적증명서.pdf</li>
-        </ul>
+        <ul class="nav-list" id="sourceList"></ul>
     </aside>
 
     <main class="content-area">
         <header class="topbar">
             <a href="main.html" class="tab-btn">메인</a>
-            <a href="portfolio.html" class="tab-btn">포트폴리오 자동 작성</a>
-            <a href="contest.html" class="tab-btn active">교내외 공모전 추천</a>
+            <a href="portfolio.html" class="tab-btn">포트폴리오 생성</a>
+            <a href="portfolio_manage.html" class="tab-btn">포트폴리오 관리</a>
+            <a href="create.html" class="tab-btn">파일 생성</a>
+            <a href="contest.html" class="tab-btn active">공모전 추천</a>
+            <a href="mypage.html" class="tab-btn">마이페이지</a>
         </header>
 
         <div class="chat-container">
@@ -76,5 +78,106 @@
             </div>
         </div>
     </main>
+    <div id="hoverTooltip" class="hover-tooltip hidden">구체적인 활동 증빙 자료가 없어요</div>
+
+    <script>
+        const STORAGE_KEY = 'careerfit_source_files';
+        let uploadedFiles = [];
+        const sourceList = document.getElementById('sourceList');
+        const fileInput = document.getElementById('hiddenFileInput');
+        const uploadButton = document.getElementById('uploadButton');
+
+        function getStoredFiles() {
+            try {
+                return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+            } catch {
+                return [];
+            }
+        }
+
+        function saveStoredFiles(files) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(files));
+        }
+
+        function loadStoredFiles() {
+            uploadedFiles = getStoredFiles();
+        }
+
+        function renderFileList() {
+            sourceList.innerHTML = '';
+            uploadedFiles.forEach((file, index) => {
+                const li = document.createElement('li');
+                li.className = 'nav-item';
+                const iconClass = file.name.endsWith('.pdf') ? 'fa-file-pdf' : file.name.match(/\.(jpg|jpeg|png|gif)$/i) ? 'fa-file-image' : file.name.match(/\.(js|py|html|css|json|md)$/i) ? 'fa-file-code' : 'fa-file';
+                li.innerHTML = `
+                    <div class="file-info" title="${file.name}">
+                        <i class="fa-regular ${iconClass}"></i>
+                        <span>${file.name}</span>
+                    </div>
+                    <button class="btn-delete" onclick="deleteFile(${index})" title="삭제">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                `;
+                sourceList.appendChild(li);
+            });
+        }
+
+        function addFiles(files) {
+            const currentFiles = getStoredFiles();
+            Array.from(files).forEach(file => {
+                currentFiles.push({ name: file.name, type: file.type });
+            });
+            saveStoredFiles(currentFiles);
+            loadStoredFiles();
+            renderFileList();
+        }
+
+        window.deleteFile = function(index) {
+            const currentFiles = getStoredFiles();
+            currentFiles.splice(index, 1);
+            saveStoredFiles(currentFiles);
+            loadStoredFiles();
+            renderFileList();
+        };
+
+        uploadButton.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (event) => {
+            if (event.target.files.length > 0) {
+                addFiles(event.target.files);
+                event.target.value = '';
+            }
+        });
+
+        window.addEventListener('storage', (event) => {
+            if (event.key === STORAGE_KEY) {
+                loadStoredFiles();
+                renderFileList();
+            }
+        });
+
+        loadStoredFiles();
+        renderFileList();
+    </script>
+    <script>
+        (function(){
+            const createTab = document.querySelector('a[href="create.html"]');
+            const tooltip = document.getElementById('hoverTooltip');
+            if (!createTab || !tooltip) return;
+
+            function positionTooltip(e) {
+                const x = e.clientX;
+                const y = e.clientY;
+                tooltip.style.left = x + 'px';
+                tooltip.style.top = (y - 12) + 'px';
+            }
+
+            createTab.addEventListener('mouseenter', (e) => {
+                tooltip.classList.remove('hidden');
+                positionTooltip(e);
+            });
+            createTab.addEventListener('mousemove', (e) => positionTooltip(e));
+            createTab.addEventListener('mouseleave', () => tooltip.classList.add('hidden'));
+        })();
+    </script>
 </body>
 </html>

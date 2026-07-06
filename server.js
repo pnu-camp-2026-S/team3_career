@@ -13,17 +13,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-const publicPages = ['index.html', 'login.html', 'signup.html', 'portfolio.html', 'contest.html', 'main.html'];
-
-app.get('/', (req, res) => {
-    res.redirect('/main.html');
-});
-
-publicPages.forEach((page) => {
-    app.get(`/${page}`, (req, res) => {
-        res.sendFile(path.join(__dirname, page));
-    });
-});
+app.use(express.static(path.join(__dirname, 'html')));
 
 // OpenAI 클라이언트 초기화
 const openai = new OpenAI({

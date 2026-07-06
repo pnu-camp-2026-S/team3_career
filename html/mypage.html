@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareerFit - 마이페이지</title>
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Pretendard', sans-serif; }
+        body { background: #fff; color: #333; display: flex; min-height: 100vh; overflow: hidden; }
+        .sidebar { width: 280px; background: #f8fafc; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column; padding: 24px; overflow-y:auto; }
+        .sidebar-header { margin-bottom: 24px; }
+        .sidebar-header h2 { font-size: 22px; font-weight: 800; color: #2563eb; }
+        .user-info { font-size: 13px; color: #64748b; margin-top: 6px; display: flex; align-items: center; gap: 6px; }
+        .btn-upload { width: 100%; padding: 12px; background: #fff; border: 1px dashed #cbd5e1; border-radius: 8px; color: #475569; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; margin-bottom: 24px; }
+        .btn-upload:hover { border-color: #2563eb; color: #2563eb; background: #eff6ff; }
+        .nav-title { font-size: 12px; font-weight: 700; color: #94a3b8; margin-bottom: 12px; text-transform: uppercase; }
+        .nav-list { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+        .nav-item { padding: 8px 12px; border-radius: 8px; font-size: 13px; color: #475569; display: flex; align-items: center; justify-content: space-between; transition: 0.2s; }
+        .nav-item:hover { background: #e2e8f0; }
+        .file-info { display:flex; align-items:center; gap:8px; overflow:hidden; }
+        .file-info span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .btn-delete { background: none; border: none; color: #94a3b8; cursor: pointer; padding: 4px; border-radius: 4px; transition: 0.2s; }
+        .btn-delete:hover { color: #ef4444; background: #fee2e2; }
+        .content-area { flex: 1; display: flex; flex-direction: column; overflow-y:auto; }
+        .topbar { height: 64px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; padding: 0 40px; gap: 32px; background: #fff; flex-shrink: 0; }
+        .tab-btn { text-decoration: none; font-size: 15px; font-weight: 600; color: #64748b; padding: 22px 0; position: relative; }
+        .tab-btn.active { color: #2563eb; }
+        .tab-btn.active::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 100%; height: 3px; background: #2563eb; border-radius: 3px 3px 0 0; }
+        .main-container { flex: 1; overflow-y: auto; padding: 40px; background: #fff; }
+        .page-title { margin-bottom: 24px; }
+        .page-title h1 { font-size: 28px; font-weight: 800; color: #1e293b; margin-bottom: 8px; }
+        .page-title p { color: #64748b; font-size: 15px; line-height: 1.6; }
+        .panel { border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; background: #fff; max-width: 760px; }
+        .panel h2 { font-size: 18px; font-weight: 800; color: #1e293b; margin-bottom: 16px; }
+        .checkbox-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-bottom: 20px; }
+        .checkbox-group { border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; }
+        .checkbox-group h3 { font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 12px; }
+        .checkbox-item { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .checkbox-item input { accent-color: #2563eb; width: 16px; height: 16px; }
+        .btn-primary { border: none; border-radius: 8px; background: #2563eb; color: #fff; font-size: 14px; font-weight: 700; padding: 12px 18px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary:hover { background: #1d4ed8; }
+        @media (max-width: 980px) { body { flex-direction: column; overflow: auto; } .sidebar { width: 100%; } .content-area { padding: 24px; } .topbar { padding: 0 24px; } }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2>CareerFit</h2>
+            <div class="user-info"><i class="fa-solid fa-circle-check" style="color:#10b981;"></i> <span id="displayUserEmail">user@univ.ac.kr</span></div>
+        </div>
+        <input type="file" id="hiddenFileInput" style="display: none;" multiple>
+        <button class="btn-upload" id="uploadButton" type="button"><i class="fa-solid fa-cloud-arrow-up"></i> 파일 업로드</button>
+        <div class="nav-title">내 소스 파일</div>
+        <ul class="nav-list" id="sourceList"></ul>
+    </aside>
+    <main class="content-area">
+        <header class="topbar">
+            <a href="main.html" class="tab-btn">메인</a>
+            <a href="portfolio.html" class="tab-btn">포트폴리오 생성</a>
+            <a href="portfolio_manage.html" class="tab-btn">포트폴리오 관리</a>
+            <a href="create.html" class="tab-btn">파일 생성</a>
+            <a href="contest.html" class="tab-btn">공모전 추천</a>
+            <a href="mypage.html" class="tab-btn active">마이페이지</a>
+        </header>
+        <div class="main-container">
+            <div class="page-title">
+                <h1>정보를 입력해주세요</h1>
+                <p>나의 전공, 학년, 직무 희망을 선택하면 AI가 더 정확한 포트폴리오와 공모전 추천을 도와드립니다.</p>
+            </div>
+            <div class="panel">
+                <h2>기본 정보</h2>
+                <form id="profileForm">
+                    <div class="checkbox-grid">
+                        <div class="checkbox-group">
+                            <h3>전공 선택</h3>
+                            <label class="checkbox-item"><input type="checkbox" name="major" value="컴퓨터공학"> 컴퓨터공학</label>
+                            <label class="checkbox-item"><input type="checkbox" name="major" value="소프트웨어공학"> 소프트웨어공학</label>
+                            <label class="checkbox-item"><input type="checkbox" name="major" value="AI/데이터"> AI/데이터</label>
+                            <label class="checkbox-item"><input type="checkbox" name="major" value="디자인"> 디자인</label>
+                            <label class="checkbox-item"><input type="checkbox" name="major" value="경영/마케팅"> 경영/마케팅</label>
+                            <label class="checkbox-item"><input type="checkbox" name="major" value="기타"> 기타</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <h3>학년 선택</h3>
+                            <label class="checkbox-item"><input type="checkbox" name="year" value="1학년"> 1학년</label>
+                            <label class="checkbox-item"><input type="checkbox" name="year" value="2학년"> 2학년</label>
+                            <label class="checkbox-item"><input type="checkbox" name="year" value="3학년"> 3학년</label>
+                            <label class="checkbox-item"><input type="checkbox" name="year" value="4학년 이상"> 4학년 이상</label>
+                        </div>
+                    </div>
+                    <div class="checkbox-grid">
+                        <div class="checkbox-group" style="grid-column: span 2;">
+                            <h3>희망 직무</h3>
+                            <label class="checkbox-item"><input type="checkbox" name="job" value="백엔드"> 백엔드</label>
+                            <label class="checkbox-item"><input type="checkbox" name="job" value="프론트엔드"> 프론트엔드</label>
+                            <label class="checkbox-item"><input type="checkbox" name="job" value="데이터"> 데이터</label>
+                            <label class="checkbox-item"><input type="checkbox" name="job" value="AI/ML"> AI/ML</label>
+                            <label class="checkbox-item"><input type="checkbox" name="job" value="자동화"> 자동화</label>
+                            <label class="checkbox-item"><input type="checkbox" name="job" value="기획/PM"> 기획/PM</label>
+                        </div>
+                    </div>
+                    <button class="btn-primary" id="saveProfileBtn" type="button">저장하고 시작하기</button>
+                </form>
+            </div>
+        </div>
+    </main>
+    <script>
+        const STORAGE_KEY = 'careerfit_source_files';
+        const emailKey = 'careerfit_user_email';
+        const onboardingKey = 'careerfit_onboarding_complete';
+        const sourceList = document.getElementById('sourceList');
+        const fileInput = document.getElementById('hiddenFileInput');
+        const uploadButton = document.getElementById('uploadButton');
+        const displayUserEmail = document.getElementById('displayUserEmail');
+        const profileForm = document.getElementById('profileForm');
+        const saveProfileBtn = document.getElementById('saveProfileBtn');
+
+        function getStoredFiles() {
+            try {
+                return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+            } catch {
+                return [];
+            }
+        }
+
+        function saveStoredFiles(files) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(files));
+        }
+
+        function renderFiles() {
+            const files = getStoredFiles();
+            sourceList.innerHTML = '';
+            files.forEach((file, index) => {
+                const li = document.createElement('li');
+                li.className = 'nav-item';
+                const iconClass = file.name.endsWith('.pdf') ? 'fa-file-pdf' : file.name.match(/\.(jpg|jpeg|png|gif)$/i) ? 'fa-file-image' : file.name.match(/\.(js|py|html|css|json|md)$/i) ? 'fa-file-code' : 'fa-file';
+                li.innerHTML = `
+                    <div class="file-info" title="${file.name}">
+                        <i class="fa-regular ${iconClass}"></i>
+                        <span>${file.name}</span>
+                    </div>
+                    <button class="btn-delete" type="button" onclick="deleteFile(${index})"><i class="fa-solid fa-trash-can"></i></button>
+                `;
+                sourceList.appendChild(li);
+            });
+        }
+
+        function addFiles(files) {
+            const current = getStoredFiles();
+            Array.from(files).forEach(file => current.push({ name: file.name, type: file.type }));
+            saveStoredFiles(current);
+            renderFiles();
+        }
+
+        window.deleteFile = function(index) {
+            const current = getStoredFiles();
+            current.splice(index, 1);
+            saveStoredFiles(current);
+            renderFiles();
+        };
+
+        function getQueryEmail() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('email');
+        }
+
+        function loadUserEmail() {
+            const email = getQueryEmail() || localStorage.getItem(emailKey) || 'user@univ.ac.kr';
+            displayUserEmail.textContent = email;
+            if (email) localStorage.setItem(emailKey, email);
+        }
+
+        uploadButton.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (event) => {
+            if (event.target.files.length > 0) {
+                addFiles(event.target.files);
+                event.target.value = '';
+            }
+        });
+
+        saveProfileBtn.addEventListener('click', () => {
+            const selectedMajors = Array.from(profileForm.querySelectorAll('input[name="major"]:checked')).map(el => el.value);
+            const selectedYears = Array.from(profileForm.querySelectorAll('input[name="year"]:checked')).map(el => el.value);
+            const selectedJobs = Array.from(profileForm.querySelectorAll('input[name="job"]:checked')).map(el => el.value);
+            if (!selectedMajors.length || !selectedYears.length || !selectedJobs.length) {
+                alert('전공, 학년, 직무를 모두 한 개 이상 선택해주세요.');
+                return;
+            }
+            localStorage.setItem('careerfit_profile', JSON.stringify({ major: selectedMajors, year: selectedYears, job: selectedJobs }));
+            localStorage.setItem(onboardingKey, 'true');
+            window.location.href = 'main.html';
+        });
+
+        window.addEventListener('storage', (event) => {
+            if (event.key === STORAGE_KEY) renderFiles();
+        });
+
+        loadUserEmail();
+        renderFiles();
+    </script>
+</body>
+</html>

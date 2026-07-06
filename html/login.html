@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>커리어핏 - 회원가입</title>
+    <title>커리어핏 - 로그인</title>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     <style>
-        /* login.html과 동일한 스타일 사용 */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Pretendard', sans-serif; }
         body { background: linear-gradient(135deg, #e6efff 0%, #f4f7fb 100%); display: flex; align-items: center; justify-content: center; height: 100vh; color: #333; }
         .auth-card { background: #fff; width: 100%; max-width: 420px; padding: 48px 40px; border-radius: 20px; box-shadow: 0 12px 36px rgba(0,0,0,0.08); text-align: center; }
-        .auth-card h1 { font-size: 28px; font-weight: 800; color: #333; margin-bottom: 8px; }
+        .auth-card h1 { font-size: 28px; font-weight: 800; color: #2563eb; margin-bottom: 8px; }
         .auth-card p { font-size: 14px; color: #64748b; margin-bottom: 32px; }
         .form-group { margin-bottom: 20px; text-align: left; }
         .form-group label { display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 8px; }
@@ -25,24 +24,43 @@
 </head>
 <body>
     <div class="auth-card">
-        <h1>회원가입</h1>
-        <p>학교 이메일 인증으로 커리어핏을 시작하세요</p>
-        <form action="login.html" method="GET">
-            <div class="form-group">
-                <label>이름</label>
-                <input type="text" required>
-            </div>
+        <h1>CareerFit</h1>
+        <p>나의 학적에 맞는 커리어를 핏하게</p>
+        <form onsubmit="return false;">
             <div class="form-group">
                 <label>학교 이메일</label>
-                <input type="email" required>
+                <input type="email" id="loginEmail" placeholder="student@univ.ac.kr" required>
             </div>
             <div class="form-group">
                 <label>비밀번호</label>
-                <input type="password" required>
+                <input type="password" id="loginPassword" placeholder="비밀번호 입력" required>
             </div>
-            <button type="submit" class="btn-primary" onclick="alert('가입이 완료되었습니다. 로그인 해주세요.')">가입하기</button>
+            <button type="button" class="btn-primary" id="loginBtn">로그인</button>
         </form>
-        <div class="toggle-link">이미 계정이 있으신가요? <a href="login.html">로그인</a></div>
+        <script>
+            const onboardingKey = 'careerfit_onboarding_complete';
+            const emailKey = 'careerfit_user_email';
+            const loginBtn = document.getElementById('loginBtn');
+
+            loginBtn.addEventListener('click', function() {
+                const email = document.getElementById('loginEmail').value.trim();
+                const password = document.getElementById('loginPassword').value.trim();
+                if (!email || !password) {
+                    alert('이메일과 비밀번호를 모두 입력해주세요.');
+                    return;
+                }
+                localStorage.setItem(emailKey, email);
+                const nextPage = localStorage.getItem(onboardingKey) === 'true' ? 'main.html' : 'mypage.html';
+                window.location.href = `${nextPage}?email=${encodeURIComponent(email)}`;
+            });
+
+            document.querySelectorAll('input').forEach((input) => {
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') e.preventDefault();
+                });
+            });
+        </script>
+        <div class="toggle-link">계정이 없으신가요? <a href="signup.html">회원가입</a></div>
     </div>
 </body>
 </html>
