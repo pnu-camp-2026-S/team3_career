@@ -542,10 +542,7 @@
       if (!actions) return;
 
       actions.innerHTML = profileState.editing
-        ? `
-          <button class="ghost-button" type="button" data-temp-save>임시저장</button>
-          <button class="primary-button" type="button" data-save-profile>저장</button>
-        `
+        ? '<button class="primary-button" type="button" data-save-profile>저장</button>'
         : '<button class="primary-button" type="button" data-edit-profile>수정하기</button>';
     }
 
@@ -713,10 +710,6 @@
         target?.scrollIntoView({ behavior: "smooth", block: "start" });
         document.querySelectorAll("[data-anchor-target]").forEach((item) => item.classList.remove("active"));
         anchor.classList.add("active");
-      }
-
-      if (event.target.closest("[data-temp-save]")) {
-        saveProfile();
       }
 
       if (event.target.closest("[data-save-profile]")) {
