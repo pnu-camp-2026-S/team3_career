@@ -12,6 +12,7 @@ const linkedHtmlFiles = [
   'mypage.html',
   'portfolio_create.html',
   'portfolio_manage.html',
+  'portfolio_viewer.html',
   'signup.html',
 ];
 
@@ -532,4 +533,89 @@ assert.match(
   portfolioCreateHtml,
   /const\s+loadingDuration\s*=\s*3000/,
   'portfolio_create loading progress should run for 3 seconds'
+);
+
+const portfolioManageHtml = fs.readFileSync(path.join(htmlDir, 'portfolio_manage.html'), 'utf8');
+assert.match(
+  portfolioManageHtml,
+  /<h1 class="page-title">포트폴리오 관리<\/h1>/,
+  'portfolio_manage should use the simple portfolio management page title'
+);
+assert.match(
+  portfolioManageHtml,
+  /중요한 포트폴리오를 빠르게 확인하고 바로 열람·수정·저장하세요\./,
+  'portfolio_manage should use the compact portfolio management subtitle'
+);
+assert.match(
+  portfolioManageHtml,
+  /href="portfolio_create\.html#pfWorkspaceScreen"[^>]*>새 포트폴리오 만들기<\/a>/,
+  'portfolio_manage should include a create portfolio action'
+);
+assert.match(
+  portfolioManageHtml,
+  /class="portfolio-library-list"/,
+  'portfolio_manage should render a portfolio card list'
+);
+assert.match(
+  portfolioManageHtml,
+  /id="portfolioList"/,
+  'portfolio_manage should render portfolio cards'
+);
+assert.match(
+  portfolioManageHtml,
+  /좋아요[\s\S]*열기[\s\S]*수정[\s\S]*PPT 저장<\/a>/,
+  'portfolio_manage cards should include open, edit, and PPT actions'
+);
+assert.match(
+  portfolioManageHtml,
+  /function\s+createPptxBlob/,
+  'portfolio_manage should build pptx download blobs'
+);
+assert.match(
+  portfolioManageHtml,
+  /function\s+downloadPortfolioPpt/,
+  'portfolio_manage should download portfolios as pptx files'
+);
+assert.match(
+  portfolioManageHtml,
+  /\.pptx/,
+  'portfolio_manage PPT action should create a .pptx download'
+);
+assert.match(
+  portfolioManageHtml,
+  /function\s+sortPortfolios/,
+  'portfolio_manage should sort liked portfolios before date order'
+);
+assert.match(
+  portfolioManageHtml,
+  /portfolio_viewer\.html\?id=/,
+  'portfolio_manage open action should route to the portfolio viewer'
+);
+assert.match(
+  portfolioManageHtml,
+  /portfolio_create\.html\?edit=/,
+  'portfolio_manage edit action should route back to the portfolio creation flow'
+);
+assert.ok(
+  !portfolioManageHtml.includes('<h1 class="page-title">파일 생성</h1>') &&
+    !portfolioManageHtml.includes('<h2 class="panel-title">새 파일 만들기</h2>') &&
+    !portfolioManageHtml.includes('파일 생성</button>') &&
+    !portfolioManageHtml.includes('portfolioSearch') &&
+    !portfolioManageHtml.includes('포트폴리오 검색') &&
+    !portfolioManageHtml.includes('임시저장') &&
+    !portfolioManageHtml.includes('완료') &&
+    !portfolioManageHtml.includes('보관함 저장'),
+  'portfolio_manage body should not copy file generation wording'
+);
+
+const portfolioViewerHtml = fs.readFileSync(path.join(htmlDir, 'portfolio_viewer.html'), 'utf8');
+assert.match(
+  portfolioViewerHtml,
+  /id="viewerContent"/,
+  'portfolio viewer should expose a stable viewer content region'
+);
+assert.match(
+  portfolioViewerHtml,
+  /new URLSearchParams\(window\.location\.search\)\.get\('id'\)/,
+  'portfolio viewer should open the portfolio selected by query id'
 );
