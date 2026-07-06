@@ -8,9 +8,7 @@ const htmlDir = path.join(rootDir, 'html');
 const linkedHtmlFiles = [
   'contest.html',
   'create.html',
-  'index.html',
   'login.html',
-  'main.html',
   'mypage.html',
   'portfolio.html',
   'portfolio_manage.html',
@@ -25,6 +23,17 @@ for (const file of linkedHtmlFiles) {
   assert.ok(
     !fs.existsSync(path.join(rootDir, file)),
     `${file} should not remain at the project root`
+  );
+}
+
+for (const file of ['index.html', 'main.html']) {
+  assert.ok(
+    fs.existsSync(path.join(rootDir, file)),
+    `${file} should exist at the project root as a GitHub Pages fallback redirect`
+  );
+  assert.ok(
+    fs.existsSync(path.join(htmlDir, file)),
+    `${file} should also live in the html directory`
   );
 }
 
