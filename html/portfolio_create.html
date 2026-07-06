@@ -17,7 +17,8 @@
 
     .portfolio-setup,
     .portfolio-draft,
-    .portfolio-ai {
+    .portfolio-ai,
+    .portfolio-actions-panel {
       border: 1px solid var(--line);
       border-radius: 8px;
       background: #fff;
@@ -30,6 +31,185 @@
 
     .portfolio-setup .page-subtitle {
       margin-bottom: 22px;
+    }
+
+    .setup-layout {
+      display: grid;
+      grid-template-columns: minmax(420px, 1.35fr) minmax(320px, 0.75fr);
+      gap: 16px;
+      align-items: center;
+    }
+
+    .setup-left,
+    .setup-right {
+      display: grid;
+      gap: 20px;
+      min-width: 0;
+    }
+
+    .setup-left {
+      align-content: center;
+    }
+
+    .setup-left .form-actions {
+      margin-top: 0;
+    }
+
+    .setup-left .form-actions .primary-button {
+      width: 100%;
+    }
+
+    .setup-right {
+      align-content: start;
+    }
+
+    .setup-right .form-row {
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-top: 0 !important;
+    }
+
+    .setup-right > .form-field {
+      margin-top: 0 !important;
+    }
+
+    .format-card-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(160px, 1fr));
+      gap: 14px;
+      margin-top: 10px;
+    }
+
+    .setup-left .format-card-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .format-card {
+      position: relative;
+      display: grid;
+      gap: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: #fff;
+      text-align: left;
+      transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+    }
+
+    .format-card:hover,
+    .format-card.selected {
+      border-color: #9eb8ff;
+      box-shadow: 0 12px 26px rgba(89, 101, 232, 0.1);
+      transform: translateY(-1px);
+    }
+
+    .format-card.selected::after {
+      content: "선택됨";
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      border-radius: 999px;
+      padding: 4px 8px;
+      background: var(--brand);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    .format-visual {
+      height: 116px;
+      overflow: hidden;
+      border: 1px solid #e3e8f5;
+      border-radius: 8px;
+      background: #f8faff;
+    }
+
+    .format-visual.onepage {
+      padding: 14px;
+    }
+
+    .format-visual.detail {
+      display: grid;
+      grid-template-columns: 38% 1fr;
+      gap: 8px;
+      padding: 12px;
+    }
+
+    .format-visual.ppt {
+      display: grid;
+      place-items: center;
+      padding: 12px;
+      background: linear-gradient(135deg, #f8faff, #eef8ff);
+    }
+
+    .format-visual.coverletter {
+      padding: 12px;
+      background: #fbfcff;
+    }
+
+    .visual-line,
+    .visual-block,
+    .visual-photo,
+    .visual-pill {
+      display: block;
+      border-radius: 999px;
+      background: #dce5ff;
+    }
+
+    .visual-line {
+      height: 8px;
+      margin-bottom: 8px;
+    }
+
+    .visual-line.short {
+      width: 60%;
+    }
+
+    .visual-line.medium {
+      width: 78%;
+    }
+
+    .visual-block {
+      height: 34px;
+      border-radius: 8px;
+      background: #eef2ff;
+    }
+
+    .visual-photo {
+      height: 100%;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #ccd8ff, #eef2ff);
+    }
+
+    .visual-ppt-slide {
+      width: 100%;
+      height: 82px;
+      border: 1px solid #cfd8f8;
+      border-radius: 8px;
+      padding: 12px;
+      background: #fff;
+      box-shadow: 0 8px 18px rgba(31, 36, 62, 0.06);
+    }
+
+    .visual-pill {
+      width: 54px;
+      height: 12px;
+      margin-bottom: 10px;
+      background: var(--brand);
+    }
+
+    .format-card strong {
+      display: block;
+      color: #17203a;
+      font-size: 15px;
+      font-weight: 900;
+    }
+
+    .format-card span {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+      line-height: 1.45;
     }
 
     .experience-checkbox-group {
@@ -198,9 +378,18 @@
       grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
       gap: 20px;
       align-items: start;
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 180ms ease, transform 180ms ease;
+    }
+
+    .portfolio-workspace.leaving {
+      opacity: 0;
+      transform: translateY(10px);
     }
 
     .portfolio-draft {
+      position: relative;
       min-height: 560px;
       padding: 28px;
     }
@@ -255,32 +444,147 @@
       font-size: 14px;
     }
 
+    .ppt-preview-wrap {
+      position: relative;
+      display: grid;
+      align-items: center;
+      min-height: 420px;
+      padding: 0 52px;
+    }
+
+    .ppt-slide {
+      min-height: 360px;
+      display: grid;
+      align-content: center;
+      gap: 22px;
+      border: 1px solid #dfe5f4;
+      border-radius: 8px;
+      padding: 42px;
+      background: linear-gradient(135deg, #fff 0%, #f8fbff 100%);
+      box-shadow: 0 18px 44px rgba(31, 36, 62, 0.08);
+    }
+
+    .ppt-slide-label {
+      width: fit-content;
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: #eef4ff;
+      color: var(--brand);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .ppt-slide h3 {
+      margin: 0;
+      color: #17203a;
+      font-size: 28px;
+      line-height: 1.25;
+    }
+
+    .ppt-slide p {
+      margin: 0;
+      color: #536176;
+      font-size: 16px;
+      line-height: 1.75;
+    }
+
+    .slide-arrow {
+      position: absolute;
+      top: 50%;
+      width: 38px;
+      height: 48px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--brand);
+      font-size: 26px;
+      font-weight: 900;
+      box-shadow: 0 10px 24px rgba(31, 36, 62, 0.08);
+      transform: translateY(-50%);
+    }
+
+    .slide-arrow:hover {
+      border-color: #9eb8ff;
+      background: #f4f7ff;
+    }
+
+    .slide-arrow.prev {
+      left: 0;
+    }
+
+    .slide-arrow.next {
+      right: 0;
+    }
+
+    .slide-counter {
+      margin-top: 14px;
+      color: #697586;
+      font-size: 13px;
+      font-weight: 850;
+      text-align: center;
+    }
+
     .portfolio-side-panel {
       display: grid;
-      gap: 20px;
+      gap: 14px;
     }
 
     .portfolio-actions-panel,
     .portfolio-ai {
-      padding: 20px;
+      padding: 16px;
     }
 
-    .portfolio-actions-panel {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #fff;
-      box-shadow: var(--shadow);
-    }
-
-    .portfolio-action-bar {
+    .master-actions {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-      margin-top: 14px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .flat-action {
+      min-height: 36px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+      color: #425066;
+      padding: 0 10px;
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .flat-action.primary {
+      border-color: var(--brand);
+      background: var(--brand);
+      color: #fff;
+    }
+
+    .flat-action:hover {
+      border-color: #9eb8ff;
+      background: #f5f7ff;
+      color: var(--brand);
+    }
+
+    .flat-action.primary:hover {
+      background: var(--brand-dark);
+      color: #fff;
+    }
+
+    .flat-action.danger {
+      border-color: #ffd3db;
+      background: #fff7f8;
+      color: #d33d51;
+    }
+
+    .flat-action.danger:hover {
+      border-color: #f05265;
+      background: #fff0f3;
+      color: #bf2940;
     }
 
     .portfolio-ai {
-      min-height: 420px;
+      min-height: 456px;
       display: grid;
       grid-template-rows: auto minmax(0, 1fr) auto;
     }
@@ -290,7 +594,7 @@
       flex-direction: column;
       gap: 12px;
       overflow-y: auto;
-      min-height: 260px;
+      min-height: 300px;
       padding-right: 4px;
     }
 
@@ -300,6 +604,8 @@
       padding: 11px 13px;
       font-size: 14px;
       line-height: 1.55;
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
 
     .bubble.ai {
@@ -321,14 +627,41 @@
       margin-top: 14px;
     }
 
-    .chat-input input {
+    .chat-input textarea {
       flex: 1;
       min-width: 0;
-      height: 42px;
+      min-height: 42px;
+      max-height: 120px;
       border: 1px solid var(--line);
       border-radius: 8px;
-      padding: 0 12px;
+      padding: 10px 12px;
       font: inherit;
+      line-height: 1.45;
+      overflow-y: auto;
+      resize: none;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    .chat-send-button {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 42px;
+      border: 1px solid var(--brand);
+      border-radius: 8px;
+      background: var(--brand);
+      color: #fff;
+      font-size: 20px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .chat-send-button:hover {
+      background: var(--brand-dark);
+      border-color: var(--brand-dark);
     }
 
     .toast {
@@ -352,14 +685,44 @@
       opacity: 1;
     }
 
+    @media (max-width: 1120px) {
+      .format-card-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
     @media (max-width: 980px) {
+      .setup-layout {
+        grid-template-columns: 1fr;
+        align-items: stretch;
+      }
+
       .portfolio-workspace {
         grid-template-columns: 1fr;
       }
 
-      .portfolio-action-bar,
       .form-row {
         grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .format-card-grid,
+      .setup-left .format-card-grid,
+      .master-actions {
+        grid-template-columns: 1fr;
+      }
+
+      .portfolio-head {
+        flex-direction: column;
+      }
+
+      .ppt-preview-wrap {
+        padding: 0 42px;
+      }
+
+      .ppt-slide {
+        padding: 28px;
       }
     }
   </style>
@@ -389,41 +752,109 @@
       <section id="portfolioStudio" class="portfolio-studio">
         <div id="pfSetupScreen" class="portfolio-setup">
           <h2 class="panel-title">포트폴리오 생성 설정</h2>
-          <p class="page-subtitle">원하는 포트폴리오 형식과 반영할 경험, 강조할 역량을 선택하세요.</p>
+          <p class="page-subtitle">이미지형 카드로 형식을 고르고, 전공과 목적에 맞는 AI 역량 키워드를 선택하세요.</p>
 
-          <div class="form-row">
-            <div class="form-field">
-              <label>포트폴리오 형식 선택</label>
-              <select id="pfFormatSelect">
-                <option value="1페이지 요약형">1페이지 요약형</option>
-                <option value="상세 기술형 포트폴리오" selected>상세 기술형 포트폴리오</option>
-                <option value="PPT 발표형">PPT 발표형</option>
-                <option value="자기소개서 연계형">자기소개서 연계형</option>
-              </select>
+          <div class="setup-layout">
+            <div class="setup-left">
+          <div class="form-field">
+            <label>포트폴리오 형식 선택</label>
+            <input id="pfFormatSelect" type="hidden" value="상세 기술 포트폴리오" />
+            <div class="format-card-grid" role="radiogroup" aria-label="포트폴리오 형식 선택">
+              <button class="format-card" type="button" role="radio" aria-checked="false" data-format="1페이지 요약형">
+                <span class="format-visual onepage" aria-hidden="true">
+                  <span class="visual-pill"></span>
+                  <span class="visual-line"></span>
+                  <span class="visual-line medium"></span>
+                  <span class="visual-block"></span>
+                </span>
+                <span>
+                  <strong>1페이지 요약형</strong>
+                  핵심 경험과 역량을 빠르게 훑는 압축형 문서
+                </span>
+              </button>
+              <button class="format-card selected" type="button" role="radio" aria-checked="true" data-format="상세 기술 포트폴리오">
+                <span class="format-visual detail" aria-hidden="true">
+                  <span class="visual-photo"></span>
+                  <span>
+                    <span class="visual-line"></span>
+                    <span class="visual-line short"></span>
+                    <span class="visual-block"></span>
+                  </span>
+                </span>
+                <span>
+                  <strong>상세 기술 포트폴리오</strong>
+                  프로젝트 과정, 기여도, 결과를 깊게 정리
+                </span>
+              </button>
+              <button class="format-card" type="button" role="radio" aria-checked="false" data-format="PPT 발표 스펙형">
+                <span class="format-visual ppt" aria-hidden="true">
+                  <span class="visual-ppt-slide">
+                    <span class="visual-pill"></span>
+                    <span class="visual-line"></span>
+                    <span class="visual-line short"></span>
+                  </span>
+                </span>
+                <span>
+                  <strong>PPT 발표 스펙형</strong>
+                  슬라이드별 발표 흐름으로 보여주는 프리뷰
+                </span>
+              </button>
+              <button class="format-card" type="button" role="radio" aria-checked="false" data-format="자기소개서 연계형">
+                <span class="format-visual coverletter" aria-hidden="true">
+                  <span class="visual-line"></span>
+                  <span class="visual-line"></span>
+                  <span class="visual-line medium"></span>
+                  <span class="visual-line short"></span>
+                  <span class="visual-block"></span>
+                </span>
+                <span>
+                  <strong>자기소개서 연계형</strong>
+                  문항 답변으로 확장하기 쉬운 서술형 구성
+                </span>
+              </button>
             </div>
+          </div>
+
+          <div class="form-actions">
+            <button class="primary-button" id="generatePortfolioBtn" type="button">포트폴리오 생성하기</button>
+          </div>
+            </div>
+
+            <div class="setup-right">
+          <div class="form-row" style="margin-top:20px;">
             <div class="form-field">
-              <label>생성 목적</label>
+              <label for="pfPurposeSelect">생성 목적</label>
               <select id="pfPurposeSelect">
                 <option>취업 지원용</option>
                 <option>인턴 지원용</option>
-                <option>대외활동 제출용</option>
+                <option>공모전 제출용</option>
+                <option>대학원 진학</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="pfMajorSelect">전공 선택</label>
+              <select id="pfMajorSelect">
+                <option value="industrial">산업공학과</option>
+                <option value="chemical">화학공학과</option>
+                <option value="electrical">전기공학과</option>
+                <option value="computer">컴퓨터공학과</option>
               </select>
             </div>
           </div>
 
           <div class="form-field" style="margin-top:20px;">
-            <label>사용할 경험 데이터셋 선택</label>
+            <label>사용할 경험 데이터 선택</label>
             <div class="experience-checkbox-group">
               <label class="experience-option">
-                <input type="checkbox" value="AI 포트폴리오 추천 서비스" checked />
-                <span>AI 포트폴리오 추천 서비스: 기획, 개발, 사용자 흐름 설계 경험</span>
+                <input type="checkbox" value="AI 포트폴리오 추천 서비스 기획, 개발, 사용자 흐름 설계 경험" checked />
+                <span>AI 포트폴리오 추천 서비스 기획, 개발, 사용자 흐름 설계 경험</span>
               </label>
               <label class="experience-option">
-                <input type="checkbox" value="캡스톤 디자인 팀 프로젝트" checked />
+                <input type="checkbox" value="캡스톤 디자인 팀 프로젝트: 협업, 발표 자료, 테스트 기록" checked />
                 <span>캡스톤 디자인 팀 프로젝트: 협업, 발표 자료, 테스트 기록</span>
               </label>
               <label class="experience-option">
-                <input type="checkbox" value="공모전 참여 기록" />
+                <input type="checkbox" value="공모전 참여 기록: 문제 정의, 결과물, 수상 이력" />
                 <span>공모전 참여 기록: 문제 정의, 결과물, 수상 이력</span>
               </label>
             </div>
@@ -431,17 +862,9 @@
 
           <div class="form-field" style="margin-top:20px;">
             <label>강조할 AI 역량 키워드</label>
-            <div class="keyword-pool">
-              <span class="tag selected" data-keyword>문제해결력</span>
-              <span class="tag selected" data-keyword>데이터 기반 분석</span>
-              <span class="tag selected" data-keyword>팀 작업 및 조율</span>
-              <span class="tag" data-keyword>공정 최적화</span>
-              <span class="tag" data-keyword>사용자 중심 설계</span>
-            </div>
+            <div class="keyword-pool" id="keywordPool"></div>
           </div>
-
-          <div class="form-actions">
-            <button class="primary-button" id="generatePortfolioBtn" type="button">포트폴리오 생성하기</button>
+            </div>
           </div>
         </div>
 
@@ -462,33 +885,31 @@
           <div class="portfolio-draft">
             <div class="portfolio-head">
               <div>
-                <h2 id="workspaceTitle">상세 기술형 포트폴리오 초안</h2>
-                <p>경험 데이터와 강조 키워드를 기반으로 생성된 포트폴리오 초안입니다.</p>
+                <h2 id="workspaceTitle">상세 기술 포트폴리오 초안</h2>
+                <p id="workspaceSubtitle">경험 데이터와 강조 키워드를 기반으로 생성된 포트폴리오 초안입니다.</p>
               </div>
-              <span class="status-badge">초안 생성</span>
+              <span class="status-badge" id="workspaceBadge">초안 생성</span>
             </div>
             <div id="workspaceContent"></div>
           </div>
 
           <div class="portfolio-side-panel">
-            <section class="portfolio-actions-panel">
-              <h2 class="panel-title">포트폴리오 관리</h2>
-              <div class="portfolio-action-bar">
-                <button class="ghost-button" type="button" onclick="resetPortfolioStudio()">다시 설정</button>
-                <button class="primary-button" type="button" onclick="handlePortfolioAction('save')">보관함 저장</button>
-                <button class="outline-button" type="button" onclick="handlePortfolioAction('download')">PPT 다운로드</button>
-                <button class="outline-button" type="button" onclick="handlePortfolioAction('revise')">AI 수정 요청</button>
+            <section class="portfolio-actions-panel" aria-label="마스터 제어 액션">
+              <div class="master-actions">
+                <button class="flat-action primary" type="button" onclick="handleMasterAction('save')">보관함 저장</button>
+                <button class="flat-action" type="button" onclick="handleMasterAction('download')">PPT 다운로드</button>
+                <button class="flat-action danger" type="button" onclick="handleMasterAction('exit')">나가기</button>
               </div>
             </section>
 
             <section class="portfolio-ai">
-              <h2 class="panel-title">AI 실시간 수정</h2>
+              <h2 class="panel-title">AI 실시간 초안 수정</h2>
               <div class="chat-log" id="pfAssistantLog">
-                <div class="bubble ai">초안이 생성되었습니다. 보완하고 싶은 방향을 입력하면 문장 톤과 구성을 다시 제안할게요.</div>
+                <div class="bubble ai">초안이 생성되었습니다. 원하는 방향을 대화로 알려주세요. 문장 끝에 "수정해줘"라고 입력하면 왼쪽 초안에 즉시 반영됩니다.</div>
               </div>
               <div class="chat-input">
-                <input id="pfAssistantInput" placeholder="예: 전체 내용을 더 전문적으로 바꿔줘" />
-                <button class="primary-button" type="button" onclick="sendPfAssistantChat()">반영</button>
+                <textarea id="pfAssistantInput" rows="1" placeholder="예: 연구 역량이 더 전문적으로 보이게 수정해줘"></textarea>
+                <button class="chat-send-button" id="pfAssistantSendBtn" type="button" aria-label="대화 보내기">›</button>
               </div>
             </section>
           </div>
@@ -501,16 +922,74 @@
 
   <script>
     const PORTFOLIO_STORAGE_KEY = 'careerfit_portfolios';
+    const commonKeywords = ['문제 해결 및 비판적 사고', '소통 및 협업 능력', '적응력 및 회복탄력성'];
+    const majorKeywordMap = {
+      industrial: {
+        label: '산업공학과',
+        keywords: ['데이터 기반 프로세스 최적화', 'SCM 및 물류 효율화', '품질 경영 시스템']
+      },
+      chemical: {
+        label: '화학공학과',
+        keywords: ['공정 설계 및 스케일업', '반응 공학 데이터 분석', '화학 물질 안전 관리']
+      },
+      electrical: {
+        label: '전기공학과',
+        keywords: ['회로 및 전력 시스템 설계', '임베디드 제어 알고리즘', '신재생 에너지 변환']
+      },
+      computer: {
+        label: '컴퓨터공학과',
+        keywords: ['풀스택 소프트웨어 개발', '알고리즘 최적화', 'AI 및 데이터 모델링']
+      }
+    };
 
-    document.querySelectorAll('[data-keyword]').forEach((tag) => {
-      tag.addEventListener('click', () => tag.classList.toggle('selected'));
+    let currentPortfolio = null;
+    let chatHistory = [];
+    let currentSlideIndex = 0;
+
+    const formatSelect = document.getElementById('pfFormatSelect');
+    const purposeSelect = document.getElementById('pfPurposeSelect');
+    const majorSelect = document.getElementById('pfMajorSelect');
+    const keywordPool = document.getElementById('keywordPool');
+    const assistantInput = document.getElementById('pfAssistantInput');
+
+    document.querySelectorAll('.format-card').forEach((card) => {
+      card.addEventListener('click', () => selectFormat(card.dataset.format));
     });
 
-    document.getElementById('pfAssistantInput').addEventListener('keydown', (event) => {
-      if (event.key === 'Enter') sendPfAssistantChat();
-    });
-
+    majorSelect.addEventListener('change', renderKeywordPool);
     document.getElementById('generatePortfolioBtn').addEventListener('click', triggerGeneratePortfolio);
+    document.getElementById('pfAssistantSendBtn').addEventListener('click', sendPfAssistantChat);
+    assistantInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendPfAssistantChat();
+      }
+    });
+
+    function selectFormat(format) {
+      formatSelect.value = format;
+      document.querySelectorAll('.format-card').forEach((card) => {
+        const isSelected = card.dataset.format === format;
+        card.classList.toggle('selected', isSelected);
+        card.setAttribute('aria-checked', String(isSelected));
+      });
+    }
+
+    function renderKeywordPool() {
+      const selectedMajor = majorKeywordMap[majorSelect.value] || majorKeywordMap.industrial;
+      const keywords = [...commonKeywords, ...selectedMajor.keywords];
+
+      keywordPool.innerHTML = keywords.map((keyword, index) => (
+        `<button class="tag selected" type="button" data-keyword="${escapeHtml(keyword)}" aria-pressed="true">${escapeHtml(keyword)}</button>`
+      )).join('');
+
+      keywordPool.querySelectorAll('[data-keyword]').forEach((tag) => {
+        tag.addEventListener('click', () => {
+          tag.classList.toggle('selected');
+          tag.setAttribute('aria-pressed', String(tag.classList.contains('selected')));
+        });
+      });
+    }
 
     function getSelectedExperienceLabels() {
       return Array.from(document.querySelectorAll('.experience-option input:checked'))
@@ -523,22 +1002,30 @@
     }
 
     function triggerGeneratePortfolio() {
-      const format = document.getElementById('pfFormatSelect').value;
-      const purpose = document.getElementById('pfPurposeSelect').value;
+      const format = formatSelect.value;
+      const purpose = purposeSelect.value;
+      const major = majorKeywordMap[majorSelect.value] || majorKeywordMap.industrial;
+      const experiences = getSelectedExperienceLabels();
+      const keywords = getSelectedKeywords();
+
+      currentPortfolio = buildPortfolioDraft({ format, purpose, major, experiences, keywords });
+      currentSlideIndex = 0;
+      chatHistory = [];
 
       document.getElementById('pfSetupScreen').classList.add('hidden');
       document.getElementById('pfWorkspaceScreen').classList.add('hidden');
       document.getElementById('pfLoadingScreen').classList.remove('hidden');
       document.getElementById('workspaceTitle').textContent = `${format} 초안`;
+
       startLoadingProgress(() => {
-        renderGeneratedPortfolio(format, purpose);
+        renderPortfolioPreview();
         document.getElementById('pfLoadingScreen').classList.add('hidden');
         document.getElementById('pfWorkspaceScreen').classList.remove('hidden');
       });
     }
 
     function startLoadingProgress(onComplete) {
-      const loadingDuration = 3000;
+      const loadingDuration = 1200;
       const progressBar = document.getElementById('loadingProgressBar');
       const progressText = document.getElementById('loadingProgressText');
       const startedAt = Date.now();
@@ -560,36 +1047,107 @@
       }, 60);
     }
 
-    function renderGeneratedPortfolio(format, purpose) {
-      const experiences = getSelectedExperienceLabels();
-      const keywords = getSelectedKeywords();
+    function buildPortfolioDraft({ format, purpose, major, experiences, keywords }) {
       const experienceText = experiences.length ? experiences.join(', ') : '선택한 경험 없음';
       const keywordText = keywords.length ? keywords.join(', ') : '강조 키워드 없음';
 
+      const blocks = [
+        {
+          title: '1. 포트폴리오 목적',
+          body: `${purpose}에 맞춰 ${format} 구조로 구성했습니다. 첫 화면에서 핵심 역량과 대표 경험이 빠르게 보이도록 설계했습니다.`
+        },
+        {
+          title: '2. 전공 기반 역량 포지셔닝',
+          body: `${major.label} 관점에서 ${keywordText} 역량이 드러나도록 경험을 재배치했습니다. 전공 적합성과 AI 활용 역량이 함께 읽히는 흐름입니다.`
+        },
+        {
+          title: '3. 반영 경험',
+          body: `${experienceText}을 중심으로 문제 정의, 실행 과정, 역할, 결과를 STAR 흐름에 맞게 정리했습니다.`
+        },
+        {
+          title: '4. 다음 보완 방향',
+          body: `정량 성과, 사용 기술, 팀 내 기여도를 더 구체화하면 제출 완성도가 높아집니다.`
+        }
+      ];
+
+      return {
+        id: `portfolio-${Date.now()}`,
+        format,
+        purpose,
+        major: major.label,
+        experiences,
+        keywords,
+        blocks,
+        slides: buildSlides(format, purpose, major.label, experiences, keywords),
+        updatedAt: new Date().toISOString()
+      };
+    }
+
+    function buildSlides(format, purpose, major, experiences, keywords) {
+      const mainExperience = experiences[0] || '대표 프로젝트 경험';
+      const keyFocus = keywords.slice(0, 3).join(', ') || '핵심 역량';
+
+      return [
+        {
+          title: `${purpose} 포트폴리오`,
+          body: `${major} 전공 기반의 경험과 AI 역량을 발표 흐름에 맞춰 정리한 ${format} 초안입니다.`
+        },
+        {
+          title: '핵심 역량 요약',
+          body: `${keyFocus}을 중심으로 지원 목적과 연결되는 강점을 먼저 제시합니다.`
+        },
+        {
+          title: '대표 경험',
+          body: `${mainExperience}을 문제 정의, 실행, 결과 순서로 압축해 설명합니다.`
+        },
+        {
+          title: '성과 및 보완 방향',
+          body: '정량 성과와 후속 개선 계획을 함께 배치해 성장 가능성과 실행력을 강조합니다.'
+        }
+      ];
+    }
+
+    function renderPortfolioPreview() {
+      if (!currentPortfolio) return;
+
+      document.getElementById('workspaceTitle').textContent = `${currentPortfolio.format} 초안`;
+      document.getElementById('workspaceSubtitle').textContent = `${currentPortfolio.major} / ${currentPortfolio.purpose} 기준으로 생성된 초안입니다.`;
+      document.getElementById('workspaceBadge').textContent = currentPortfolio.format === 'PPT 발표 스펙형' ? 'PPT 프리뷰' : '초안 생성';
+
+      if (currentPortfolio.format === 'PPT 발표 스펙형') {
+        renderPptPreview();
+        return;
+      }
+
+      document.getElementById('workspaceContent').innerHTML = currentPortfolio.blocks.map((block) => `
+        <div class="portfolio-block">
+          <h3>${escapeHtml(block.title)}</h3>
+          <p>${escapeHtml(block.body)}</p>
+        </div>
+      `).join('');
+    }
+
+    function renderPptPreview() {
+      const slide = currentPortfolio.slides[currentSlideIndex];
       document.getElementById('workspaceContent').innerHTML = `
-        <div class="portfolio-block">
-          <h3>1. 포트폴리오 목적</h3>
-          <p>${purpose}에 맞춰 ${format} 구조로 구성했습니다. 첫 화면에서 핵심 역량과 대표 경험이 빠르게 보이도록 설계했습니다.</p>
+        <div class="ppt-preview-wrap">
+          <button class="slide-arrow prev" type="button" aria-label="이전 슬라이드" onclick="moveSlide(-1)">‹</button>
+          <article class="ppt-slide">
+            <span class="ppt-slide-label">Slide ${currentSlideIndex + 1}</span>
+            <h3>${escapeHtml(slide.title)}</h3>
+            <p>${escapeHtml(slide.body)}</p>
+          </article>
+          <button class="slide-arrow next" type="button" aria-label="다음 슬라이드" onclick="moveSlide(1)">›</button>
         </div>
-        <div class="portfolio-block">
-          <h3>2. 반영 경험</h3>
-          <p>${experienceText}을 중심으로 문제 정의, 실행 과정, 결과를 STAR 흐름에 맞게 정리했습니다.</p>
-        </div>
-        <div class="portfolio-block">
-          <h3>3. 강조 역량</h3>
-          <p>${keywordText}이 드러나도록 문장 구조를 조정했습니다. 각 경험은 역할, 기여도, 성과가 분리되어 읽히도록 구성했습니다.</p>
-        </div>
-        <div class="portfolio-block">
-          <h3>4. 다음 보완 방향</h3>
-          <p>정량 성과, 사용 기술, 팀 내 역할을 더 구체화하면 제출용 완성도가 높아집니다.</p>
-        </div>
+        <div class="slide-counter">${currentSlideIndex + 1} / ${currentPortfolio.slides.length}</div>
       `;
     }
 
-    function resetPortfolioStudio() {
-      document.getElementById('pfWorkspaceScreen').classList.add('hidden');
-      document.getElementById('pfLoadingScreen').classList.add('hidden');
-      document.getElementById('pfSetupScreen').classList.remove('hidden');
+    function moveSlide(direction) {
+      if (!currentPortfolio || currentPortfolio.format !== 'PPT 발표 스펙형') return;
+      const slideCount = currentPortfolio.slides.length;
+      currentSlideIndex = (currentSlideIndex + direction + slideCount) % slideCount;
+      renderPptPreview();
     }
 
     function readPortfolioStore() {
@@ -602,29 +1160,26 @@
     }
 
     function saveGeneratedPortfolio() {
-      const format = document.getElementById('pfFormatSelect').value;
-      const purpose = document.getElementById('pfPurposeSelect').value;
-      const experiences = getSelectedExperienceLabels();
-      const keywords = getSelectedKeywords();
-      const blocks = Array.from(document.querySelectorAll('#workspaceContent .portfolio-block'))
-        .map((block) => block.textContent.trim().replace(/\s+/g, ' '));
-      const summary = experiences.length
-        ? `${experiences.slice(0, 2).join(', ')} 경험을 반영한 포트폴리오입니다.`
-        : `${purpose}에 맞춰 생성한 포트폴리오입니다.`;
+      if (!currentPortfolio) return null;
+
+      const content = currentPortfolio.format === 'PPT 발표 스펙형'
+        ? currentPortfolio.slides.map((slide, index) => `${index + 1}. ${slide.title}\n${slide.body}`).join('\n\n')
+        : currentPortfolio.blocks.map((block) => `${block.title}\n${block.body}`).join('\n\n');
+      const summary = currentPortfolio.blocks[1]?.body || `${currentPortfolio.purpose}에 맞춰 생성한 포트폴리오입니다.`;
       const nextPortfolio = {
-        id: `portfolio-${Date.now()}`,
-        title: `${format} - ${purpose}`,
+        id: currentPortfolio.id,
+        title: `${currentPortfolio.format} - ${currentPortfolio.purpose}`,
         createdAt: new Date().toISOString(),
-        purpose,
+        purpose: currentPortfolio.purpose,
         summary,
         status: 'done',
         liked: false,
-        content: blocks.join('\n\n'),
-        format,
-        experiences,
-        keywords
+        content,
+        format: currentPortfolio.format,
+        experiences: currentPortfolio.experiences,
+        keywords: currentPortfolio.keywords
       };
-      const saved = readPortfolioStore();
+      const saved = readPortfolioStore().filter((item) => item.id !== nextPortfolio.id);
 
       localStorage.setItem(PORTFOLIO_STORAGE_KEY, JSON.stringify([nextPortfolio, ...saved]));
       return nextPortfolio;
@@ -637,60 +1192,161 @@
       const portfolio = readPortfolioStore().find((item) => item.id === editId);
       if (!portfolio) return;
 
+      currentPortfolio = {
+        id: portfolio.id,
+        format: portfolio.format || '상세 기술 포트폴리오',
+        purpose: portfolio.purpose || '취업 지원용',
+        major: '기존 저장 항목',
+        experiences: portfolio.experiences || [],
+        keywords: portfolio.keywords || [],
+        blocks: (portfolio.content || portfolio.summary || '저장된 포트폴리오입니다.')
+          .split(/\n{2,}/)
+          .map((text, index) => ({ title: `${index + 1}. 저장된 내용`, body: text.replace(/\s+/g, ' ').trim() })),
+        slides: buildSlides(portfolio.format || '상세 기술 포트폴리오', portfolio.purpose || '취업 지원용', '기존 저장 항목', portfolio.experiences || [], portfolio.keywords || [])
+      };
+
       document.getElementById('pfSetupScreen').classList.add('hidden');
       document.getElementById('pfLoadingScreen').classList.add('hidden');
       document.getElementById('pfWorkspaceScreen').classList.remove('hidden');
-      document.getElementById('workspaceTitle').textContent = portfolio.title || '포트폴리오 수정';
-      document.getElementById('workspaceContent').innerHTML = portfolio.content
-        ? portfolio.content.split(/\n{2,}/).map((block, index) => `
-          <div class="portfolio-block">
-            <h3>${index + 1}. 저장된 내용</h3>
-            <p>${escapeHtml(block)}</p>
-          </div>
-        `).join('')
-        : `
-          <div class="portfolio-block">
-            <h3>1. 포트폴리오 내용</h3>
-            <p>${escapeHtml(portfolio.summary || '저장된 포트폴리오입니다.')}</p>
-          </div>
-        `;
+      renderPortfolioPreview();
     }
 
-    function handlePortfolioAction(action) {
-      const messages = {
-        save: '포트폴리오 보관함에 저장했습니다.',
-        download: 'PPT 다운로드 준비를 시작합니다.',
-        revise: 'AI 수정 요청창에 원하는 방향을 입력하세요.',
-      };
-
+    function handleMasterAction(action) {
       if (action === 'save') {
         saveGeneratedPortfolio();
+        showToast('마스터 저장이 완료되었습니다. 보관함으로 이동합니다.');
+        window.setTimeout(() => {
+          window.location.href = 'portfolio_manage.html';
+        }, 500);
+        return;
       }
 
-      if (action === 'revise') {
-        document.getElementById('pfAssistantInput').focus();
+      if (action === 'download') {
+        downloadPptPreview();
+        showToast('PPT 다운로드 파일을 준비했습니다.');
+        return;
       }
 
-      showToast(messages[action] || '처리했습니다.');
+      if (action === 'exit') {
+        exitEditingSession();
+      }
+    }
+
+    function downloadPptPreview() {
+      if (!currentPortfolio) return;
+
+      const body = [
+        'Myfitfolio Portfolio',
+        '',
+        `제목: ${currentPortfolio.format} - ${currentPortfolio.purpose}`,
+        `전공: ${currentPortfolio.major}`,
+        '',
+        currentPortfolio.format === 'PPT 발표 스펙형'
+          ? currentPortfolio.slides.map((slide, index) => `Slide ${index + 1}. ${slide.title}\n${slide.body}`).join('\n\n')
+          : currentPortfolio.blocks.map((block) => `${block.title}\n${block.body}`).join('\n\n')
+      ].join('\n');
+      const blob = new Blob([body], {
+        type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+      });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `${currentPortfolio.format.replace(/[\\/:*?"<>|]/g, '_')}.pptx`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    }
+
+    function exitEditingSession() {
+      const workspace = document.getElementById('pfWorkspaceScreen');
+      workspace.classList.add('leaving');
+      window.setTimeout(() => {
+        currentPortfolio = null;
+        chatHistory = [];
+        currentSlideIndex = 0;
+        workspace.classList.add('hidden');
+        workspace.classList.remove('leaving');
+        document.getElementById('pfLoadingScreen').classList.add('hidden');
+        document.getElementById('pfSetupScreen').classList.remove('hidden');
+        resetAssistantChat();
+      }, 180);
     }
 
     function sendPfAssistantChat() {
-      const input = document.getElementById('pfAssistantInput');
-      const message = input.value.trim();
+      const message = assistantInput.value.trim();
       if (!message) return;
 
-      const log = document.getElementById('pfAssistantLog');
-      log.insertAdjacentHTML('beforeend', `<div class="bubble user">${escapeHtml(message)}</div>`);
-      input.value = '';
+      appendChatBubble('user', message);
+      chatHistory.push({ role: 'user', content: message });
+      assistantInput.value = '';
+
+      const shouldRevise = /수정해줘\s*$/.test(message);
+      const reply = shouldRevise
+        ? '대화 맥락을 반영해 왼쪽 초안을 업데이트했습니다.'
+        : '좋습니다. 방향을 기억해둘게요. 마지막에 "수정해줘"라고 입력하면 초안에 바로 반영합니다.';
 
       window.setTimeout(() => {
-        log.insertAdjacentHTML('beforeend', '<div class="bubble ai">요청한 방향을 반영해 초안 문장 톤과 구성을 조정했습니다. 왼쪽 초안에서 핵심 문단을 다시 확인해보세요.</div>');
-        log.scrollTop = log.scrollHeight;
-      }, 250);
+        appendChatBubble('ai', reply);
+        chatHistory.push({ role: 'ai', content: reply });
+        if (shouldRevise) reviseDraftFromConversation();
+      }, 180);
+    }
+
+    function reviseDraftFromConversation() {
+      if (!currentPortfolio) return;
+
+      const userContext = chatHistory
+        .filter((item) => item.role === 'user')
+        .map((item) => item.content.replace(/수정해줘\s*$/, '').trim())
+        .filter(Boolean)
+        .join(' / ');
+      const revisionNote = userContext || '사용자 요청';
+
+      currentPortfolio.updatedAt = new Date().toISOString();
+
+      if (currentPortfolio.format === 'PPT 발표 스펙형') {
+        currentPortfolio.slides = currentPortfolio.slides.map((slide, index) => {
+          if (index === currentSlideIndex) {
+            return {
+              title: slide.title,
+              body: `${slide.body} 요청 반영: ${revisionNote} 방향으로 메시지를 더 선명하게 다듬었습니다.`
+            };
+          }
+          return slide;
+        });
+      } else {
+        currentPortfolio.blocks = currentPortfolio.blocks.map((block, index) => {
+          if (index === 1) {
+            return {
+              title: block.title,
+              body: `${block.body} 추가로, ${revisionNote} 흐름이 드러나도록 문장 톤과 강조점을 조정했습니다.`
+            };
+          }
+          if (index === 3) {
+            return {
+              title: block.title,
+              body: `대화에서 제시된 "${revisionNote}" 요청을 반영해 정량 성과, 전문성, 지원 목적의 연결성을 우선 보완하도록 수정했습니다.`
+            };
+          }
+          return block;
+        });
+      }
+
+      renderPortfolioPreview();
+      showToast('AI 수정 요청이 초안에 반영되었습니다.');
+    }
+
+    function appendChatBubble(type, message) {
+      const log = document.getElementById('pfAssistantLog');
+      log.insertAdjacentHTML('beforeend', `<div class="bubble ${type}">${escapeHtml(message)}</div>`);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    function resetAssistantChat() {
+      document.getElementById('pfAssistantLog').innerHTML = '<div class="bubble ai">초안이 생성되었습니다. 원하는 방향을 대화로 알려주세요. 문장 끝에 "수정해줘"라고 입력하면 왼쪽 초안에 즉시 반영됩니다.</div>';
+      assistantInput.value = '';
     }
 
     function escapeHtml(value) {
-      return value.replace(/[&<>"']/g, (char) => ({
+      return String(value || '').replace(/[&<>"']/g, (char) => ({
         '&': '&amp;',
         '<': '&lt;',
         '>': '&gt;',
@@ -706,6 +1362,7 @@
       window.setTimeout(() => toast.classList.remove('show'), 1800);
     }
 
+    renderKeywordPool();
     openPortfolioEditorFromQuery();
   </script>
 </body>
