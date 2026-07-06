@@ -177,6 +177,20 @@ assert.match(
   /id="keyword-search"/,
   'contest page should include keyword search for activity recommendations'
 );
+assert.ok(
+  !contestHtml.includes('class="stats-grid"'),
+  'contest page should remove the top recommendation summary cards'
+);
+assert.match(
+  contestHtml,
+  /<h1>[\s\S]*<span class="recommend-count">추천 활동 10개<\/span>[\s\S]*<\/h1>/,
+  'contest page should show the recommendation count next to the title'
+);
+assert.match(
+  contestHtml,
+  /<div class="filter-controls">[\s\S]*<select id="industry-filter"[\s\S]*<select id="level-filter"[\s\S]*<label class="search-box" for="keyword-search">[\s\S]*<input id="keyword-search"/,
+  'contest keyword search should sit at the far right after the job and difficulty filters'
+);
 assert.match(
   contestHtml,
   /href="contest\.css"/,
@@ -237,6 +251,10 @@ assert.ok(
 
 const contestJs = fs.readFileSync(path.join(htmlDir, 'contest.js'), 'utf8');
 const contestCss = fs.readFileSync(path.join(htmlDir, 'contest.css'), 'utf8');
+assert.ok(
+  !contestJs.includes('savedCount'),
+  'contest schedule count should not depend on removed summary cards'
+);
 assert.match(
   contestJs,
   /function\s+parseScheduleDate/,
@@ -249,7 +267,7 @@ assert.match(
 );
 assert.match(
   contestJs,
-  /getSortedSavedSchedules\(\)\s*[\r\n\s]*\.map/,
+  /const\s+sortedSchedules\s*=\s*getSortedSavedSchedules\(\)/,
   'contest schedule should render saved activities in date order'
 );
 assert.match(
@@ -379,9 +397,54 @@ assert.match(
   'contest save button should toggle a danger state when saved'
 );
 assert.match(
+  contestJs,
+  /function\s+isActivitySaved/,
+  'contest should expose saved activity state for activity cards'
+);
+assert.match(
+  contestJs,
+  /activity-card \$\{isActivitySaved\(item\.id\) \? 'is-saved' : ''\}/,
+  'contest activity cards should reflect saved bookmark state'
+);
+assert.match(
+  contestJs,
+  /const\s+visibleScheduleLimit\s*=\s*5/,
+  'contest should limit saved schedule previews to five items'
+);
+assert.match(
+  contestJs,
+  /sortedSchedules\.slice\(0,\s*visibleScheduleLimit\)/,
+  'contest schedule list should render only the nearest saved schedules'
+);
+assert.match(
+  contestJs,
+  /savedSchedules\.length\s*>\s*visibleScheduleLimit/,
+  'contest should show a more link only when more than five schedules are saved'
+);
+assert.match(
+  contestJs,
+  /href="https:\/\/calendar\.google\.com\/calendar\/u\/0\/r"/,
+  'contest more schedules link should open Google Calendar'
+);
+assert.match(
   contestCss,
   /\.button\.primary\.is-danger\s*\{[^}]*background:\s*var\(--danger\);/s,
   'contest saved cancel button should use the red danger background'
+);
+assert.match(
+  contestCss,
+  /\.deadline-tag::after/s,
+  'contest D-day tag should render as a bookmark ribbon'
+);
+assert.match(
+  contestCss,
+  /\.activity-card\.is-saved\s+\.deadline-tag/s,
+  'contest saved activity cards should show a stronger bookmark state'
+);
+assert.match(
+  contestCss,
+  /\.schedule-more/s,
+  'contest should style the more schedules link below the calendar'
 );
 
 for (const file of fs.readdirSync(htmlDir).filter((name) => name.endsWith('.html'))) {

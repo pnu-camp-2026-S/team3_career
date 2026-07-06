@@ -198,7 +198,6 @@ const tabs = Array.from(document.querySelectorAll('.tab'));
 const keywordInput = document.getElementById('keyword-search');
 const industryFilter = document.getElementById('industry-filter');
 const levelFilter = document.getElementById('level-filter');
-const savedCount = document.getElementById('saved-count');
 const calendarMonthLabel = document.getElementById('calendarMonth');
 const calendarDays = document.getElementById('calendarDays');
 const prevCalendarMonth = document.getElementById('prevCalendarMonth');
@@ -209,6 +208,7 @@ let selectedActivityId = null;
 let activeDetailElement = null;
 let visibleCalendarYear = 2026;
 let visibleCalendarMonth = 6;
+const visibleScheduleLimit = 5;
 const savedSchedules = [];
 
 function clearExpandedDetail() {
@@ -246,6 +246,10 @@ function getFilteredActivities() {
   });
 }
 
+function isActivitySaved(id) {
+  return savedSchedules.some((event) => event.id === id);
+}
+
 function renderActivities() {
   const filtered = getFilteredActivities();
 
@@ -262,7 +266,7 @@ function renderActivities() {
   activityList.innerHTML = filtered
     .map(
       (item) => `
-        <article class="activity-card" data-id="${item.id}">
+        <article class="activity-card ${isActivitySaved(item.id) ? 'is-saved' : ''}" data-id="${item.id}">
           <div class="card-top">
             <span class="card-chip">${item.icon} ${item.industry}</span>
             <span class="deadline-tag">${item.deadline}</span>
@@ -328,6 +332,10 @@ function updateSaveButton(item) {
   saveButton.disabled = false;
   saveButton.textContent = isSaved ? '저장 취소' : '저장하기';
   saveButton.classList.toggle('is-danger', isSaved);
+
+  document
+    .querySelectorAll(`.activity-card[data-id="${item.id}"]`)
+    .forEach((card) => card.classList.toggle('is-saved', isSaved));
 }
 
 function animateCalendarTurn(direction) {
@@ -511,10 +519,6 @@ function toggleSaveToCalendar(item) {
 }
 
 function renderSchedule() {
-  if (savedCount) {
-    savedCount.innerHTML = `${savedSchedules.length}<span class="stat-unit">개</span>`;
-  }
-
   if (!savedSchedules.length) {
     scheduleList.innerHTML = `
       <div class="schedule-item">
@@ -532,7 +536,18 @@ function renderSchedule() {
     return;
   }
 
-  scheduleList.innerHTML = getSortedSavedSchedules()
+  const sortedSchedules = getSortedSavedSchedules();
+  const visibleSchedules = sortedSchedules.slice(0, visibleScheduleLimit);
+  const moreScheduleLink =
+    savedSchedules.length > visibleScheduleLimit
+      ? `
+        <a class="schedule-more" href="https://calendar.google.com/calendar/u/0/r" target="_blank" rel="noopener noreferrer">
+          더보기
+        </a>
+      `
+      : '';
+
+  scheduleList.innerHTML = `${visibleSchedules
     .map(
       (event) => `
         <div class="schedule-item">
@@ -545,7 +560,7 @@ function renderSchedule() {
         </div>
       `
     )
-    .join('');
+    .join('')}${moreScheduleLink}`;
 
   renderCalendarHighlight();
 }
