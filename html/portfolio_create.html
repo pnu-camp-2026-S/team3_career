@@ -372,7 +372,7 @@
         <a class="nav-tab" href="main.html">메인</a>
         <a class="nav-tab active" href="portfolio_create.html">포트폴리오 생성</a>
         <a class="nav-tab" href="portfolio_manage.html">포트폴리오 관리</a>
-        <a class="nav-tab" href="create.html">파일 생성</a>
+        <a class="nav-tab" href="create.html">파일 관리</a>
         <a class="nav-tab" href="contest.html">활동 추천</a>
         <a class="nav-tab" href="mypage.html">마이페이지</a>
       </nav>
@@ -500,6 +500,8 @@
   <div id="toast" class="toast">저장되었습니다.</div>
 
   <script>
+    const PORTFOLIO_STORAGE_KEY = 'careerfit_portfolios';
+
     document.querySelectorAll('[data-keyword]').forEach((tag) => {
       tag.addEventListener('click', () => tag.classList.toggle('selected'));
     });
@@ -590,12 +592,80 @@
       document.getElementById('pfSetupScreen').classList.remove('hidden');
     }
 
+    function readPortfolioStore() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(PORTFOLIO_STORAGE_KEY)) || [];
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveGeneratedPortfolio() {
+      const format = document.getElementById('pfFormatSelect').value;
+      const purpose = document.getElementById('pfPurposeSelect').value;
+      const experiences = getSelectedExperienceLabels();
+      const keywords = getSelectedKeywords();
+      const blocks = Array.from(document.querySelectorAll('#workspaceContent .portfolio-block'))
+        .map((block) => block.textContent.trim().replace(/\s+/g, ' '));
+      const summary = experiences.length
+        ? `${experiences.slice(0, 2).join(', ')} 경험을 반영한 포트폴리오입니다.`
+        : `${purpose}에 맞춰 생성한 포트폴리오입니다.`;
+      const nextPortfolio = {
+        id: `portfolio-${Date.now()}`,
+        title: `${format} - ${purpose}`,
+        createdAt: new Date().toISOString(),
+        purpose,
+        summary,
+        status: 'done',
+        liked: false,
+        content: blocks.join('\n\n'),
+        format,
+        experiences,
+        keywords
+      };
+      const saved = readPortfolioStore();
+
+      localStorage.setItem(PORTFOLIO_STORAGE_KEY, JSON.stringify([nextPortfolio, ...saved]));
+      return nextPortfolio;
+    }
+
+    function openPortfolioEditorFromQuery() {
+      const editId = new URLSearchParams(window.location.search).get('edit');
+      if (!editId) return;
+
+      const portfolio = readPortfolioStore().find((item) => item.id === editId);
+      if (!portfolio) return;
+
+      document.getElementById('pfSetupScreen').classList.add('hidden');
+      document.getElementById('pfLoadingScreen').classList.add('hidden');
+      document.getElementById('pfWorkspaceScreen').classList.remove('hidden');
+      document.getElementById('workspaceTitle').textContent = portfolio.title || '포트폴리오 수정';
+      document.getElementById('workspaceContent').innerHTML = portfolio.content
+        ? portfolio.content.split(/\n{2,}/).map((block, index) => `
+          <div class="portfolio-block">
+            <h3>${index + 1}. 저장된 내용</h3>
+            <p>${escapeHtml(block)}</p>
+          </div>
+        `).join('')
+        : `
+          <div class="portfolio-block">
+            <h3>1. 포트폴리오 내용</h3>
+            <p>${escapeHtml(portfolio.summary || '저장된 포트폴리오입니다.')}</p>
+          </div>
+        `;
+    }
+
     function handlePortfolioAction(action) {
       const messages = {
         save: '포트폴리오 보관함에 저장했습니다.',
         download: 'PPT 다운로드 준비를 시작합니다.',
         revise: 'AI 수정 요청창에 원하는 방향을 입력하세요.',
       };
+
+      if (action === 'save') {
+        saveGeneratedPortfolio();
+      }
 
       if (action === 'revise') {
         document.getElementById('pfAssistantInput').focus();
@@ -635,6 +705,8 @@
       toast.classList.add('show');
       window.setTimeout(() => toast.classList.remove('show'), 1800);
     }
+
+    openPortfolioEditorFromQuery();
   </script>
 </body>
 </html>

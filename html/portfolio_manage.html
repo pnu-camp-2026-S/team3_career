@@ -5,6 +5,239 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Myfitfolio - 포트폴리오 관리</title>
   <link rel="stylesheet" href="fitfolio.css" />
+  <style>
+    .portfolio-manage {
+      display: block;
+      min-height: calc(100vh - 72px);
+      background: linear-gradient(120deg, #fff 0%, #fff 68%, #f8fbff 100%);
+    }
+
+    .manage-content {
+      max-width: 1180px;
+      min-width: 0;
+      margin: 0 auto;
+      padding: 30px 34px 38px;
+    }
+
+    .manage-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+
+    .manage-head .page-title {
+      margin-bottom: 8px;
+    }
+
+    .manage-toolbar {
+      display: grid;
+      grid-template-columns: minmax(180px, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .manage-search {
+      height: 42px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 0 13px;
+      color: #98a2b3;
+    }
+
+    .manage-search input {
+      width: 100%;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: #475569;
+      font-weight: 750;
+    }
+
+    .portfolio-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .portfolio-card {
+      display: grid;
+      grid-template-columns: 118px minmax(0, 1fr) auto;
+      gap: 20px;
+      align-items: center;
+      border: 1px solid #edf0f7;
+      border-radius: 8px;
+      background: #fff;
+      padding: 16px;
+      box-shadow: 0 8px 24px rgba(17, 24, 39, .04);
+    }
+
+    .portfolio-card:hover {
+      border-color: #c7d2fe;
+      box-shadow: 0 14px 30px rgba(79, 70, 229, .1);
+    }
+
+    .portfolio-thumb {
+      position: relative;
+      height: 86px;
+      overflow: hidden;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      background: #f8fafc;
+    }
+
+    .portfolio-thumb::before {
+      content: "";
+      display: block;
+      height: 10px;
+      background: var(--brand);
+    }
+
+    .thumb-lines {
+      display: grid;
+      gap: 8px;
+      padding: 14px 12px;
+    }
+
+    .thumb-line {
+      height: 7px;
+      border-radius: 999px;
+      background: #dbe4ff;
+    }
+
+    .thumb-line.short {
+      width: 58%;
+    }
+
+    .thumb-chart {
+      position: absolute;
+      right: 10px;
+      bottom: 12px;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: conic-gradient(var(--brand) 0 70%, #e0e7ff 70%);
+    }
+
+    .portfolio-info {
+      min-width: 0;
+    }
+
+    .portfolio-title-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 7px;
+    }
+
+    .portfolio-title-row h2 {
+      overflow: hidden;
+      margin: 0;
+      color: var(--ink);
+      font-size: 17px;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .status {
+      border-radius: 6px;
+      padding: 4px 9px;
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .status.done {
+      background: #ecfdf5;
+      color: #059669;
+    }
+
+    .portfolio-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-bottom: 9px;
+      color: #64748b;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .portfolio-summary {
+      display: -webkit-box;
+      overflow: hidden;
+      margin: 0;
+      color: #667085;
+      font-size: 13px;
+      line-height: 1.55;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+    }
+
+    .portfolio-actions {
+      display: grid;
+      gap: 9px;
+      justify-items: end;
+    }
+
+    .action-btn {
+      min-height: 34px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+      color: #475569;
+      padding: 0 12px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 900;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .action-btn:hover,
+    .action-btn.primary {
+      border-color: var(--brand);
+      background: #f5f7ff;
+      color: var(--brand);
+    }
+
+    .empty {
+      border: 1px dashed #dbe2f0;
+      border-radius: 8px;
+      background: #fbfdff;
+      padding: 52px 20px;
+      color: #64748b;
+      text-align: center;
+    }
+
+    @media (max-width: 980px) {
+      .portfolio-manage {
+        grid-template-columns: 1fr;
+      }
+
+      .manage-toolbar {
+        grid-template-columns: 1fr;
+      }
+
+      .portfolio-card {
+        grid-template-columns: 92px minmax(0, 1fr);
+      }
+
+      .portfolio-actions {
+        grid-column: 1 / -1;
+        justify-items: stretch;
+        display: flex;
+        flex-wrap: wrap;
+      }
+    }
+  </style>
 </head>
 <body>
   <div class="app-shell">
@@ -14,7 +247,7 @@
         <a class="nav-tab" href="main.html">메인</a>
         <a class="nav-tab" href="portfolio_create.html">포트폴리오 생성</a>
         <a class="nav-tab active" href="portfolio_manage.html">포트폴리오 관리</a>
-        <a class="nav-tab" href="create.html">파일 생성</a>
+        <a class="nav-tab" href="create.html">파일 관리</a>
         <a class="nav-tab" href="contest.html">활동 추천</a>
         <a class="nav-tab" href="mypage.html">마이페이지</a>
       </nav>
@@ -23,18 +256,211 @@
         <a class="user-chip" href="mypage.html" aria-label="마이페이지로 이동"><span class="avatar"></span></a>
       </div>
     </header>
-    <main class="page-shell">
-      <h1 class="page-title">포트폴리오 관리</h1>
-      <p class="page-subtitle">생성한 초안과 제출용 포트폴리오를 한 곳에서 관리합니다.</p>
-      <section class="static-empty">
-        <div>
-          <strong>아직 저장된 포트폴리오가 없어요.</strong>
-          <span>새 초안을 생성하면 이곳에 목록이 표시됩니다.</span>
-          <div class="form-actions"><a class="primary-button" href="portfolio_create.html">새 초안 생성</a></div>
-        </div>
-      </section>
-    </main>
+
+    <div class="portfolio-manage">
+      <main class="manage-content">
+        <section class="manage-head">
+          <div>
+            <h1 class="page-title">포트폴리오 관리</h1>
+            <p class="page-subtitle">생성한 초안과 제출용 포트폴리오를 한 곳에서 검색하고 관리합니다.</p>
+          </div>
+          <a class="primary-button" href="portfolio_create.html">새 포트폴리오 만들기</a>
+        </section>
+
+        <section class="manage-toolbar" aria-label="포트폴리오 검색">
+          <label class="manage-search">
+            <span aria-hidden="true">⌕</span>
+            <input id="searchInput" type="search" placeholder="포트폴리오 검색" />
+          </label>
+        </section>
+
+        <section id="portfolioList" class="portfolio-list" aria-label="포트폴리오 목록"></section>
+      </main>
+    </div>
   </div>
-  <script>document.querySelectorAll('.folder-title').forEach((button)=>{button.addEventListener('click',()=>button.closest('.folder-section')?.classList.toggle('open'));});</script>
+
+  <script>
+    const STORAGE_KEY = 'careerfit_portfolios';
+    const seedPortfolios = [
+      {
+        id: 'portfolio-data',
+        title: '데이터 분석 직무 포트폴리오',
+        createdAt: '2026-07-02T09:00:00.000Z',
+        purpose: '데이터 분석 직무 지원',
+        summary: '공공데이터 시각화 프로젝트 경험을 중심으로 정리한 포트폴리오입니다.',
+        status: 'done',
+        content: '데이터 수집, 전처리, 시각화, 인사이트 도출 경험을 흐름에 맞게 구성했습니다.'
+      },
+      {
+        id: 'portfolio-contest',
+        title: '공모전 제출용 포트폴리오',
+        createdAt: '2026-07-01T15:30:00.000Z',
+        purpose: '공모전 제출',
+        summary: '문제 정의, 기획 의도, 팀 역할, 결과물을 중심으로 구성한 제출용 예시입니다.',
+        status: 'done',
+        content: '공모전 심사자가 빠르게 맥락을 이해할 수 있도록 핵심 성과를 앞쪽에 배치했습니다.'
+      }
+    ];
+
+    const portfolioList = document.getElementById('portfolioList');
+    const searchInput = document.getElementById('searchInput');
+    let portfolios = loadPortfolios();
+
+    function readJson(key) {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(key)) || [];
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function normalizePortfolio(item, index) {
+      return {
+        id: item.id || `portfolio-${Date.now()}-${index}`,
+        title: item.title || item.format || '저장된 포트폴리오',
+        createdAt: item.createdAt || item.updatedAt || new Date().toISOString(),
+        purpose: item.purpose || item.targetRole || '포트폴리오',
+        summary: item.summary || item.content || '저장된 포트폴리오입니다.',
+        status: 'done',
+        content: item.content || item.summary || ''
+      };
+    }
+
+    function loadPortfolios() {
+      const stored = readJson(STORAGE_KEY).map(normalizePortfolio);
+      if (stored.length) return stored;
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(seedPortfolios));
+      return seedPortfolios;
+    }
+
+    function savePortfolios() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(portfolios));
+    }
+
+    function escapeHtml(value) {
+      return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function formatDate(value) {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '-';
+      return new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(date);
+    }
+
+    function statusLabel(status) {
+      return '완료';
+    }
+
+    function getVisiblePortfolios() {
+      const query = searchInput.value.trim().toLowerCase();
+      return portfolios
+        .filter((portfolio) => {
+          const haystack = `${portfolio.title} ${portfolio.purpose} ${portfolio.summary}`.toLowerCase();
+          return !query || haystack.includes(query);
+        })
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }
+
+    function render() {
+      const visible = getVisiblePortfolios();
+      portfolioList.innerHTML = '';
+
+      if (!visible.length) {
+        portfolioList.innerHTML = '<div class="empty">조건에 맞는 포트폴리오가 없습니다.</div>';
+        return;
+      }
+
+      visible.forEach((portfolio) => {
+        const card = document.createElement('article');
+        card.className = `portfolio-card ${portfolio.status}`;
+        card.innerHTML = `
+          <div class="portfolio-thumb" aria-hidden="true">
+            <div class="thumb-lines">
+              <span class="thumb-line"></span>
+              <span class="thumb-line short"></span>
+              <span class="thumb-line"></span>
+            </div>
+            <span class="thumb-chart"></span>
+          </div>
+          <div class="portfolio-info">
+            <div class="portfolio-title-row">
+              <h2>${escapeHtml(portfolio.title)}</h2>
+              <span class="status ${portfolio.status}">${statusLabel(portfolio.status)}</span>
+            </div>
+            <div class="portfolio-meta">
+              <span>${formatDate(portfolio.createdAt)} 생성</span>
+              <span>${escapeHtml(portfolio.purpose)}</span>
+            </div>
+            <p class="portfolio-summary">${escapeHtml(portfolio.summary)}</p>
+          </div>
+          <div class="portfolio-actions">
+            <button class="action-btn primary" type="button" data-action="open" data-id="${portfolio.id}">
+              열기
+            </button>
+            <button class="action-btn" type="button" data-action="edit" data-id="${portfolio.id}">
+              수정
+            </button>
+            <button class="action-btn" type="button" data-action="ppt" data-id="${portfolio.id}">
+              PPT 저장
+            </button>
+          </div>
+        `;
+
+        portfolioList.appendChild(card);
+      });
+    }
+
+    function openPortfolio(id) {
+      const portfolio = portfolios.find((item) => item.id === id);
+      if (!portfolio) return;
+      alert(`${portfolio.title}\n\n${portfolio.content || portfolio.summary}`);
+    }
+
+    function downloadPpt(id) {
+      const portfolio = portfolios.find((item) => item.id === id);
+      if (!portfolio) return;
+
+      const body = [
+        'Myfitfolio Portfolio',
+        '',
+        `제목: ${portfolio.title}`,
+        `생성 날짜: ${formatDate(portfolio.createdAt)}`,
+        `사용 목적: ${portfolio.purpose}`,
+        '',
+        portfolio.summary,
+        '',
+        portfolio.content
+      ].join('\n');
+      const blob = new Blob([body], {
+        type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+      });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `${portfolio.title.replace(/[\\/:*?"<>|]/g, '_')}.pptx`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    }
+
+    portfolioList.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-action]');
+      if (!button) return;
+      event.stopPropagation();
+      if (button.dataset.action === 'open') openPortfolio(button.dataset.id);
+      if (button.dataset.action === 'ppt') downloadPpt(button.dataset.id);
+      if (button.dataset.action === 'edit') {
+        window.location.href = `portfolio_create.html?edit=${encodeURIComponent(button.dataset.id)}`;
+      }
+    });
+
+    searchInput.addEventListener('input', render);
+    render();
+  </script>
 </body>
 </html>

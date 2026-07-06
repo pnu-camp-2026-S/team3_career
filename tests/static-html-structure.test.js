@@ -97,6 +97,16 @@ assert.match(
   /dragover/,
   'main sidebar folders should support drag-over uploads'
 );
+assert.match(
+  mainHtml,
+  /create\.html\?folder=\$\{encodeURIComponent\(folderId\)\}/,
+  'main sidebar folders should navigate to file management with the selected folder'
+);
+assert.match(
+  mainHtml,
+  /href="create\.html">활동기록 먼저 정리하기<\/a>/,
+  'main dashboard should send activity organization to file management'
+);
 
 for (const folderLabel of ['개인 프로젝트', '팀 프로젝트', '공모전', '자격증', '교육', '봉사']) {
   assert.ok(
@@ -128,6 +138,39 @@ assert.match(
   contestHtml,
   /id="activity-list"/,
   'contest page should render the activity recommendation list'
+);
+
+const createHtml = fs.readFileSync(path.join(htmlDir, 'create.html'), 'utf8');
+assert.match(
+  createHtml,
+  /<header class="top-nav">/,
+  'file management should use the shared top navigation'
+);
+assert.match(
+  createHtml,
+  /href="create\.html"[^>]*>파일 관리<\/a>/,
+  'file management should keep the shared file management nav link'
+);
+for (const text of ['파일 관리', '폴더 목록', '자료 추가', '미리보기', 'AI 요약', '분석하기', 'GitHub 동기화']) {
+  assert.ok(
+    createHtml.includes(text),
+    `file management page should include ${text}`
+  );
+}
+assert.match(
+  createHtml,
+  /new URLSearchParams\(window\.location\.search\)\.get\('folder'\)/,
+  'file management should read the selected folder from the URL'
+);
+assert.match(
+  createHtml,
+  /data-folder-id="\$\{folderId\}"/,
+  'file management folder buttons should expose folder ids'
+);
+assert.match(
+  fitfolioCss,
+  /\.file-manager-page/,
+  'shared stylesheet should include file management page styles'
 );
 assert.match(
   contestHtml,
