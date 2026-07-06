@@ -1,0 +1,2902 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Myfitfolio</title>
+    <style>
+:root {
+  --brand: #155cff;
+  --brand-dark: #0d3fd5;
+  --ink: #101c33;
+  --muted: #6f7d91;
+  --line: #dbe3ef;
+  --soft-line: #edf1f7;
+  --surface: #ffffff;
+  --surface-soft: #f7f9fd;
+  --blue-soft: #eef4ff;
+  --green: #38b764;
+  --green-soft: #eaf8ef;
+  --orange: #f27b36;
+  --orange-soft: #fff0e6;
+  --red: #f05265;
+  --red-soft: #fff0f3;
+  --shadow: 0 14px 40px rgba(18, 38, 63, 0.08);
+  font-family:
+    Inter, Pretendard, "Noto Sans KR", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  color: var(--ink);
+  background: #fff;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.auth-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: #f6f8fc;
+}
+
+.auth-shell {
+  width: min(1160px, 100%);
+  min-height: min(760px, calc(100vh - 40px));
+  display: grid;
+  grid-template-columns: 1fr 1.04fr;
+  overflow: hidden;
+  border-radius: 20px;
+  background: var(--surface);
+  box-shadow: 0 22px 70px rgba(15, 23, 42, 0.15);
+}
+
+.auth-brand {
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding: 56px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 18% 100%, rgba(21, 92, 255, 0.16), transparent 38%),
+    linear-gradient(145deg, #f8fbff 0%, #edf4ff 100%);
+}
+
+.auth-brand-content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+
+.brand-logo {
+  margin: 0;
+  font-size: clamp(44px, 6vw, 76px);
+  line-height: 1;
+  letter-spacing: 0;
+  color: #081833;
+  font-weight: 900;
+}
+
+.brand-logo span,
+.brand-word span {
+  color: var(--brand);
+}
+
+.auth-tagline {
+  margin: 36px 0 0;
+  font-size: 25px;
+  line-height: 1.72;
+  font-weight: 500;
+}
+
+.auth-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 58px 60px;
+  background: #fff;
+}
+
+.auth-tabs {
+  width: min(420px, 100%);
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0;
+  margin-bottom: 72px;
+}
+
+.auth-tab {
+  height: 48px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  color: #7b8493;
+  background: transparent;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.auth-tab.active {
+  color: var(--brand);
+  border-color: var(--brand);
+}
+
+.auth-content {
+  width: min(456px, 100%);
+  text-align: center;
+}
+
+.auth-content h1 {
+  margin: 0;
+  font-size: 36px;
+  letter-spacing: 0;
+}
+
+.auth-content p {
+  margin: 24px 0 46px;
+  color: var(--muted);
+  font-size: 19px;
+}
+
+.social-stack {
+  display: grid;
+  gap: 18px;
+}
+
+.social-button {
+  width: 100%;
+  height: 68px;
+  display: grid;
+  grid-template-columns: 92px 1fr 52px;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: #182033;
+  font-size: 22px;
+  font-weight: 700;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.social-button:hover {
+  border-color: #a9baf4;
+  box-shadow: 0 12px 26px rgba(21, 92, 255, 0.09);
+  transform: translateY(-1px);
+}
+
+.social-icon {
+  justify-self: end;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-weight: 900;
+}
+
+.google-icon {
+  color: #4285f4;
+  font-size: 30px;
+}
+
+.kakao-icon {
+  background: #2a1715;
+}
+
+.kakao-icon::after {
+  content: "";
+  width: 20px;
+  height: 15px;
+  border-radius: 50%;
+  background: #2a1715;
+  box-shadow: 3px 3px 0 -1px #2a1715;
+}
+
+.naver-icon {
+  color: #03c75a;
+  font-size: 32px;
+}
+
+.auth-note {
+  margin-top: 34px;
+  color: var(--muted);
+  font-size: 16px;
+}
+
+.app-shell {
+  min-height: 100vh;
+  background: #fff;
+}
+
+.top-nav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  gap: 34px;
+  padding: 0 38px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(14px);
+}
+
+.brand-word {
+  border: 0;
+  background: transparent;
+  color: var(--brand);
+  font-size: 21px;
+  font-weight: 900;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.nav-tabs {
+  display: flex;
+  align-self: stretch;
+  gap: 30px;
+  margin-left: 24px;
+}
+
+.nav-tab {
+  position: relative;
+  border: 0;
+  background: transparent;
+  color: #4e5868;
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.nav-tab.active {
+  color: var(--brand);
+}
+
+.nav-tab.active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 4px;
+  border-radius: 999px 999px 0 0;
+  background: var(--brand);
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-left: auto;
+}
+
+.icon-button {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #6c7688;
+}
+
+.user-chip {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border: 0;
+  background: transparent;
+}
+
+.avatar,
+.avatar-lg {
+  position: relative;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 35%, #d9dde5 0 17%, transparent 18%),
+    radial-gradient(circle at 50% 82%, #c8cdd7 0 35%, transparent 36%),
+    #eef1f6;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+}
+
+.avatar.online::after {
+  content: "";
+  position: absolute;
+  right: 1px;
+  bottom: 4px;
+  width: 9px;
+  height: 9px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: #40c968;
+}
+
+.avatar-lg {
+  width: 88px;
+  height: 88px;
+}
+
+.layout-main {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+}
+
+.sidebar {
+  min-height: calc(100vh - 72px);
+  padding: 22px 22px;
+  border-right: 1px solid var(--line);
+  background: #f8fbff;
+}
+
+.sidebar-email {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #596579;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.primary-button,
+.outline-button,
+.ghost-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 48px;
+  border-radius: 8px;
+  font-weight: 850;
+}
+
+.primary-button {
+  border: 1px solid var(--brand);
+  background: var(--brand);
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(21, 92, 255, 0.2);
+}
+
+.outline-button {
+  border: 1px solid #9eb8ff;
+  background: #fff;
+  color: var(--brand);
+}
+
+.ghost-button {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: #425066;
+}
+
+.upload-button {
+  width: 100%;
+  height: 48px;
+  margin: 24px 0;
+  font-size: 15px;
+}
+
+.folder-section {
+  margin-top: 22px;
+}
+
+.folder-title {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: #526077;
+  font-size: 14px;
+  font-weight: 850;
+  text-align: left;
+}
+
+.folder-chevron {
+  display: grid;
+  place-items: center;
+  color: #7d8796;
+  transition: transform 160ms ease;
+}
+
+.folder-chevron .svg-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.folder-list {
+  display: none;
+  gap: 14px;
+}
+
+.folder-section.open .folder-list {
+  display: grid;
+}
+
+.folder-section.open .folder-chevron {
+  transform: rotate(180deg);
+}
+
+.folder-item {
+  display: grid;
+  grid-template-columns: 22px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  color: #536176;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.folder-count {
+  color: #7d8796;
+}
+
+.ai-helper {
+  margin-top: 28px;
+  padding: 18px 20px;
+  border: 1px solid #d4e1ff;
+  border-radius: 12px;
+  background: #f4f8ff;
+}
+
+.ai-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 10px;
+  color: var(--brand);
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.ai-helper p {
+  margin: 0 0 16px;
+  color: #6c7688;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.dashboard {
+  padding: 26px 38px 34px;
+}
+
+.page-title {
+  margin: 0;
+  font-size: 30px;
+  line-height: 1.22;
+  letter-spacing: 0;
+}
+
+.page-subtitle {
+  margin: 14px 0 24px;
+  color: #697586;
+  font-size: 16px;
+  font-weight: 650;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(150px, 1fr));
+  gap: 18px;
+}
+
+.stat-card {
+  min-height: 118px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.metric-icon {
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  color: var(--brand);
+  background: var(--blue-soft);
+}
+
+.metric-icon.green {
+  color: var(--green);
+  background: var(--green-soft);
+}
+
+.metric-icon.orange {
+  color: var(--orange);
+  background: var(--orange-soft);
+}
+
+.metric-icon.red {
+  color: var(--red);
+  background: var(--red-soft);
+}
+
+.stat-label {
+  margin-bottom: 6px;
+  color: #526077;
+  font-size: 14px;
+  font-weight: 850;
+}
+
+.stat-value {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  font-weight: 900;
+}
+
+.stat-number {
+  font-size: 36px;
+  line-height: 1;
+}
+
+.stat-unit {
+  color: #3d4655;
+  font-size: 16px;
+}
+
+.panel {
+  margin-top: 20px;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.panel-title {
+  margin: 0 0 14px;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.analysis-grid {
+  display: grid;
+  grid-template-columns: 1.05fr 1.05fr 1.2fr;
+  gap: 14px;
+}
+
+.analysis-card {
+  min-height: 190px;
+  padding: 18px;
+  border: 1px solid var(--soft-line);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.small-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 16px;
+  color: #2f3a4c;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.donut-row {
+  display: grid;
+  grid-template-columns: 112px 1fr;
+  align-items: center;
+  gap: 18px;
+}
+
+.donut {
+  width: 108px;
+  height: 108px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: conic-gradient(#e8edf5 0 100%);
+}
+
+.donut::after {
+  content: "0%";
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #fff;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.skeleton-list {
+  display: grid;
+  gap: 13px;
+}
+
+.skeleton-line {
+  height: 10px;
+  border-radius: 999px;
+  background: #e8edf5;
+}
+
+.skeleton-line.short {
+  width: 64%;
+}
+
+.legend-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 22px;
+  color: #526077;
+  font-weight: 800;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--brand);
+}
+
+.dot.green {
+  background: var(--green);
+}
+
+.empty-analysis {
+  min-height: 106px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  text-align: left;
+}
+
+.empty-analysis h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+.empty-analysis p {
+  margin: 0;
+  color: #697586;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.next-card {
+  min-height: 124px;
+  display: grid;
+  grid-template-columns: 76px minmax(240px, 1fr) auto;
+  align-items: center;
+  gap: 22px;
+  margin-top: 20px;
+  padding: 22px 30px;
+  border: 1px solid #d4e1ff;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #f9fbff, #fff);
+}
+
+.next-card h3 {
+  margin: 0 0 8px;
+  font-size: 20px;
+}
+
+.next-card p {
+  margin: 0;
+  color: #697586;
+  font-size: 14px;
+  line-height: 1.48;
+  font-weight: 650;
+}
+
+.next-actions {
+  display: flex;
+  gap: 14px;
+}
+
+.next-actions button {
+  min-width: 190px;
+  height: 48px;
+  font-size: 16px;
+}
+
+.mypage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 140px;
+  gap: 24px;
+  padding: 28px 48px 42px;
+}
+
+.mypage-content {
+  min-width: 0;
+}
+
+.mypage .page-title {
+  font-size: 28px;
+}
+
+.mypage .page-subtitle {
+  margin: 10px 0 18px;
+  font-size: 12px;
+}
+
+.profile-section {
+  padding: 24px 28px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  scroll-margin-top: 92px;
+}
+
+.section-heading {
+  margin: 0 0 18px;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.field-grid {
+  display: grid;
+  grid-template-columns: 180px repeat(3, minmax(160px, 1fr));
+  gap: 28px 34px;
+  align-items: end;
+}
+
+.profile-photo {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+}
+
+.profile-photo .ghost-button {
+  min-height: 34px;
+  padding: 0 12px;
+  font-size: 12px;
+  gap: 6px;
+}
+
+.profile-photo .ghost-button .svg-icon {
+  width: 15px;
+  height: 15px;
+}
+
+.avatar-lg {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.avatar-lg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-lg.has-photo {
+  background: #eef4ff;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.form-field {
+  position: relative;
+  display: grid;
+  gap: 9px;
+}
+
+.form-field label {
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.form-field input,
+.form-field select {
+  width: 100%;
+  height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0 14px;
+  color: #273244;
+  background: #fff;
+}
+
+.date-control {
+  position: relative;
+}
+
+.date-trigger {
+  width: 100%;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0 12px 0 14px;
+  background: #fff;
+  color: #273244;
+  text-align: left;
+  font-weight: 750;
+}
+
+.date-trigger > span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.date-trigger-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 24px;
+  height: 24px;
+  border-radius: 6px;
+}
+
+.date-trigger-icon:hover {
+  background: #eef4ff;
+}
+
+.date-trigger-icon .svg-icon {
+  width: 18px;
+  height: 18px;
+  color: #7f8aa0;
+}
+
+.date-picker-panel {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 6px);
+  z-index: 30;
+  width: 280px;
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #b9c8f5;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.16);
+}
+
+.date-picker-selects {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.date-picker-selects label {
+  display: grid;
+  gap: 6px;
+  color: #5c687a;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.date-picker-selects select {
+  height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0 8px;
+  background: #fff;
+}
+
+.date-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.date-days button {
+  height: 30px;
+  border: 0;
+  border-radius: 6px;
+  background: #f5f7fb;
+  color: #344055;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.date-days button:hover,
+.date-days button.selected {
+  background: var(--brand);
+  color: #fff;
+}
+
+.section-stack {
+  display: grid;
+  gap: 14px;
+}
+
+.inline-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(160px, 1fr));
+  gap: 36px;
+}
+
+.education-grid {
+  display: grid;
+  grid-template-columns: 140px 1fr 1.15fr 1fr 1fr 100px;
+  gap: 16px;
+}
+
+.education-list {
+  display: grid;
+  gap: 16px;
+}
+
+.education-item {
+  position: relative;
+  padding: 14px;
+  border: 1px solid var(--soft-line);
+  border-radius: 8px;
+  background: #fbfcff;
+}
+
+.education-item.has-delete {
+  padding-right: 48px;
+}
+
+.delete-education {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  padding: 0;
+  background: transparent;
+  color: #8b96a8;
+}
+
+.delete-education .svg-icon {
+  width: 15px;
+  height: 15px;
+}
+
+.delete-education:hover {
+  background: #eef1f6;
+  color: #667085;
+}
+
+.major-field {
+  z-index: 2;
+}
+
+.major-trigger {
+  width: 100%;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0 12px 0 14px;
+  background: #fff;
+  color: #273244;
+  text-align: left;
+}
+
+.major-trigger span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.major-trigger .svg-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.major-menu {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 6px);
+  display: none;
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 6px;
+  border: 1px solid #b9c8f5;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.14);
+}
+
+.major-menu.open {
+  display: grid;
+}
+
+.major-menu button {
+  min-height: 34px;
+  border: 0;
+  border-radius: 6px;
+  padding: 0 10px;
+  background: #fff;
+  color: #344055;
+  text-align: left;
+  font-weight: 700;
+}
+
+.major-menu button:hover {
+  background: #f1f5ff;
+  color: var(--brand);
+}
+
+.picker-trigger {
+  width: 100%;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0 12px 0 14px;
+  background: #fff;
+  color: #273244;
+  text-align: left;
+  font-weight: 750;
+}
+
+.picker-trigger .placeholder {
+  color: #9aa5b5;
+  font-weight: 650;
+}
+
+.picker-trigger .svg-icon {
+  width: 18px;
+  height: 18px;
+  color: #7f8aa0;
+}
+
+.job-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 12px;
+}
+
+.chip {
+  min-width: 92px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  color: #425066;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.chip .svg-icon {
+  width: 16px;
+  height: 16px;
+  margin-right: 6px;
+}
+
+.chip.selected {
+  border-color: #6d95ff;
+  color: var(--brand);
+  background: #eef4ff;
+  box-shadow: inset 0 0 0 1px rgba(21, 92, 255, 0.16);
+}
+
+.search-row {
+  display: grid;
+  grid-template-columns: 1.1fr 1.1fr 0.6fr 0.8fr;
+  gap: 18px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.form-actions button {
+  min-width: 92px;
+  height: 40px;
+}
+
+.anchor-menu {
+  position: sticky;
+  top: 108px;
+  align-self: start;
+  padding: 22px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.anchor-menu button {
+  position: relative;
+  width: 100%;
+  height: 36px;
+  border: 0;
+  background: transparent;
+  color: #697586;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: left;
+}
+
+.anchor-menu button.active {
+  color: var(--brand);
+}
+
+.anchor-menu button.active::before {
+  content: "";
+  position: absolute;
+  left: -14px;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 99px;
+  background: var(--brand);
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(15, 23, 42, 0.36);
+}
+
+.search-modal {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  z-index: 60;
+  width: min(520px, calc(100vw - 32px));
+  max-height: min(620px, calc(100vh - 56px));
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  gap: 18px;
+  padding: 24px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 30px 80px rgba(15, 23, 42, 0.28);
+  transform: translate(-50%, -50%);
+}
+
+.search-modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.search-modal-head h3 {
+  margin: 0 0 8px;
+  font-size: 20px;
+}
+
+.search-modal-head p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.modal-close {
+  flex: 0 0 auto;
+  font-size: 28px;
+  line-height: 1;
+}
+
+.modal-search-box {
+  height: 46px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #b9c8f5;
+  border-radius: 8px;
+  padding: 0 14px;
+  background: #fbfcff;
+}
+
+.modal-search-box .svg-icon {
+  width: 19px;
+  height: 19px;
+  color: var(--brand);
+}
+
+.modal-search-box input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+}
+
+.search-options {
+  display: grid;
+  gap: 8px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.search-option {
+  min-height: 40px;
+  border: 1px solid var(--soft-line);
+  border-radius: 8px;
+  padding: 0 14px;
+  background: #fff;
+  color: #344055;
+  text-align: left;
+  font-weight: 800;
+}
+
+.search-option:hover,
+.search-option.selected {
+  border-color: #8aabff;
+  background: #eef4ff;
+  color: var(--brand);
+}
+
+.empty-options {
+  padding: 28px;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+  text-align: center;
+  font-weight: 750;
+}
+
+.blank-page {
+  min-height: calc(100vh - 72px);
+  background: #fff;
+}
+
+.svg-icon {
+  width: 28px;
+  height: 28px;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.svg-icon.fill {
+  fill: currentColor;
+  stroke: none;
+}
+
+@media (max-width: 1280px) {
+  .layout-main {
+    grid-template-columns: 310px 1fr;
+  }
+
+  .dashboard {
+    padding: 34px;
+  }
+
+  .stats-grid,
+  .analysis-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .next-card {
+    grid-template-columns: 80px 1fr;
+  }
+
+  .next-actions {
+    grid-column: 1 / -1;
+  }
+
+  .mypage {
+    padding: 28px;
+  }
+}
+
+@media (max-width: 900px) {
+  .auth-shell,
+  .layout-main,
+  .mypage {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-brand {
+    min-height: 330px;
+  }
+
+  .auth-shell {
+    min-height: auto;
+  }
+
+  .auth-panel {
+    padding: 44px 26px;
+  }
+
+  .auth-tabs {
+    margin-bottom: 48px;
+  }
+
+  .top-nav {
+    height: auto;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 16px 20px 0;
+  }
+
+  .nav-tabs {
+    order: 3;
+    width: 100%;
+    gap: 22px;
+    margin-left: 0;
+    overflow-x: auto;
+  }
+
+  .nav-tab {
+    min-height: 48px;
+  }
+
+  .nav-actions {
+    margin-left: auto;
+  }
+
+  .sidebar {
+    min-height: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .dashboard {
+    padding: 28px 18px;
+  }
+
+  .stats-grid,
+  .analysis-grid,
+  .field-grid,
+  .inline-fields,
+  .education-grid,
+  .search-row {
+    grid-template-columns: 1fr;
+  }
+
+  .mypage {
+    padding: 24px 16px;
+  }
+
+  .anchor-menu {
+    display: none;
+  }
+
+  .next-card {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .next-actions {
+    flex-direction: column;
+  }
+
+  .next-actions button {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+/* Prototype theme aligned with the shared myfitfolio_web_prototype.html */
+:root {
+  --brand: #5965e8;
+  --brand-dark: #4652d7;
+  --ink: #17203a;
+  --muted: #697386;
+  --line: #e8ebf3;
+  --soft-line: #edf0f7;
+  --surface-soft: #f8f9fd;
+  --blue-soft: #eef2ff;
+  --shadow: 0 6px 18px rgba(31, 36, 62, 0.025);
+}
+
+body {
+  background: #fff;
+}
+
+.auth-page {
+  padding: 0;
+  background: #fff;
+}
+
+.auth-shell {
+  width: 100%;
+  min-height: 100vh;
+  grid-template-columns: 1fr 1fr;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.auth-brand {
+  justify-items: start;
+  padding: 70px;
+  background: linear-gradient(135deg, #f4f6ff, #eef9ff);
+}
+
+.auth-brand::before,
+.auth-brand::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(100, 87, 255, 0.14);
+}
+
+.auth-brand::before {
+  width: 280px;
+  height: 280px;
+  left: -80px;
+  top: 70px;
+}
+
+.auth-brand::after {
+  width: 420px;
+  height: 420px;
+  right: -120px;
+  bottom: -130px;
+}
+
+.auth-brand-content {
+  text-align: left;
+}
+
+.brand-logo {
+  font-size: clamp(42px, 5vw, 64px);
+  letter-spacing: -1.5px;
+  color: #202236;
+}
+
+.auth-tagline {
+  margin-top: 18px;
+  color: #687087;
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.auth-panel {
+  justify-content: center;
+  padding: 42px;
+}
+
+.auth-tabs {
+  width: min(430px, 100%);
+  margin-bottom: 28px;
+  padding: 5px;
+  border-radius: 14px;
+  background: #eef0f7;
+}
+
+.auth-tab {
+  height: 42px;
+  border-bottom: 0;
+  border-radius: 11px;
+  color: #656b7f;
+  font-size: 14px;
+}
+
+.auth-tab.active {
+  background: #fff;
+  color: var(--brand);
+  box-shadow: 0 6px 16px rgba(32, 34, 54, 0.08);
+}
+
+.auth-content {
+  width: min(430px, 100%);
+  text-align: left;
+}
+
+.auth-content h1 {
+  font-size: 29px;
+  letter-spacing: -0.6px;
+}
+
+.auth-content p {
+  margin: 8px 0 24px;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.social-stack {
+  gap: 10px;
+}
+
+.social-button {
+  height: 48px;
+  grid-template-columns: 40px 1fr;
+  justify-items: start;
+  padding: 0 18px;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.social-button span:last-child {
+  display: none;
+}
+
+.social-icon {
+  justify-self: start;
+  width: 28px;
+  height: 28px;
+}
+
+.social-button:nth-child(2) {
+  border-color: #fee500;
+  background: #fee500;
+  color: #191919;
+}
+
+.auth-note {
+  margin-top: 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 13px 14px;
+  background: #fbfcff;
+  color: #6b7284;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.app-shell {
+  background: #fff;
+}
+
+.top-nav {
+  height: 72px;
+  gap: 24px;
+  padding: 0 34px;
+  border-bottom-color: #e8ebf3;
+  background: #fff;
+  backdrop-filter: none;
+}
+
+.brand-word {
+  color: var(--brand);
+  font-size: 24px;
+  letter-spacing: -0.8px;
+}
+
+.nav-tabs {
+  height: 72px;
+  gap: 24px;
+  margin-left: 18px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.nav-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.nav-tab {
+  height: 72px;
+  flex: 0 0 auto;
+  padding: 0 2px;
+  border-bottom: 3px solid transparent;
+  color: #7b8195;
+  font-size: 15px;
+}
+
+.nav-tab.active,
+.nav-tab:hover {
+  color: var(--brand);
+  border-bottom-color: var(--brand);
+}
+
+.nav-tab.active::after {
+  display: none;
+}
+
+.nav-actions {
+  gap: 10px;
+}
+
+.layout-main {
+  grid-template-columns: 292px minmax(0, 1fr);
+}
+
+.sidebar {
+  min-height: calc(100vh - 72px);
+  padding: 28px 22px;
+  border-right: 1px solid #e8ebf3;
+  background: #f7f8fc;
+  color: #1f263d;
+}
+
+.sidebar-email {
+  color: #6f7789;
+  font-size: 13px;
+}
+
+.upload-button {
+  height: 48px;
+  border: 1px dashed #cfd5e8;
+  border-radius: 12px;
+  background: #fff;
+  color: #4d556f;
+  box-shadow: 0 6px 16px rgba(31, 36, 62, 0.03);
+}
+
+.folder-title {
+  margin-bottom: 10px;
+  color: #9aa1b5;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.folder-list {
+  gap: 8px;
+}
+
+.folder-item {
+  grid-template-columns: 20px 1fr auto;
+  min-height: 38px;
+  border-radius: 10px;
+  padding: 0 12px;
+  color: #4e566a;
+  font-weight: 800;
+}
+
+.folder-item:hover {
+  background: #eef2ff;
+  color: var(--brand);
+}
+
+.folder-count {
+  color: #8d95aa;
+  font-weight: 800;
+}
+
+.ai-helper {
+  margin-top: 28px;
+  border: 0;
+  border-radius: 12px;
+  background: #eef5ff;
+  color: #526078;
+}
+
+.dashboard {
+  padding: 46px 44px 80px;
+}
+
+.dashboard .page-title {
+  font-size: 30px;
+  letter-spacing: -1.2px;
+  color: #17203a;
+}
+
+.dashboard .page-subtitle {
+  margin: 10px 0 28px;
+  color: #697386;
+  font-size: 15px;
+}
+
+.dashboard-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 34px;
+}
+
+.dashboard-cta {
+  min-width: 142px;
+  height: 54px;
+  border-radius: 12px;
+  box-shadow: 0 14px 34px rgba(89, 101, 232, 0.22);
+}
+
+.dashboard-empty {
+  max-width: 980px;
+}
+
+.profile-needed-card {
+  display: grid;
+  grid-template-columns: 82px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+  border: 1px dashed #cfd5e8;
+  border-radius: 12px;
+  padding: 42px;
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(31, 36, 62, 0.025);
+}
+
+.profile-needed-icon {
+  width: 72px;
+  height: 72px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #eef2ff;
+  color: var(--brand);
+  font-size: 42px;
+  font-weight: 900;
+}
+
+.profile-needed-card h2 {
+  margin: 2px 0 14px;
+  color: #11182f;
+  font-size: 30px;
+  letter-spacing: -0.8px;
+}
+
+.profile-needed-card p {
+  max-width: 680px;
+  margin: 0 0 22px;
+  color: #697386;
+  font-size: 18px;
+  line-height: 1.65;
+}
+
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.stats-grid {
+  gap: 16px;
+}
+
+.stat-card,
+.panel,
+.analysis-card,
+.next-card {
+  border-color: #e7eaf3;
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+.stat-card {
+  min-height: 132px;
+  padding: 22px 20px;
+}
+
+.metric-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 9px;
+}
+
+.stat-number {
+  font-size: 34px;
+  letter-spacing: -1px;
+}
+
+.panel {
+  padding: 24px;
+}
+
+.panel-title {
+  color: #17203a;
+}
+
+.next-card {
+  border-style: dashed;
+  background: #fff;
+}
+
+.mypage {
+  background: #fff;
+}
+
+.profile-section,
+.anchor-menu {
+  border-color: #e7eaf3;
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+@media (max-width: 900px) {
+  .auth-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-brand {
+    min-height: 300px;
+    padding: 40px 26px;
+  }
+
+  .top-nav {
+    height: auto;
+    padding: 12px 18px 0;
+  }
+
+  .nav-tabs {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+</style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script>
+const app = document.querySelector("#app");
+
+const routes = {
+  main: "",
+  portfolioCreate: "Ʈ ",
+  portfolioManage: "Ʈ ",
+  recommend: "Ȱ õ",
+  mypage: "",
+};
+
+const folderNames = ["", "Ȱ", "Ȱ", "ڰ", "Ȱ"];
+const jobs = [
+  "ȹ//濵",
+  "λ/ѹ",
+  "繫/ȸ",
+  "//ȫ",
+  "/",
+  "/",
+  "ǰȹ/MD",
+  "//",
+  "繫/",
+  "",
+  "/",
+  "ڵ//",
+  "ݵü/÷",
+  "/",
+  "IT//",
+  "",
+];
+const companies = [
+  "Ｚ",
+  "SK̴н",
+  "ڵ",
+  "LG",
+  "",
+  "Ե",
+  "ȭ",
+  "ż",
+  "CJ",
+  "̹",
+  "",
+];
+const industries = [
+  "ݵü",
+  "÷",
+  "/͸",
+  "ڵ/Ƽ",
+  "IT/SW",
+  "̿/",
+  "ȭ/",
+  "/װ",
+  "/ؾ",
+  "/κ/ڵȭ",
+  "ｺɾ",
+  "/",
+  "̵/",
+  "/Ŀӽ",
+  "",
+  "/񿵸",
+];
+
+const schoolTypes = ["б 2,3", "б 4", "п ", "п ڻ"];
+const majors = [
+  "濵а",
+  "а",
+  "а",
+  "а",
+  "ɸа",
+  "ȸа",
+  "ġܱа",
+  "а",
+  "ǻͰа",
+  "Ʈа",
+  "ΰа",
+  "ͻ̾а",
+  "а",
+  "ڰа",
+  "а",
+  "а",
+  "ȭаа",
+  "żа",
+  "а",
+  "а",
+  "ȣа",
+  "а",
+];
+
+const detailJobsByJob = {
+  "ȹ//濵": [" ȹ", " ȹ", " ȹ", "δƮ Ŵ", "Ʈ Ŵ"],
+  "λ/ѹ": ["λ ȹ", "ä", " ", "ȭ", "ѹ"],
+  "繫/ȸ": ["繫 м", "ȸ", "", "ڱ ", "濵"],
+  "//ȫ": [" ȹ", "귣 ", " ", "CRM", " "],
+  "/": [" ȹ", " ", " ȹ", "θ "],
+  "/": [" ", "B2B ", "ؿܿ", " ", " "],
+  "ǰȹ/MD": ["ǰ ȹ", "¶ MD", " MD", "īװ Ŵ"],
+  "//": ["", " ", " ", " ", "SCM"],
+  "繫/": [" 繫", " ", "ؿ ", ""],
+  : ["UX/UI ", "귣 ", "׷ ", "ǰ "],
+  "/": [" ", " ", "ǰ ", " "],
+  "ڵ//": [" ", " ", "", "ǰ "],
+  "ݵü/÷": [" Ͼ", " Ͼ", " ", "ǰ м"],
+  "/": ["ǰ ", "ȸ ", "ⱸ ", " "],
+  "IT//": ["Ʈ ", "鿣 ", " ", " м", " Ͼ", "AI/ӽŷ"],
+  : [" ǰ ȹ", "ũ ", " м", " ", " ɻ"],
+};
+
+const workIndustries = [
+  "IT/SW",
+  "ݵü",
+  "÷",
+  "/͸",
+  "ڵ/Ƽ",
+  "/",
+  "̿/",
+  "ȭ/",
+  "̵/",
+  "/Ŀӽ",
+  "",
+  "/񿵸",
+];
+
+const workRegions = [
+  "",
+  "",
+  "õ",
+  "λ",
+  "뱸",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "泲",
+  "",
+  "",
+  "",
+  "泲",
+  "",
+  "",
+  "ؿ",
+];
+
+const salaryRanges = [
+  "ȸ Կ ",
+  "  ",
+  "2,400 ̻",
+  "3,000 ̻",
+  "3,600 ̻",
+  "4,200 ̻",
+  "5,000 ̻",
+  "6,000 ̻",
+  "7,000 ̻",
+];
+
+const searchConfigs = {
+  detailJob: {
+    label: "",
+    placeholder: " ˻ϼ",
+    options: () => getDetailJobOptions(),
+  },
+  workIndustry: {
+    label: " ",
+    placeholder: " ˻ϼ",
+    options: () => workIndustries,
+  },
+  workRegion: {
+    label: "ٹ",
+    placeholder: " ˻ϼ",
+    options: () => workRegions,
+  },
+};
+
+const profileState = {
+  photo: localStorage.getItem("myfitfolioPhoto") || "",
+  educations: [
+    {
+      schoolType: "б 4",
+      school: "λб",
+      period: "2021.03 ~ ",
+      major: "а",
+      minor: "Ʈа",
+      gpa: "4.12 / 4.5",
+    },
+  ],
+  birthDate: "2002-03-14",
+  datePickerOpen: false,
+  preferences: {
+    detailJob: "",
+    workIndustry: "",
+    workRegion: "",
+    salary: "ȸ Կ ",
+  },
+  chips: {
+    jobs: new Set(["IT//", ""]),
+    interestFields: new Set(["ä"]),
+    companies: new Set(),
+    industries: new Set(),
+  },
+};
+
+function icon(name, className = "") {
+  const icons = {
+    bell: `<svg class="svg-icon ${className}" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>`,
+    chevron: `<svg class="svg-icon ${className}" viewBox="0 0 24 24"><path d="m8 10 4 4 4-4"/></svg>`,
+    upload: `<svg class="svg-icon ${className}" viewBox="0 0 24 24"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M20 16.5V19a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2.5"/></svg>`,
+    folder: `<svg class="svg-icon ${className}" viewBox="0 0 24 24"><path class="fill" d="M3 7.5A2.5 2.5 0 0 1 5.5 5H10l2 2h6.5A2.5 2.5 0 0 1 21 9.5v7A2.5 2.5 0 0 1 18.5 19h-13A2.5 2.5 0 0 1 3 16.5v-9Z"/></svg>`,
+    document: `<svg class="svg-icon ${className}" viewBox="0 0 24 24"><path d="M6 3h9l3 3v15H6z"/><path d="M9 9h6"/><path d="M9 13h6"/><path d="M9 17h3"/></svg>`,
+    checklist: `<svg class="svg-icon ${className}" viewBox="0 0 24 24"><path d="M9 11 11 13 15 9"/><path d="M9 17 11 19 15 15"/><path d="M5 4h14v18H5z"/></svg>`,
+    trophy: `<svg class="svg-icon ${className}" viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 1 1-8 0V4Z"/><path d="M8 7H4a4 4 0 0 0 4 4"/><path d="M16 7h4a4 4 0 0 1-4 4"/><path d="M12 13v4"/><path d="M8 21h8"/><path d="M9 17h6"/></svg>`,
+    heart: `<svg class="svg-icon ${className}" viewBox="0 0 24 24"><path class="fill" d="M12 21s-7-4.4-9.4-8.6C.3 8.4 2.5 4 6.8 4c2.1 0 3.6 1 4.5 2.5C12.2 5 13.7 4 15.8 4c4.3 0 6.5 4.4 4.2 8.4C17.6 16.6 12 21 12 21Z"/></svg>`,
+    id: `<svg class="svg-icon ${className}" viewBox="0 0 24 24"><path d="M4 6h16v12H4z"/><path d="M8 11h4"/><path d="M8 15h8"/><circle cx="16.5" cy="10.5" r="1.5"/></svg>`,
+    ai: `<svg class="svg-icon ${className}" viewBox="0 0 24 24"><path d="M9 3h6"/><path d="M12 3v3"/><rect x="4" y="7" width="16" height="13" rx="2"/><path d="M8 12h.01"/><path d="M16 12h.01"/><path d="M8 16h8"/><path d="M2 12h2"/><path d="M20 12h2"/></svg>`,
+    calendar: `<svg class="svg-icon ${className}" viewBox="0 0 24 24"><path d="M7 3v4"/><path d="M17 3v4"/><path d="M4 8h16"/><rect x="4" y="5" width="16" height="16" rx="2"/></svg>`,
+    search: `<svg class="svg-icon ${className}" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>`,
+    trash: `<svg class="svg-icon ${className}" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 15H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>`,
+    users: `<svg class="svg-icon ${className}" viewBox="0 0 24 24"><path d="M16 19v-1a4 4 0 0 0-8 0v1"/><circle cx="12" cy="9" r="3"/><path d="M6 17v-1a3 3 0 0 1 2-2.8"/><path d="M18 17v-1a3 3 0 0 0-2-2.8"/></svg>`,
+    flag: `<svg class="svg-icon ${className}" viewBox="0 0 24 24"><path d="M5 21V4"/><path d="M5 5h12l-1.5 4L17 13H5"/></svg>`,
+    book: `<svg class="svg-icon ${className}" viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21V5.5Z"/><path d="M4 19V5.5"/></svg>`,
+  };
+  return icons[name] || "";
+}
+
+function setRoute(route) {
+  window.location.hash = route;
+}
+
+function login() {
+  sessionStorage.setItem("myfitfolioLoggedIn", "true");
+  setRoute("main");
+}
+
+function isProfileSaved() {
+  return sessionStorage.getItem("myfitfolioProfileSaved") === "true";
+}
+
+function renderAuth(mode = "signup") {
+  const isSignup = mode !== "login";
+  app.innerHTML = `
+    <main class="auth-page">
+      <section class="auth-shell">
+        <div class="auth-brand">
+          <div class="auth-brand-content">
+            <h1 class="brand-logo">Myfit<span>folio</span></h1>
+            <p class="auth-tagline">  ϰ,<br />  ȸ ϼ.</p>
+          </div>
+        </div>
+        <div class="auth-panel">
+          <div class="auth-tabs" role="tablist" aria-label=" ">
+            <button class="auth-tab ${isSignup ? "" : "active"}" type="button" data-auth-tab="login">α</button>
+            <button class="auth-tab ${isSignup ? "active" : ""}" type="button" data-auth-tab="signup">ȸ</button>
+          </div>
+          <section class="auth-content">
+            <h1>α / ȸ</h1>
+            <p>Ҽ  ϰ մϴ. ó 湮  ڵ ȸ ó˴ϴ.</p>
+            <div class="social-stack">
+              <button class="social-button" type="button" data-login>
+                <span class="social-icon google-icon">G</span>
+                <span>Google ϱ</span>
+                <span></span>
+              </button>
+              <button class="social-button" type="button" data-login>
+                <span class="social-icon kakao-icon"></span>
+                <span>īī ϱ</span>
+                <span></span>
+              </button>
+              <button class="social-button" type="button" data-login>
+                <span class="social-icon naver-icon">N</span>
+                <span>̹ ϱ</span>
+                <span></span>
+              </button>
+            </div>
+            <div class="auth-note">԰ α  Ҽ  ˴ϴ.</div>
+          </section>
+        </div>
+      </section>
+    </main>
+  `;
+
+  document.querySelectorAll("[data-auth-tab]").forEach((button) => {
+    button.addEventListener("click", () => renderAuth(button.dataset.authTab));
+  });
+  document.querySelectorAll("[data-login]").forEach((button) => {
+    button.addEventListener("click", login);
+  });
+}
+
+function renderNav(activeRoute) {
+  return `
+    <header class="top-nav">
+      <button class="brand-word" type="button" data-route="main">Myfit<span>folio</span></button>
+      <nav class="nav-tabs" aria-label="ֿ ޴">
+        ${Object.entries(routes)
+          .map(
+            ([key, label]) =>
+              `<button class="nav-tab ${key === activeRoute ? "active" : ""}" type="button" data-route="${key}">${label}</button>`,
+          )
+          .join("")}
+      </nav>
+      <div class="nav-actions">
+        <button class="icon-button" type="button" aria-label="˸">${icon("bell")}</button>
+        <button class="user-chip" type="button" data-route="mypage" aria-label=" ̵">
+          <span class="avatar"></span>
+          ${icon("chevron")}
+        </button>
+      </div>
+    </header>
+  `;
+}
+
+function wireRoutes() {
+  document.querySelectorAll("[data-route]").forEach((button) => {
+    button.addEventListener("click", () => setRoute(button.dataset.route));
+  });
+}
+
+function wireSidebarFolders() {
+  document.querySelectorAll("[data-folder-toggle]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const section = button.closest(".folder-section");
+      section?.classList.toggle("open");
+      button.setAttribute("aria-expanded", section?.classList.contains("open") ? "true" : "false");
+    });
+  });
+}
+
+function renderSidebar() {
+  const folderBlock = (title, id) => `
+    <section class="folder-section">
+      <button class="folder-title" type="button" data-folder-toggle="${id}" aria-expanded="false">
+        <span>${title}</span>
+        <span class="folder-chevron">${icon("chevron")}</span>
+      </button>
+      <div class="folder-list">
+        ${folderNames
+          .map(
+            (name) => `
+              <div class="folder-item">
+                ${icon("folder")}
+                <span>${name}</span>
+                <span class="folder-count">0</span>
+              </div>
+            `,
+          )
+          .join("")}
+      </div>
+    </section>
+  `;
+
+  return `
+    <aside class="sidebar">
+      <div class="sidebar-email"><span class="avatar online"></span><span>user@univ.ac.kr</span></div>
+      <button class="primary-button upload-button" type="button">${icon("upload")} Ȱ ڷ ε</button>
+      ${folderBlock("Ϸ Ȱ ", "completed")}
+      ${folderBlock("غ Ȱ ", "ready")}
+      <section class="ai-helper">
+        <div class="ai-title">${icon("ai")} AI м </div>
+        <p> ε  AI м Ȱ ص.</p>
+        <button class="primary-button upload-button" type="button">м </button>
+      </section>
+    </aside>
+  `;
+}
+
+function statCard(label, number, unit, iconName, tone = "") {
+  return `
+    <article class="stat-card">
+      <div class="metric-icon ${tone}">${icon(iconName)}</div>
+      <div>
+        <div class="stat-label">${label}</div>
+        <div class="stat-value"><span class="stat-number">${number}</span><span class="stat-unit">${unit}</span></div>
+      </div>
+    </article>
+  `;
+}
+
+function renderDashboard() {
+  if (!isProfileSaved()) {
+    return `
+      <main class="dashboard dashboard-empty">
+        <div class="dashboard-head">
+          <div>
+            <h1 class="page-title"> Ȱ ú</h1>
+            <p class="page-subtitle">ε Ȱ ڷḦ  Ʈ, ,  ̷ Ѵ Ȯϼ.</p>
+          </div>
+          <button class="primary-button dashboard-cta" type="button" data-route="mypage"> Էϱ</button>
+        </div>
+        <section class="profile-needed-card">
+          <div class="profile-needed-icon">!</div>
+          <div>
+            <h2> Էּ</h2>
+            <p>
+                  ü м    .
+               ⺻    ϸ ô,  Ȱ,
+              õ  ڵ ǥõ˴ϴ.
+            </p>
+            <div class="btn-row">
+              <button class="primary-button" type="button" data-route="mypage">  </button>
+              <button class="outline-button" type="button">Ȱ  ϱ</button>
+            </div>
+          </div>
+        </section>
+      </main>
+    `;
+  }
+
+  return `
+    <main class="dashboard">
+      <h1 class="page-title"> Ȱ ú</h1>
+      <p class="page-subtitle">ε Ȱ ڷ    ü ص.</p>
+      <section class="stats-grid">
+        ${statCard("Ϸ Ȱ", "0", "", "document")}
+        ${statCard("غ Ȱ", "0", "", "checklist", "green")}
+        ${statCard(" ", "0", "ȸ", "trophy", "orange")}
+        ${statCard("Ȱ", "0", "ȸ", "heart", "red")}
+      </section>
+      <section class="panel">
+        <h2 class="panel-title">AI ü м</h2>
+        <div class="analysis-grid">
+          <article class="analysis-card">
+            <h3 class="small-title">Ŀ غ </h3>
+            <div class="donut-row">
+              <div class="donut"></div>
+              <div class="skeleton-list">
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line short"></div>
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line short"></div>
+              </div>
+            </div>
+          </article>
+          <article class="analysis-card">
+            <h3 class="small-title">м ڷ </h3>
+            <div class="stat-value"><span class="metric-icon">${icon("calendar")}</span><span class="stat-number">0</span><span class="stat-unit"></span></div>
+            <div class="skeleton-line" style="margin-top:22px"></div>
+            <div class="legend-line"><span class="dot"></span><span>Ϸ Ȱ</span><strong>0</strong><span class="dot green" style="margin-left:28px"></span><span>غ Ȱ</span><strong>0</strong></div>
+          </article>
+          <article class="analysis-card">
+            <h3 class="small-title">Ȱ з Ȳ  <span class="chip" style="margin-left:auto;min-width:54px">м </span></h3>
+            <div class="donut-row">
+              <div class="donut"></div>
+              <div class="skeleton-list">
+                <div class="skeleton-line short"></div>
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line short"></div>
+                <div class="skeleton-line"></div>
+              </div>
+            </div>
+          </article>
+        </div>
+        <div class="analysis-card empty-analysis" style="margin-top:18px">
+          <div class="metric-icon">${icon("search")}</div>
+          <div>
+            <h3> м  .</h3>
+            <p>  ε  м غ.</p>
+          </div>
+        </div>
+      </section>
+      <section class="next-card">
+        <div class="metric-icon">${icon("id")}</div>
+        <div>
+          <h3> ,   Էּ!</h3>
+          <p>а, г, ,    Էϸ<br /> м Ȱ õ  ̿  ־.</p>
+        </div>
+        <div class="next-actions">
+          <button class="primary-button" type="button" data-route="mypage">  ۼϱ ${icon("chevron")}</button>
+          <button class="outline-button" type="button" data-route="mypage"> ̵</button>
+        </div>
+      </section>
+    </main>
+  `;
+}
+
+function renderMain() {
+  app.innerHTML = `
+    <div class="app-shell">
+      ${renderNav("main")}
+      <div class="layout-main">
+        ${renderSidebar()}
+        ${renderDashboard()}
+      </div>
+    </div>
+  `;
+  wireRoutes();
+  wireSidebarFolders();
+}
+
+function field(label, value, type = "text") {
+  return `
+    <div class="form-field">
+      <label>${label}</label>
+      <input type="${type}" value="${value}" />
+    </div>
+  `;
+}
+
+function selectField(label, value, options = [value]) {
+  return `
+    <div class="form-field">
+      <label>${label}</label>
+      <select>
+        ${options.map((option) => `<option ${option === value ? "selected" : ""}>${option}</option>`).join("")}
+      </select>
+    </div>
+  `;
+}
+
+function getDetailJobOptions() {
+  const selectedJobs = [...profileState.chips.jobs];
+  const options = selectedJobs.flatMap((job) => detailJobsByJob[job] || []);
+  return [...new Set(options.length ? options : Object.values(detailJobsByJob).flat())];
+}
+
+function formatDateDisplay(value) {
+  const [year, month, day] = value.split("-");
+  return `${year}.${month}.${day}.`;
+}
+
+function getDateParts(value) {
+  const [year, month, day] = value.split("-").map(Number);
+  return { year, month, day };
+}
+
+function getDaysInMonth(year, month) {
+  return new Date(year, month, 0).getDate();
+}
+
+function renderDatePicker() {
+  if (!profileState.datePickerOpen) return "";
+
+  const { year, month, day } = getDateParts(profileState.birthDate);
+  const years = Array.from({ length: 41 }, (_, index) => 1970 + index);
+  const months = Array.from({ length: 12 }, (_, index) => index + 1);
+  const days = Array.from({ length: getDaysInMonth(year, month) }, (_, index) => index + 1);
+
+  return `
+    <div class="date-picker-panel">
+      <div class="date-picker-selects">
+        <label>
+          <span>⵵</span>
+          <select data-date-part="year">
+            ${years.map((item) => `<option value="${item}" ${item === year ? "selected" : ""}>${item}</option>`).join("")}
+          </select>
+        </label>
+        <label>
+          <span></span>
+          <select data-date-part="month">
+            ${months.map((item) => `<option value="${item}" ${item === month ? "selected" : ""}>${item}</option>`).join("")}
+          </select>
+        </label>
+      </div>
+      <div class="date-days">
+        ${days
+          .map(
+            (item) => `
+              <button class="${item === day ? "selected" : ""}" type="button" data-date-day="${item}">
+                ${item}
+              </button>
+            `,
+          )
+          .join("")}
+      </div>
+    </div>
+  `;
+}
+
+function dateField(label, value) {
+  return `
+    <div class="form-field">
+      <label>${label}</label>
+      <div class="date-control">
+        <button class="date-trigger" type="button">
+          <span>${formatDateDisplay(value)}</span>
+          <span class="date-trigger-icon" data-toggle-date-picker>${icon("calendar")}</span>
+        </button>
+        ${renderDatePicker()}
+      </div>
+    </div>
+  `;
+}
+
+function pickerField(label, type, value, placeholder) {
+  return `
+    <div class="form-field">
+      <label>${label}</label>
+      <button class="picker-trigger" type="button" data-open-search="${type}">
+        <span class="${value ? "" : "placeholder"}">${value || placeholder}</span>
+        ${icon("search")}
+      </button>
+    </div>
+  `;
+}
+
+function chip(label, group, selected = false, iconMarkup = "") {
+  return `
+    <button class="chip ${selected ? "selected" : ""}" type="button" data-chip-group="${group}" data-chip-value="${label}">
+      ${iconMarkup}${label}
+    </button>
+  `;
+}
+
+function renderMajorPicker(index, fieldName, label, value) {
+  return `
+    <div class="form-field major-field">
+      <label>${label}</label>
+      <button class="major-trigger" type="button" data-major-trigger="${index}-${fieldName}">
+        <span>${value || `${label} ϼ`}</span>
+        ${icon("chevron")}
+      </button>
+      <div class="major-menu" data-major-menu="${index}-${fieldName}">
+        ${majors.map((major) => `<button type="button" data-major-option="${index}" data-major-field="${fieldName}" data-major-value="${major}">${major}</button>`).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function renderEducationItem(education, index) {
+  return `
+    <div class="education-item ${index > 0 ? "has-delete" : ""}" data-education-index="${index}">
+      ${
+        index > 0
+          ? `<button class="delete-education" type="button" data-delete-education="${index}" aria-label="з ׸ ">${icon("trash")}</button>`
+          : ""
+      }
+      <div class="education-grid">
+        <div class="form-field">
+          <label>б </label>
+          <select data-edu-field="schoolType" data-edu-index="${index}">
+            ${schoolTypes.map((type) => `<option ${type === education.schoolType ? "selected" : ""}>${type}</option>`).join("")}
+          </select>
+        </div>
+        <div class="form-field">
+          <label>б</label>
+          <input data-edu-field="school" data-edu-index="${index}" type="text" value="${education.school}" />
+        </div>
+        <div class="form-field">
+          <label>бⰣ</label>
+          <input data-edu-field="period" data-edu-index="${index}" type="text" value="${education.period}" />
+        </div>
+        ${renderMajorPicker(index, "major", "", education.major)}
+        ${renderMajorPicker(index, "minor", "/", education.minor)}
+        <div class="form-field">
+          <label></label>
+          <input data-edu-field="gpa" data-edu-index="${index}" type="text" value="${education.gpa}" />
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function collectEducationValues() {
+  document.querySelectorAll("[data-edu-field]").forEach((input) => {
+    const index = Number(input.dataset.eduIndex);
+    const fieldName = input.dataset.eduField;
+    if (profileState.educations[index]) {
+      profileState.educations[index][fieldName] = input.value;
+    }
+  });
+}
+
+function renderSearchOptions(type, query = "") {
+  const config = searchConfigs[type];
+  const normalizedQuery = query.trim().toLowerCase();
+  const options = config.options().filter((option) => option.toLowerCase().includes(normalizedQuery));
+
+  if (!options.length) {
+    return `<div class="empty-options">˻  .</div>`;
+  }
+
+  return options
+    .map(
+      (option) => `
+        <button class="search-option ${profileState.preferences[type] === option ? "selected" : ""}" type="button" data-select-search="${type}" data-search-value="${option}">
+          ${option}
+        </button>
+      `,
+    )
+    .join("");
+}
+
+function wireSearchOptionButtons(type) {
+  document.querySelectorAll("[data-select-search]").forEach((button) => {
+    button.addEventListener("click", () => {
+      profileState.preferences[type] = button.dataset.searchValue || "";
+      closeSearchModal();
+      renderMypage();
+    });
+  });
+}
+
+function wireSearchModal(type) {
+  const input = document.querySelector("[data-search-input]");
+  const optionList = document.querySelector("[data-search-options]");
+
+  input?.addEventListener("input", () => {
+    if (optionList) optionList.innerHTML = renderSearchOptions(type, input.value);
+    wireSearchOptionButtons(type);
+  });
+
+  wireSearchOptionButtons(type);
+
+  document.querySelector("[data-close-modal]")?.addEventListener("click", closeSearchModal);
+  document.querySelector("[data-modal-backdrop]")?.addEventListener("click", closeSearchModal);
+}
+
+function renderSearchModal(type) {
+  const config = searchConfigs[type];
+  const modalRoot = document.querySelector("#modalRoot");
+  if (!config || !modalRoot) return;
+  const helperText =
+    type === "detailJob" && profileState.chips.jobs.size
+      ? `  : ${[...profileState.chips.jobs].join(", ")}`
+      : "˻ϰų Ʒ Ͽ ϼ.";
+
+  modalRoot.innerHTML = `
+    <div class="modal-backdrop" data-modal-backdrop></div>
+    <section class="search-modal" role="dialog" aria-modal="true" aria-label="${config.label} ">
+      <div class="search-modal-head">
+        <div>
+          <h3>${config.label} </h3>
+          <p>${helperText}</p>
+        </div>
+        <button class="icon-button modal-close" type="button" data-close-modal aria-label="ݱ"></button>
+      </div>
+      <div class="modal-search-box">
+        ${icon("search")}
+        <input data-search-input type="search" placeholder="${config.placeholder}" autofocus />
+      </div>
+      <div class="search-options" data-search-options>
+        ${renderSearchOptions(type)}
+      </div>
+    </section>
+  `;
+  wireSearchModal(type);
+}
+
+function closeSearchModal() {
+  const modalRoot = document.querySelector("#modalRoot");
+  if (modalRoot) modalRoot.innerHTML = "";
+}
+
+function wireMypage() {
+  const photoInput = document.querySelector("#photoInput");
+  const photoButton = document.querySelector("[data-photo-button]");
+  const photoPreview = document.querySelector("[data-photo-preview]");
+
+  photoButton?.addEventListener("click", () => photoInput?.click());
+  photoInput?.addEventListener("change", () => {
+    const file = photoInput.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.addEventListener("load", () => {
+      profileState.photo = String(reader.result || "");
+      localStorage.setItem("myfitfolioPhoto", profileState.photo);
+      if (photoPreview) {
+        photoPreview.innerHTML = `<img src="${profileState.photo}" alt=" " />`;
+        photoPreview.classList.add("has-photo");
+      }
+    });
+    reader.readAsDataURL(file);
+  });
+
+  document.querySelector("[data-add-education]")?.addEventListener("click", () => {
+    collectEducationValues();
+    profileState.educations.push({
+      schoolType: "б 4",
+      school: "",
+      period: "",
+      major: "",
+      minor: "",
+      gpa: "",
+    });
+    renderMypage();
+  });
+
+  document.querySelector("#school")?.addEventListener("click", (event) => {
+    const deleteButton = event.target.closest("[data-delete-education]");
+    if (!deleteButton || profileState.educations.length <= 1) return;
+    collectEducationValues();
+    profileState.educations.splice(Number(deleteButton.dataset.deleteEducation), 1);
+    renderMypage();
+  });
+
+  document.querySelectorAll("[data-edu-field]").forEach((input) => {
+    input.addEventListener("input", () => {
+      const index = Number(input.dataset.eduIndex);
+      const fieldName = input.dataset.eduField;
+      profileState.educations[index][fieldName] = input.value;
+    });
+    input.addEventListener("change", () => {
+      const index = Number(input.dataset.eduIndex);
+      const fieldName = input.dataset.eduField;
+      profileState.educations[index][fieldName] = input.value;
+    });
+  });
+
+  document.querySelectorAll("[data-major-trigger]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const menu = document.querySelector(`[data-major-menu="${button.dataset.majorTrigger}"]`);
+      document.querySelectorAll(".major-menu.open").forEach((openMenu) => {
+        if (openMenu !== menu) openMenu.classList.remove("open");
+      });
+      menu?.classList.toggle("open");
+    });
+  });
+
+  document.querySelectorAll("[data-major-option]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const index = Number(button.dataset.majorOption);
+      const fieldName = button.dataset.majorField || "major";
+      const value = button.dataset.majorValue || "";
+      profileState.educations[index][fieldName] = value;
+      const trigger = document.querySelector(`[data-major-trigger="${index}-${fieldName}"] span`);
+      const menu = document.querySelector(`[data-major-menu="${index}-${fieldName}"]`);
+      if (trigger) trigger.textContent = value;
+      menu?.classList.remove("open");
+    });
+  });
+
+  document.querySelectorAll("[data-anchor-target]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const target = document.querySelector(`#${button.dataset.anchorTarget}`);
+      target?.scrollIntoView({ behavior: "smooth", block: "start" });
+      document.querySelectorAll("[data-anchor-target]").forEach((item) => item.classList.remove("active"));
+      button.classList.add("active");
+    });
+  });
+
+  document.querySelectorAll("[data-open-search]").forEach((button) => {
+    button.addEventListener("click", () => renderSearchModal(button.dataset.openSearch));
+  });
+
+  document.querySelector("[data-salary-select]")?.addEventListener("change", (event) => {
+    profileState.preferences.salary = event.target.value;
+  });
+
+  document.querySelector("[data-save-profile]")?.addEventListener("click", () => {
+    sessionStorage.setItem("myfitfolioProfileSaved", "true");
+    setRoute("main");
+  });
+
+  document.querySelector("[data-toggle-date-picker]")?.addEventListener("click", () => {
+    profileState.datePickerOpen = !profileState.datePickerOpen;
+    renderMypage();
+  });
+
+  document.querySelectorAll("[data-date-part]").forEach((select) => {
+    select.addEventListener("change", () => {
+      const { year, month, day } = getDateParts(profileState.birthDate);
+      const nextYear = select.dataset.datePart === "year" ? Number(select.value) : year;
+      const nextMonth = select.dataset.datePart === "month" ? Number(select.value) : month;
+      const nextDay = Math.min(day, getDaysInMonth(nextYear, nextMonth));
+      profileState.birthDate = `${nextYear}-${String(nextMonth).padStart(2, "0")}-${String(nextDay).padStart(2, "0")}`;
+      profileState.datePickerOpen = true;
+      renderMypage();
+    });
+  });
+
+  document.querySelectorAll("[data-date-day]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const { year, month } = getDateParts(profileState.birthDate);
+      const nextDay = Number(button.dataset.dateDay);
+      profileState.birthDate = `${year}-${String(month).padStart(2, "0")}-${String(nextDay).padStart(2, "0")}`;
+      profileState.datePickerOpen = false;
+      renderMypage();
+    });
+  });
+
+  document.querySelectorAll("[data-chip-group]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const group = button.dataset.chipGroup;
+      const value = button.dataset.chipValue;
+      const selectedSet = profileState.chips[group];
+      if (!selectedSet || !value) return;
+
+      if (selectedSet.has(value)) {
+        selectedSet.delete(value);
+        button.classList.remove("selected");
+      } else {
+        selectedSet.add(value);
+        button.classList.add("selected");
+      }
+
+      if (group === "jobs" && profileState.preferences.detailJob && !getDetailJobOptions().includes(profileState.preferences.detailJob)) {
+        profileState.preferences.detailJob = "";
+      }
+
+      if (group === "jobs") {
+        renderMypage();
+      }
+    });
+  });
+}
+
+function renderMypage() {
+  app.innerHTML = `
+    <div class="app-shell">
+      ${renderNav("mypage")}
+      <main class="mypage">
+        <div class="mypage-content">
+          <h1 class="page-title"></h1>
+          <p class="page-subtitle">  Էϰ   غ.</p>
+          <div class="section-stack">
+            <section class="profile-section" id="basic">
+              <h2 class="section-heading">⺻ </h2>
+              <div class="field-grid">
+                <div class="profile-photo">
+                  <span class="avatar-lg ${profileState.photo ? "has-photo" : ""}" data-photo-preview>
+                    ${profileState.photo ? `<img src="${profileState.photo}" alt=" " />` : ""}
+                  </span>
+                  <input id="photoInput" class="visually-hidden" type="file" accept="image/*" />
+                  <button class="ghost-button" type="button" data-photo-button>${icon("upload")}  </button>
+                </div>
+                ${field("̸", "迹")}
+                ${selectField("", "", ["", ""])}
+                ${dateField("", profileState.birthDate)}
+              </div>
+            </section>
+            <section class="profile-section" id="contact">
+              <h2 class="section-heading">ó  <span style="color:#98a4b5;font-size:12px"> Ҽ   Դϴ.</span></h2>
+              <div class="inline-fields">
+                ${field("̸", "user@univ.ac.kr")}
+                ${field("޴ȣ", "010-1234-5678")}
+                ${field("ּ", "λ걤  ")}
+              </div>
+            </section>
+            <section class="profile-section" id="school">
+              <h2 class="section-heading">з</h2>
+              <div class="education-list">
+                ${profileState.educations.map(renderEducationItem).join("")}
+              </div>
+              <button class="ghost-button" type="button" data-add-education style="margin-top:16px">+ ׸ ߰</button>
+            </section>
+            <section class="profile-section" id="condition">
+              <h2 class="section-heading">ٹ</h2>
+              <div class="job-grid">
+                <div class="form-field">
+                  <label> </label>
+                  <div class="chip-row">
+                    ${jobs.map((job) => chip(job, "jobs", profileState.chips.jobs.has(job))).join("")}
+                  </div>
+                </div>
+                <div class="search-row">
+                  ${pickerField(" ", "detailJob", profileState.preferences.detailJob, "˻Ͽ ")}
+                  ${pickerField(" ", "workIndustry", profileState.preferences.workIndustry, "˻Ͽ ")}
+                  ${pickerField("ٹ", "workRegion", profileState.preferences.workRegion, "˻Ͽ ")}
+                  <div class="form-field">
+                    <label></label>
+                    <select data-salary-select>
+                      ${salaryRanges.map((range) => `<option ${range === profileState.preferences.salary ? "selected" : ""}>${range}</option>`).join("")}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </section>
+            <section class="profile-section" id="interest">
+              <h2 class="section-heading">ɺо</h2>
+              <div class="section-stack">
+                <div class="form-field">
+                  <label> о</label>
+                  <div class="chip-row">
+                    ${chip("ä", "interestFields", profileState.chips.interestFields.has("ä"), icon("users"))}
+                    ${chip("Ȱ", "interestFields", profileState.chips.interestFields.has("Ȱ"), icon("flag"))}
+                    ${chip("", "interestFields", profileState.chips.interestFields.has(""), icon("trophy"))}
+                    ${chip("", "interestFields", profileState.chips.interestFields.has(""), icon("book"))}
+                  </div>
+                </div>
+                <div class="form-field">
+                  <label> </label>
+                  <div class="chip-row">${companies.map((item) => chip(item, "companies", profileState.chips.companies.has(item))).join("")}</div>
+                </div>
+                <div class="form-field">
+                  <label> </label>
+                  <div class="chip-row">${industries.map((item) => chip(item, "industries", profileState.chips.industries.has(item))).join("")}</div>
+                </div>
+              </div>
+            </section>
+            <div class="form-actions">
+              <button class="ghost-button" type="button">ӽ</button>
+              <button class="primary-button" type="button" data-save-profile></button>
+            </div>
+          </div>
+        </div>
+        <aside class="anchor-menu" aria-label=" ">
+          <button class="active" type="button" data-anchor-target="basic">⺻ </button>
+          <button type="button" data-anchor-target="contact">ó </button>
+          <button type="button" data-anchor-target="school">з</button>
+          <button type="button" data-anchor-target="condition">ٹ</button>
+          <button type="button" data-anchor-target="interest">ɺо</button>
+        </aside>
+      </main>
+      <div id="modalRoot"></div>
+    </div>
+  `;
+  wireRoutes();
+  wireMypage();
+}
+
+function renderBlank(route) {
+  app.innerHTML = `
+    <div class="app-shell">
+      ${renderNav(route)}
+      <main class="blank-page" aria-label="${routes[route]}  ȭ"></main>
+    </div>
+  `;
+  wireRoutes();
+}
+
+function render() {
+  const route = window.location.hash.replace("#", "");
+  const loggedIn = sessionStorage.getItem("myfitfolioLoggedIn") === "true";
+
+  if (!loggedIn && route !== "login") {
+    renderAuth("signup");
+    return;
+  }
+
+  if (route === "login") {
+    renderAuth("login");
+    return;
+  }
+
+  if (route === "mypage") {
+    renderMypage();
+    return;
+  }
+
+  if (route === "portfolioCreate" || route === "portfolioManage" || route === "recommend") {
+    renderBlank(route);
+    return;
+  }
+
+  renderMain();
+}
+
+window.addEventListener("hashchange", render);
+render();
+
+</script>
+  </body>
+</html>
+

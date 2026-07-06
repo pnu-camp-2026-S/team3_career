@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Myfitfolio - 마이페이지</title>
+  <link rel="stylesheet" href="fitfolio.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="top-nav">
+      <a class="brand-word" href="main.html">Myfit<span>folio</span></a>
+      <nav class="nav-tabs" aria-label="주요 메뉴">
+        <a class="nav-tab" href="main.html">메인</a>
+        <a class="nav-tab" href="portfolio_create.html">포트폴리오 생성</a>
+        <a class="nav-tab" href="portfolio_manage.html">포트폴리오 관리</a>
+        <a class="nav-tab" href="create.html">파일 생성</a>
+        <a class="nav-tab" href="contest.html">활동 추천</a>
+        <a class="nav-tab active" href="mypage.html">마이페이지</a>
+      </nav>
+      <div class="nav-actions">
+        <button class="icon-button" type="button" aria-label="알림">!</button>
+        <a class="user-chip" href="mypage.html" aria-label="마이페이지로 이동"><span class="avatar"></span></a>
+      </div>
+    </header>
+    <main class="mypage">
+      <div class="mypage-content">
+        <h1 class="page-title">마이페이지</h1>
+        <p class="page-subtitle">내 정보를 입력하고 취업 조건을 관리해보세요.</p>
+        <div class="section-stack">
+          <section class="profile-section">
+            <h2 class="section-heading">기본 정보</h2>
+            <div class="field-grid">
+              <div class="profile-photo"><span class="avatar-lg"></span><button class="ghost-button" type="button">사진 변경</button></div>
+              <div class="form-field"><label>이름</label><input value="홍길동" /></div>
+              <div class="form-field"><label>이메일</label><input value="user@univ.ac.kr" /></div>
+              <div class="form-field"><label>희망 직무</label><input value="IT/개발/기획" /></div>
+            </div>
+          </section>
+          <section class="profile-section">
+            <h2 class="section-heading">희망근무조건</h2>
+            <div class="form-row">
+              <div class="form-field"><label>희망 업종</label><input placeholder="IT/SW" /></div>
+              <div class="form-field"><label>희망 지역</label><input placeholder="부산" /></div>
+            </div>
+          </section>
+          <div class="form-actions">
+            <button class="ghost-button" type="button">임시저장</button>
+            <a class="primary-button" href="main.html">저장</a>
+          </div>
+        </div>
+      </div>
+      <aside class="anchor-menu">
+        <button class="active" type="button">기본 정보</button>
+        <button type="button">희망근무조건</button>
+      </aside>
+    </main>
+  </div>
+  <script>document.querySelectorAll('.folder-title').forEach((button)=>{button.addEventListener('click',()=>button.closest('.folder-section')?.classList.toggle('open'));});</script>
+</body>
+</html>
