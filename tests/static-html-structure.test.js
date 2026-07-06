@@ -93,6 +93,15 @@ assert.match(
   /로그인이 필요해요/,
   'main should render a login-required prompt after logout'
 );
+assert.match(
+  authNavJs,
+  /#mainLayout \.dashboard/,
+  'logged-out rendering should keep the main sidebar and only replace dashboard content'
+);
+assert.ok(
+  !authNavJs.includes('layout.innerHTML'),
+  'logged-out rendering should not replace the full main layout'
+);
 assert.ok(
   !authNavJs.includes('profile-needed-icon" aria-hidden="true">!'),
   'login-required prompt should not render an exclamation mark icon'

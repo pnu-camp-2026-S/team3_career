@@ -48,11 +48,12 @@
     if (!document.body.dataset.page || document.body.dataset.page !== 'main') return;
     if (isLoggedIn()) return;
 
-    const layout = document.querySelector('#mainLayout');
-    if (!layout) return;
+    const dashboard = document.querySelector('#mainLayout .dashboard');
+    if (!dashboard) return;
 
-    layout.innerHTML = `
-      <main class="login-required-page" aria-label="로그인 필요">
+    dashboard.classList.add('dashboard-logged-out');
+    dashboard.innerHTML = `
+      <section class="login-required-page" aria-label="로그인 필요">
         <section class="login-required-card">
           <div class="profile-needed-icon" aria-hidden="true"></div>
           <div>
@@ -61,7 +62,7 @@
             <a class="primary-button" href="login.html">로그인하러 가기</a>
           </div>
         </section>
-      </main>
+      </section>
     `;
   }
 
