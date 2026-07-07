@@ -1208,6 +1208,25 @@ assert.match(
 );
 assert.match(
   portfolioCreateHtml,
+  /id="pfPurposeSelect"\s+class="setting-native-select"[\s\S]*data-purpose-option="취업 지원용"[\s\S]*data-purpose-option="대학원 진학"/,
+  'portfolio_create should render button choices for generation purpose'
+);
+assert.match(
+  portfolioCreateHtml,
+  /id="pfMajorSelect"\s+class="setting-native-select"[\s\S]*data-major-option="industrial"[\s\S]*data-major-option="computer"/,
+  'portfolio_create should render button choices for major selection'
+);
+assert.match(
+  portfolioCreateHtml,
+  /function\s+selectSettingOption[\s\S]*select\.value\s*=\s*value[\s\S]*select\.dispatchEvent\(new Event\('change'\)\)/,
+  'portfolio_create setting choice buttons should sync with the native selects'
+);
+assert.ok(
+  !portfolioCreateHtml.includes('aria-label="알림"') && !portfolioCreateHtml.includes('notification'),
+  'portfolio_create setting selector update should not add notification UI'
+);
+assert.match(
+  portfolioCreateHtml,
   /id="keywordPool"/,
   'portfolio_create should render major-based keywords into a keyword pool'
 );
@@ -1269,6 +1288,8 @@ assert.match(
 );
 for (const cssPattern of [
   /\.setup-layout\s*\{/,
+  /\.setting-choice-grid\s*\{/,
+  /\.setting-choice\.selected\s*\{/,
   /\.format-card-grid\s*\{/,
   /\.format-card\.selected::after\s*\{/,
   /\.ppt-preview-wrap\s*\{/,

@@ -64,6 +64,60 @@
   margin-top: 0 !important;
 }
 
+.setting-native-select {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.setting-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.setting-choice {
+  min-height: 70px;
+  display: grid;
+  align-content: center;
+  gap: 5px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  background: #fff;
+  color: #17203a;
+  text-align: left;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.setting-choice:hover,
+.setting-choice.selected {
+  border-color: #9eb8ff;
+  background: #f8faff;
+  box-shadow: 0 10px 20px rgba(89, 101, 232, 0.08);
+}
+
+.setting-choice.selected {
+  box-shadow: inset 3px 0 0 var(--brand), 0 10px 20px rgba(89, 101, 232, 0.08);
+}
+
+.setting-choice strong {
+  color: #17203a;
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.setting-choice span {
+  color: #667085;
+  font-size: 11px;
+  font-weight: 750;
+  line-height: 1.35;
+}
+
 .format-card-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(160px, 1fr));
@@ -707,6 +761,7 @@
 @media (max-width: 640px) {
   .format-card-grid,
   .setup-left .format-card-grid,
+  .setting-choice-grid,
   .master-actions {
     grid-template-columns: 1fr;
   }
