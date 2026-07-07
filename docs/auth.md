@@ -5,7 +5,6 @@
 ## 필수 구현 범위
 
 - Google로 시작하기
-- Kakao로 시작하기
 - Naver로 시작하기
 - 로그인/회원가입 탭 전환
 - 소셜 로그인 버튼 클릭 시 모의 로그인 상태 저장
@@ -14,16 +13,18 @@
 
 ## 모의 로그인 처리 기준
 
-- `localStorage`에 로그인 상태를 저장한다.
-- 예시 키는 `isLoggedIn`, `loginProvider`, `demoUserId`, `demoUserName`, `demoUserEmail`처럼 의미가 명확한 이름을 사용한다.
+- 로그인 상태는 `sessionStorage`의 `myfitfolioLoggedIn` 키에 `'true'`로 저장한다(`js/auth-nav.js`).
+- 로그아웃과 회원 탈퇴 시 `localStorage`와 `sessionStorage`를 함께 정리한다.
+- 사용자별 데이터를 구분해야 하면 `demoUserId`처럼 의미가 명확한 키를 추가로 사용한다.
 - 모의 사용자 정보는 데모용 가짜 데이터만 사용한다.
 - 모의 로그인 ID는 여러 개를 미리 만들어 두고, 같은 모의 ID로 다시 로그인하면 이전 데이터를 다시 사용할 수 있어야 한다.
 - 이름이나 이메일이 아니라 `demoUserId`를 기준으로 사용자 데이터를 구분한다.
 - 실제 OAuth token, access token, refresh token은 생성하거나 저장하지 않는다.
-- 실제 Google, Kakao, Naver 인증 서버와 연결하지 않는다.
+- 실제 Google, Naver 인증 서버와 연결하지 않는다.
 - Google 계정 연동, Google Calendar 연동 같은 외부 계정 연동은 프로토타입 단계에서 실제로 수행하지 않는다.
 - 외부 계정 연동이 필요한 위치에는 이후 확장을 위한 버튼만 제공하고, 클릭 시 `현재 프로토타입에서는 임시 아이디로만 사용합니다.` 같은 안내를 보여준다.
 
 ## 회원가입 기준
 
-별도 이메일/비밀번호 회원가입 UI는 제품 방향과 다르므로, 명시 요청이 없으면 새로 확장하지 않는다.
+별도 이메일/비밀번호 회원가입 UI는 제품 방향과 다르므로, 명시 요청이 없으면 새로 확장하지 않는다.  
+`server.js`에 `bcryptjs` 기반 `/api/signup` 엔드포인트가 스캐폴드로 존재하지만, 현재 `signup.html`은 소셜 모의 로그인 버튼(`data-login`)만 사용하고 이 엔드포인트를 호출하지 않는다.
