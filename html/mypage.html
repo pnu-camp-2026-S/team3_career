@@ -4,27 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Myfitfolio - 마이페이지</title>
-  <link rel="stylesheet" href="fitfolio.css" />
+  <link rel="stylesheet" href="../css/common.css" />
+  <link rel="stylesheet" href="../css/mypage.css" />
 </head>
 <body>
   <div class="app-shell">
-    <header class="top-nav">
-      <a class="brand-word" href="main.html">Myfit<span>folio</span></a>
-      <nav class="nav-tabs" aria-label="주요 메뉴">
-        <a class="nav-tab" href="main.html">메인</a>
-        <a class="nav-tab" href="portfolio_create.html">포트폴리오 생성</a>
-        <a class="nav-tab" href="portfolio_manage.html">포트폴리오 관리</a>
-        <a class="nav-tab" href="create.html">파일 관리</a>
-        <a class="nav-tab" href="contest.html">활동 추천</a>
-        <a class="nav-tab active" href="mypage.html">마이페이지</a>
-      </nav>
-      <div class="nav-actions">
-        <button class="icon-button" type="button" aria-label="알림">!</button>
-        <a class="user-chip" href="mypage.html" aria-label="마이페이지로 이동">
-          <span class="avatar"></span>
-        </a>
-      </div>
-    </header>
+    <div data-shared-nav data-active="mypage"></div>
+    <script src="../js/shared-nav.js"></script>
+    <script src="../js/auth-nav.js"></script>
 
     <main class="mypage">
       <div class="mypage-content">
@@ -103,21 +90,36 @@
                   <label>세부직무 선택</label>
                   <button class="picker-trigger" type="button" data-open-search="detailJob">
                     <span class="placeholder" data-picked-value="detailJob">검색하여 선택</span>
-                    <span aria-hidden="true">⌕</span>
+                     <span class="picker-search-icon" aria-hidden="true">
+                      <svg class="svg-icon" viewBox="0 0 24 24">
+                        <circle cx="10.8" cy="10.8" r="5.9"></circle>
+                        <path d="m15.4 15.4 3.8 3.8"></path>
+                      </svg>
+                    </span>
                   </button>
                 </div>
                 <div class="form-field">
                   <label>희망 업종</label>
                   <button class="picker-trigger" type="button" data-open-search="workIndustry">
                     <span class="placeholder" data-picked-value="workIndustry">검색하여 선택</span>
-                    <span aria-hidden="true">⌕</span>
+                     <span class="picker-search-icon" aria-hidden="true">
+                      <svg class="svg-icon" viewBox="0 0 24 24">
+                        <circle cx="10.8" cy="10.8" r="5.9"></circle>
+                        <path d="m15.4 15.4 3.8 3.8"></path>
+                      </svg>
+                    </span>
                   </button>
                 </div>
                 <div class="form-field">
                   <label>희망근무지역</label>
                   <button class="picker-trigger" type="button" data-open-search="workRegion">
                     <span class="placeholder" data-picked-value="workRegion">검색하여 선택</span>
-                    <span aria-hidden="true">⌕</span>
+                     <span class="picker-search-icon" aria-hidden="true">
+                      <svg class="svg-icon" viewBox="0 0 24 24">
+                        <circle cx="10.8" cy="10.8" r="5.9"></circle>
+                        <path d="m15.4 15.4 3.8 3.8"></path>
+                      </svg>
+                    </span>
                   </button>
                 </div>
                 <div class="form-field">
@@ -146,6 +148,20 @@
             </div>
           </section>
 
+           <section class="profile-section account-section" id="account">
+            <h2 class="section-heading">계정 관리</h2>
+            <div class="account-card">
+              <div>
+                <h3>로그인 계정 관리</h3>
+                <p>현재 계정에서 로그아웃하거나 회원 탈퇴 절차로 이동할 수 있습니다.</p>
+              </div>
+              <div class="account-actions">
+                <button class="outline-button" type="button" data-logout>로그아웃</button>
+                <a class="danger-button" href="withdraw.html">탈퇴하기</a>
+              </div>
+            </div>
+          </section>
+
           <div class="form-actions" data-form-actions></div>
         </div>
       </div>
@@ -156,6 +172,7 @@
         <button type="button" data-anchor-target="school">학력</button>
         <button type="button" data-anchor-target="condition">희망근무조건</button>
         <button type="button" data-anchor-target="interest">관심분야</button>
+        <button type="button" data-anchor-target="account">계정 관리</button>
       </aside>
     </main>
     <div id="modalRoot"></div>
@@ -163,23 +180,52 @@
 
   <script>
     const jobs = [
-      "기획/전략", "마케팅/홍보", "회계/세무", "인사/노무", "영업", "고객상담",
-      "상품기획/MD", "디자인", "개발", "데이터", "보안", "생산/품질",
-      "연구개발", "교육", "IT/개발", "서비스"
+      "기획/전략", "경영지원", "마케팅/홍보", "광고/브랜드", "회계/세무", "재무/IR",
+      "인사/노무", "총무/법무", "영업", "해외영업", "고객상담", "상품기획/MD",
+      "디자인", "UI/UX", "개발", "IT/개발", "데이터", "AI/머신러닝",
+      "보안", "네트워크/인프라", "연구개발", "전기/전자", "기계/설비",
+      "화학/바이오", "생산/품질", "구매/자재", "물류/유통", "교육",
+      "공공/행정", "금융/보험", "미디어/콘텐츠", "서비스"
     ];
     const detailJobs = {
-      "기획/전략": ["서비스 기획", "사업 기획", "PM", "전략기획", "데이터 기획"],
-      "마케팅/홍보": ["콘텐츠 마케팅", "브랜드 마케팅", "퍼포먼스 마케팅", "PR"],
+      "기획/전략": ["서비스 기획", "사업 기획", "PM", "PO", "전략기획", "데이터 기획", "신사업 기획"],
+      "경영지원": ["경영관리", "사업관리", "운영관리", "성과관리"],
+      "마케팅/홍보": ["콘텐츠 마케팅", "브랜드 마케팅", "퍼포먼스 마케팅", "CRM 마케팅", "PR"],
+      "광고/브랜드": ["광고기획", "브랜드 매니저", "카피라이터", "미디어 플래너"],
       "회계/세무": ["회계", "세무", "재무", "IR"],
-      "인사/노무": ["HRM", "HRD", "채용", "노무"],
-      "IT/개발": ["프론트엔드", "백엔드", "풀스택", "앱 개발", "AI 엔지니어", "데이터 엔지니어"],
-      "개발": ["프론트엔드", "백엔드", "풀스택", "앱 개발", "AI 엔지니어", "데이터 엔지니어"]
+      "재무/IR": ["재무기획", "자금관리", "투자심사", "IR"],
+      "인사/노무": ["HRM", "HRD", "채용", "조직문화", "노무"],
+      "총무/법무": ["총무", "법무", "컴플라이언스", "계약관리"],
+      "영업": ["B2B 영업", "B2C 영업", "기술영업", "솔루션 영업", "영업관리"],
+      "해외영업": ["해외영업", "무역사무", "수출입관리", "글로벌 세일즈"],
+      "고객상담": ["CS 매니저", "고객상담", "VOC 분석", "고객성공"],
+      "상품기획/MD": ["상품기획", "온라인 MD", "리테일 MD", "브랜드 MD"],
+      "디자인": ["그래픽 디자인", "브랜드 디자인", "편집 디자인", "제품 디자인"],
+      "UI/UX": ["UX 리서치", "UX 기획", "UI 디자인", "프로덕트 디자인"],
+      "개발": ["프론트엔드", "백엔드", "풀스택", "앱 개발", "QA 엔지니어", "DevOps"],
+      "IT/개발": ["프론트엔드", "백엔드", "풀스택", "앱 개발", "QA 엔지니어", "DevOps"],
+      "데이터": ["데이터 분석가", "데이터 엔지니어", "BI 개발자", "데이터 사이언티스트"],
+      "AI/머신러닝": ["AI 엔지니어", "머신러닝 엔지니어", "MLOps", "컴퓨터비전 엔지니어"],
+      "보안": ["정보보안", "보안관제", "모의해킹", "개인정보보호"],
+      "네트워크/인프라": ["클라우드 엔지니어", "시스템 엔지니어", "네트워크 엔지니어", "SRE"],
+      "연구개발": ["R&D 기획", "소재 연구", "공정 연구", "제품 개발"],
+      "전기/전자": ["전기설계", "회로설계", "전력시스템", "반도체 공정"],
+      "기계/설비": ["기계설계", "설비기술", "자동화", "플랜트"],
+      "화학/바이오": ["화학공정", "품질분석", "바이오 연구", "환경안전"],
+      "생산/품질": ["생산관리", "품질관리", "품질보증", "공정관리"],
+      "구매/자재": ["구매관리", "자재관리", "SCM", "협력사 관리"],
+      "물류/유통": ["물류관리", "유통관리", "물류기획", "배송운영"],
+      "교육": ["교육기획", "교육운영", "콘텐츠 개발", "강사"],
+      "공공/행정": ["행정", "정책기획", "공공사업관리", "민원서비스"],
+      "금융/보험": ["은행원", "보험심사", "투자운용", "리스크관리"],
+      "미디어/콘텐츠": ["콘텐츠 기획", "영상 제작", "PD", "에디터"],
+      "서비스": ["서비스 운영", "매장관리", "호텔서비스", "항공서비스"]
     };
     const companies = ["삼성전자", "SK하이닉스", "네이버", "카카오", "LG CNS", "현대자동차", "롯데", "CJ", "토스", "당근"];
     const industries = ["반도체", "IT/SW", "금융", "교육", "콘텐츠", "제조", "바이오", "유통", "공공", "게임"];
     const regions = ["서울", "부산", "대구", "인천", "광주", "대전", "울산", "경기", "세종", "제주", "원격근무"];
     const schoolTypes = ["대학교 2,3년", "대학교 4년", "대학원 석사", "대학원 박사"];
-    const majors = ["컴퓨터공학", "소프트웨어학", "정보통신공학", "경영학", "경제학", "전자공학", "기계공학", "산업공학", "디자인학", "통계학", "미디어커뮤니케이션", "국어국문학", "영어영문학", "심리학", "교육학"];
+    const majors = ["전기공학과", "정보컴퓨터공학과", "화공생명공학과", "산업공학과"];
     const salaryRanges = ["회사 내규에 따름", "2,800만원 이상", "3,000만원 이상", "3,500만원 이상", "4,000만원 이상", "5,000만원 이상"];
     const interestFields = ["채용", "대외활동", "공모전", "교육"];
 
@@ -195,7 +241,7 @@
           school: "부산대학교",
           periodStart: "2020-03",
           periodEnd: "2026-02",
-          major: "컴퓨터공학",
+          major: "정보컴퓨터공학과",
           minor: "",
           gpa: "4.1/4.5"
         }
@@ -496,7 +542,10 @@
             <button class="icon-button modal-close" type="button" data-close-modal aria-label="닫기">×</button>
           </div>
           <div class="modal-search-box">
-            <span aria-hidden="true">⌕</span>
+            <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="10.8" cy="10.8" r="5.9"></circle>
+              <path d="m15.4 15.4 3.8 3.8"></path>
+            </svg>
             <input data-search-input type="search" placeholder="${config.placeholder}" autofocus />
           </div>
           <div class="search-options" data-search-options>${renderSearchOptions(type)}</div>

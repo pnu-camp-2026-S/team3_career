@@ -12,6 +12,8 @@ const PORT = process.env.PORT || 3000;
 // 미들웨어 설정
 app.use(cors());
 app.use(express.json());
+app.use('/css', express.static(path.join(__dirname, 'css')));
+app.use('/js', express.static(path.join(__dirname, 'js')));
 app.use(express.static(path.join(__dirname, 'html')));
 
 // OpenAI 클라이언트 초기화

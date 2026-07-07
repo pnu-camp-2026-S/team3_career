@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Myfitfolio - 회원가입</title>
-  <link rel="stylesheet" href="fitfolio.css" />
+  <link rel="stylesheet" href="../css/common.css" />
+  <link rel="stylesheet" href="../css/signup.css" />
 </head>
 <body>
   <main class="auth-page">
@@ -13,6 +14,6 @@
       <div class="auth-panel"><div class="auth-tabs" role="tablist" aria-label="주요 메뉴"><a class="auth-tab " href="login.html">로그인</a><a class="auth-tab active" href="signup.html">회원가입</a></div><section class="auth-content"><h1>회원가입</h1><p>소셜 계정으로 간편하게 시작하세요.</p><div class="social-stack"><button class="social-button" type="button" data-login><span class="social-icon google-icon">G</span><span>Google 회원가입</span></button><button class="social-button" type="button" data-login><span class="social-icon naver-icon">N</span><span>Naver 회원가입</span></button></div><div class="auth-note">API 연동 전까지 버튼을 누르면 메인으로 이동합니다.</div></section></div>
     </section>
   </main>
-  <script>document.querySelectorAll('[data-login]').forEach((button)=>{button.addEventListener('click',()=>{sessionStorage.setItem('myfitfolioLoggedIn','true');window.location.href='main.html';});});</script>
+  <script src="../js/auth-nav.js"></script>
 </body>
 </html>

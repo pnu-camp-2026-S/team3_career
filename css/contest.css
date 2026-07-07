@@ -491,6 +491,18 @@ select {
   border-top-color: var(--panel-soft);
 }
 
+.deadline-tag:hover,
+.deadline-tag:focus-visible {
+  color: #92400e;
+  outline: none;
+  transform: translateX(-6px) translateY(2px);
+}
+
+.activity-card.is-saved .deadline-tag:hover,
+.activity-card.is-saved .deadline-tag:focus-visible {
+  color: #fff;
+}
+
 .activity-title {
   margin: 0 0 8px;
   color: var(--text);

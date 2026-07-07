@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Myfitfolio - 회원 탈퇴</title>
+  <link rel="stylesheet" href="../css/common.css" />
+  <link rel="stylesheet" href="../css/withdraw.css" />
+</head>
+<body>
+  <main class="withdraw-page">
+    <section class="withdraw-card" aria-labelledby="withdrawTitle">
+      <a class="brand-word" href="login.html">Myfit<span>folio</span></a>
+      <div>
+        <h1 id="withdrawTitle">회원 탈퇴</h1>
+        <p>탈퇴를 완료하면 현재 브라우저에 저장된 로그인 정보, 프로필 정보, 사진, 활동 데이터가 모두 삭제됩니다.</p>
+      </div>
+      <ol class="withdraw-steps">
+        <li>저장된 프로필과 활동 정보를 삭제합니다.</li>
+        <li>로그인 세션을 종료합니다.</li>
+        <li>로그인 페이지로 이동합니다.</li>
+      </ol>
+      <label class="withdraw-confirm">
+        <input id="withdrawConfirm" type="checkbox" />
+        <span>저장된 정보가 삭제되는 것을 확인했습니다.</span>
+      </label>
+      <div class="withdraw-actions">
+        <a class="outline-button" href="login.html">취소</a>
+        <button class="danger-button" id="withdrawButton" type="button" disabled>탈퇴하기</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const confirmInput = document.getElementById('withdrawConfirm');
+    const withdrawButton = document.getElementById('withdrawButton');
+
+    confirmInput.addEventListener('change', () => {
+      withdrawButton.disabled = !confirmInput.checked;
+    });
+
+    withdrawButton.addEventListener('click', () => {
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.href = 'login.html';
+    });
+  </script>
+</body>
+</html>
