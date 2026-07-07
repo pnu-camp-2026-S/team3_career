@@ -156,6 +156,16 @@ for (const folderLabel of ['개인 프로젝트', '팀 프로젝트', '공모전
 }
 assert.match(
   folderStoreJs,
+  /function\s+createFolder\(/,
+  'folder store should expose a helper to create custom project folders (#132)'
+);
+assert.match(
+  folderStoreJs,
+  /github:\s*null/,
+  'folder store folders should carry a per-project github connection field (#132)'
+);
+assert.match(
+  folderStoreJs,
   /window\.FolderStore\s*=/,
   'folder store should expose its API on window.FolderStore'
 );
@@ -331,15 +341,18 @@ assert.match(
   /<body\s+data-page="main">/,
   'main page should expose its page key for auth-nav logged-out rendering'
 );
-assert.match(
-  mainHtml,
-  /id="sidebarToggle"/,
-  'main sidebar should have a collapse toggle button'
+assert.ok(
+  !mainHtml.includes('id="sidebarToggle"') && !mainHtml.includes('class="sidebar-toggle"'),
+  'main sidebar should not include the open/close toggle button'
+);
+assert.ok(
+  !/<span class="folder-count">/.test(mainHtml),
+  'main sidebar folder rows should not display the file count number'
 );
 assert.match(
   mainHtml,
   /id="sidebarResizeHandle"/,
-  'main sidebar should expose a resize handle'
+  'main sidebar should keep the width resize handle'
 );
 assert.match(
   mainHtml,
@@ -628,8 +641,8 @@ assert.match(
 );
 assert.match(
   createHtml,
-  /data-folder-id="\$\{folderId\}"/,
-  'file management folder buttons should expose folder ids'
+  /data-folder-id="\$\{escapeHtml\(folder\.id\)\}"/,
+  'file management folder buttons should expose folder ids from real folder data'
 );
 assert.match(
   createHtml,
@@ -663,10 +676,48 @@ assert.ok(
   !createHtml.includes('class="file-dashboard"') && !createHtml.includes('class="file-stat-card"'),
   'file management should not render the old four-box summary dashboard'
 );
+assert.ok(
+  !createHtml.includes('class="ai-status-summary"'),
+  'file management should not keep the 전체 자료 중 분석 완료 summary box (#132)'
+);
 assert.match(
   createHtml,
-  /class="ai-status-summary"/,
-  'file management should show an AI status summary in place of the old four-box dashboard'
+  /id="analysisPanelTitle"/,
+  'file management should give the AI status panel a dynamic, per-project title (#132)'
+);
+assert.match(
+  createHtml,
+  /\$\{selectedFolder\.label\} AI 정리 상태/,
+  'file management AI status title should follow the [프로젝트 이름] AI 정리 상태 format (#132)'
+);
+assert.match(
+  createHtml,
+  /data-action="connect-repo"[^>]*id="repoConnectButton"/,
+  'file management should expose a per-project repo connect button (#132)'
+);
+assert.match(
+  createHtml,
+  /data-action="connect-repo-save"/,
+  'file management repo modal should save the per-project connection (#132)'
+);
+assert.match(
+  createHtml,
+  /FolderStore\.createFolder\(/,
+  'file management should create real folders through the shared folder store (#132)'
+);
+assert.match(
+  createHtml,
+  /data-action="create-folder-confirm"/,
+  'file management folder-add modal should confirm creation (#132)'
+);
+assert.ok(
+  !createHtml.includes('function setLatestChange'),
+  'file management should drop the removed latest-change summary hook (#132)'
+);
+assert.match(
+  createCss,
+  /\.visually-hidden\s*\{/,
+  'file management stylesheet should define visually-hidden so the file input stays hidden (#132)'
 );
 assert.match(
   fitfolioCss,
