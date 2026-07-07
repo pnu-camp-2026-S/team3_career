@@ -14,6 +14,7 @@ const linkedHtmlFiles = [
   'mypage.html',
   'portfolio_create.html',
   'portfolio_manage.html',
+  'portfolio_viewer.html',
   'signup.html',
   'withdraw.html',
 ];
@@ -38,6 +39,7 @@ const pageCssFiles = {
   'create.html': 'create.css',
   'portfolio_create.html': 'portfolio_create.css',
   'portfolio_manage.html': 'portfolio_manage.css',
+  'portfolio_viewer.html': 'portfolio_manage.css',
   'contest.html': 'contest.css',
   'withdraw.html': 'withdraw.css',
 };
@@ -1293,6 +1295,96 @@ const loginHtml = fs.readFileSync(path.join(htmlDir, 'login.html'), 'utf8');
 const indexAuthHtml = fs.readFileSync(path.join(htmlDir, 'index.html'), 'utf8');
 const signupHtml = fs.readFileSync(path.join(htmlDir, 'signup.html'), 'utf8');
 const portfolioManageHtml = fs.readFileSync(path.join(htmlDir, 'portfolio_manage.html'), 'utf8');
+const portfolioViewerHtml = fs.readFileSync(path.join(htmlDir, 'portfolio_viewer.html'), 'utf8');
+const portfolioManageCss = fs.readFileSync(path.join(cssDir, 'portfolio_manage.css'), 'utf8');
+
+assert.match(
+  portfolioManageHtml,
+  /class="portfolio-library-page"/,
+  'portfolio_manage should use the uploaded portfolio library page shell'
+);
+assert.match(
+  portfolioManageHtml,
+  /class="portfolio-library-list" id="portfolioList"/,
+  'portfolio_manage should render portfolios into the uploaded library list'
+);
+assert.match(
+  portfolioManageHtml,
+  /function\s+firstPagePreview/,
+  'portfolio_manage should show first-page portfolio previews'
+);
+assert.match(
+  portfolioManageHtml,
+  /function\s+sortPortfolios/,
+  'portfolio_manage should sort liked portfolios before recent portfolios'
+);
+assert.match(
+  portfolioManageHtml,
+  /data-action="like"/,
+  'portfolio_manage should support liking saved portfolios'
+);
+assert.match(
+  portfolioManageHtml,
+  /portfolio_viewer\.html\?id=\$\{encodeURIComponent\(portfolio\.id\)\}#viewerContent/,
+  'portfolio_manage should open portfolios in portfolio_viewer.html'
+);
+assert.match(
+  portfolioManageHtml,
+  /writePortfolios\(readPortfolios\(\)\)/,
+  'portfolio_manage should persist merged fallback portfolios before rendering'
+);
+assert.ok(
+  !portfolioManageHtml.includes('id="searchInput"') && !portfolioManageHtml.includes('function openPortfolio'),
+  'portfolio_manage should replace the old search-and-alert manager with the uploaded library UI'
+);
+for (const cssPattern of [
+  /\.portfolio-library-page\s*\{/,
+  /\.portfolio-library-card\s*\{/,
+  /\.portfolio-library-actions\s+\.like-action\.liked\s*\{/,
+  /\.portfolio-web-viewer\s*\{/,
+  /\.portfolio-slide-viewer\s*\{/,
+  /\.viewer-control-bar\s*\{/,
+]) {
+  assert.match(
+    portfolioManageCss,
+    cssPattern,
+    `portfolio_manage stylesheet should include ${cssPattern}`
+  );
+}
+assert.match(
+  portfolioViewerHtml,
+  /<div class="portfolio-web-viewer" id="viewerContent">/,
+  'portfolio_viewer should use the uploaded full-screen viewer shell'
+);
+assert.match(
+  portfolioViewerHtml,
+  /id="viewerBody"/,
+  'portfolio_viewer should render slide images into the viewer body'
+);
+assert.match(
+  portfolioViewerHtml,
+  /new URLSearchParams\(window\.location\.search\)\.get\('id'\)/,
+  'portfolio_viewer should read the selected portfolio id from the URL'
+);
+assert.match(
+  portfolioViewerHtml,
+  /function\s+drawSlideImage/,
+  'portfolio_viewer should draw slide images from portfolio content'
+);
+assert.match(
+  portfolioViewerHtml,
+  /id="bottomNextSlideBtn"/,
+  'portfolio_viewer should include bottom slide controls'
+);
+assert.match(
+  portfolioViewerHtml,
+  /href="portfolio_manage\.html"/,
+  'portfolio_viewer should link back to the portfolio management page'
+);
+assert.ok(
+  !portfolioViewerHtml.includes('href="fitfolio.css"') && !portfolioViewerHtml.includes('<header class="top-nav">'),
+  'portfolio_viewer should use separated assets and no duplicated top navigation'
+);
 
 for (const [fileName, html] of Object.entries({
   'main.html': mainHtml,
