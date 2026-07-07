@@ -1115,6 +1115,16 @@ assert.match(
   'portfolio_create should use the shared top navigation mount'
 );
 assert.match(
+  portfolioCreateHtml,
+  /<main class="page-shell portfolio-create-page">/,
+  'portfolio_create should use a compact page shell for the setup screen'
+);
+assert.ok(
+  !portfolioCreateHtml.includes('<h1 class="page-title">포트폴리오 생성</h1>') &&
+    !portfolioCreateHtml.includes('활동 자료와 프로젝트 경험을 바탕으로 제출용 포트폴리오 초안을 생성합니다.'),
+  'portfolio_create should remove the redundant page heading above the setup panel'
+);
+assert.match(
   sharedNavJs,
   /\{\s*key:\s*'portfolio_create',\s*href:\s*'portfolio_create\.html',\s*label:\s*'포트폴리오 생성'\s*\}/,
   'portfolio_create should keep the shared portfolio create nav link'
@@ -1300,6 +1310,7 @@ assert.match(
   'portfolio_create should create a PPT download blob'
 );
 for (const cssPattern of [
+  /\.portfolio-create-page\s*\{/,
   /\.setup-layout\s*\{/,
   /\.setting-select\s*\{/,
   /\.setting-select:focus\s*\{/,
