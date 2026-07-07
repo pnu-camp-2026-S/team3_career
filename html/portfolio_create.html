@@ -13,10 +13,7 @@
     <script src="../js/shared-nav.js"></script>
     <script src="../js/auth-nav.js"></script>
 
-    <main class="page-shell">
-      <h1 class="page-title">포트폴리오 생성</h1>
-      <p class="page-subtitle">활동 자료와 프로젝트 경험을 바탕으로 제출용 포트폴리오 초안을 생성합니다.</p>
-
+    <main class="page-shell portfolio-create-page">
       <section id="portfolioStudio" class="portfolio-studio">
         <div id="pfSetupScreen" class="portfolio-setup">
           <h2 class="panel-title">포트폴리오 생성 설정</h2>
@@ -30,10 +27,26 @@
                 <div class="format-card-grid" role="radiogroup" aria-label="포트폴리오 형식 선택">
                   <button class="format-card" type="button" role="radio" aria-checked="false" data-format="1페이지 요약본">
                     <span class="format-visual onepage" aria-hidden="true">
-                      <span class="visual-pill"></span>
-                      <span class="visual-line"></span>
-                      <span class="visual-line medium"></span>
-                      <span class="visual-block"></span>
+                      <span class="onepage-profile">
+                        <span class="preview-avatar"></span>
+                        <span>
+                          <span class="preview-kicker">PROFILE</span>
+                          <span class="preview-title">AI 서비스 기획자 김예지</span>
+                        </span>
+                      </span>
+                      <span class="onepage-columns">
+                        <span>
+                          <span class="preview-section-title">ACTIVITIES</span>
+                          <span class="preview-row"><b>2026</b> AI 포트폴리오 추천 서비스</span>
+                          <span class="preview-row"><b>역할</b> 기획 · UI 설계</span>
+                        </span>
+                        <span>
+                          <span class="preview-section-title">SKILLS</span>
+                          <span class="skill-mini-row"><i>문제 해결</i><i>협업</i><i>데이터</i></span>
+                          <span class="preview-section-title">AWARDS</span>
+                          <span class="preview-row"><b>성과</b> 추천 흐름 개선</span>
+                        </span>
+                      </span>
                     </span>
                     <span>
                       <strong>1페이지 요약본</strong>
@@ -42,11 +55,22 @@
                   </button>
                   <button class="format-card selected" type="button" role="radio" aria-checked="true" data-format="상세 기술 포트폴리오">
                     <span class="format-visual detail" aria-hidden="true">
-                      <span class="visual-photo"></span>
-                      <span>
-                        <span class="visual-line"></span>
-                        <span class="visual-line short"></span>
-                        <span class="visual-block"></span>
+                      <span class="case-study-head">
+                        <span class="preview-kicker">CASE STUDY</span>
+                        <span class="preview-title">AI 포트폴리오 추천 서비스</span>
+                      </span>
+                      <span class="case-study-flow">
+                        <span>문제 정의</span><span>설계 과정</span><span>구현 기여</span><span>결과</span>
+                      </span>
+                      <span class="case-study-body">
+                        <span class="flow-box">경험 데이터</span>
+                        <span class="flow-arrow">→</span>
+                        <span class="flow-box">추천 로직</span>
+                        <span class="flow-arrow">→</span>
+                        <span class="flow-box">형식 제안</span>
+                      </span>
+                      <span class="skill-mini-row">
+                        <i>UI 설계</i><i>데이터 흐름</i><i>맞춤 추천</i>
                       </span>
                     </span>
                     <span>
@@ -56,10 +80,22 @@
                   </button>
                   <button class="format-card" type="button" role="radio" aria-checked="false" data-format="PPT 발표 스펙">
                     <span class="format-visual ppt" aria-hidden="true">
-                      <span class="visual-ppt-slide">
-                        <span class="visual-pill"></span>
-                        <span class="visual-line"></span>
-                        <span class="visual-line short"></span>
+                      <span class="ppt-deck">
+                        <span class="ppt-slide-mini">
+                          <em>01</em>
+                          <b>AI 포트폴리오 추천 서비스</b>
+                          <small>프로젝트 개요</small>
+                        </span>
+                        <span class="ppt-slide-mini">
+                          <em>02</em>
+                          <b>기획 · UI · 데이터 흐름</b>
+                          <small>진행 과정</small>
+                        </span>
+                        <span class="ppt-slide-mini">
+                          <em>03</em>
+                          <b>맞춤 추천 흐름 개선</b>
+                          <small>성과 요약</small>
+                        </span>
                       </span>
                     </span>
                     <span>
@@ -69,11 +105,24 @@
                   </button>
                   <button class="format-card" type="button" role="radio" aria-checked="false" data-format="자기소개서 연결형">
                     <span class="format-visual coverletter" aria-hidden="true">
-                      <span class="visual-line"></span>
-                      <span class="visual-line"></span>
-                      <span class="visual-line medium"></span>
-                      <span class="visual-line short"></span>
-                      <span class="visual-block"></span>
+                      <span class="resume-doc-head">
+                        <span class="preview-title">김예지 | 서비스 기획 지원</span>
+                        <span class="preview-row">핵심역량 · 경험 · 기술</span>
+                      </span>
+                      <span class="resume-doc-body">
+                        <span class="resume-side">
+                          <b>경험</b>
+                          <small>AI 포트폴리오 추천 서비스</small>
+                          <b>기술</b>
+                          <small>UI 설계 · 데이터 흐름</small>
+                        </span>
+                        <span class="coverletter-lines">
+                          <b>지원동기</b>
+                          <span>사용자 문제를 구조화해 서비스로 해결했습니다.</span>
+                          <b>문제 해결 경험</b>
+                          <span>형식 선택 어려움을 추천 흐름으로 개선했습니다.</span>
+                        </span>
+                      </span>
                     </span>
                     <span>
                       <strong>자기소개서 연결형</strong>
@@ -92,7 +141,7 @@
               <div class="form-row">
                 <div class="form-field">
                   <label for="pfPurposeSelect">생성 목적</label>
-                  <select id="pfPurposeSelect">
+                  <select id="pfPurposeSelect" class="setting-select">
                     <option>취업 지원용</option>
                     <option>인턴 지원용</option>
                     <option>공모전 제출용</option>
@@ -101,7 +150,7 @@
                 </div>
                 <div class="form-field">
                   <label for="pfMajorSelect">전공 선택</label>
-                  <select id="pfMajorSelect">
+                  <select id="pfMajorSelect" class="setting-select">
                     <option value="industrial">산업공학과</option>
                     <option value="chemical">화학공학과</option>
                     <option value="electrical">전기공학과</option>

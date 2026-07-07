@@ -21,8 +21,7 @@
 
 .file-manager-actions,
 .panel-head,
-.manager-file-actions,
-.manager-chat-input {
+.manager-file-actions {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -33,31 +32,6 @@
   justify-content: space-between;
 }
 
-.file-dashboard {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.file-stat-card {
-  min-height: 132px;
-  padding: 22px;
-  border: 1px solid #e7eaf3;
-  border-radius: 8px;
-  background: #fff;
-  box-shadow: var(--shadow);
-}
-
-.file-stat-card strong {
-  display: block;
-  margin: 8px 0 6px;
-  color: #11182f;
-  font-size: 30px;
-  line-height: 1.08;
-  letter-spacing: -1px;
-}
-
-.file-stat-card small,
 .panel-note {
   color: var(--muted);
   font-size: 13px;
@@ -75,13 +49,60 @@
   border-left: 4px solid var(--brand);
 }
 
-.secondary-layout {
-  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.72fr);
-}
-
 .folder-overview-panel,
 .editable-file-panel {
   margin-top: 0;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* 프로젝트 폴더 추가 / 레포 연결 폼 */
+.repo-form {
+  display: grid;
+  gap: 14px;
+}
+
+.repo-field {
+  display: grid;
+  gap: 6px;
+  color: #3f4759;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.repo-field input,
+.repo-field select {
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 12px;
+  font-size: 14px;
+}
+
+.repo-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #3f4759;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.outline-button.is-connected {
+  border-color: #cbe6d4;
+  color: #15854d;
+  background: #eef9f2;
 }
 
 .manager-folder-groups,
@@ -151,14 +172,24 @@
   cursor: pointer;
 }
 
-.manager-dropzone:hover {
+.manager-dropzone:hover,
+.manager-dropzone:focus-visible,
+.manager-dropzone.drag-over {
   border-color: var(--brand);
   background: #f4f7ff;
+  outline: none;
 }
 
 .manager-dropzone span {
   color: var(--muted);
   font-size: 13px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
 }
 
 .manager-file-card {
@@ -377,40 +408,6 @@
   line-height: 1.5;
 }
 
-.manager-chat-log {
-  height: 230px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  overflow-y: auto;
-  padding: 4px 4px 10px;
-}
-
-.manager-bubble {
-  max-width: 88%;
-  padding: 12px 14px;
-  border-radius: 16px;
-  color: #4c556c;
-  background: #f2f4ff;
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.manager-bubble.user {
-  margin-left: auto;
-  color: #fff;
-  background: var(--brand);
-}
-
-.manager-chat-input input {
-  flex: 1;
-  min-width: 0;
-  height: 42px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 0 14px;
-}
-
 .manager-toast {
   position: fixed;
   right: 24px;
@@ -468,7 +465,6 @@
     flex-direction: column;
   }
 
-  .file-dashboard,
   .file-manager-layout,
   .secondary-layout {
     grid-template-columns: 1fr;
@@ -494,9 +490,13 @@
     grid-template-columns: 1fr;
   }
 
-  .file-manager-actions,
-  .manager-chat-input {
+  .file-manager-actions {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .ai-status-summary {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

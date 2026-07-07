@@ -1,4 +1,4 @@
-﻿const activities = [
+﻿const fallbackActivities = [
   {
     id: 1,
     icon: '📊',
@@ -190,14 +190,88 @@
     portfolio: '“협업형 클라우드 아이디어톤을 통해 팀 기반 서비스 기획과 발표 역량을 강화했습니다.”'
   }
 ];
+function getMatchScore(item) {
+  return Number.parseInt(item.match, 10) || 0;
+}
 
+function getRecommendationScore(item) {
+  if (!item.preferenceSignals) return getMatchScore(item);
+
+  const signals = item.preferenceSignals;
+  return Math.round(
+    signals.majorFit * 0.35 +
+      signals.skillFit * 0.25 +
+      signals.portfolioValue * 0.2 +
+      signals.careerRelevance * 0.2 -
+      signals.noisePenalty * 0.3
+  );
+}
+
+function getScoreBandCounts(total) {
+  const highCount = Math.round(total / 3.5);
+  const middleCount = Math.round((total / 3.5) * 1.5);
+
+  return {
+    high: highCount,
+    middle: middleCount,
+    low: total - highCount - middleCount
+  };
+}
+
+function interpolateScore(max, min, index, count) {
+  if (count <= 1) return max;
+  return Math.round(max - ((max - min) * index) / (count - 1));
+}
+
+function getDistributedMatchScore(index, total) {
+  const bands = getScoreBandCounts(total);
+
+  if (index < bands.high) {
+    return interpolateScore(96, 75, index, bands.high);
+  }
+
+  if (index < bands.high + bands.middle) {
+    return interpolateScore(74, 40, index - bands.high, bands.middle);
+  }
+
+  return interpolateScore(40, 12, index - bands.high - bands.middle, bands.low);
+}
+
+function formatDateFromDeadlineDays(deadlineDays) {
+  const date = new Date(2026, 6, 7 + Number(deadlineDays || 0));
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function getActivityIcon(item) {
+  if (item.category === 'arts-adjacent') return '🎨';
+  if (item.category === 'low-value-noise') return '⚠️';
+
+  return {
+    공모전: '📊',
+    대외활동: '🤝',
+    교육: '📚',
+    자격증: '🏅',
+    해커톤: '🧪'
+  }[item.type] || '✨';
+}
+
+function getActivityIndustry(item) {
+  if (item.category === 'arts-adjacent') return item.skills.includes('브랜딩') ? '마케팅' : '디자인';
+  if (item.category === 'low-value-noise') return '기타';
+  return item.primaryDepartment === '화공생명공학과' ? '화공' : 'IT';
+}
 const activityList = document.getElementById('activity-list');
+const activityPagination = document.getElementById('activityPagination');
 const detailPanel = document.getElementById('activity-detail');
 const scheduleList = document.getElementById('schedule-list');
 const tabs = Array.from(document.querySelectorAll('.tab'));
 const keywordInput = document.getElementById('keyword-search');
 const industryFilter = document.getElementById('industry-filter');
 const levelFilter = document.getElementById('level-filter');
+const recommendCount = document.getElementById('recommendCount');
 const calendarMonthLabel = document.getElementById('calendarMonth');
 const calendarDays = document.getElementById('calendarDays');
 const prevCalendarMonth = document.getElementById('prevCalendarMonth');
@@ -206,10 +280,14 @@ const nextCalendarMonth = document.getElementById('nextCalendarMonth');
 let activeTab = 'all';
 let selectedActivityId = null;
 let activeDetailElement = null;
+let currentActivityPage = 1;
 let visibleCalendarYear = 2026;
 let visibleCalendarMonth = 6;
 let focusedScheduleDate = null;
+let isScheduleExpanded = false;
+const activitiesPerPage = 20;
 const visibleScheduleLimit = 5;
+const recommendationMatchThreshold = 85;
 const savedSchedules = [];
 
 function clearExpandedDetail() {
@@ -234,7 +312,7 @@ function getFilteredActivities() {
   const industry = industryFilter.value;
   const level = levelFilter.value;
 
-  return activities.filter((item) => {
+  return getSortedRecommendedActivities().filter((item) => {
     const matchesTab = activeTab === 'all' || item.type === activeTab;
     const matchesKeyword =
       !keyword ||
@@ -247,24 +325,41 @@ function getFilteredActivities() {
   });
 }
 
+function getMatchScore(item) {
+  return Number.parseInt(item.match, 10) || 0;
+}
+
+function renderRecommendationCount() {
+  if (!recommendCount) return;
+
+  const count = activities.filter((item) => getMatchScore(item) >= recommendationMatchThreshold).length;
+  recommendCount.textContent = `추천 활동 ${count}개`;
+}
+
 function isActivitySaved(id) {
   return savedSchedules.some((event) => event.id === id);
 }
 
 function renderActivities() {
   const filtered = getFilteredActivities();
+  const pageCount = getActivityPageCount(filtered);
+  currentActivityPage = Math.min(currentActivityPage, pageCount);
 
   if (!filtered.length) {
     clearExpandedDetail();
     selectedActivityId = null;
     activityList.innerHTML = '<div class="activity-card"><p>조건에 맞는 활동이 없습니다.</p></div>';
+    renderActivityPagination(0);
     return;
   }
 
   clearExpandedDetail();
   selectedActivityId = null;
 
-  activityList.innerHTML = filtered
+  const startIndex = (currentActivityPage - 1) * activitiesPerPage;
+  const visibleActivities = filtered.slice(startIndex, startIndex + activitiesPerPage);
+
+  activityList.innerHTML = visibleActivities
     .map(
       (item) => `
         <article class="activity-card ${isActivitySaved(item.id) ? 'is-saved' : ''}" data-id="${item.id}">
@@ -286,6 +381,7 @@ function renderActivities() {
     )
     .join('');
 
+  renderActivityPagination(filtered.length);
   updateSelectedCard();
 }
 
@@ -301,8 +397,67 @@ const scheduleDates = {
   9: '2026-10-04',
   10: '2026-10-04'
 };
+function normalizeActivityDataset(dataset) {
+  const rankedItems = [...dataset].sort(
+    (a, b) =>
+      getRecommendationScore(b) - getRecommendationScore(a) ||
+      a.id - b.id
+  );
 
+  return rankedItems.map((item, index) => {
+    const score = getDistributedMatchScore(index, rankedItems.length);
 
+    if (!scheduleDates[item.id]) {
+      scheduleDates[item.id] = formatDateFromDeadlineDays(item.deadlineDays);
+    }
+
+    return {
+      ...item,
+      icon: getActivityIcon(item),
+      industry: getActivityIndustry(item),
+      level: item.difficulty,
+      match: `${score}%`,
+      difficulty: item.difficulty === '상' ? '어려움' : item.difficulty === '하' ? '쉬움' : '중간'
+    };
+  });
+}
+
+const activities = Array.isArray(window.activityRecommendationDataset)
+  ? normalizeActivityDataset(window.activityRecommendationDataset)
+  : fallbackActivities;
+
+function getSortedRecommendedActivities() {
+  return [...activities].sort(
+    (a, b) =>
+      getRecommendationScore(b) - getRecommendationScore(a) ||
+      getMatchScore(b) - getMatchScore(a) ||
+      a.id - b.id
+  );
+}
+
+function getActivityPageCount(items) {
+  return Math.max(1, Math.ceil(items.length / activitiesPerPage));
+}
+
+function renderActivityPagination(totalItems) {
+  if (!activityPagination) return;
+
+  const pageCount = getActivityPageCount({ length: totalItems });
+
+  if (pageCount <= 1) {
+    activityPagination.innerHTML = '';
+    return;
+  }
+
+  activityPagination.innerHTML = Array.from({ length: pageCount }, (_, index) => {
+    const page = index + 1;
+    return `
+      <button class="pagination-button ${page === currentActivityPage ? 'active' : ''}" type="button" data-page="${page}" aria-current="${page === currentActivityPage ? 'page' : 'false'}">
+        ${page}페이지
+      </button>
+    `;
+  }).join('');
+}
 function getTodayDate() {
   const today = new Date();
   return new Date(today.getFullYear(), today.getMonth(), today.getDate());
@@ -598,6 +753,7 @@ function toggleBookmarkSave(id) {
 
 function renderSchedule() {
   if (!savedSchedules.length) {
+    isScheduleExpanded = false;
     scheduleList.innerHTML = `
       <div class="schedule-item">
         <div class="schedule-date">-</div>
@@ -615,15 +771,20 @@ function renderSchedule() {
   }
 
   const sortedSchedules = getSortedSavedSchedules();
-  const visibleSchedules = sortedSchedules.slice(0, visibleScheduleLimit);
-  const moreScheduleLink =
+  const hasMoreSchedules = savedSchedules.length > visibleScheduleLimit;
+  const visibleSchedules = isScheduleExpanded ? sortedSchedules : sortedSchedules.slice(0, visibleScheduleLimit);
+  const moreScheduleButton =
     savedSchedules.length > visibleScheduleLimit
       ? `
-        <a class="schedule-more" href="https://calendar.google.com/calendar/u/0/r" target="_blank" rel="noopener noreferrer">
-          더보기
-        </a>
+        <button class="schedule-more" type="button" data-toggle-schedule-list>
+          ${isScheduleExpanded ? '간략화하기' : `더보기 ${savedSchedules.length - visibleScheduleLimit}개`}
+        </button>
       `
       : '';
+
+  if (!hasMoreSchedules) {
+    isScheduleExpanded = false;
+  }
 
   scheduleList.innerHTML = `${visibleSchedules
     .map(
@@ -638,7 +799,7 @@ function renderSchedule() {
         </div>
       `
     )
-    .join('')}${moreScheduleLink}`;
+    .join('')}${moreScheduleButton}`;
 
   renderCalendarHighlight();
 }
@@ -648,6 +809,7 @@ tabs.forEach((tab) => {
     tabs.forEach((button) => button.classList.remove('active'));
     tab.classList.add('active');
     activeTab = tab.dataset.filter;
+    currentActivityPage = 1;
     renderActivities();
     updateSelectedCard();
   });
@@ -655,10 +817,12 @@ tabs.forEach((tab) => {
 
 [keywordInput, industryFilter, levelFilter].forEach((control) => {
   control.addEventListener('input', () => {
+    currentActivityPage = 1;
     renderActivities();
     updateSelectedCard();
   });
   control.addEventListener('change', () => {
+    currentActivityPage = 1;
     renderActivities();
     updateSelectedCard();
   });
@@ -675,8 +839,22 @@ activityList.addEventListener('click', (event) => {
   const card = event.target.closest('.activity-card');
   if (card) openDetail(card.dataset.id, card);
 });
+activityPagination?.addEventListener('click', (event) => {
+  const pageButton = event.target.closest('[data-page]');
+  if (!pageButton) return;
 
+  currentActivityPage = Number(pageButton.dataset.page);
+  renderActivities();
+  activityList.scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
 scheduleList.addEventListener('click', (event) => {
+  const moreButton = event.target.closest('[data-toggle-schedule-list]');
+  if (moreButton) {
+    isScheduleExpanded = !isScheduleExpanded;
+    renderSchedule();
+    return;
+  }
+
   const viewButton = event.target.closest('.schedule-view');
   if (!viewButton) return;
 
@@ -688,4 +866,5 @@ nextCalendarMonth.addEventListener('click', () => moveCalendarMonth(1));
 
 renderCalendarMonth();
 renderSchedule();
+renderRecommendationCount();
 renderActivities();

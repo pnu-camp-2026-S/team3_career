@@ -6,6 +6,8 @@ const rootDir = process.cwd();
 const htmlDir = path.join(rootDir, 'html');
 const cssDir = path.join(rootDir, 'css');
 const jsDir = path.join(rootDir, 'js');
+const appDir = path.join(rootDir, 'app');
+const libDir = path.join(rootDir, 'lib');
 
 const linkedHtmlFiles = [
   'contest.html',
@@ -60,6 +62,10 @@ assert.ok(
   !fs.existsSync(path.join(cssDir, 'fitfolio.css')),
   'old bundled Fitfolio stylesheet should not remain in the css directory'
 );
+assert.ok(
+  fs.existsSync(path.join(jsDir, 'activity-recommendation-dataset.js')),
+  'activity recommendation dummy dataset should live in the js directory'
+);
 
 for (const [htmlFile, cssFile] of Object.entries(pageCssFiles)) {
   assert.ok(
@@ -89,6 +95,7 @@ const withdrawCss = fs.readFileSync(path.join(cssDir, 'withdraw.css'), 'utf8');
 const fitfolioCss = [commonCss, authCss, mainCss, createCss].join('\n');
 const sharedNavJsPath = path.join(jsDir, 'shared-nav.js');
 const authNavJsPath = path.join(jsDir, 'auth-nav.js');
+const folderStoreJsPath = path.join(jsDir, 'folder-store.js');
 const sharedNavPages = [
   ['main.html', 'main'],
   ['create.html', 'create'],
@@ -121,11 +128,59 @@ const sharedNavJs = fs.existsSync(sharedNavJsPath)
 const authNavJs = fs.existsSync(authNavJsPath)
   ? fs.readFileSync(authNavJsPath, 'utf8')
   : '';
+
+assert.ok(
+  fs.existsSync(folderStoreJsPath),
+  'folder data store script should live in the js directory (Firebase-ready abstraction)'
+);
+const folderStoreJs = fs.readFileSync(folderStoreJsPath, 'utf8');
+assert.match(
+  folderStoreJs,
+  /myfitfolioFolders/,
+  'folder store should persist folder and file state under the shared storage key'
+);
+assert.match(
+  folderStoreJs,
+  /key:\s*'completed'[\s\S]*key:\s*'inProgress'/,
+  'folder store should define completed and in-progress folder groups'
+);
+assert.match(
+  folderStoreJs,
+  /\{\s*key:\s*'other',\s*label:\s*'기타',\s*color:\s*'#[0-9a-fA-F]{6}'\s*\}/,
+  'folder store should include an other folder type inside each activity group'
+);
+assert.match(
+  folderStoreJs,
+  /function\s+normalizeFolderLabel[\s\S]*folder\.type\s*===\s*'other'[\s\S]*folder\.label\s*===\s*'기타 폴더'[\s\S]*return '기타'/,
+  'folder store should migrate the old other-folder label to 기타'
+);
+for (const folderLabel of ['개인 프로젝트', '팀 프로젝트', '공모전', '자격증', '교육', '봉사', '기타']) {
+  assert.ok(
+    folderStoreJs.includes(`label: '${folderLabel}'`),
+    `folder store should include the ${folderLabel} folder type`
+  );
+}
+assert.match(
+  folderStoreJs,
+  /function\s+createFolder\(/,
+  'folder store should expose a helper to create custom project folders (#132)'
+);
+assert.match(
+  folderStoreJs,
+  /github:\s*null/,
+  'folder store folders should carry a per-project github connection field (#132)'
+);
+assert.match(
+  folderStoreJs,
+  /window\.FolderStore\s*=/,
+  'folder store should expose its API on window.FolderStore'
+);
+
 for (const [file, activeKey] of sharedNavPages) {
   const html = fs.readFileSync(path.join(htmlDir, file), 'utf8');
   assert.match(
     html,
-    new RegExp(`<div data-shared-nav data-active="${activeKey}"></div>\\s*<script src="\\.\\./js/shared-nav\\.js"></script>`),
+    new RegExp(`<div data-shared-nav data-active="${activeKey}"></div>\\s*(?:<script src="\\.\\./js/folder-store\\.js"></script>\\s*)?<script src="\\.\\./js/shared-nav\\.js"></script>`),
     `${file} should mount the shared navigation with the ${activeKey} active key`
   );
   assert.ok(
@@ -237,6 +292,45 @@ assert.match(
   /clearAccountState\(\);[\s\S]*window\.location\.href\s*=\s*'main\.html'/,
   'auth navigation should clear account state before logout redirect'
 );
+
+const activityDatasetJs = fs.readFileSync(path.join(jsDir, 'activity-recommendation-dataset.js'), 'utf8');
+const activityDatasetContext = {};
+Function(
+  'window',
+  `${activityDatasetJs}; window.dataset = activityRecommendationDataset;`
+)(activityDatasetContext);
+const activityRecommendationDataset = activityDatasetContext.dataset;
+
+assert.strictEqual(
+  activityRecommendationDataset.length,
+  100,
+  'activity recommendation dataset should include 100 dummy activities'
+);
+assert.strictEqual(
+  activityRecommendationDataset.filter((item) => item.category === 'major-relevant').length,
+  90,
+  'activity recommendation dataset should include 90 major-relevant activities'
+);
+assert.strictEqual(
+  activityRecommendationDataset.filter((item) => item.category === 'arts-adjacent').length,
+  5,
+  'activity recommendation dataset should include 5 arts-adjacent activities'
+);
+assert.strictEqual(
+  activityRecommendationDataset.filter((item) => item.category === 'low-value-noise').length,
+  5,
+  'activity recommendation dataset should include 5 low-value noise activities'
+);
+for (const department of ['컴퓨터공학과', '전기공학과', '화공생명공학과', '산업공학과']) {
+  assert.ok(
+    activityRecommendationDataset.some((item) => item.primaryDepartment === department),
+    `activity recommendation dataset should include activities for ${department}`
+  );
+  assert.ok(
+    activityRecommendationDataset.every((item) => typeof item.departmentFit[department] === 'number'),
+    `activity recommendation dataset should score every activity for ${department}`
+  );
+}
 assert.match(
   fitfolioCss,
   /\.auth-tab\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*center;[^}]*justify-content:\s*center;/s,
@@ -269,21 +363,64 @@ for (const file of ['index.html', 'main.html']) {
   );
 }
 
-const serverJs = fs.readFileSync(path.join(rootDir, 'server.js'), 'utf8');
+const packageJson = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
+assert.strictEqual(packageJson.scripts.dev, 'next dev --webpack', 'project should expose the Next.js dev server command without Turbopack path issues on Korean Windows folders');
+assert.strictEqual(packageJson.scripts.build, 'next build', 'project should expose the Next.js build command');
+assert.strictEqual(packageJson.scripts.start, 'next start', 'project should run the Next.js production server');
+assert.ok(packageJson.dependencies.next, 'project should depend on Next.js');
+assert.ok(packageJson.dependencies.react, 'project should depend on React');
+assert.ok(packageJson.dependencies['react-dom'], 'project should depend on React DOM');
+assert.ok(!packageJson.dependencies.express, 'project should no longer depend on Express after the Next.js migration');
+assert.ok(!fs.existsSync(path.join(rootDir, 'server.js')), 'legacy Express server.js should be removed after the Next.js migration');
+
+const nextLegacyPage = fs.readFileSync(path.join(appDir, '[[...slug]]', 'page.js'), 'utf8');
+const nextLegacyScripts = fs.readFileSync(path.join(appDir, 'LegacyScripts.jsx'), 'utf8');
+const nextLegacyLib = fs.readFileSync(path.join(libDir, 'legacy-page.js'), 'utf8');
+const nextCssRoute = fs.readFileSync(path.join(appDir, 'css', '[...file]', 'route.js'), 'utf8');
+const nextJsRoute = fs.readFileSync(path.join(appDir, 'js', '[...file]', 'route.js'), 'utf8');
+const nextSignupRoute = fs.readFileSync(path.join(appDir, 'api', 'signup', 'route.js'), 'utf8');
+const nextChatRoute = fs.readFileSync(path.join(appDir, 'api', 'chat', 'route.js'), 'utf8');
+
 assert.match(
-  serverJs,
-  /express\.static\(path\.join\(__dirname,\s*['"]html['"]\)\)/,
-  'server should serve active pages from the html directory'
+  nextLegacyPage,
+  /const resolvedParams = await params;[\s\S]*getLegacyPage\(resolvedParams\?\.slug \|\| \[\]\)/,
+  'Next catch-all route should render the existing html pages'
 );
 assert.match(
-  serverJs,
-  /app\.use\(['"]\/css['"],\s*express\.static\(path\.join\(__dirname,\s*['"]css['"]\)\)\)/,
-  'server should serve shared styles from the css directory'
+  nextLegacyScripts,
+  /document\.createElement\('script'\)[\s\S]*document\.body\.appendChild\(element\)/,
+  'Next migration should re-run legacy page scripts in browser order'
 );
 assert.match(
-  serverJs,
-  /app\.use\(['"]\/js['"],\s*express\.static\(path\.join\(__dirname,\s*['"]js['"]\)\)\)/,
-  'server should serve shared scripts from the js directory'
+  nextLegacyLib,
+  /const htmlDir = path\.join\(process\.cwd\(\), 'html'\)/,
+  'Next legacy renderer should keep the current html directory as source of truth'
+);
+assert.ok(
+  nextLegacyLib.includes('function normalizeAssetPath(assetPath)') &&
+    nextLegacyLib.includes(".replace(/^(\\.\\.\\/|\\.\\/)+/, '')") &&
+    nextLegacyLib.includes("normalized.startsWith('/')"),
+  'Next legacy renderer should normalize existing relative asset paths'
+);
+assert.match(
+  nextCssRoute,
+  /const params = await context\.params;[\s\S]*path\.join\(process\.cwd\(\), 'css'/,
+  'Next route handler should serve existing css assets'
+);
+assert.match(
+  nextJsRoute,
+  /const params = await context\.params;[\s\S]*path\.join\(process\.cwd\(\), 'js'/,
+  'Next route handler should serve existing js assets'
+);
+assert.match(
+  nextSignupRoute,
+  /export async function POST\(request\)[\s\S]*bcrypt\.hash/,
+  'signup API should move from Express to a Next route handler'
+);
+assert.match(
+  nextChatRoute,
+  /export async function POST\(request\)[\s\S]*OpenAI/,
+  'chat API should move from Express to a Next route handler'
 );
 
 const mainHtml = fs.readFileSync(path.join(htmlDir, 'main.html'), 'utf8');
@@ -292,15 +429,18 @@ assert.match(
   /<body\s+data-page="main">/,
   'main page should expose its page key for auth-nav logged-out rendering'
 );
-assert.match(
-  mainHtml,
-  /id="sidebarToggle"/,
-  'main sidebar should have a collapse toggle button'
+assert.ok(
+  !mainHtml.includes('id="sidebarToggle"') && !mainHtml.includes('class="sidebar-toggle"'),
+  'main sidebar should not include the open/close toggle button'
+);
+assert.ok(
+  !/<span class="folder-count">/.test(mainHtml),
+  'main sidebar folder rows should not display the file count number'
 );
 assert.match(
   mainHtml,
   /id="sidebarResizeHandle"/,
-  'main sidebar should expose a resize handle'
+  'main sidebar should keep the width resize handle'
 );
 assert.match(
   mainHtml,
@@ -326,8 +466,8 @@ assert.match(
   'main sidebar should move analysis start to the top action area'
 );
 assert.ok(
-  !mainHtml.includes('id="fileInput"') && !mainHtml.includes('type="file"'),
-  'main sidebar should not keep the removed file select input'
+  !mainHtml.includes('id="fileInput"'),
+  'main sidebar should not offer a file upload input (uploads happen in file management only)'
 );
 assert.match(
   mainHtml,
@@ -340,19 +480,19 @@ assert.match(
   'main sidebar should rename ready folders to in-progress folders'
 );
 assert.match(
-  mainHtml,
-  /\['completed',\s*'inProgress'\]/,
-  'main sidebar should create folders inside completed and in-progress groups'
+  folderStoreJs,
+  /FOLDER_GROUPS[\s\S]*key:\s*'completed'[\s\S]*key:\s*'inProgress'/,
+  'shared folder store should create folders inside completed and in-progress groups'
 );
 assert.match(
-  mainHtml,
+  folderStoreJs,
   /\{\s*key:\s*'other',\s*label:\s*'기타',\s*color:\s*'#[0-9a-fA-F]{6}'\s*\}/,
-  'main sidebar should include an other folder type inside each activity group'
+  'shared folder store should include an other folder type with a chart color'
 );
 assert.match(
-  mainHtml,
+  folderStoreJs,
   /function\s+normalizeFolderLabel[\s\S]*folder\.type\s*===\s*'other'[\s\S]*folder\.label\s*===\s*'기타 폴더'[\s\S]*return '기타'/,
-  'main sidebar should migrate the old other-folder label to 기타'
+  'shared folder store should migrate the old other-folder label to 기타'
 );
 assert.ok(
   !mainHtml.includes('data-folder-section="other"'),
@@ -360,47 +500,23 @@ assert.ok(
 );
 assert.match(
   mainHtml,
-  /data-rename-folder/,
-  'main sidebar should support folder renaming'
-);
-assert.match(
-  fitfolioCss,
-  /\.main-sidebar\s+\.icon-tool-button\s*\{[^}]*min-width:\s*56px;[^}]*padding:\s*0 10px;[^}]*white-space:\s*nowrap;[^}]*line-height:\s*1;/s,
-  'main sidebar rename buttons should be wide enough to keep the label visible on one line'
+  /data-rename-folder[\s\S]*폴더명 수정/,
+  'main sidebar should restore folder rename controls'
 );
 assert.match(
   mainHtml,
-  /data-delete-file/,
-  'main sidebar should show per-file delete controls'
+  /data-toggle-folder[\s\S]*uploaded-file-list[\s\S]*파일을 이 폴더로 끌어오세요/,
+  'main sidebar should restore expandable folder rows with empty-folder copy'
 );
 assert.match(
   mainHtml,
-  /class="trash-icon"/,
-  'main file delete buttons should render a trash can icon'
+  /event\.target\.closest\('\.drop-folder'\)[\s\S]*addFilesToFolder\(target\.dataset\.folderId,\s*event\.dataTransfer\.files\)/,
+  'main sidebar should restore drag-and-drop file uploads onto folders'
 );
 assert.match(
   mainHtml,
-  /파일을 삭제하시겠습니까/,
-  'main sidebar should confirm before deleting a file'
-);
-assert.match(
-  mainHtml,
-  /folder\.files\.length\s*\?\s*folder\.files\.map[\s\S]*파일을 이 폴더로 끌어오세요/,
-  'main sidebar should render an empty-folder placeholder for folders with no files'
-);
-assert.match(
-  fitfolioCss,
-  /\.main-sidebar\s+\.uploaded-file-list\s*\{[^}]*display:\s*grid;/s,
-  'main sidebar should show each empty-folder placeholder before any upload'
-);
-assert.ok(
-  !/\.main-sidebar\s+\.uploaded-file-list\s*\{[^}]*display:\s*none;/s.test(fitfolioCss),
-  'main sidebar uploaded-file-list should not be hidden until a folder is opened'
-);
-assert.match(
-  mainHtml,
-  /function\s+getFileTypeIcon/,
-  'main sidebar should map file extensions to file type icons'
+  /function\s+renameFolder[\s\S]*window\.prompt\('변경할 폴더명을 입력하세요'/,
+  'main sidebar should restore folder rename behavior'
 );
 assert.ok(
   !mainHtml.includes('기획 자료') && !mainHtml.includes('결과 자료') && !mainHtml.includes('renderNestedFolder'),
@@ -408,31 +524,34 @@ assert.ok(
 );
 assert.match(
   mainHtml,
-  /event\.target\.closest\('\.drop-folder'\)/,
-  'main sidebar should allow files to be dropped directly on each visible folder row'
-);
-assert.match(
-  mainHtml,
-  /clearDropOverFolders\(\)/,
-  'main sidebar should clear drag highlight when the pointer leaves a folder'
-);
-assert.match(
-  mainHtml,
-  /<script src="\.\.\/js\/shared-nav\.js"><\/script>/,
-  'main should load the shared navigation script'
+  /<script src="\.\.\/js\/folder-store\.js"><\/script>\s*<script src="\.\.\/js\/shared-nav\.js"><\/script>/,
+  'main should load the shared folder store before the navigation script'
 );
 assert.match(
   mainHtml,
   /<script src="\.\.\/js\/auth-nav\.js"><\/script>/,
   'main should load the auth navigation script'
 );
-
-for (const folderLabel of ['개인 프로젝트', '팀 프로젝트', '공모전', '자격증', '교육', '봉사', '기타']) {
-  assert.ok(
-    mainHtml.includes(`label: '${folderLabel}'`),
-    `main sidebar should include the ${folderLabel} folder`
-  );
-}
+assert.match(
+  mainHtml,
+  /FolderStore\.loadFolders\(\)/,
+  'main dashboard should load folder state through the shared folder store'
+);
+assert.match(
+  mainHtml,
+  /FolderStore\.saveFolders\(folders\)/,
+  'main dashboard should persist folder state through the shared folder store'
+);
+assert.match(
+  mainHtml,
+  /FolderStore\.FOLDER_GROUPS/,
+  'main sidebar should render folder groups from the shared folder store'
+);
+assert.match(
+  mainHtml,
+  /function\s+addFilesToFolder[\s\S]*FolderStore\.saveFolders\(folders\)/,
+  'main sidebar file drops should persist through the shared folder store'
+);
 
 assert.match(
   mainHtml,
@@ -462,11 +581,6 @@ assert.match(
   mainHtml,
   /myfitfolioProfile/,
   'main dashboard should read the saved mypage profile'
-);
-assert.match(
-  mainHtml,
-  /myfitfolioFolders/,
-  'main dashboard should persist folder and file state'
 );
 assert.match(
   mainHtml,
@@ -514,9 +628,9 @@ assert.match(
   'main dashboard should visualize completed file share with a progress bar'
 );
 assert.match(
-  mainHtml,
+  folderStoreJs,
   /\{\s*key:\s*'personal',\s*label:\s*'개인 프로젝트',\s*color:\s*'#[0-9a-fA-F]{6}'\s*\}/,
-  'main dashboard folder types should define category colors for analysis charts'
+  'shared folder store should define category colors for analysis charts'
 );
 assert.match(
   mainHtml,
@@ -732,8 +846,83 @@ assert.match(
 );
 assert.match(
   createHtml,
-  /data-folder-id="\$\{folderId\}"/,
-  'file management folder buttons should expose folder ids'
+  /data-folder-id="\$\{escapeHtml\(folder\.id\)\}"/,
+  'file management folder buttons should expose folder ids from real folder data'
+);
+assert.match(
+  createHtml,
+  /<script src="\.\.\/js\/folder-store\.js"><\/script>\s*<script src="\.\.\/js\/shared-nav\.js"><\/script>/,
+  'file management should load the shared folder store before the navigation script'
+);
+assert.match(
+  createHtml,
+  /FolderStore\.loadFolders\(\)/,
+  'file management should load folder state through the shared folder store'
+);
+assert.match(
+  createHtml,
+  /FolderStore\.saveFolders\(folders\)/,
+  'file management should persist folder state through the shared folder store'
+);
+assert.match(
+  createHtml,
+  /FolderStore\.FOLDER_GROUPS/,
+  'file management should render folder groups from the shared folder store'
+);
+assert.ok(
+  !createHtml.includes("key: 'ready'") && !createHtml.includes('준비된 활동 폴더'),
+  'file management should use the unified in-progress folder group instead of the old ready group'
+);
+assert.ok(
+  !createHtml.includes('AI 대화창') && !createHtml.includes('id="chatLog"') && !createHtml.includes('id="chatInput"'),
+  'file management should not render the AI chat panel'
+);
+assert.ok(
+  !createHtml.includes('class="file-dashboard"') && !createHtml.includes('class="file-stat-card"'),
+  'file management should not render the old four-box summary dashboard'
+);
+assert.ok(
+  !createHtml.includes('class="ai-status-summary"'),
+  'file management should not keep the 전체 자료 중 분석 완료 summary box (#132)'
+);
+assert.match(
+  createHtml,
+  /id="analysisPanelTitle"/,
+  'file management should give the AI status panel a dynamic, per-project title (#132)'
+);
+assert.match(
+  createHtml,
+  /\$\{selectedFolder\.label\} AI 정리 상태/,
+  'file management AI status title should follow the [프로젝트 이름] AI 정리 상태 format (#132)'
+);
+assert.match(
+  createHtml,
+  /data-action="connect-repo"[^>]*id="repoConnectButton"/,
+  'file management should expose a per-project repo connect button (#132)'
+);
+assert.match(
+  createHtml,
+  /data-action="connect-repo-save"/,
+  'file management repo modal should save the per-project connection (#132)'
+);
+assert.match(
+  createHtml,
+  /FolderStore\.createFolder\(/,
+  'file management should create real folders through the shared folder store (#132)'
+);
+assert.match(
+  createHtml,
+  /data-action="create-folder-confirm"/,
+  'file management folder-add modal should confirm creation (#132)'
+);
+assert.ok(
+  !createHtml.includes('function setLatestChange'),
+  'file management should drop the removed latest-change summary hook (#132)'
+);
+assert.match(
+  createCss,
+  /\.visually-hidden\s*\{/,
+  'file management stylesheet should define visually-hidden so the file input stays hidden (#132)'
 );
 assert.match(
   fitfolioCss,
@@ -820,8 +1009,8 @@ assert.ok(
 );
 assert.match(
   contestHtml,
-  /<h1>[\s\S]*<span class="recommend-count">추천 활동 10개<\/span>[\s\S]*<\/h1>/,
-  'contest page should show the recommendation count next to the title'
+  /<h1>[\s\S]*<span class="recommend-count" id="recommendCount">추천 활동 0개<\/span>[\s\S]*<\/h1>/,
+  'contest page should show the dynamic recommendation count next to the title'
 );
 assert.match(
   contestHtml,
@@ -890,6 +1079,10 @@ assert.ok(
   'contest recommendation script should live in the js directory'
 );
 assert.ok(
+  fs.existsSync(path.join(jsDir, 'activity-recommendation-dataset.js')),
+  'activity recommendation dummy dataset should live in the js directory'
+);
+assert.ok(
   !fs.existsSync(path.join(htmlDir, 'contest.js')),
   'contest recommendation script should not remain in the html directory'
 );
@@ -909,6 +1102,76 @@ assert.match(
   contestJs,
   /function\s+getSortedSavedSchedules/,
   'contest schedule should create a date-sorted list before rendering'
+);
+assert.match(
+  contestHtml,
+  /id="activityPagination"/,
+  'contest page should render pagination below the activity list'
+);
+assert.match(
+  contestHtml,
+  /src="\.\.\/js\/activity-recommendation-dataset\.js"[\s\S]*src="\.\.\/js\/contest\.js"/,
+  'contest page should load the activity dataset before the recommendation script'
+);
+assert.match(
+  contestJs,
+  /const\s+activitiesPerPage\s*=\s*20/,
+  'contest activity list should show 20 recommendations per page'
+);
+assert.match(
+  contestJs,
+  /activityRecommendationDataset/,
+  'contest activity list should use the 100 item dummy dataset when available'
+);
+assert.match(
+  contestJs,
+  /function\s+getRecommendationScore/,
+  'contest activity list should calculate recommendation scores before sorting'
+);
+assert.match(
+  contestJs,
+  /function\s+getScoreBandCounts/,
+  'contest activity list should split recommendation scores into high, middle, and low bands'
+);
+assert.match(
+  contestJs,
+  /Math\.round\(total\s*\/\s*3\.5\)/,
+  'contest score distribution should keep the high band at a 1 ratio'
+);
+assert.match(
+  contestJs,
+  /Math\.round\(\(total\s*\/\s*3\.5\)\s*\*\s*1\.5\)/,
+  'contest score distribution should keep the middle band at a 1.5 ratio'
+);
+assert.match(
+  contestJs,
+  /return interpolateScore\(96,\s*75,[\s\S]*return interpolateScore\(74,\s*40,[\s\S]*return interpolateScore\(40,\s*12,/,
+  'contest displayed match scores should use lower high, middle, and low score ranges'
+);
+assert.match(
+  contestJs,
+  /function\s+getSortedRecommendedActivities/,
+  'contest activity list should sort all activities by recommendation score'
+);
+assert.match(
+  contestJs,
+  /visibleActivities\s*=\s*filtered\.slice\(startIndex,\s*startIndex\s*\+\s*activitiesPerPage\)/,
+  'contest activity list should render one paged slice at a time'
+);
+assert.match(
+  contestJs,
+  /data-page="\$\{page\}"/,
+  'contest pagination buttons should carry page numbers'
+);
+assert.match(
+  contestCss,
+  /\.activity-pagination/s,
+  'contest stylesheet should lay out activity pagination'
+);
+assert.match(
+  contestCss,
+  /\.pagination-button\.active/s,
+  'contest stylesheet should show the active activity page'
 );
 assert.match(
   contestJs,
@@ -1122,6 +1385,26 @@ assert.match(
   'contest should limit saved schedule previews to five items'
 );
 assert.match(
+  contestHtml,
+  /id="recommendCount"/,
+  'contest recommendation count should have a stable render target'
+);
+assert.match(
+  contestJs,
+  /const\s+recommendationMatchThreshold\s*=\s*85/,
+  'contest recommendation count should use an 85 percent match threshold'
+);
+assert.match(
+  contestJs,
+  /getMatchScore\(item\)\s*>=\s*recommendationMatchThreshold/,
+  'contest recommendation count should include only activities over the match threshold'
+);
+assert.match(
+  contestJs,
+  /function\s+renderRecommendationCount/,
+  'contest should render the threshold-based recommendation count'
+);
+assert.match(
   contestJs,
   /sortedSchedules\.slice\(0,\s*visibleScheduleLimit\)/,
   'contest schedule list should render only the nearest saved schedules'
@@ -1129,12 +1412,31 @@ assert.match(
 assert.match(
   contestJs,
   /savedSchedules\.length\s*>\s*visibleScheduleLimit/,
-  'contest should show a more link only when more than five schedules are saved'
+  'contest should show a more control only when more than five schedules are saved'
 );
 assert.match(
   contestJs,
-  /href="https:\/\/calendar\.google\.com\/calendar\/u\/0\/r"/,
-  'contest more schedules link should open Google Calendar'
+  /let\s+isScheduleExpanded\s*=\s*false/,
+  'contest schedule list should keep an expanded state for more schedules'
+);
+assert.match(
+  contestJs,
+  /isScheduleExpanded\s*\?\s*sortedSchedules\s*:\s*sortedSchedules\.slice\(0,\s*visibleScheduleLimit\)/,
+  'contest more schedules control should reveal the hidden saved schedules inline'
+);
+assert.match(
+  contestJs,
+  /data-toggle-schedule-list/,
+  'contest more schedules control should toggle the inline saved schedule list'
+);
+assert.match(
+  contestJs,
+  /간략화하기/,
+  'contest expanded saved schedule list should provide a compact action'
+);
+assert.ok(
+  !contestJs.includes('https://calendar.google.com/calendar/u/0/r'),
+  'contest more schedules control should not navigate to Google Calendar'
 );
 assert.match(
   contestJs,
@@ -1206,6 +1508,16 @@ assert.match(
   portfolioCreateHtml,
   /data-shared-nav data-active="portfolio_create"/,
   'portfolio_create should use the shared top navigation mount'
+);
+assert.match(
+  portfolioCreateHtml,
+  /<main class="page-shell portfolio-create-page">/,
+  'portfolio_create should use a compact page shell for the setup screen'
+);
+assert.ok(
+  !portfolioCreateHtml.includes('<h1 class="page-title">포트폴리오 생성</h1>') &&
+    !portfolioCreateHtml.includes('활동 자료와 프로젝트 경험을 바탕으로 제출용 포트폴리오 초안을 생성합니다.'),
+  'portfolio_create should remove the redundant page heading above the setup panel'
 );
 assert.match(
   sharedNavJs,
@@ -1280,6 +1592,11 @@ assert.match(
   'portfolio_create loading progress should use the faster attachment timing'
 );
 assert.match(
+  portfolioCreateCss,
+  /\.portfolio-loading\s*\{[\s\S]*min-height:\s*min\(560px,\s*calc\(100vh - 108px\)\)[\s\S]*align-items:\s*center[\s\S]*justify-items:\s*center/,
+  'portfolio_create loading screen should stay centered in the visible viewport after the compact setup layout'
+);
+assert.match(
   portfolioCreateHtml,
   /class="setup-layout"[\s\S]*class="setup-left"[\s\S]*class="setup-right"/,
   'portfolio_create setup should use the attachment two-column layout'
@@ -1296,8 +1613,40 @@ assert.match(
 );
 assert.match(
   portfolioCreateHtml,
+  /AI 포트폴리오 추천 서비스[\s\S]*AI 포트폴리오 추천 서비스[\s\S]*AI 포트폴리오 추천 서비스[\s\S]*AI 포트폴리오 추천 서비스/,
+  'portfolio_create format previews should show the same source experience across all formats'
+);
+assert.match(
+  portfolioCreateHtml,
+  /PROFILE[\s\S]*ACTIVITIES[\s\S]*CASE STUDY[\s\S]*슬라이드별 발표 흐름[\s\S]*지원동기/,
+  'portfolio_create format previews should distinguish summary, case study, presentation, and resume-cover letter forms'
+);
+assert.ok(
+  !portfolioCreateHtml.includes('aria-label="알림"') && !portfolioCreateHtml.includes('notification'),
+  'portfolio_create format preview update should not add notification UI'
+);
+assert.match(
+  portfolioCreateHtml,
   /id="pfMajorSelect"/,
   'portfolio_create should include the major selector from the attachment'
+);
+assert.match(
+  portfolioCreateHtml,
+  /id="pfPurposeSelect"\s+class="setting-select"[\s\S]*<option>취업 지원용<\/option>[\s\S]*<option>대학원 진학<\/option>/,
+  'portfolio_create should keep the generation purpose select while applying the improved selector style'
+);
+assert.match(
+  portfolioCreateHtml,
+  /id="pfMajorSelect"\s+class="setting-select"[\s\S]*<option value="industrial">산업공학과<\/option>[\s\S]*<option value="computer">컴퓨터공학과<\/option>/,
+  'portfolio_create should keep the major select while applying the improved selector style'
+);
+assert.ok(
+  !portfolioCreateHtml.includes('data-purpose-option') && !portfolioCreateHtml.includes('data-major-option'),
+  'portfolio_create setting selector update should not replace selects with button-card choices'
+);
+assert.ok(
+  !portfolioCreateHtml.includes('aria-label="알림"') && !portfolioCreateHtml.includes('notification'),
+  'portfolio_create setting selector update should not add notification UI'
 );
 assert.match(
   portfolioCreateHtml,
@@ -1361,7 +1710,10 @@ assert.match(
   'portfolio_create should create a PPT download blob'
 );
 for (const cssPattern of [
+  /\.portfolio-create-page\s*\{/,
   /\.setup-layout\s*\{/,
+  /\.setting-select\s*\{/,
+  /\.setting-select:focus\s*\{/,
   /\.format-card-grid\s*\{/,
   /\.format-card\.selected::after\s*\{/,
   /\.ppt-preview-wrap\s*\{/,
@@ -1418,6 +1770,21 @@ assert.match(
 );
 assert.match(
   portfolioManageHtml,
+  /data-action="delete"/,
+  'portfolio_manage should support deleting saved portfolios'
+);
+assert.match(
+  portfolioManageHtml,
+  /포트폴리오를 삭제할까요/,
+  'portfolio_manage should confirm before deleting a portfolio'
+);
+assert.match(
+  portfolioManageHtml,
+  /포트폴리오가 없습니다\./,
+  'portfolio_manage should show a clear empty portfolio message'
+);
+assert.match(
+  portfolioManageHtml,
   /portfolio_viewer\.html\?id=\$\{encodeURIComponent\(portfolio\.id\)\}#viewerContent/,
   'portfolio_manage should open portfolios in portfolio_viewer.html'
 );
@@ -1434,6 +1801,7 @@ for (const cssPattern of [
   /\.portfolio-library-page\s*\{/,
   /\.portfolio-library-card\s*\{/,
   /\.portfolio-library-actions\s+\.like-action\.liked\s*\{/,
+  /\.portfolio-library-actions\s+\.delete-action\s*\{/,
   /\.portfolio-web-viewer\s*\{/,
   /\.portfolio-slide-viewer\s*\{/,
   /\.viewer-control-bar\s*\{/,
