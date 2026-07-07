@@ -15,10 +15,6 @@
     <script src="../js/auth-nav.js"></script>
 
     <div class="layout-main" id="mainLayout">
-      <button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="사이드바 닫기">
-        <span aria-hidden="true"></span>
-      </button>
-
       <aside class="sidebar main-sidebar" id="activitySidebar">
         <div class="sidebar-email">
           <span class="avatar online"></span>
@@ -128,7 +124,6 @@
       inProgress: 'inProgressFolderList',
     };
 
-    const sidebarToggle = document.getElementById('sidebarToggle');
     const sidebarResizeHandle = document.getElementById('sidebarResizeHandle');
     const mainLayout = document.getElementById('mainLayout');
     const profileNeededPanel = document.getElementById('profileNeededPanel');
@@ -212,13 +207,11 @@
     }
 
     function renderFolder(folder) {
-      const totalFiles = getCompletedFileCount(folder);
       return `
         <article class="folder-item drop-folder" data-folder-id="${escapeHtml(folder.id)}">
           <a class="folder-row" href="create.html?folder=${escapeHtml(folder.id)}" aria-label="${escapeHtml(folder.label)} 폴더를 파일 관리에서 열기">
             <span class="mini-folder ${folder.group}" aria-hidden="true"></span>
             <span class="folder-label">${escapeHtml(folder.label)}</span>
-            <span class="folder-count">${totalFiles}</span>
           </a>
         </article>
       `;
@@ -248,15 +241,9 @@
       });
     });
 
-    sidebarToggle.addEventListener('click', () => {
-      const isCollapsed = mainLayout.classList.toggle('sidebar-collapsed');
-      sidebarToggle.setAttribute('aria-label', isCollapsed ? '사이드바 열기' : '사이드바 닫기');
-    });
-
     let sidebarResizeStart = null;
 
     sidebarResizeHandle.addEventListener('pointerdown', (event) => {
-      if (mainLayout.classList.contains('sidebar-collapsed')) return;
       sidebarResizeStart = {
         pointerId: event.pointerId,
         x: event.clientX,
