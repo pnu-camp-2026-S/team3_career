@@ -4,6 +4,38 @@ const path = require('path');
 
 const rootDir = process.cwd();
 const htmlDir = path.join(rootDir, 'html');
+const writeGithubIssueSkillDir = path.join(rootDir, '.codex', 'skills', 'write-github-issue');
+
+assert.ok(
+  fs.existsSync(path.join(writeGithubIssueSkillDir, 'SKILL.md')),
+  'write-github-issue skill should include the required SKILL.md file'
+);
+assert.ok(
+  fs.existsSync(path.join(writeGithubIssueSkillDir, 'agents', 'openai.yaml')),
+  'write-github-issue skill should include UI metadata'
+);
+
+const writeGithubIssueSkill = fs.readFileSync(path.join(writeGithubIssueSkillDir, 'SKILL.md'), 'utf8');
+assert.match(
+  writeGithubIssueSkill,
+  /name:\s*write-github-issue/,
+  'write-github-issue skill should use a valid skill name'
+);
+assert.match(
+  writeGithubIssueSkill,
+  /\.github\/ISSUE_TEMPLATE\/feature_request\.md/,
+  'write-github-issue skill should follow the current feature issue template'
+);
+assert.match(
+  writeGithubIssueSkill,
+  /\.github\/pull_request_template\.md/,
+  'write-github-issue skill should follow the current PR template'
+);
+assert.match(
+  writeGithubIssueSkill,
+  /\[codex\] 영역: 작업 요약 \(#이슈번호\)/,
+  'write-github-issue skill should document the team commit message style'
+);
 
 const linkedHtmlFiles = [
   'contest.html',
