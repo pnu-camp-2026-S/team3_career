@@ -402,6 +402,32 @@ select {
   gap: 12px;
 }
 
+.activity-pagination {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+.pagination-button {
+  min-width: 76px;
+  min-height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.pagination-button:hover,
+.pagination-button.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
 .activity-card {
   border: 1px solid var(--border);
   border-radius: 8px;

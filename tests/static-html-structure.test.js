@@ -838,6 +838,10 @@ assert.ok(
   'contest recommendation script should live in the js directory'
 );
 assert.ok(
+  fs.existsSync(path.join(jsDir, 'activity-recommendation-dataset.js')),
+  'activity recommendation dummy dataset should live in the js directory'
+);
+assert.ok(
   !fs.existsSync(path.join(htmlDir, 'contest.js')),
   'contest recommendation script should not remain in the html directory'
 );
@@ -857,6 +861,56 @@ assert.match(
   contestJs,
   /function\s+getSortedSavedSchedules/,
   'contest schedule should create a date-sorted list before rendering'
+);
+assert.match(
+  contestHtml,
+  /id="activityPagination"/,
+  'contest page should render pagination below the activity list'
+);
+assert.match(
+  contestHtml,
+  /src="\.\.\/js\/activity-recommendation-dataset\.js"[\s\S]*src="\.\.\/js\/contest\.js"/,
+  'contest page should load the activity dataset before the recommendation script'
+);
+assert.match(
+  contestJs,
+  /const\s+activitiesPerPage\s*=\s*20/,
+  'contest activity list should show 20 recommendations per page'
+);
+assert.match(
+  contestJs,
+  /activityRecommendationDataset/,
+  'contest activity list should use the 100 item dummy dataset when available'
+);
+assert.match(
+  contestJs,
+  /function\s+getRecommendationScore/,
+  'contest activity list should calculate recommendation scores before sorting'
+);
+assert.match(
+  contestJs,
+  /function\s+getSortedRecommendedActivities/,
+  'contest activity list should sort all activities by recommendation score'
+);
+assert.match(
+  contestJs,
+  /visibleActivities\s*=\s*filtered\.slice\(startIndex,\s*startIndex\s*\+\s*activitiesPerPage\)/,
+  'contest activity list should render one paged slice at a time'
+);
+assert.match(
+  contestJs,
+  /data-page="\$\{page\}"/,
+  'contest pagination buttons should carry page numbers'
+);
+assert.match(
+  contestCss,
+  /\.activity-pagination/s,
+  'contest stylesheet should lay out activity pagination'
+);
+assert.match(
+  contestCss,
+  /\.pagination-button\.active/s,
+  'contest stylesheet should show the active activity page'
 );
 assert.match(
   contestJs,
