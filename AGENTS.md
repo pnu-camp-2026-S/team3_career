@@ -27,14 +27,15 @@ Myfitfolio는 취업을 준비하는 대학생이 흩어진 활동 자료를 업
 
 ## 4. 현재 기술 스택
 
-- 프론트엔드: HTML, CSS, JavaScript (화면은 `html/`, 공통·화면별 스타일은 `css/`, 공통·화면별 스크립트는 `js/`에 분리해서 둔다)
-- 백엔드: Node.js, Express
-- 인증 보조: `bcryptjs`(비밀번호 해시), `cors`
-- AI API: OpenAI API (`server.js`의 `/api/chat` 엔드포인트, 기본 모델은 `OPENAI_MODEL` 또는 `gpt-4o-mini`)
-- 데이터 저장: 프로토타입은 `localStorage`/`sessionStorage`와 서버 메모리(`usersDB`)를 사용할 수 있고, 마이페이지 최종 데이터는 Firebase 기준으로 설계한다.
+- 앱 프레임워크: Next.js, React
+- 화면 자산: 기존 HTML, CSS, JavaScript를 유지하고 Next.js 라우트에서 렌더링한다.
+- API: Next.js Route Handler
+- AI API: OpenAI API
+- 인증 보조: `bcryptjs`
+- 데이터 저장: 전환 단계에서는 `localStorage`/`sessionStorage`를 유지하고, 이후 Supabase 기준으로 설계한다.
 - 환경 변수: `key.env`와 `dotenv`
 - 테스트: Node.js 기본 `assert` 기반 정적 구조 테스트
-- 배포 기준: GitHub Pages에서 저장소 루트를 공개 루트로 사용하고, 루트 `index.html`/`main.html`이 `html/` 화면으로 리다이렉트한다
+- 배포 예정: Vercel
 
 ## 5. 실행 및 검증 명령
 
@@ -42,11 +43,12 @@ Myfitfolio는 취업을 준비하는 대학생이 흩어진 활동 자료를 업
 
 ```bash
 npm install
-npm start
+npm run dev
+npm run build
 npm test
 ```
 
-로컬 서버 주소:
+로컬 개발 서버 주소:
 
 ```text
 http://localhost:3000/
@@ -58,19 +60,20 @@ http://localhost:3000/
 
 ```text
 .
+├─ app/                  # Next.js App Router, API Route, 정적 자산 라우트
+├─ lib/                  # Next 전환 유틸
 ├─ docs/                 # 기능별 프로젝트 기준 문서
-├─ html/                 # 실제 서비스 화면
-├─ css/                  # 공통(common.css) 및 화면별 스타일
-├─ js/                   # 공통 내비게이션(shared-nav.js, auth-nav.js) 및 화면별 스크립트
+├─ html/                 # 현재 서비스 화면의 원본 HTML
+├─ css/                  # 공통 및 화면별 CSS
+├─ js/                   # 공통 및 화면별 브라우저 JavaScript
 ├─ tests/                # 정적 구조 테스트
-├─ server.js             # Express 서버 (정적 서빙 + /api/signup, /api/chat)
 ├─ package.json
 ├─ README.md
-└─ AGENTS.md             # 최상위 핵심 기준과 문서 색인
+└─ AGENTS.md
 ```
 
-`html/`의 각 화면(index, login, signup, main, mypage, create, portfolio_create, portfolio_manage, contest, withdraw)이 실제 기준이며, 스타일은 `../css/`, 스크립트는 `../js/`를 참조한다.  
-루트의 `index.html`, `main.html`은 GitHub Pages 진입을 위해 `html/` 화면으로 이동시키는 리다이렉트 보조 파일이다.
+Next.js 전환 단계에서는 기존 화면과 동작 보존을 우선한다.  
+DB/Supabase 연동은 전환 완료 이후 페이지별 이슈와 PR로 진행한다.
 
 ## 7. 상세 기준 문서
 
@@ -99,23 +102,22 @@ http://localhost:3000/
 
 ## 9. 코드 작업 핵심 규칙
 
-1. 기존 파일 구조와 화면 이름을 우선 유지한다.
-2. 활성 HTML 화면은 `html/`, 스타일은 `css/`, 스크립트는 `js/` 폴더에 둔다.
-3. 공통 스타일은 `css/common.css`, 공통 내비게이션은 `js/shared-nav.js`·`js/auth-nav.js`를 사용한다.
-4. 기능별 전용 CSS/JS가 이미 있으면 해당 파일을 확장한다.
-5. 화면 이동 링크는 현재 파일명 기준으로 깨지지 않게 수정한다.
-6. 새 기능을 추가하면 관련 정적 구조 테스트도 함께 갱신한다.
-7. UI 상태는 임시 구현 단계에서 `localStorage`를 사용할 수 있지만, 실제 서비스 기준에서는 백엔드 저장을 고려한다.
-8. 사용자가 승인하지 않은 AI 결과를 최종 데이터처럼 저장하지 않는다.
+1. 기존 화면 이름과 사용자 흐름을 우선 유지한다.
+2. Next.js 전환 단계에서는 기존 HTML/CSS/JS와 localStorage 기반 동작을 유지한다.
+3. 활성 HTML 화면은 `html/`, 스타일은 `css/`, 브라우저 스크립트는 `js/`에 유지한다.
+4. Next.js 라우팅과 API는 `app/`에서 담당한다.
+5. 새 기능을 추가하면 관련 정적 구조 테스트도 함께 갱신한다.
+6. UI 상태는 임시 구현 단계에서 `localStorage`를 사용할 수 있지만, 실제 서비스 기준에서는 Supabase 저장을 고려한다.
+7. 사용자가 승인하지 않은 AI 결과를 최종 데이터처럼 저장하지 않는다.
 
 ## 10. 작업 완료 전 확인 목록
 
 - `npm test`가 통과하는가?
+- `npm run build`가 통과하는가?
 - 새 화면 문구가 한국어인가?
 - 개인정보나 API 키가 노출되지 않았는가?
 - 위키의 핵심 원칙인 근거 기반, 사용자 승인 기반, 직무 맞춤 기준을 지켰는가?
 - 포트폴리오 생성 또는 추천 기능에서 추천 이유와 근거가 보이는가?
 - 파일 순서, 상태, 변경 이력이 저장 또는 저장 가능 구조로 반영되었는가?
 - 삭제된 파일이 휴지통에서 확인, 복구, 영구 삭제 가능한가?
-- GitHub Pages 기준으로 저장소 루트 배포와 루트 `index.html`/`main.html` 리다이렉트가 깨지지 않는가?
-- 화면이 `../css/`, `../js/` 경로로 스타일과 스크립트를 올바르게 참조하는가?
+- DB/Supabase 연동이 필요한 기능을 Next 전환 PR에 섞지 않았는가?
