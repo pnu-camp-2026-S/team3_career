@@ -198,6 +198,7 @@ const tabs = Array.from(document.querySelectorAll('.tab'));
 const keywordInput = document.getElementById('keyword-search');
 const industryFilter = document.getElementById('industry-filter');
 const levelFilter = document.getElementById('level-filter');
+const recommendCount = document.getElementById('recommendCount');
 const calendarMonthLabel = document.getElementById('calendarMonth');
 const calendarDays = document.getElementById('calendarDays');
 const prevCalendarMonth = document.getElementById('prevCalendarMonth');
@@ -209,7 +210,9 @@ let activeDetailElement = null;
 let visibleCalendarYear = 2026;
 let visibleCalendarMonth = 6;
 let focusedScheduleDate = null;
+let isScheduleExpanded = false;
 const visibleScheduleLimit = 5;
+const recommendationMatchThreshold = 85;
 const savedSchedules = [];
 
 function clearExpandedDetail() {
@@ -245,6 +248,17 @@ function getFilteredActivities() {
 
     return matchesTab && matchesKeyword && matchesIndustry && matchesLevel;
   });
+}
+
+function getMatchScore(item) {
+  return Number.parseInt(item.match, 10) || 0;
+}
+
+function renderRecommendationCount() {
+  if (!recommendCount) return;
+
+  const count = activities.filter((item) => getMatchScore(item) >= recommendationMatchThreshold).length;
+  recommendCount.textContent = `추천 활동 ${count}개`;
 }
 
 function isActivitySaved(id) {
@@ -598,6 +612,7 @@ function toggleBookmarkSave(id) {
 
 function renderSchedule() {
   if (!savedSchedules.length) {
+    isScheduleExpanded = false;
     scheduleList.innerHTML = `
       <div class="schedule-item">
         <div class="schedule-date">-</div>
@@ -615,15 +630,20 @@ function renderSchedule() {
   }
 
   const sortedSchedules = getSortedSavedSchedules();
-  const visibleSchedules = sortedSchedules.slice(0, visibleScheduleLimit);
-  const moreScheduleLink =
+  const hasMoreSchedules = savedSchedules.length > visibleScheduleLimit;
+  const visibleSchedules = isScheduleExpanded ? sortedSchedules : sortedSchedules.slice(0, visibleScheduleLimit);
+  const moreScheduleButton =
     savedSchedules.length > visibleScheduleLimit
       ? `
-        <a class="schedule-more" href="https://calendar.google.com/calendar/u/0/r" target="_blank" rel="noopener noreferrer">
-          더보기
-        </a>
+        <button class="schedule-more" type="button" data-toggle-schedule-list>
+          ${isScheduleExpanded ? '간략화하기' : `더보기 ${savedSchedules.length - visibleScheduleLimit}개`}
+        </button>
       `
       : '';
+
+  if (!hasMoreSchedules) {
+    isScheduleExpanded = false;
+  }
 
   scheduleList.innerHTML = `${visibleSchedules
     .map(
@@ -638,7 +658,7 @@ function renderSchedule() {
         </div>
       `
     )
-    .join('')}${moreScheduleLink}`;
+    .join('')}${moreScheduleButton}`;
 
   renderCalendarHighlight();
 }
@@ -677,6 +697,13 @@ activityList.addEventListener('click', (event) => {
 });
 
 scheduleList.addEventListener('click', (event) => {
+  const moreButton = event.target.closest('[data-toggle-schedule-list]');
+  if (moreButton) {
+    isScheduleExpanded = !isScheduleExpanded;
+    renderSchedule();
+    return;
+  }
+
   const viewButton = event.target.closest('.schedule-view');
   if (!viewButton) return;
 
@@ -688,4 +715,5 @@ nextCalendarMonth.addEventListener('click', () => moveCalendarMonth(1));
 
 renderCalendarMonth();
 renderSchedule();
+renderRecommendationCount();
 renderActivities();
