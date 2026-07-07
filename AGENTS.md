@@ -27,13 +27,14 @@ Myfitfolio는 취업을 준비하는 대학생이 흩어진 활동 자료를 업
 
 ## 4. 현재 기술 스택
 
-- 프론트엔드: HTML, CSS, JavaScript
+- 프론트엔드: HTML, CSS, JavaScript (화면은 `html/`, 공통·화면별 스타일은 `css/`, 공통·화면별 스크립트는 `js/`에 분리해서 둔다)
 - 백엔드: Node.js, Express
-- AI API: OpenAI API
-- 데이터 저장: 프로토타입은 `localStorage`를 사용할 수 있고, 마이페이지 최종 데이터는 Firebase 기준으로 설계한다.
+- 인증 보조: `bcryptjs`(비밀번호 해시), `cors`
+- AI API: OpenAI API (`server.js`의 `/api/chat` 엔드포인트, 기본 모델은 `OPENAI_MODEL` 또는 `gpt-4o-mini`)
+- 데이터 저장: 프로토타입은 `localStorage`/`sessionStorage`와 서버 메모리(`usersDB`)를 사용할 수 있고, 마이페이지 최종 데이터는 Firebase 기준으로 설계한다.
 - 환경 변수: `key.env`와 `dotenv`
 - 테스트: Node.js 기본 `assert` 기반 정적 구조 테스트
-- 배포 기준: GitHub Pages에서 `/html` 폴더를 공개 루트로 사용
+- 배포 기준: GitHub Pages에서 저장소 루트를 공개 루트로 사용하고, 루트 `index.html`/`main.html`이 `html/` 화면으로 리다이렉트한다
 
 ## 5. 실행 및 검증 명령
 
@@ -59,15 +60,17 @@ http://localhost:3000/
 .
 ├─ docs/                 # 기능별 프로젝트 기준 문서
 ├─ html/                 # 실제 서비스 화면
+├─ css/                  # 공통(common.css) 및 화면별 스타일
+├─ js/                   # 공통 내비게이션(shared-nav.js, auth-nav.js) 및 화면별 스크립트
 ├─ tests/                # 정적 구조 테스트
-├─ server.js             # Express 서버
+├─ server.js             # Express 서버 (정적 서빙 + /api/signup, /api/chat)
 ├─ package.json
 ├─ README.md
 └─ AGENTS.md             # 최상위 핵심 기준과 문서 색인
 ```
 
-`html/index.html`과 `html/main.html`이 실제 화면 기준이다.  
-루트의 `index.html`, `main.html`은 GitHub Pages 호환을 위한 보조 파일로 유지한다.
+`html/`의 각 화면(index, login, signup, main, mypage, create, portfolio_create, portfolio_manage, contest, withdraw)이 실제 기준이며, 스타일은 `../css/`, 스크립트는 `../js/`를 참조한다.  
+루트의 `index.html`, `main.html`은 GitHub Pages 진입을 위해 `html/` 화면으로 이동시키는 리다이렉트 보조 파일이다.
 
 ## 7. 상세 기준 문서
 
@@ -97,8 +100,8 @@ http://localhost:3000/
 ## 9. 코드 작업 핵심 규칙
 
 1. 기존 파일 구조와 화면 이름을 우선 유지한다.
-2. 활성 HTML 화면은 `html/` 폴더에 둔다.
-3. 공통 스타일은 가능한 `html/fitfolio.css`를 사용한다.
+2. 활성 HTML 화면은 `html/`, 스타일은 `css/`, 스크립트는 `js/` 폴더에 둔다.
+3. 공통 스타일은 `css/common.css`, 공통 내비게이션은 `js/shared-nav.js`·`js/auth-nav.js`를 사용한다.
 4. 기능별 전용 CSS/JS가 이미 있으면 해당 파일을 확장한다.
 5. 화면 이동 링크는 현재 파일명 기준으로 깨지지 않게 수정한다.
 6. 새 기능을 추가하면 관련 정적 구조 테스트도 함께 갱신한다.
@@ -114,4 +117,5 @@ http://localhost:3000/
 - 포트폴리오 생성 또는 추천 기능에서 추천 이유와 근거가 보이는가?
 - 파일 순서, 상태, 변경 이력이 저장 또는 저장 가능 구조로 반영되었는가?
 - 삭제된 파일이 휴지통에서 확인, 복구, 영구 삭제 가능한가?
-- GitHub Pages 기준으로 `html/` 폴더 배포가 깨지지 않는가?
+- GitHub Pages 기준으로 저장소 루트 배포와 루트 `index.html`/`main.html` 리다이렉트가 깨지지 않는가?
+- 화면이 `../css/`, `../js/` 경로로 스타일과 스크립트를 올바르게 참조하는가?
