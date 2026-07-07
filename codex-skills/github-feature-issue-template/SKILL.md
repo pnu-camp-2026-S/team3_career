@@ -14,8 +14,9 @@ Use this skill when preparing a GitHub issue for a new feature or improvement.
 3. Describe expected behavior as a clear numbered flow.
 4. Include UI, data, mobile, and test considerations when relevant.
 5. Keep the one-line summary short enough to be used as an issue title or quick scan line.
-6. Use `$github-issue-labeling` when registering the issue and attach 3-4 labels.
-7. If a field is unknown, write `확인 필요` or leave the placeholder for the user to fill.
+6. Use `$github-issue-labeling` when registering the issue and attach the work-type labels.
+7. Use `$github-issue-page-labeling` when registering the issue and attach exactly one `part_*` page label.
+8. If a field is unknown, write `확인 필요` or leave the placeholder for the user to fill.
 
 ## Template
 

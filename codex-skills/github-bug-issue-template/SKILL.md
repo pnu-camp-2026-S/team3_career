@@ -13,8 +13,9 @@ Use this skill when preparing a GitHub issue for a bug, regression, or unexpecte
 2. Prefer reproducible steps over broad descriptions.
 3. Include environment details when known; write `확인 필요` for missing environment fields.
 4. Include screenshots, logs, routes, files, or console output when available.
-5. Use `$github-issue-labeling` when registering the issue and attach 3-4 labels.
-6. Avoid proposing a fix unless the issue specifically needs implementation notes.
+5. Use `$github-issue-labeling` when registering the issue and attach the work-type labels.
+6. Use `$github-issue-page-labeling` when registering the issue and attach exactly one `part_*` page label.
+7. Avoid proposing a fix unless the issue specifically needs implementation notes.
 
 ## Template
 

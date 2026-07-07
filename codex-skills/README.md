@@ -8,6 +8,7 @@ FitFolio 팀에서 함께 사용하는 Codex 개인 스킬 모음입니다.
 - `github-feature-issue-template`: 기능 이슈 템플릿
 - `github-bug-issue-template`: 버그 이슈 템플릿
 - `github-issue-labeling`: 이슈 라벨 선택 규칙
+- `github-issue-page-labeling`: 서비스 페이지 라벨 선택 규칙
 
 ## 설치 방법
 

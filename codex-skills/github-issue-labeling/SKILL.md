@@ -19,7 +19,7 @@ Optional label:
 
 - Add `ai` only when the issue is directly related to AI features, AI integration, AI-generated output, prompt behavior, model usage, recommendations powered by AI, or AI-specific data flow.
 
-The final label count should usually be 3. Use 4 only when `ai` applies.
+The final work-type label count should usually be 3. Use 4 only when `ai` applies. Select the separate service page label with `$github-issue-page-labeling`.
 
 ## Selection Guide
 

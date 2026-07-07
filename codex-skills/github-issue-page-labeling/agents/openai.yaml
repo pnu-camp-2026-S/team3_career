@@ -1,0 +1,4 @@
+interface:
+  display_name: "GitHub Issue Page Labeling"
+  short_description: "FitFolio service page label rules"
+  default_prompt: "Use $github-issue-page-labeling to choose the service page label for a FitFolio GitHub issue."
