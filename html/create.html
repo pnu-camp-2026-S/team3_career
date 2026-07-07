@@ -10,6 +10,7 @@
 <body>
   <div class="app-shell">
     <div data-shared-nav data-active="create"></div>
+    <script src="../js/folder-store.js"></script>
     <script src="../js/shared-nav.js"></script>
     <script src="../js/auth-nav.js"></script>
 
@@ -27,27 +28,18 @@
         </div>
       </section>
 
-      <section class="file-dashboard" aria-label="파일 관리 요약">
-        <article class="file-stat-card">
-          <span class="stat-label">전체 자료</span>
-          <strong id="totalFileCount">0</strong>
-          <small>모든 프로젝트 폴더 합계</small>
-        </article>
-        <article class="file-stat-card">
-          <span class="stat-label">분석 완료</span>
-          <strong id="completedFileCount">0</strong>
-          <small>AI 요약 또는 분석 완료 자료</small>
-        </article>
-        <article class="file-stat-card">
-          <span class="stat-label">선택된 폴더</span>
-          <strong id="selectedFolderName">개인 프로젝트</strong>
-          <small id="selectedFolderGroup">완료된 활동 폴더</small>
-        </article>
-        <article class="file-stat-card">
-          <span class="stat-label">최근 변경 상태</span>
-          <strong id="latestChangeState">대기</strong>
-          <small>클릭하면 상태가 이곳에 반영됩니다.</small>
-        </article>
+      <section class="ai-status-summary" aria-label="AI 자료 상태 요약">
+        <div class="ai-status-icon" aria-hidden="true">AI</div>
+        <div class="ai-status-text">
+          <p class="ai-status-headline">
+            전체 <strong id="totalFileCount">0</strong>개 자료 중 <strong id="completedFileCount">0</strong>개 분석 완료
+          </p>
+          <p class="ai-status-detail">
+            선택된 폴더 <strong id="selectedFolderName">개인 프로젝트</strong>
+            <span id="selectedFolderGroup">(완료된 활동 폴더)</span>
+            · 최근 변경 <strong id="latestChangeState">대기</strong>
+          </p>
+        </div>
       </section>
 
       <section class="file-manager-layout">
@@ -98,22 +90,6 @@
             <div><strong>우선순위</strong><span>목록 순서대로 분석</span></div>
           </div>
         </section>
-
-        <section class="panel">
-          <div class="panel-head">
-            <div>
-              <h2 class="panel-title">AI 대화창</h2>
-              <p class="panel-note">자료 정리 방향을 묻는 클릭 확인용 대화 영역입니다.</p>
-            </div>
-          </div>
-          <div class="manager-chat-log" id="chatLog">
-            <div class="manager-bubble ai">선택한 폴더의 자료를 기준으로 파일 요약, 누락 정보, 포트폴리오 연결 방향을 정리할 수 있어요.</div>
-          </div>
-          <div class="manager-chat-input">
-            <input id="chatInput" type="text" placeholder="예: 이 자료를 어떻게 정리하면 좋아?" />
-            <button class="primary-button compact-button" type="button" data-action="send-chat">전송</button>
-          </div>
-        </section>
       </section>
     </main>
   </div>
@@ -131,43 +107,31 @@
   </div>
 
   <script>
-    const folderTypes = [
-      { key: 'personal', label: '개인 프로젝트' },
-      { key: 'team', label: '팀 프로젝트' },
-      { key: 'contest', label: '공모전' },
-      { key: 'certificate', label: '자격증' },
-      { key: 'education', label: '교육' },
-      { key: 'volunteer', label: '봉사' },
-    ];
-
-    const folderGroups = [
-      { key: 'completed', label: '완료된 활동 폴더' },
-      { key: 'ready', label: '준비된 활동 폴더' },
-    ];
-
-    const folders = {};
-    const files = {};
     let selectedFolderId = new URLSearchParams(window.location.search).get('folder') || 'completed-personal';
     let nextFileId = 1;
     let toastTimer = null;
 
-    folderGroups.forEach((group) => {
-      folderTypes.forEach((type) => {
-        const folderId = `${group.key}-${type.key}`;
-        folders[folderId] = { id: folderId, group: group.key, label: type.label };
-        files[folderId] = [];
-      });
-    });
+    let folders = FolderStore.loadFolders();
 
     if (!folders[selectedFolderId]) selectedFolderId = 'completed-personal';
 
-    addSeedFile('completed-personal', '서비스_기획서.pdf', 'PDF', '분석완료');
-    addSeedFile('completed-team', '팀프로젝트_회의록.md', 'MD', '작성완료');
-    addSeedFile('ready-contest', '공모전_발표자료.pptx', 'PPT', '분석대기');
-    addSeedFile('ready-education', '교육과정_수료증.png', 'IMG', '분석대기');
-
     function addSeedFile(folderId, name, type, status) {
-      files[folderId].push({ id: `file-${nextFileId++}`, name, type, status });
+      folders[folderId].files.push({ id: `file-${nextFileId++}`, name, type, status });
+    }
+
+    function seedFilesIfEmpty() {
+      const hasAnyFiles = Object.values(folders).some((folder) => folder.files.length > 0);
+      if (hasAnyFiles) return;
+      addSeedFile('completed-personal', '서비스_기획서.pdf', 'PDF', '분석완료');
+      addSeedFile('completed-team', '팀프로젝트_회의록.md', 'MD', '작성완료');
+      addSeedFile('inProgress-contest', '공모전_발표자료.pptx', 'PPT', '분석대기');
+      addSeedFile('inProgress-education', '교육과정_수료증.png', 'IMG', '분석대기');
+    }
+
+    seedFilesIfEmpty();
+
+    function persistFolders() {
+      FolderStore.saveFolders(folders);
     }
 
     function render() {
@@ -178,17 +142,17 @@
 
     function renderFolderGroups() {
       const container = document.getElementById('fileManagerFolderGroups');
-      container.innerHTML = folderGroups.map((group) => `
+      container.innerHTML = FolderStore.FOLDER_GROUPS.map((group) => `
         <section class="manager-folder-section">
           <h3>${group.label}</h3>
           <div class="manager-folder-list">
-            ${folderTypes.map((type) => {
+            ${FolderStore.FOLDER_TYPES.map((type) => {
               const folderId = `${group.key}-${type.key}`;
               return `
                 <button class="manager-folder-item ${folderId === selectedFolderId ? 'active' : ''}" type="button" data-folder-id="${folderId}">
                   <span class="mini-folder" aria-hidden="true"></span>
                   <span>${type.label}</span>
-                  <strong>${files[folderId].length}</strong>
+                  <strong>${folders[folderId].files.length}</strong>
                 </button>
               `;
             }).join('')}
@@ -199,7 +163,7 @@
 
     function renderFilePanel() {
       const selectedFolder = folders[selectedFolderId];
-      const selectedFiles = files[selectedFolderId];
+      const selectedFiles = selectedFolder.files;
       document.getElementById('editablePanelTitle').textContent = `${selectedFolder.label} 자료`;
       document.getElementById('editablePanelDesc').textContent = `${getGroupLabel(selectedFolder.group)}의 ${selectedFolder.label} 폴더를 수정하는 클릭 확인용 패널입니다.`;
       document.getElementById('managedFileList').innerHTML = selectedFiles.length
@@ -222,7 +186,7 @@
     }
 
     function updateDashboard() {
-      const allFiles = Object.values(files).flat();
+      const allFiles = Object.values(folders).flatMap((folder) => folder.files);
       const completedFiles = allFiles.filter((file) => file.status === '분석완료' || file.status === '작성완료');
       const selectedFolder = folders[selectedFolderId];
       document.getElementById('totalFileCount').textContent = allFiles.length;
@@ -236,19 +200,15 @@
 
     function addFileFromName(fileName) {
       const type = (fileName.split('.').pop() || 'FILE').toUpperCase();
-      files[selectedFolderId].push({ id: `file-${nextFileId++}`, name: fileName, type, status: '분석대기' });
+      folders[selectedFolderId].files.push({ id: `file-${nextFileId++}`, name: fileName, type, status: '분석대기' });
+      persistFolders();
       setLatestChange('자료 추가');
       render();
       showToast('선택한 폴더에 자료가 추가되었습니다.');
     }
 
-    function addFakeFile() {
-      const samples = ['활동_증빙자료.pdf', '결과_이미지.png', '팀회의록.md', '발표_초안.pptx'];
-      addFileFromName(samples[nextFileId % samples.length]);
-    }
-
     function getSelectedFile(fileId) {
-      return files[selectedFolderId].find((file) => file.id === fileId);
+      return folders[selectedFolderId].files.find((file) => file.id === fileId);
     }
 
     function previewFile(fileId) {
@@ -271,14 +231,16 @@
       document.getElementById('analysisStatus').className = 'status-pill done';
       document.getElementById('analysisMessage').textContent = `${file.name} 파일의 AI 요약이 완료된 것처럼 표시했습니다.`;
       document.getElementById('analysisProgress').style.width = '72%';
+      persistFolders();
       setLatestChange('AI 요약 완료');
       render();
       showToast('AI 요약 상태로 변경했습니다.');
     }
 
     function deleteFile(fileId) {
-      const targetFiles = files[selectedFolderId];
-      files[selectedFolderId] = targetFiles.filter((file) => file.id !== fileId);
+      const folder = folders[selectedFolderId];
+      folder.files = folder.files.filter((file) => file.id !== fileId);
+      persistFolders();
       setLatestChange('자료 삭제');
       render();
       showToast('자료가 목록에서 삭제되었습니다.');
@@ -314,8 +276,9 @@
     }
 
     function createMdFile() {
-      files[selectedFolderId].push({ id: `file-${nextFileId++}`, name: 'ai_activity_summary.md', type: 'MD', status: '작성완료' });
+      folders[selectedFolderId].files.push({ id: `file-${nextFileId++}`, name: 'ai_activity_summary.md', type: 'MD', status: '작성완료' });
       hideModal();
+      persistFolders();
       setLatestChange('AI 생성 md 추가');
       render();
       showToast('AI 생성 md 파일이 추가되었습니다.');
@@ -324,17 +287,6 @@
     function createFolder() {
       showToast('프로토타입에서는 기존 폴더 구조 안에서 관리합니다.');
       setLatestChange('폴더 추가 클릭');
-    }
-
-    function sendChat() {
-      const input = document.getElementById('chatInput');
-      const text = input.value.trim();
-      if (!text) return;
-      const chatLog = document.getElementById('chatLog');
-      chatLog.insertAdjacentHTML('beforeend', `<div class="manager-bubble user">${escapeHtml(text)}</div>`);
-      chatLog.insertAdjacentHTML('beforeend', '<div class="manager-bubble ai">좋아요. 이 요청은 summary.md와 index.json에 반영되는 흐름으로 연결할 수 있습니다.</div>');
-      input.value = '';
-      chatLog.scrollTop = chatLog.scrollHeight;
     }
 
     function setLatestChange(text) {
@@ -360,7 +312,7 @@
     }
 
     function getGroupLabel(groupKey) {
-      return folderGroups.find((group) => group.key === groupKey)?.label || '활동 폴더';
+      return FolderStore.FOLDER_GROUPS.find((group) => group.key === groupKey)?.label || '활동 폴더';
     }
 
     function getStatusClass(status) {
@@ -405,7 +357,6 @@
       if (action === 'make-md') openMdModal();
       if (action === 'create-md-file') createMdFile();
       if (action === 'create-folder') createFolder();
-      if (action === 'send-chat') sendChat();
       if (action === 'close-modal') hideModal();
     });
 
@@ -414,10 +365,6 @@
       if (selectedFiles.length === 0) return;
       selectedFiles.forEach((file) => addFileFromName(file.name));
       event.target.value = '';
-    });
-
-    document.getElementById('chatInput').addEventListener('keydown', (event) => {
-      if (event.key === 'Enter') sendChat();
     });
 
     document.getElementById('modalBackdrop').addEventListener('click', (event) => {

@@ -21,8 +21,7 @@
 
 .file-manager-actions,
 .panel-head,
-.manager-file-actions,
-.manager-chat-input {
+.manager-file-actions {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -33,35 +32,54 @@
   justify-content: space-between;
 }
 
-.file-dashboard {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.file-stat-card {
-  min-height: 132px;
-  padding: 22px;
+.ai-status-summary {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 20px 24px;
   border: 1px solid #e7eaf3;
   border-radius: 8px;
   background: #fff;
   box-shadow: var(--shadow);
 }
 
-.file-stat-card strong {
-  display: block;
-  margin: 8px 0 6px;
-  color: #11182f;
-  font-size: 30px;
-  line-height: 1.08;
-  letter-spacing: -1px;
+.ai-status-icon {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: #eef2ff;
+  color: var(--brand);
+  font-size: 13px;
+  font-weight: 900;
 }
 
-.file-stat-card small,
+.ai-status-text {
+  min-width: 0;
+}
+
+.ai-status-headline {
+  margin: 0 0 4px;
+  color: #11182f;
+  font-size: 16px;
+  font-weight: 850;
+}
+
+.ai-status-headline strong {
+  color: var(--brand);
+}
+
+.ai-status-detail,
 .panel-note {
   color: var(--muted);
   font-size: 13px;
   line-height: 1.5;
+}
+
+.ai-status-detail {
+  margin: 0;
 }
 
 .file-manager-layout {
@@ -76,7 +94,7 @@
 }
 
 .secondary-layout {
-  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.72fr);
+  grid-template-columns: 1fr;
 }
 
 .folder-overview-panel,
@@ -377,40 +395,6 @@
   line-height: 1.5;
 }
 
-.manager-chat-log {
-  height: 230px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  overflow-y: auto;
-  padding: 4px 4px 10px;
-}
-
-.manager-bubble {
-  max-width: 88%;
-  padding: 12px 14px;
-  border-radius: 16px;
-  color: #4c556c;
-  background: #f2f4ff;
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.manager-bubble.user {
-  margin-left: auto;
-  color: #fff;
-  background: var(--brand);
-}
-
-.manager-chat-input input {
-  flex: 1;
-  min-width: 0;
-  height: 42px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 0 14px;
-}
-
 .manager-toast {
   position: fixed;
   right: 24px;
@@ -468,7 +452,6 @@
     flex-direction: column;
   }
 
-  .file-dashboard,
   .file-manager-layout,
   .secondary-layout {
     grid-template-columns: 1fr;
@@ -494,9 +477,13 @@
     grid-template-columns: 1fr;
   }
 
-  .file-manager-actions,
-  .manager-chat-input {
+  .file-manager-actions {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .ai-status-summary {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
