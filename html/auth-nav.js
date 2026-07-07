@@ -34,7 +34,7 @@
     document.querySelectorAll('[data-logout]').forEach((button) => {
       button.addEventListener('click', () => {
         clearAccountState();
-        window.location.href = 'main.html';
+        window.location.href = 'login.html';
       });
     });
 

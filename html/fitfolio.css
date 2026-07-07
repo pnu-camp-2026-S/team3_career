@@ -1475,6 +1475,44 @@ button {
   height: 40px;
 }
 
+.account-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px;
+  border: 1px solid var(--soft-line);
+  border-radius: 8px;
+  background: #fbfcff;
+}
+
+.account-card h3 {
+  margin: 0 0 8px;
+  color: #17203a;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.account-card p {
+  margin: 0;
+  color: #697586;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.account-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.account-actions .outline-button,
+.account-actions .danger-button {
+  min-width: 104px;
+  min-height: 40px;
+}
+
 .profile-readonly .form-field input:disabled,
 .profile-readonly .form-field select:disabled,
 .profile-readonly .date-trigger:disabled,
@@ -1778,6 +1816,20 @@ button {
 
   .mypage {
     padding: 24px 16px;
+  }
+
+  .account-card {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .account-actions {
+    justify-content: stretch;
+  }
+
+  .account-actions .outline-button,
+  .account-actions .danger-button {
+    flex: 1;
   }
 
   .anchor-menu {
