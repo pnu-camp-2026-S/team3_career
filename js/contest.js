@@ -227,14 +227,14 @@ function getDistributedMatchScore(index, total) {
   const bands = getScoreBandCounts(total);
 
   if (index < bands.high) {
-    return interpolateScore(96, 85, index, bands.high);
+    return interpolateScore(96, 75, index, bands.high);
   }
 
   if (index < bands.high + bands.middle) {
-    return interpolateScore(84, 50, index - bands.high, bands.middle);
+    return interpolateScore(74, 40, index - bands.high, bands.middle);
   }
 
-  return interpolateScore(49, 12, index - bands.high - bands.middle, bands.low);
+  return interpolateScore(40, 12, index - bands.high - bands.middle, bands.low);
 }
 
 function formatDateFromDeadlineDays(deadlineDays) {

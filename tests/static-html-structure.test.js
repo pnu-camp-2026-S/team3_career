@@ -904,7 +904,7 @@ assert.match(
 );
 assert.match(
   contestJs,
-  /return interpolateScore\(96,\s*85,[\s\S]*return interpolateScore\(84,\s*50,[\s\S]*return interpolateScore\(49,\s*12,/,
+  /return interpolateScore\(96,\s*75,[\s\S]*return interpolateScore\(74,\s*40,[\s\S]*return interpolateScore\(40,\s*12,/,
   'contest displayed match scores should use lower high, middle, and low score ranges'
 );
 assert.match(
