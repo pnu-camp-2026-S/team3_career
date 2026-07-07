@@ -2,9 +2,14 @@
   display: none !important;
 }
 
+.portfolio-create-page {
+  padding-top: 18px;
+  padding-bottom: 18px;
+}
+
 .portfolio-studio {
   display: grid;
-  gap: 20px;
+  gap: 14px;
 }
 
 .portfolio-setup,
@@ -17,24 +22,24 @@
 }
 
 .portfolio-setup {
-  padding: 24px;
+  padding: 20px 24px;
 }
 
 .portfolio-setup .page-subtitle {
-  margin-bottom: 22px;
+  margin: 8px 0 16px;
 }
 
 .setup-layout {
   display: grid;
   grid-template-columns: minmax(420px, 1.35fr) minmax(320px, 0.75fr);
-  gap: 16px;
+  gap: 14px;
   align-items: center;
 }
 
 .setup-left,
 .setup-right {
   display: grid;
-  gap: 20px;
+  gap: 14px;
   min-width: 0;
 }
 
@@ -48,6 +53,7 @@
 
 .setup-left .form-actions .primary-button {
   width: 100%;
+  min-height: 44px;
 }
 
 .setup-right {
@@ -56,7 +62,7 @@
 
 .setup-right .form-row {
   grid-template-columns: 1fr;
-  gap: 12px;
+  gap: 10px;
   margin-top: 0 !important;
 }
 
@@ -65,7 +71,7 @@
 }
 
 .setting-select {
-  min-height: 48px;
+  min-height: 44px;
   border: 1px solid #d7deee;
   border-radius: 8px;
   padding: 0 44px 0 14px;
@@ -76,8 +82,8 @@
     linear-gradient(135deg, #5965e8 50%, transparent 50%),
     linear-gradient(180deg, #f7f9ff, #fff);
   background-position:
-    calc(100% - 23px) 21px,
-    calc(100% - 17px) 21px,
+    calc(100% - 23px) 19px,
+    calc(100% - 17px) 19px,
     0 0;
   background-size: 6px 6px, 6px 6px, 100% 100%;
   background-repeat: no-repeat;
@@ -103,8 +109,8 @@
 .format-card-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(160px, 1fr));
-  gap: 14px;
-  margin-top: 10px;
+  gap: 12px;
+  margin-top: 8px;
 }
 
 .setup-left .format-card-grid {
@@ -114,10 +120,10 @@
 .format-card {
   position: relative;
   display: grid;
-  gap: 12px;
+  gap: 9px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  padding: 12px;
+  padding: 10px;
   background: #fff;
   text-align: left;
   transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
@@ -144,7 +150,7 @@
 }
 
 .format-visual {
-  height: 178px;
+  height: 144px;
   overflow: hidden;
   border: 1px solid #e3e8f5;
   border-radius: 8px;
@@ -153,27 +159,27 @@
 
 .format-visual.onepage {
   display: grid;
-  gap: 10px;
-  padding: 12px;
+  gap: 8px;
+  padding: 10px;
   background: #f7f8fa;
 }
 
 .format-visual.detail {
   display: grid;
-  gap: 9px;
-  padding: 12px;
+  gap: 7px;
+  padding: 10px;
   background: #fbfcff;
 }
 
 .format-visual.ppt {
   display: grid;
   align-items: center;
-  padding: 12px;
+  padding: 10px;
   background: #f8faff;
 }
 
 .format-visual.coverletter {
-  padding: 12px;
+  padding: 10px;
   background: #f7f8fa;
 }
 
@@ -308,13 +314,13 @@
 }
 
 .ppt-slide-mini {
-  min-height: 124px;
+  min-height: 104px;
   display: grid;
   align-content: start;
   gap: 8px;
   border: 1px solid #cdd8f4;
   border-radius: 7px;
-  padding: 10px;
+  padding: 8px;
   background: #fff;
   box-shadow: 0 8px 16px rgba(31, 36, 62, 0.06);
 }
@@ -443,34 +449,34 @@
 .format-card strong {
   display: block;
   color: #17203a;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 900;
 }
 
 .format-card span {
   color: var(--muted);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 750;
   line-height: 1.45;
 }
 
 .experience-checkbox-group {
   display: grid;
-  gap: 10px;
-  margin-top: 8px;
+  gap: 8px;
+  margin-top: 6px;
 }
 
 .experience-option {
   display: flex;
   align-items: center;
   gap: 10px;
-  min-height: 48px;
+  min-height: 44px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  padding: 0 14px;
+  padding: 0 12px;
   background: #fbfcff;
   color: #344055;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 750;
   cursor: pointer;
 }
@@ -489,21 +495,21 @@
 .keyword-pool {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 8px;
+  gap: 8px;
+  margin-top: 6px;
 }
 
 .tag {
-  min-height: 34px;
+  min-height: 30px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border: 1px solid var(--line);
   border-radius: 8px;
-  padding: 0 12px;
+  padding: 0 10px;
   background: #fff;
   color: #425066;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 800;
   cursor: pointer;
 }
