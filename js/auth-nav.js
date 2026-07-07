@@ -1,11 +1,24 @@
 (function () {
-  const LOGIN_KEY = 'myfitfolioLoggedIn';
+  const AUTH_ME_ENDPOINT = '/api/auth/me';
+  const AUTH_LOGOUT_ENDPOINT = '/api/auth/logout';
 
-  function isLoggedIn() {
-    return sessionStorage.getItem(LOGIN_KEY) === 'true';
+  async function getCurrentAccount() {
+    try {
+      const response = await fetch(AUTH_ME_ENDPOINT, {
+        credentials: 'same-origin',
+        cache: 'no-store',
+      });
+
+      if (!response.ok) return null;
+
+      const payload = await response.json();
+      return payload.authenticated ? payload.user : null;
+    } catch {
+      return null;
+    }
   }
 
-  function clearAccountState() {
+  function clearLocalAccountState() {
     localStorage.clear();
     sessionStorage.clear();
   }
@@ -32,9 +45,13 @@
     });
 
     document.querySelectorAll('[data-logout]').forEach((button) => {
-      button.addEventListener('click', () => {
-        clearAccountState();
-        window.location.href = 'login.html';
+      button.addEventListener('click', async () => {
+        try {
+          await fetch(AUTH_LOGOUT_ENDPOINT, { method: 'POST' });
+        } finally {
+          clearLocalAccountState();
+          window.location.href = 'login.html';
+        }
       });
     });
 
@@ -47,15 +64,14 @@
   function wireAuthLoginButtons() {
     document.querySelectorAll('[data-login]').forEach((button) => {
       button.addEventListener('click', () => {
-        sessionStorage.setItem(LOGIN_KEY, 'true');
-        window.location.href = 'main.html';
+        const provider = button.dataset.provider || 'google';
+        window.location.href = `/api/auth/social?provider=${provider}`;
       });
     });
   }
 
   function renderLoggedOutMain() {
     if (!document.body.dataset.page || document.body.dataset.page !== 'main') return;
-    if (isLoggedIn()) return;
 
     const dashboard = document.querySelector('#mainLayout .dashboard');
     if (!dashboard) return;
@@ -75,10 +91,17 @@
     `;
   }
 
-  function initAuthNav() {
+  async function renderAuthGuard() {
+    if (!document.body.dataset.page || document.body.dataset.page !== 'main') return;
+
+    const account = await getCurrentAccount();
+    if (!account) renderLoggedOutMain();
+  }
+
+  async function initAuthNav() {
     wireAuthLoginButtons();
     wireProfileMenus();
-    renderLoggedOutMain();
+    await renderAuthGuard();
   }
 
   if (document.readyState === 'loading') {

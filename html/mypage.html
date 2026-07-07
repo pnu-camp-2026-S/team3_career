@@ -179,6 +179,8 @@
   </div>
 
   <script>
+    const PROFILE_ENDPOINT = "/api/profile";
+
     const jobs = [
       "기획/전략", "경영지원", "마케팅/홍보", "광고/브랜드", "회계/세무", "재무/IR",
       "인사/노무", "총무/법무", "영업", "해외영업", "고객상담", "상품기획/MD",
@@ -284,28 +286,57 @@
       return [...new Set(options.length ? options : Object.values(detailJobs).flat())];
     }
 
-    function loadSavedProfile() {
+    function applyProfilePayload(profile) {
+      if (!profile) return;
+
+      if (profile.name) document.querySelector("#profileName").value = profile.name;
+      if (profile.gender) document.querySelector("#profileGender").value = profile.gender;
+      if (profile.birthDate) profileState.birthDate = profile.birthDate;
+      if (profile.email) document.querySelector("#profileEmail").value = profile.email;
+      if (profile.phone) document.querySelector("#profilePhone").value = profile.phone;
+      if (profile.address) document.querySelector("#profileAddress").value = profile.address;
+      if (Array.isArray(profile.educations) && profile.educations.length) profileState.educations = profile.educations;
+      if (profile.preferences) profileState.preferences = { ...profileState.preferences, ...profile.preferences };
+      if (profile.chips) {
+        Object.entries(profile.chips).forEach(([key, values]) => {
+          if (profileState.chips[key] && Array.isArray(values)) profileState.chips[key] = new Set(values);
+        });
+      }
+    }
+
+    function loadLocalProfileCache() {
       const savedProfile = localStorage.getItem("myfitfolioProfile");
-      if (!savedProfile) return;
+      if (!savedProfile) return null;
 
       try {
-        const parsed = JSON.parse(savedProfile);
-        if (parsed.name) document.querySelector("#profileName").value = parsed.name;
-        if (parsed.gender) document.querySelector("#profileGender").value = parsed.gender;
-        if (parsed.birthDate) profileState.birthDate = parsed.birthDate;
-        if (parsed.email) document.querySelector("#profileEmail").value = parsed.email;
-        if (parsed.phone) document.querySelector("#profilePhone").value = parsed.phone;
-        if (parsed.address) document.querySelector("#profileAddress").value = parsed.address;
-        if (Array.isArray(parsed.educations) && parsed.educations.length) profileState.educations = parsed.educations;
-        if (parsed.preferences) profileState.preferences = { ...profileState.preferences, ...parsed.preferences };
-        if (parsed.chips) {
-          Object.entries(parsed.chips).forEach(([key, values]) => {
-            if (profileState.chips[key] && Array.isArray(values)) profileState.chips[key] = new Set(values);
-          });
+        return JSON.parse(savedProfile);
+      } catch (error) {
+        console.warn("Saved profile cache could not be loaded.", error);
+        return null;
+      }
+    }
+
+    async function loadSavedProfile() {
+      try {
+        const response = await fetch(PROFILE_ENDPOINT, {
+          method: "GET",
+          credentials: "same-origin",
+          cache: "no-store"
+        });
+
+        if (response.ok) {
+          const payload = await response.json();
+          if (payload.profile) {
+            localStorage.setItem("myfitfolioProfile", JSON.stringify(payload.profile));
+            applyProfilePayload(payload.profile);
+            return;
+          }
         }
       } catch (error) {
-        console.warn("Saved profile could not be loaded.", error);
+        console.warn("Profile API could not be loaded.", error);
       }
+
+      applyProfilePayload(loadLocalProfileCache());
     }
 
     function getDaysInMonth(year, month) {
@@ -558,7 +589,7 @@
       if (modalRoot) modalRoot.innerHTML = "";
     }
 
-    function saveProfile() {
+    async function saveProfile() {
       collectEducationValues();
       const payload = {
         name: document.querySelector("#profileName")?.value || "",
@@ -571,8 +602,30 @@
         preferences: profileState.preferences,
         chips: Object.fromEntries(Object.entries(profileState.chips).map(([key, value]) => [key, [...value]]))
       };
-      localStorage.setItem("myfitfolioProfile", JSON.stringify(payload));
-      sessionStorage.setItem("myfitfolioProfileSaved", "true");
+
+      try {
+        const response = await fetch(PROFILE_ENDPOINT, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          const errorPayload = await response.json().catch(() => ({}));
+          throw new Error(errorPayload.message || "Profile save failed.");
+        }
+
+        const result = await response.json();
+        localStorage.setItem("myfitfolioProfile", JSON.stringify(result.profile || payload));
+        sessionStorage.setItem("myfitfolioProfileSaved", "true");
+        return true;
+      } catch (error) {
+        console.warn("Profile API save failed.", error);
+        localStorage.setItem("myfitfolioProfile", JSON.stringify(payload));
+        sessionStorage.setItem("myfitfolioProfileSaved", "true");
+        return false;
+      }
     }
 
     function renderAllDynamicParts() {
@@ -626,7 +679,7 @@
       }
     }
 
-    document.addEventListener("click", (event) => {
+    document.addEventListener("click", async (event) => {
       const editButton = event.target.closest("[data-edit-profile]");
       if (editButton) {
         profileState.editing = true;
@@ -762,7 +815,7 @@
       }
 
       if (event.target.closest("[data-save-profile]")) {
-        saveProfile();
+        await saveProfile();
         profileState.editing = false;
         profileState.datePickerOpen = false;
         profileState.periodPicker = null;
@@ -841,8 +894,12 @@
       }
     });
 
-    loadSavedProfile();
-    renderAllDynamicParts();
+    async function initProfilePage() {
+      await loadSavedProfile();
+      renderAllDynamicParts();
+    }
+
+    initProfilePage();
   </script>
 </body>
 </html>

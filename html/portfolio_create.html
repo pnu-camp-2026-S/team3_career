@@ -213,9 +213,9 @@
           <div class="portfolio-side-panel">
             <section class="portfolio-actions-panel" aria-label="마스터 제어 액션">
               <div class="master-actions">
-                <button class="flat-action primary" type="button" onclick="handleMasterAction('save')">보관함 저장</button>
-                <button class="flat-action" type="button" onclick="handleMasterAction('download')">PPT 다운로드</button>
-                <button class="flat-action danger" type="button" onclick="handleMasterAction('exit')">나가기</button>
+                <button class="flat-action primary" type="button" data-master-action="save">보관함 저장</button>
+                <button class="flat-action" type="button" data-master-action="download">PPT 다운로드</button>
+                <button class="flat-action danger" type="button" data-master-action="exit">나가기</button>
               </div>
             </section>
 
@@ -239,6 +239,7 @@
 
   <script>
     const PORTFOLIO_STORAGE_KEY = 'careerfit_portfolios';
+    const PORTFOLIO_ENDPOINT = '/api/portfolios';
     const commonKeywords = ['문제 해결 및 비판적 사고', '소통 및 협업 역량', '적응력 및 학습민첩성'];
     const majorKeywordMap = {
       industrial: {
@@ -276,6 +277,16 @@
     majorSelect.addEventListener('change', renderKeywordPool);
     document.getElementById('generatePortfolioBtn').addEventListener('click', triggerGeneratePortfolio);
     document.getElementById('pfAssistantSendBtn').addEventListener('click', sendPfAssistantChat);
+    document.querySelector('.master-actions').addEventListener('click', async (event) => {
+      const actionButton = event.target.closest('[data-master-action]');
+      if (!actionButton) return;
+      await handleMasterAction(actionButton.dataset.masterAction);
+    });
+    document.getElementById('workspaceContent').addEventListener('click', (event) => {
+      const slideButton = event.target.closest('[data-slide-direction]');
+      if (!slideButton) return;
+      moveSlide(Number(slideButton.dataset.slideDirection));
+    });
     assistantInput.addEventListener('keydown', (event) => {
       if (event.key === 'Enter' && !event.shiftKey) {
         event.preventDefault();
@@ -447,13 +458,13 @@
       const slide = currentPortfolio.slides[currentSlideIndex];
       document.getElementById('workspaceContent').innerHTML = `
         <div class="ppt-preview-wrap">
-          <button class="slide-arrow prev" type="button" aria-label="이전 슬라이드" onclick="moveSlide(-1)">‹</button>
+          <button class="slide-arrow prev" type="button" aria-label="이전 슬라이드" data-slide-direction="-1">‹</button>
           <article class="ppt-slide">
             <span class="ppt-slide-label">Slide ${currentSlideIndex + 1}</span>
             <h3>${escapeHtml(slide.title)}</h3>
             <p>${escapeHtml(slide.body)}</p>
           </article>
-          <button class="slide-arrow next" type="button" aria-label="다음 슬라이드" onclick="moveSlide(1)">›</button>
+          <button class="slide-arrow next" type="button" aria-label="다음 슬라이드" data-slide-direction="1">›</button>
         </div>
         <div class="slide-counter">${currentSlideIndex + 1} / ${currentPortfolio.slides.length}</div>
       `;
@@ -481,7 +492,7 @@
       }
     }
 
-    function saveGeneratedPortfolio() {
+    async function saveGeneratedPortfolio() {
       if (!currentPortfolio) return null;
 
       const content = currentPortfolio.format === 'PPT 발표 스펙'
@@ -503,15 +514,50 @@
       };
       const saved = readPortfolioStore().filter((item) => item.id !== nextPortfolio.id);
 
-      localStorage.setItem(PORTFOLIO_STORAGE_KEY, JSON.stringify([nextPortfolio, ...saved]));
-      return nextPortfolio;
+      try {
+        const response = await fetch(PORTFOLIO_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({
+            ...nextPortfolio,
+            blocks: currentPortfolio.blocks || [],
+            slides: currentPortfolio.slides || [],
+          }),
+        });
+
+        if (!response.ok) throw new Error('Portfolio save failed.');
+
+        const result = await response.json();
+        const savedPortfolio = result.portfolio || nextPortfolio;
+        localStorage.setItem(PORTFOLIO_STORAGE_KEY, JSON.stringify([savedPortfolio, ...saved]));
+        return savedPortfolio;
+      } catch (error) {
+        console.warn('Portfolio API save fell back to local state.', error);
+        localStorage.setItem(PORTFOLIO_STORAGE_KEY, JSON.stringify([nextPortfolio, ...saved]));
+        return nextPortfolio;
+      }
     }
 
-    function openPortfolioEditorFromQuery() {
+    async function openPortfolioEditorFromQuery() {
       const editId = new URLSearchParams(window.location.search).get('edit');
       if (!editId) return;
 
-      const portfolio = readPortfolioStore().find((item) => item.id === editId);
+      let portfolio = null;
+      try {
+        const response = await fetch(`${PORTFOLIO_ENDPOINT}?id=${encodeURIComponent(editId)}`, {
+          credentials: 'same-origin',
+          cache: 'no-store',
+        });
+        if (response.ok) {
+          const payload = await response.json();
+          portfolio = payload.portfolio;
+        }
+      } catch (error) {
+        console.warn('Portfolio API edit load failed.', error);
+      }
+
+      if (!portfolio) portfolio = readPortfolioStore().find((item) => item.id === editId);
       if (!portfolio) return;
 
       currentPortfolio = {
@@ -533,9 +579,9 @@
       renderPortfolioPreview();
     }
 
-    function handleMasterAction(action) {
+    async function handleMasterAction(action) {
       if (action === 'save') {
-        saveGeneratedPortfolio();
+        await saveGeneratedPortfolio();
         showToast('마스터 저장이 완료되었습니다. 보관함으로 이동합니다.');
         window.setTimeout(() => {
           window.location.href = 'portfolio_manage.html';

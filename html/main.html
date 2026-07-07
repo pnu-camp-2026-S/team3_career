@@ -139,6 +139,8 @@
 
   <script>
     const PROFILE_KEY = 'myfitfolioProfile';
+    const PROFILE_ENDPOINT = '/api/profile';
+    const ACTIVITY_FILES_ENDPOINT = '/api/activity-files';
     const SIDEBAR_WIDTH_KEY = 'myfitfolioSidebarWidth';
 
     const folderGroupContainers = {
@@ -166,21 +168,45 @@
       })[char]);
     }
 
+    function hasMeaningfulProfile(profile) {
+      if (!profile) return false;
+
+      const hasBasic = Boolean(profile.name || profile.email || profile.phone || profile.address);
+      const hasEducation = Array.isArray(profile.educations) && profile.educations.some((item) => (
+        item.school || item.major || item.gpa
+      ));
+      const hasPreferences = profile.preferences && Object.values(profile.preferences).some(Boolean);
+      const hasChips = profile.chips && Object.values(profile.chips).some((values) => Array.isArray(values) && values.length > 0);
+      return hasBasic || hasEducation || hasPreferences || hasChips;
+    }
+
     function hasSavedProfile() {
       const savedProfile = localStorage.getItem(PROFILE_KEY);
       if (!savedProfile) return false;
 
       try {
-        const profile = JSON.parse(savedProfile);
-        const hasBasic = Boolean(profile.name || profile.email || profile.phone || profile.address);
-        const hasEducation = Array.isArray(profile.educations) && profile.educations.some((item) => (
-          item.school || item.major || item.gpa
-        ));
-        const hasPreferences = profile.preferences && Object.values(profile.preferences).some(Boolean);
-        const hasChips = profile.chips && Object.values(profile.chips).some((values) => Array.isArray(values) && values.length > 0);
-        return hasBasic || hasEducation || hasPreferences || hasChips;
+        return hasMeaningfulProfile(JSON.parse(savedProfile));
       } catch (error) {
         return false;
+      }
+    }
+
+    async function hasSavedDatabaseProfile() {
+      try {
+        const response = await fetch(PROFILE_ENDPOINT, {
+          credentials: 'same-origin',
+          cache: 'no-store',
+        });
+
+        if (!response.ok) return hasSavedProfile();
+
+        const payload = await response.json();
+        if (payload.profile) {
+          localStorage.setItem(PROFILE_KEY, JSON.stringify(payload.profile));
+        }
+        return hasMeaningfulProfile(payload.profile);
+      } catch (error) {
+        return hasSavedProfile();
       }
     }
 
@@ -206,6 +232,45 @@
       if (['ppt', 'pptx', 'key'].includes(extension)) return 'PPT';
       if (['xls', 'xlsx', 'csv'].includes(extension)) return 'XLS';
       return 'FILE';
+    }
+
+    function mapApiFile(file) {
+      return {
+        id: file.id,
+        name: file.name,
+        mimeType: file.mimeType || '',
+        size: file.size || 0,
+        storagePath: file.storagePath || '',
+        createdAt: file.createdAt || new Date().toISOString(),
+      };
+    }
+
+    async function loadActivityFilesFromApi() {
+      try {
+        const response = await fetch(ACTIVITY_FILES_ENDPOINT, {
+          credentials: 'same-origin',
+          cache: 'no-store',
+        });
+
+        if (!response.ok) return;
+
+        const payload = await response.json();
+        if (!Array.isArray(payload.files)) return;
+
+        Object.values(folders).forEach((folder) => {
+          folder.files = [];
+        });
+
+        payload.files.forEach((file) => {
+          const folder = folders[file.folderId];
+          if (!folder) return;
+          folder.files.push(mapApiFile(file));
+        });
+
+        FolderStore.saveFolders(folders);
+      } catch (error) {
+        console.warn('Activity files could not be loaded.', error);
+      }
     }
 
     function buildDonutGradient(items, total) {
@@ -286,8 +351,8 @@
       renderAnalysisOverview(completedFileTotal, inProgressFileTotal, breakdown);
     }
 
-    function renderDashboardState() {
-      const isProfileSaved = hasSavedProfile();
+    async function renderDashboardState() {
+      const isProfileSaved = await hasSavedDatabaseProfile();
       profileNeededPanel.hidden = isProfileSaved;
       analysisDashboard.hidden = !isProfileSaved;
     }
@@ -332,29 +397,69 @@
       `;
     }
 
-    function addFilesToFolder(folderId, fileList) {
+    async function addFilesToFolder(folderId, fileList) {
       const folder = folders[folderId];
       if (!folder) return;
 
-      Array.from(fileList).forEach((file) => {
-        folder.files.push({
-          id: createId('file'),
-          name: file.name,
+      const files = Array.from(fileList);
+      const formData = new FormData();
+      formData.append('folderId', folder.id);
+      formData.append('folderGroup', folder.group || '');
+      formData.append('folderType', folder.type || '');
+      formData.append('folderLabel', folder.label || '');
+      files.forEach((file) => formData.append('files', file));
+
+      try {
+        const response = await fetch(ACTIVITY_FILES_ENDPOINT, {
+          method: 'POST',
+          credentials: 'same-origin',
+          body: formData,
         });
-      });
+
+        if (!response.ok) throw new Error('Activity file upload failed.');
+
+        const payload = await response.json();
+        (payload.files || []).forEach((file) => {
+          folder.files.push(mapApiFile(file));
+        });
+      } catch (error) {
+        console.warn('Activity file upload fell back to local state.', error);
+        files.forEach((file) => {
+          folder.files.push({
+            id: createId('file'),
+            name: file.name,
+          });
+        });
+      }
 
       folder.open = true;
       FolderStore.saveFolders(folders);
       renderFolders();
     }
 
-    function deleteFile(folderId, fileId) {
+    async function deleteFile(folderId, fileId) {
       const folder = folders[folderId];
       if (!folder) return;
 
       const file = folder.files.find((item) => item.id === fileId);
       if (!file) return;
       if (!window.confirm(`'${file.name}' 파일을 삭제하시겠습니까?`)) return;
+
+      if (file.storagePath) {
+        try {
+          const response = await fetch(ACTIVITY_FILES_ENDPOINT, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({ id: file.id, storagePath: file.storagePath }),
+          });
+
+          if (!response.ok) throw new Error('Activity file delete failed.');
+        } catch (error) {
+          console.warn('Activity file delete failed.', error);
+          return;
+        }
+      }
 
       folder.files = folder.files.filter((item) => item.id !== fileId);
       FolderStore.saveFolders(folders);
@@ -423,7 +528,7 @@
     sidebarResizeHandle.addEventListener('pointerup', finishSidebarResize);
     sidebarResizeHandle.addEventListener('pointercancel', finishSidebarResize);
 
-    document.addEventListener('click', (event) => {
+    document.addEventListener('click', async (event) => {
       const folderToggle = event.target.closest('[data-toggle-folder]');
       if (folderToggle) {
         const folder = folders[folderToggle.dataset.toggleFolder];
@@ -444,7 +549,7 @@
       const deleteButton = event.target.closest('[data-delete-file]');
       if (deleteButton) {
         const [folderId, fileId] = deleteButton.dataset.deleteFile.split(':');
-        deleteFile(folderId, fileId);
+        await deleteFile(folderId, fileId);
         return;
       }
 
@@ -479,12 +584,12 @@
       }
     });
 
-    document.addEventListener('drop', (event) => {
+    document.addEventListener('drop', async (event) => {
       const target = event.target.closest('.drop-folder');
       if (!target || !event.dataTransfer.files.length) return;
       event.preventDefault();
       clearDropOverFolders();
-      addFilesToFolder(target.dataset.folderId, event.dataTransfer.files);
+      await addFilesToFolder(target.dataset.folderId, event.dataTransfer.files);
     });
 
     document.addEventListener('dragend', () => {
@@ -497,7 +602,12 @@
       analysisDashboard.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
 
-    renderFolders();
+    async function initMainDashboard() {
+      await loadActivityFilesFromApi();
+      renderFolders();
+    }
+
+    initMainDashboard();
   </script>
 </body>
 </html>
