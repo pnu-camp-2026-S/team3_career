@@ -37,6 +37,7 @@ Node 버전 관리를 사용하는 경우 아래 파일을 참고하세요.
 │  ├─ contest.html             # 활동 추천
 │  ├─ portfolio_create.html    # 포트폴리오 생성
 │  ├─ portfolio_manage.html    # 포트폴리오 관리
+│  ├─ portfolio_viewer.html    # 포트폴리오 슬라이드 보기
 │  ├─ mypage.html              # 마이페이지
 │  ├─ withdraw.html            # 회원 탈퇴
 │  └─ fitfolio_prototype.html  # 프로토타입 보관 화면
