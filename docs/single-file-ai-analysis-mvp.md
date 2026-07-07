@@ -19,6 +19,7 @@
 > | 기타/커스텀 | 기본 전체 순서 |
 >
 > - **실제 분석 예시**: `docs/examples/single-file-analysis/` — `docs/file-management.md`를 실제 Gemini로 분석한 산출물 4종. 재현: `node scripts/run-analysis-example.mjs [파일] [projectType]`
+> - **종합 분석(aggregate)**: 메인 "분석 시작" 버튼이 `POST /api/analysis/aggregate`를 호출해 저장된 모든 분석 결과를 AI로 종합 → 메인 키워드 개요 갱신 + `localStorage.myfitfolioAiKeywords`로 포트폴리오 생성 화면의 "강조할 AI 역량 키워드"에 반영 (`lib/analysis/aggregate.mjs`, `prompts/aggregate-analysis.md`)
 
 ## 0. 목적
 

@@ -78,6 +78,36 @@ function libUrl(relativePath) {
   assert.strictEqual(failed.stage, 'extraction');
   assert.strictEqual(failed.metadata.analysisStatus, 'failed');
 
+  // 종합(aggregate) 분석: 데이터 0건이면 no_data
+  const { aggregateAnalyses } = await import(libUrl('lib/analysis/aggregate.mjs'));
+  const emptyRepo = new LocalAnalysisRepository({ baseDir: fs.mkdtempSync(path.join(os.tmpdir(), 'sfa-empty-')) });
+  const emptyAggregate = await aggregateAnalyses({ repository: emptyRepo });
+  assert.strictEqual(emptyAggregate.ok, false);
+  assert.strictEqual(emptyAggregate.reason, 'no_data', '분석 자료가 없으면 no_data를 반환해야 한다');
+
+  // 종합 분석: 분석 2건(성공 1건 + 위 실패 1건 제외) 기준으로 실행
+  await analyzeSingleFile({
+    originalFileName: '두번째_보고서.md',
+    buffer: Buffer.from('# 결과 보고\n\n실험 결과를 정리했습니다.', 'utf8'),
+    projectType: 'personal',
+    repository,
+  });
+  const aggregate = await aggregateAnalyses({ repository });
+  assert.strictEqual(aggregate.ok, true, '종합 분석이 성공해야 한다');
+  assert.strictEqual(aggregate.result.basedOnCount, 2, '실패 건은 제외하고 완료된 분석만 종합해야 한다');
+  assert.ok(aggregate.result.headline.length > 0, '종합 headline이 있어야 한다');
+  assert.ok(
+    Array.isArray(aggregate.result.activityKeywords) && aggregate.result.activityKeywords.length >= 1,
+    '메인 칩용 activityKeywords가 있어야 한다'
+  );
+  assert.ok(
+    Array.isArray(aggregate.result.portfolioKeywords) && aggregate.result.portfolioKeywords.length >= 1,
+    '포트폴리오 강조용 portfolioKeywords가 있어야 한다'
+  );
+
+  const storedAggregate = await repository.getAggregateResult();
+  assert.ok(storedAggregate && storedAggregate.headline === aggregate.result.headline, '종합 결과가 저장되어야 한다');
+
   fs.rmSync(tmpDir, { recursive: true, force: true });
   console.log('single-file-analysis mock pipeline: OK');
 })().catch((error) => {

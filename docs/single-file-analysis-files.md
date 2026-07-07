@@ -35,6 +35,7 @@ ESM(.mjs)으로 작성되어 Next 라우트에서 import되고, `node` 스크립
 | `validator.mjs` | AI 응답 검증. 필수 필드, 추천 하위 폴더가 허용 enum에 있는지, confidence 0~1 범위, `requiresUserConfirmation === true`, fileId/analysisId 일치를 확인한다. 실패 시 저장하지 않고 `analysisStatus: failed`. |
 | `templates.mjs` | `templates/`의 세 템플릿을 읽어 결정적으로(비 AI) 채우는 렌더러. index.json은 치환 후 `JSON.parse`로 유효성을 반드시 확인한다. |
 | `service.mjs` | 전체 오케스트레이션. 업로드 → 메타데이터 → 추출 → AI 분석 → 검증 → 산출물 생성 → 로그 기록. 계획 문서 §3의 [1]~[15] 흐름과 대응한다. |
+| `aggregate.mjs` | **종합 분석 오케스트레이션.** 저장된 모든 분석 번들을 모아 AI로 종합해 메인 키워드 개요(headline/description/activityKeywords)와 포트폴리오 강조 키워드(portfolioKeywords)를 생성·저장한다. 자료가 0건이면 `no_data`를 반환한다. |
 
 ## 2. 산출물 템플릿 — `templates/`
 
@@ -60,6 +61,14 @@ Next.js App Router 핸들러. Express·multer 없이 동작한다.
 | `single-file/route.js` | `POST /api/analysis/single-file`. `request.formData()`로 파일+projectType을 받아 파이프라인 실행. 성공 시 분석 결과·summary/index/log를 함께 반환, 실패 시 단계(stage)와 오류 목록 반환(422). |
 | `subfolders/route.js` | `GET /api/analysis/subfolders?projectType=`. 유형별 하위 폴더 구성을 프론트에서 조회. 파라미터 없으면 전체 유형 반환. |
 | `[analysisId]/route.js` | `GET /api/analysis/{analysisId}`. 저장된 분석 번들(메타데이터+결과+산출물) 조회. |
+| `aggregate/route.js` | `POST` = 저장된 모든 분석의 종합 실행(자료 0건이면 `no_data`), `GET` = 마지막 종합 결과 조회. 프롬프트는 `prompts/aggregate-analysis.md`. |
+
+### 종합 분석과 화면 연동 (메인 "분석 시작" 버튼)
+
+1. 메인(`html/main.html`)에서 **분석 시작** 클릭 → `POST /api/analysis/aggregate`
+2. 성공 시 키워드 개요(`keywordHeadline`/`keywordDescription`/`keywordChipList`)가 AI 결과로 갱신되고, 결과가 **`localStorage.myfitfolioAiKeywords`** 에 저장된다 (새로고침 시 복원).
+3. 포트폴리오 생성(`html/portfolio_create.html`)의 "강조할 AI 역량 키워드" 풀은 이 키의 `portfolioKeywords`를 읽어 **AI 배지(`ai-tag`)가 붙은 키워드로 앞쪽에 병합**한다. 선택된 키워드는 기존 흐름대로 포트폴리오 초안에 반영된다.
+4. 분석된 자료가 없으면 버튼 아래 안내(`analysisNotice`)를 보여주고 기본 문구를 유지한다.
 
 ## 5. 테스트 화면 — `html/analysis.html` + `css/analysis.css`
 

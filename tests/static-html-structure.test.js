@@ -511,6 +511,32 @@ assert.ok(
   'analysis bundle lookup route should exist'
 );
 
+// 종합(aggregate) 분석 — 메인 분석 시작 버튼과 포트폴리오 키워드 연동
+assert.ok(
+  fs.existsSync(path.join(analysisLibDir, 'aggregate.mjs')),
+  'aggregate analysis orchestration module should live in lib/analysis'
+);
+assert.ok(
+  fs.existsSync(path.join(rootDir, 'prompts', 'aggregate-analysis.md')),
+  'aggregate analysis prompt should live in the prompts directory'
+);
+const aggregatePrompt = fs.readFileSync(path.join(rootDir, 'prompts', 'aggregate-analysis.md'), 'utf8');
+assert.ok(
+  aggregatePrompt.includes('{{analysisSummaries}}') && aggregatePrompt.includes('portfolioKeywords'),
+  'aggregate prompt should take analysis summaries and produce portfolio keywords'
+);
+const aggregateRoute = fs.readFileSync(path.join(appDir, 'api', 'analysis', 'aggregate', 'route.js'), 'utf8');
+assert.match(
+  aggregateRoute,
+  /export async function POST\(\)[\s\S]*aggregateAnalyses/,
+  'aggregate API should run the aggregate analysis through a Next route handler'
+);
+assert.match(
+  aggregateRoute,
+  /export async function GET\(\)[\s\S]*getAggregateResult/,
+  'aggregate API should expose the last stored aggregate result'
+);
+
 const analysisHtml = fs.readFileSync(path.join(htmlDir, 'analysis.html'), 'utf8');
 assert.match(
   analysisHtml,
@@ -668,6 +694,26 @@ assert.match(
   mainHtml,
   /키워드 중심 활동 개요/,
   'main dashboard should include a keyword-focused overview'
+);
+assert.match(
+  mainHtml,
+  /id="keywordHeadline"[\s\S]*id="keywordDescription"[\s\S]*id="keywordChipList"/,
+  'main keyword overview should expose targets for the AI aggregate result'
+);
+assert.match(
+  mainHtml,
+  /fetch\('\/api\/analysis\/aggregate',\s*\{\s*method:\s*'POST'\s*\}\)/,
+  'main analysis start button should call the aggregate analysis API'
+);
+assert.match(
+  mainHtml,
+  /myfitfolioAiKeywords/,
+  'main should share AI keywords with the portfolio create screen through localStorage'
+);
+assert.match(
+  mainHtml,
+  /id="analysisNotice"/,
+  'main should show a notice when there is no analyzed material yet'
 );
 assert.match(
   mainHtml,
@@ -1691,6 +1737,21 @@ assert.match(
   portfolioCreateHtml,
   /const\s+commonKeywords[\s\S]*const\s+majorKeywordMap/,
   'portfolio_create should generate keyword options from common and major-specific maps'
+);
+assert.match(
+  portfolioCreateHtml,
+  /myfitfolioAiKeywords[\s\S]*portfolioKeywords/,
+  'portfolio_create should merge AI aggregate keywords from the shared localStorage key'
+);
+assert.match(
+  portfolioCreateHtml,
+  /ai-tag/,
+  'portfolio_create should visually mark AI-recommended keywords'
+);
+assert.match(
+  portfolioCreateCss,
+  /\.tag\.ai-tag::before/,
+  'portfolio_create stylesheet should style the AI keyword badge'
 );
 assert.match(
   portfolioCreateHtml,
