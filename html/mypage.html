@@ -108,21 +108,36 @@
                   <label>세부직무 선택</label>
                   <button class="picker-trigger" type="button" data-open-search="detailJob">
                     <span class="placeholder" data-picked-value="detailJob">검색하여 선택</span>
-                    <span aria-hidden="true">⌕</span>
+                    <span class="picker-search-icon" aria-hidden="true">
+                      <svg class="svg-icon" viewBox="0 0 24 24">
+                        <circle cx="10.8" cy="10.8" r="5.9"></circle>
+                        <path d="m15.4 15.4 3.8 3.8"></path>
+                      </svg>
+                    </span>
                   </button>
                 </div>
                 <div class="form-field">
                   <label>희망 업종</label>
                   <button class="picker-trigger" type="button" data-open-search="workIndustry">
                     <span class="placeholder" data-picked-value="workIndustry">검색하여 선택</span>
-                    <span aria-hidden="true">⌕</span>
+                    <span class="picker-search-icon" aria-hidden="true">
+                      <svg class="svg-icon" viewBox="0 0 24 24">
+                        <circle cx="10.8" cy="10.8" r="5.9"></circle>
+                        <path d="m15.4 15.4 3.8 3.8"></path>
+                      </svg>
+                    </span>
                   </button>
                 </div>
                 <div class="form-field">
                   <label>희망근무지역</label>
                   <button class="picker-trigger" type="button" data-open-search="workRegion">
                     <span class="placeholder" data-picked-value="workRegion">검색하여 선택</span>
-                    <span aria-hidden="true">⌕</span>
+                    <span class="picker-search-icon" aria-hidden="true">
+                      <svg class="svg-icon" viewBox="0 0 24 24">
+                        <circle cx="10.8" cy="10.8" r="5.9"></circle>
+                        <path d="m15.4 15.4 3.8 3.8"></path>
+                      </svg>
+                    </span>
                   </button>
                 </div>
                 <div class="form-field">
@@ -530,7 +545,10 @@
             <button class="icon-button modal-close" type="button" data-close-modal aria-label="닫기">×</button>
           </div>
           <div class="modal-search-box">
-            <span aria-hidden="true">⌕</span>
+            <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="10.8" cy="10.8" r="5.9"></circle>
+              <path d="m15.4 15.4 3.8 3.8"></path>
+            </svg>
             <input data-search-input type="search" placeholder="${config.placeholder}" autofocus />
           </div>
           <div class="search-options" data-search-options>${renderSearchOptions(type)}</div>

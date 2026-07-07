@@ -1413,9 +1413,22 @@ button {
 }
 
 .picker-trigger .svg-icon {
-  width: 18px;
-  height: 18px;
-  color: #7f8aa0;
+  width: 15px;
+  height: 15px;
+  color: #5f78d8;
+  stroke-width: 2.35;
+}
+
+.picker-search-icon {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #eef4ff;
+  box-shadow: inset 0 0 0 1px rgba(109, 149, 255, 0.18);
 }
 
 .job-grid {
@@ -1514,7 +1527,7 @@ button {
 
 .profile-readonly .date-trigger:disabled .calendar-icon,
 .profile-readonly .major-trigger:disabled .select-chevron,
-.profile-readonly .picker-trigger:disabled span[aria-hidden="true"] {
+.profile-readonly .picker-trigger:disabled .picker-search-icon {
   opacity: 0.58;
 }
 
