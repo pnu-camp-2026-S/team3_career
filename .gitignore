@@ -3,5 +3,9 @@ node_modules/
 out/
 *.log
 key.env
+gemini_key.env
 .env
 .env.*
+data/local-analysis/
+claude.md
+.claude
