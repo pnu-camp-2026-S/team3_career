@@ -27,21 +27,45 @@ Node 버전 관리를 사용하는 경우 아래 파일을 참고하세요.
 
 ```text
 .
+├─ index.html                  # GitHub Pages 루트 진입용 리다이렉트 페이지
 ├─ html/
-│  ├─ index.html              # 첫 진입 페이지, 로그인 화면
-│  ├─ login.html              # 로그인 화면
-│  ├─ main.html               # 로그인 후 랜딩 페이지
+│  ├─ index.html               # 첫 진입 페이지, 로그인 화면
+│  ├─ login.html               # 로그인 화면
 │  ├─ signup.html
-│  ├─ portfolio.html
-│  ├─ portfolio_manage.html
-│  ├─ contest.html
-│  ├─ create.html
-│  └─ mypage.html
-├─ server.js                  # 로컬/백엔드 서버
+│  ├─ main.html                # 로그인 후 메인 대시보드
+│  ├─ create.html              # 파일 관리
+│  ├─ contest.html             # 활동 추천
+│  ├─ portfolio_create.html    # 포트폴리오 생성
+│  ├─ portfolio_manage.html    # 포트폴리오 관리
+│  ├─ mypage.html              # 마이페이지
+│  ├─ withdraw.html            # 회원 탈퇴
+│  └─ fitfolio_prototype.html  # 프로토타입 보관 화면
+├─ css/
+│  ├─ common.css              # 공통 변수, 버튼, 상단 내비게이션
+│  ├─ index.css
+│  ├─ login.css
+│  ├─ signup.css
+│  ├─ main.css
+│  ├─ create.css
+│  ├─ contest.css
+│  ├─ portfolio_create.css
+│  ├─ portfolio_manage.css
+│  ├─ mypage.css
+│  ├─ withdraw.css
+│  ├─ auth.css                # 로그인/회원가입 공통 인증 스타일
+│  └─ fitfolio_prototype.css  # 프로토타입 전용 스타일
+├─ js/
+│  ├─ shared-nav.js           # 공통 내비게이션 렌더링
+│  ├─ auth-nav.js             # 로그인 상태, 프로필 메뉴, 로그아웃 처리
+│  └─ contest.js              # 활동 추천 페이지 스크립트
+├─ tests/
+│  └─ static-html-structure.test.js
+├─ server.js                  # 로컬 Express 서버
 ├─ package.json
 ├─ package-lock.json
-├─ key.env                    # 로컬 API 키 파일, Git에 올리지 않음
-└─ tests/
+├─ .node-version
+├─ .nvmrc
+└─ key.env                    # 로컬 API 키 파일, Git에 올리지 않음
 ```
 
 ## 설치 방법
@@ -76,7 +100,7 @@ npm start
 http://localhost:3000/
 ```
 
-서버는 `html/` 폴더를 정적 파일 루트로 사용합니다. 따라서 첫 화면은 `html/index.html`이고, 로그인 후 `html/main.html`로 이동합니다.
+서버는 `html/` 폴더를 화면 정적 파일 루트로 사용하고, `/css`, `/js` 경로로 공통 스타일과 스크립트를 제공합니다. 따라서 첫 화면은 `html/index.html`이고, 로그인 후 `html/main.html`로 이동합니다.
 
 ## 테스트
 
@@ -84,7 +108,7 @@ http://localhost:3000/
 npm test
 ```
 
-현재 테스트는 활성 HTML 파일이 `html/` 폴더에 있는지, 서버가 `html/` 폴더를 정적 루트로 제공하는지 확인합니다.
+현재 테스트는 활성 HTML 파일이 `html/` 폴더에 있는지, CSS와 JS가 각각 `css/`, `js/` 폴더에서 관리되는지, 서버가 정적 자산 경로를 제공하는지 확인합니다.
 
 ## GitHub Pages 배포
 
@@ -93,10 +117,10 @@ GitHub Pages 설정:
 ```text
 Source: Deploy from a branch
 Branch: main
-Folder: /html
+Folder: / (root)
 ```
 
-이 설정이면 배포 주소의 루트(`/`)에서 `html/index.html`이 먼저 열립니다.
+이 설정이면 배포 주소의 루트(`/`)에서 루트 `index.html`이 먼저 열리고, `html/index.html`로 이동합니다.
 
 서비스 흐름:
 

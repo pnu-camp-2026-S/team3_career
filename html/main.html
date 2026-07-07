@@ -1,170 +1,130 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Myfitfolio - 메인</title>
-  <link rel="stylesheet" href="fitfolio.css" />
+  <link rel="stylesheet" href="../css/common.css" />
+  <link rel="stylesheet" href="../css/main.css" />
 </head>
 <body data-page="main">
   <div class="app-shell">
-    <header class="top-nav">
-      <a class="brand-word" href="main.html">Myfit<span>folio</span></a>
-      <nav class="nav-tabs" aria-label="주요 메뉴">
-        <a class="nav-tab active" href="main.html">메인</a>
-        <a class="nav-tab" href="create.html">파일관리</a>
-        <a class="nav-tab" href="portfolio_create.html">포트폴리오 생성</a>
-        <a class="nav-tab" href="portfolio_manage.html">포트폴리오 관리</a>
-        <a class="nav-tab" href="contest.html">활동 추천</a>
-        <a class="nav-tab" href="mypage.html">마이페이지</a>
-      </nav>
-      <div class="nav-actions">
-        <div class="profile-menu">
-          <button class="user-chip" type="button" data-profile-toggle aria-label="프로필 메뉴 열기" aria-haspopup="menu" aria-expanded="false">
-            <span class="avatar"></span>
-          </button>
-          <div class="profile-dropdown" data-profile-menu role="menu">
-            <a href="mypage.html" role="menuitem">마이페이지</a>
-            <button type="button" data-logout role="menuitem">로그아웃</button>
-          </div>
-        </div>
-      </div>
-    </header>
+    <div data-shared-nav data-active="main"></div>
+    <script src="../js/shared-nav.js"></script>
+    <script src="../js/auth-nav.js"></script>
 
     <div class="layout-main" id="mainLayout">
       <button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="사이드바 닫기">
         <span aria-hidden="true"></span>
       </button>
 
-      <aside class="sidebar" id="activitySidebar">
+      <aside class="sidebar main-sidebar" id="activitySidebar">
         <div class="sidebar-email">
           <span class="avatar online"></span>
           <span>user@univ.ac.kr</span>
         </div>
 
         <input class="visually-hidden" id="fileInput" type="file" multiple />
-        <button class="ghost-button sidebar-action-button delete-mode-button" id="deleteModeBtn" type="button">
-          삭제 모드
-        </button>
-        <button class="primary-button upload-button" id="uploadButton" type="button">
-          활동 자료 업로드
-        </button>
 
-        <section class="folder-section open" data-folder-section="completed">
-          <button class="folder-title" type="button" aria-expanded="true">
+        <section class="sidebar-analysis-start">
+          <button class="primary-button sidebar-primary-action" type="button" data-analysis-start>분석 시작</button>
+          <p>완료된 활동 폴더에 있는 파일을 바탕으로 분석해드려요</p>
+        </section>
+
+        <section class="folder-section status-completed" data-folder-section="completed">
+          <button class="folder-title" type="button" aria-expanded="false">
             <span>완료된 활동 폴더</span>
             <span class="folder-chevron" aria-hidden="true"></span>
           </button>
           <div class="folder-list" id="completedFolderList"></div>
         </section>
 
-        <section class="folder-section open" data-folder-section="ready">
-          <button class="folder-title" type="button" aria-expanded="true">
-            <span>준비된 활동 폴더</span>
+        <section class="folder-section status-in-progress" data-folder-section="inProgress">
+          <button class="folder-title" type="button" aria-expanded="false">
+            <span>진행중인 활동 폴더</span>
             <span class="folder-chevron" aria-hidden="true"></span>
           </button>
-          <div class="folder-list" id="readyFolderList"></div>
+          <div class="folder-list" id="inProgressFolderList"></div>
         </section>
 
-        <section class="ai-helper">
-          <div class="ai-title">AI 분석 도우미</div>
-          <p>폴더에 업로드한 파일을 AI가 분석해 활동을 정리해드려요.</p>
-          <button class="primary-button upload-button" type="button">분석 시작</button>
-        </section>
       </aside>
+      <button class="sidebar-resize-handle" id="sidebarResizeHandle" type="button" aria-label="사이드바 너비 조절"></button>
 
-      <main class="dashboard">
-        <h1 class="page-title">나의 활동 대시보드</h1>
-        <p class="page-subtitle">업로드된 활동 자료와 프로필 정보를 기반으로 체계적으로 정리해드려요.</p>
-
-        <section class="stats-grid">
-          <article class="stat-card">
-            <div class="metric-icon"><span class="metric-symbol document" aria-hidden="true"></span></div>
+      <main class="dashboard main-dashboard">
+        <section class="profile-needed-panel" id="profileNeededPanel" hidden>
+          <div class="next-card profile-needed-card">
+            <div class="metric-icon">!</div>
             <div>
-              <div class="stat-label">개인 프로젝트</div>
-              <div class="stat-value"><span class="stat-number" id="personalTotal">0</span><span class="stat-unit">개</span></div>
+              <h1>내 정보 입력이 필요해요</h1>
+              <p>마이페이지에서 기본 정보와 희망 직무를 저장하면 추천과 분석이 더 정확해집니다.</p>
             </div>
-          </article>
-          <article class="stat-card">
-            <div class="metric-icon green"><span class="metric-symbol check" aria-hidden="true"></span></div>
-            <div>
-              <div class="stat-label">팀 프로젝트</div>
-              <div class="stat-value"><span class="stat-number" id="teamTotal">0</span><span class="stat-unit">개</span></div>
+            <div class="next-actions">
+              <a class="primary-button" href="mypage.html">내 정보 작성하기</a>
+              <a class="outline-button" href="create.html">활동기록 먼저 정리하기</a>
             </div>
-          </article>
-          <article class="stat-card">
-            <div class="metric-icon orange"><span class="metric-symbol star" aria-hidden="true"></span></div>
-            <div>
-              <div class="stat-label">공모전</div>
-              <div class="stat-value"><span class="stat-number" id="contestTotal">0</span><span class="stat-unit">회</span></div>
-            </div>
-          </article>
-          <article class="stat-card">
-            <div class="metric-icon red"><span class="metric-symbol heart" aria-hidden="true"></span></div>
-            <div>
-              <div class="stat-label">자격증</div>
-              <div class="stat-value"><span class="stat-number" id="certificateTotal">0</span><span class="stat-unit">개</span></div>
-            </div>
-          </article>
-          <article class="stat-card">
-            <div class="metric-icon"><span class="metric-symbol star" aria-hidden="true"></span></div>
-            <div>
-              <div class="stat-label">수상 경력</div>
-              <div class="stat-value"><span class="stat-number" id="awardTotal">0</span><span class="stat-unit">회</span></div>
-            </div>
-          </article>
-        </section>
-
-        <section class="panel">
-          <h2 class="panel-title">AI 전체 분석</h2>
-          <div class="analysis-grid">
-            <article class="analysis-card">
-              <h3 class="small-title">커리어 준비도 ⓘ</h3>
-              <div class="donut-row">
-                <div class="donut"></div>
-                <div class="skeleton-list">
-                  <div class="skeleton-line"></div>
-                  <div class="skeleton-line short"></div>
-                  <div class="skeleton-line"></div>
-                </div>
-              </div>
-            </article>
-            <article class="analysis-card">
-              <h3 class="small-title">분석된 자료 ⓘ</h3>
-              <div class="stat-value"><span class="stat-number" id="analyzedTotal">0</span><span class="stat-unit">개</span></div>
-              <div class="skeleton-line" style="margin-top:22px"></div>
-            </article>
-            <article class="analysis-card">
-              <h3 class="small-title">활동 분류 현황 ⓘ</h3>
-              <div class="donut-row">
-                <div class="donut"></div>
-                <div class="skeleton-list">
-                  <div class="skeleton-line short"></div>
-                  <div class="skeleton-line"></div>
-                  <div class="skeleton-line short"></div>
-                </div>
-              </div>
-            </article>
           </div>
         </section>
 
-        <section class="next-card">
-          <div class="metric-icon">!</div>
-          <div>
-            <h2>내 정보 입력이 필요해요</h2>
-            <p>마이페이지에서 기본 정보와 희망 직무를 저장하면 추천과 분석이 더 정확해집니다.</p>
+        <section class="analysis-dashboard" id="analysisDashboard" hidden>
+          <div class="dashboard-head">
+            <div>
+              <h1 class="page-title">AI 전체 분석</h1>
+              <p class="page-subtitle">완료된 활동 폴더를 바탕으로 강점과 활동 흐름을 키워드 중심으로 정리했어요.</p>
+            </div>
+            <a class="outline-button dashboard-cta" href="mypage.html">내 정보 수정</a>
           </div>
-          <div class="next-actions">
-            <a class="primary-button" href="mypage.html">내 정보 작성하기</a>
-            <a class="outline-button" href="create.html">활동기록 먼저 정리하기</a>
-          </div>
+
+          <section class="keyword-overview">
+            <div>
+              <p class="section-eyebrow">키워드 중심 활동 개요</p>
+              <h2>꾸준한 실행력과 협업 경험이 드러나요</h2>
+              <p>
+                완료된 프로젝트 자료를 기준으로 기획, 개발, 문제 해결, 발표 경험을 묶어 분석합니다.
+                자료가 추가될수록 강점 키워드와 활동 분류가 더 선명해집니다.
+              </p>
+            </div>
+            <div class="keyword-chip-list" aria-label="AI 분석 키워드">
+              <span>문제 해결</span>
+              <span>협업</span>
+              <span>기획</span>
+              <span>데이터 활용</span>
+            </div>
+          </section>
+
+          <section class="analysis-grid focused-analysis-grid" aria-label="AI 전체 분석 요약">
+            <article class="analysis-card focused-analysis-card">
+              <div class="analysis-card-head">
+                <h2 class="small-title">분석된 프로젝트</h2>
+                <button class="analysis-info-button" type="button" data-info-target="projectInfo" aria-label="분석된 프로젝트 설명 보기">i</button>
+              </div>
+              <div class="analysis-info-box" id="projectInfo" hidden>
+                완료된 활동 폴더 중 파일이 1개 이상 있는 프로젝트 폴더 수입니다.
+              </div>
+              <div class="stat-value"><span class="stat-number" id="analyzedProjectTotal">0</span><span class="stat-unit">개</span></div>
+              <p class="analysis-card-note">완료된 활동 폴더 기준</p>
+            </article>
+
+            <article class="analysis-card focused-analysis-card">
+              <div class="analysis-card-head">
+                <h2 class="small-title">활동 분류 현황</h2>
+                <button class="analysis-info-button" type="button" data-info-target="categoryInfo" aria-label="활동 분류 현황 설명 보기">i</button>
+              </div>
+              <div class="analysis-info-box" id="categoryInfo" hidden>
+                완료된 활동 폴더의 파일을 프로젝트 유형별로 모아 보여줍니다.
+              </div>
+              <div class="category-breakdown" id="categoryBreakdown"></div>
+            </article>
+          </section>
         </section>
       </main>
     </div>
   </div>
 
   <script>
-    const STORAGE_KEY = 'myfitfolioFolderState';
+    const STORAGE_KEY = 'myfitfolioFolders';
+    const PROFILE_KEY = 'myfitfolioProfile';
+    const SIDEBAR_WIDTH_KEY = 'myfitfolioSidebarWidth';
+
     const folderTypes = [
       { key: 'personal', label: '개인 프로젝트' },
       { key: 'team', label: '팀 프로젝트' },
@@ -172,85 +132,89 @@
       { key: 'certificate', label: '자격증' },
       { key: 'education', label: '교육' },
       { key: 'volunteer', label: '봉사' },
+      { key: 'other', label: '기타' },
     ];
+
     const folderGroups = [
-      { key: 'completed', label: '완료된 활동 폴더' },
-      { key: 'ready', label: '준비된 활동 폴더' },
+      { key: 'completed', label: '완료된 활동 폴더', containerId: 'completedFolderList' },
+      { key: 'inProgress', label: '진행중인 활동 폴더', containerId: 'inProgressFolderList' },
     ];
 
-    let folderState = loadFolderState();
-    const folders = folderState.folders;
-    const awardRecords = [];
     const fileInput = document.getElementById('fileInput');
-    const uploadButton = document.getElementById('uploadButton');
-    const deleteModeBtn = document.getElementById('deleteModeBtn');
     const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebarResizeHandle = document.getElementById('sidebarResizeHandle');
     const mainLayout = document.getElementById('mainLayout');
-    const completedFolderList = document.getElementById('completedFolderList');
-    const readyFolderList = document.getElementById('readyFolderList');
+    const profileNeededPanel = document.getElementById('profileNeededPanel');
+    const analysisDashboard = document.getElementById('analysisDashboard');
 
-    let selectedFolderId = 'completed-personal';
+    let folders = loadFolderState();
 
-    function createDefaultState() {
-      const defaultFolders = {};
-      folderGroups.forEach((group) => {
+    function createDefaultFolders() {
+      const nextFolders = {};
+      ['completed', 'inProgress'].forEach((groupKey) => {
         folderTypes.forEach((type) => {
-          const folderId = `${group.key}-${type.key}`;
-          defaultFolders[folderId] = {
+          const folderId = `${groupKey}-${type.key}`;
+          nextFolders[folderId] = {
             id: folderId,
-            group: group.key,
-            status: group.key,
+            group: groupKey,
             type: type.key,
             label: type.label,
+            open: false,
             files: [],
-            subfolders: [
-              { id: `${folderId}-planning`, name: '기획 자료', gitUrl: '' },
-              { id: `${folderId}-result`, name: '결과 자료', gitUrl: '' },
-            ],
           };
         });
       });
-      return { folders: defaultFolders };
+
+      return nextFolders;
     }
 
     function loadFolderState() {
-      try {
-        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-        if (saved?.folders) return normalizeState(saved);
-      } catch (error) {
-        console.warn('폴더 상태를 읽지 못했습니다.', error);
-      }
-      return createDefaultState();
-    }
+      const defaults = createDefaultFolders();
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) return defaults;
 
-    function normalizeState(saved) {
-      const defaults = createDefaultState();
-      folderGroups.forEach((group) => {
-        folderTypes.forEach((type) => {
-          const folderId = `${group.key}-${type.key}`;
-          const savedFolder = saved.folders[folderId] || {};
-          defaults.folders[folderId] = {
-            ...defaults.folders[folderId],
-            ...savedFolder,
-            status: savedFolder.status || savedFolder.group || group.key,
-            files: Array.isArray(savedFolder.files) ? savedFolder.files : defaults.folders[folderId].files,
-            subfolders: Array.isArray(savedFolder.subfolders) ? savedFolder.subfolders : defaults.folders[folderId].subfolders,
+      try {
+        const parsed = JSON.parse(saved);
+        Object.values(parsed).forEach((folder) => {
+          if (!folder || !folder.id) return;
+          defaults[folder.id] = {
+            ...defaults[folder.id],
+            ...folder,
+            label: normalizeFolderLabel(folder, defaults[folder.id]),
+            files: normalizeFolderFiles(folder),
           };
         });
-      });
+      } catch (error) {
+        console.warn('Folder state could not be loaded.', error);
+      }
+
       return defaults;
     }
 
-    function saveFolderState() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(folderState));
+    function normalizeFolderFiles(folder) {
+      if (Array.isArray(folder.files)) return folder.files;
+      if (!Array.isArray(folder.nestedFolders)) return [];
+
+      return folder.nestedFolders.flatMap((nested) => (
+        Array.isArray(nested.files) ? nested.files : []
+      ));
     }
 
-    function createFileId(fileName) {
-      return `${Date.now()}-${Math.random().toString(16).slice(2)}-${fileName}`;
+    function normalizeFolderLabel(folder, defaultFolder) {
+      if (folder.type === 'other' && folder.label === '기타 폴더') return '기타';
+      return folder.label || defaultFolder?.label || '';
+    }
+
+    function saveFolderState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(folders));
+    }
+
+    function createId(prefix) {
+      return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
     }
 
     function escapeHtml(value) {
-      return value.replace(/[&<>"']/g, (char) => ({
+      return String(value).replace(/[&<>"']/g, (char) => ({
         '&': '&amp;',
         '<': '&lt;',
         '>': '&gt;',
@@ -259,114 +223,164 @@
       })[char]);
     }
 
+    function getFileTypeIcon(fileName) {
+      const extension = String(fileName).split('.').pop().toLowerCase();
+      if (extension === 'pdf') return 'PDF';
+      if (['doc', 'docx', 'hwp', 'txt', 'md'].includes(extension)) return 'DOC';
+      if (['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(extension)) return 'IMG';
+      if (['ppt', 'pptx', 'key'].includes(extension)) return 'PPT';
+      if (['xls', 'xlsx', 'csv'].includes(extension)) return 'XLS';
+      return 'FILE';
+    }
+
+    function hasSavedProfile() {
+      const savedProfile = localStorage.getItem(PROFILE_KEY);
+      if (!savedProfile) return false;
+
+      try {
+        const profile = JSON.parse(savedProfile);
+        const hasBasic = Boolean(profile.name || profile.email || profile.phone || profile.address);
+        const hasEducation = Array.isArray(profile.educations) && profile.educations.some((item) => (
+          item.school || item.major || item.gpa
+        ));
+        const hasPreferences = profile.preferences && Object.values(profile.preferences).some(Boolean);
+        const hasChips = profile.chips && Object.values(profile.chips).some((values) => Array.isArray(values) && values.length > 0);
+        return hasBasic || hasEducation || hasPreferences || hasChips;
+      } catch (error) {
+        return false;
+      }
+    }
+
+    function getCompletedFoldersWithFiles() {
+      return Object.values(folders).filter((folder) => (
+        folder.group === 'completed' && folder.files.length > 0
+      ));
+    }
+
+    function getCompletedFileCount(folder) {
+      return folder.files.length;
+    }
+
+    function updateAnalysisSummary() {
+      const completedFolders = getCompletedFoldersWithFiles();
+      document.getElementById('analyzedProjectTotal').textContent = completedFolders.length;
+
+      const breakdown = folderTypes.map((type) => {
+        const folder = folders[`completed-${type.key}`];
+        return { label: type.label, count: folder ? getCompletedFileCount(folder) : 0 };
+      }).filter((item) => item.count > 0);
+
+      document.getElementById('categoryBreakdown').innerHTML = breakdown.length
+        ? breakdown.map((item) => `
+            <div class="category-row">
+              <span>${escapeHtml(item.label)}</span>
+              <strong>${item.count}개</strong>
+            </div>
+          `).join('')
+        : '<p class="empty-folder">완료된 활동 폴더에 파일을 추가하면 분류가 표시됩니다.</p>';
+    }
+
+    function renderDashboardState() {
+      const isProfileSaved = hasSavedProfile();
+      profileNeededPanel.hidden = isProfileSaved;
+      analysisDashboard.hidden = !isProfileSaved;
+      if (isProfileSaved) updateAnalysisSummary();
+    }
+
+    function renderFolders() {
+      folderGroups.forEach((group) => {
+        const container = document.getElementById(group.containerId);
+        const groupFolders = Object.values(folders).filter((folder) => folder.group === group.key);
+        container.innerHTML = groupFolders.map(renderFolder).join('');
+      });
+
+      saveFolderState();
+      renderDashboardState();
+    }
+
+    function renderFolder(folder) {
+      const totalFiles = getCompletedFileCount(folder);
+      return `
+        <article class="folder-item drop-folder ${folder.open ? 'open' : ''}" data-folder-id="${escapeHtml(folder.id)}">
+          <button class="folder-row" type="button" data-toggle-folder="${escapeHtml(folder.id)}" aria-expanded="${folder.open}">
+            <span class="mini-folder ${folder.group}" aria-hidden="true"></span>
+            <span class="folder-label">${escapeHtml(folder.label)}</span>
+            <span class="folder-count">${totalFiles}</span>
+          </button>
+          <div class="folder-tools">
+            <button class="icon-tool-button" type="button" data-rename-folder="${escapeHtml(folder.id)}" aria-label="${escapeHtml(folder.label)} 폴더명 변경">폴더명 수정</button>
+          </div>
+          <div class="uploaded-file-list">
+            ${folder.files.length ? folder.files.map((file) => renderFile(folder.id, file)).join('') : '<div class="empty-folder">파일을 이 폴더로 끌어오세요</div>'}
+          </div>
+        </article>
+      `;
+    }
+
+    function renderFile(folderId, file) {
+      return `
+        <div class="uploaded-file" draggable="true" data-file-id="${escapeHtml(file.id)}">
+          <span class="file-type-icon" aria-hidden="true">${getFileTypeIcon(file.name)}</span>
+          <span class="uploaded-file-name" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</span>
+          <button class="file-delete-btn" type="button" data-delete-file="${escapeHtml(folderId)}:${escapeHtml(file.id)}" aria-label="${escapeHtml(file.name)} 삭제">
+            <span class="trash-icon" aria-hidden="true"></span>
+          </button>
+        </div>
+      `;
+    }
+
     function addFilesToFolder(folderId, fileList) {
-      const targetFolder = folders[folderId];
-      if (!targetFolder) return;
+      const folder = folders[folderId];
+      if (!folder) return;
 
       Array.from(fileList).forEach((file) => {
-        targetFolder.files.push({
-          id: createFileId(file.name),
+        folder.files.push({
+          id: createId('file'),
           name: file.name,
-          type: (file.name.split('.').pop() || 'FILE').toUpperCase(),
-          status: '분석대기',
         });
       });
 
-      selectedFolderId = folderId;
+      folder.open = true;
       renderFolders();
     }
 
     function deleteFile(folderId, fileId) {
-      const targetFolder = folders[folderId];
-      if (!targetFolder) return;
+      const folder = folders[folderId];
+      if (!folder) return;
 
-      targetFolder.files = targetFolder.files.filter((file) => file.id !== fileId);
+      const file = folder.files.find((item) => item.id === fileId);
+      if (!file) return;
+      if (!window.confirm(`'${file.name}' 파일을 삭제하시겠습니까`)) return;
+
+      folder.files = folder.files.filter((item) => item.id !== fileId);
       renderFolders();
     }
 
-    function getSectionTotal(status) {
-      return Object.values(folders)
-        .filter((folder) => folder.status === status)
-        .reduce((total, folder) => total + folder.files.length, 0);
+    function renameFolder(folderId) {
+      const folder = folders[folderId];
+      if (!folder) return;
+
+      const nextName = window.prompt('변경할 폴더명을 입력하세요', folder.label);
+      if (!nextName || !nextName.trim()) return;
+
+      folder.label = nextName.trim();
+      renderFolders();
     }
 
-    function getTypeTotal(typeKey) {
-      return ['completed', 'ready'].reduce((total, status) => (
-        total + folders[`${status}-${typeKey}`].files.length
-      ), 0);
+    function clampSidebarWidth(width) {
+      const maxWidth = Math.min(460, Math.max(320, window.innerWidth - 520));
+      return Math.min(Math.max(width, 240), maxWidth);
     }
 
-    function updateSummary() {
-      const analyzedTotal = getSectionTotal('completed') + getSectionTotal('ready');
-
-      document.getElementById('personalTotal').textContent = getTypeTotal('personal');
-      document.getElementById('teamTotal').textContent = getTypeTotal('team');
-      document.getElementById('contestTotal').textContent = getTypeTotal('contest');
-      document.getElementById('certificateTotal').textContent = getTypeTotal('certificate');
-      document.getElementById('awardTotal').textContent = awardRecords.length;
-      document.getElementById('analyzedTotal').textContent = analyzedTotal;
+    function applySidebarWidth(width) {
+      const nextWidth = clampSidebarWidth(width);
+      mainLayout.style.setProperty('--sidebar-width', `${nextWidth}px`);
+      localStorage.setItem(SIDEBAR_WIDTH_KEY, String(nextWidth));
     }
 
-    function renderFolderList(container, status) {
-      container.innerHTML = '';
-
-      folderTypes.forEach((type) => {
-        const folderId = `${status}-${type.key}`;
-        const folder = folders[folderId];
-        const folderItem = document.createElement('div');
-        folderItem.className = folderId === selectedFolderId ? 'folder-item drop-folder active' : 'folder-item drop-folder';
-        folderItem.dataset.folderId = folderId;
-
-        folderItem.innerHTML = `
-          <span class="mini-folder" aria-hidden="true"></span>
-          <span class="folder-label">${folder.label}</span>
-          <span class="folder-count">${folder.files.length}</span>
-          <div class="uploaded-file-list"></div>
-        `;
-
-        const fileList = folderItem.querySelector('.uploaded-file-list');
-        if (folder.files.length === 0) {
-          fileList.innerHTML = '<div class="empty-folder">파일을 이 폴더로 끌어오세요</div>';
-        } else {
-          fileList.innerHTML = folder.files.map((file) => `
-            <div class="uploaded-file" draggable="true" data-file-id="${escapeHtml(file.id)}">
-              <span class="uploaded-file-name" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</span>
-              <button class="file-delete-btn" type="button" data-folder-id="${folderId}" data-file-id="${escapeHtml(file.id)}" aria-label="${escapeHtml(file.name)} 삭제">삭제</button>
-            </div>
-          `).join('');
-        }
-
-        folderItem.addEventListener('click', (event) => {
-          if (event.target.closest('.file-delete-btn')) return;
-          window.location.href = `create.html?folder=${encodeURIComponent(folderId)}`;
-        });
-
-        folderItem.addEventListener('dragover', (event) => {
-          if (!Array.from(event.dataTransfer.types).includes('Files')) return;
-          event.preventDefault();
-          folderItem.classList.add('drop-over');
-        });
-
-        folderItem.addEventListener('dragleave', () => {
-          folderItem.classList.remove('drop-over');
-        });
-
-        folderItem.addEventListener('drop', (event) => {
-          if (!event.dataTransfer.files.length) return;
-          event.preventDefault();
-          folderItem.classList.remove('drop-over');
-          addFilesToFolder(folderId, event.dataTransfer.files);
-        });
-
-        container.appendChild(folderItem);
-      });
-    }
-
-    function renderFolders() {
-      renderFolderList(completedFolderList, 'completed');
-      renderFolderList(readyFolderList, 'ready');
-      updateSummary();
-      saveFolderState();
+    const savedSidebarWidth = Number(localStorage.getItem(SIDEBAR_WIDTH_KEY));
+    if (Number.isFinite(savedSidebarWidth) && savedSidebarWidth > 0) {
+      applySidebarWidth(savedSidebarWidth);
     }
 
     document.querySelectorAll('.folder-title').forEach((button) => {
@@ -377,42 +391,111 @@
       });
     });
 
-    uploadButton.addEventListener('click', () => fileInput.click());
-
-    fileInput.addEventListener('change', (event) => {
-      if (event.target.files.length > 0) {
-        addFilesToFolder(selectedFolderId, event.target.files);
-        event.target.value = '';
-      }
-    });
-
-    deleteModeBtn.addEventListener('click', () => {
-      const isActive = document.body.classList.toggle('delete-mode-active');
-      deleteModeBtn.textContent = isActive ? '삭제 모드 종료' : '삭제 모드';
-    });
-
     sidebarToggle.addEventListener('click', () => {
       const isCollapsed = mainLayout.classList.toggle('sidebar-collapsed');
       sidebarToggle.setAttribute('aria-label', isCollapsed ? '사이드바 열기' : '사이드바 닫기');
     });
 
-    document.addEventListener('click', (event) => {
-      const deleteButton = event.target.closest('.file-delete-btn');
-      if (!deleteButton) return;
+    let sidebarResizeStart = null;
 
-      deleteFile(deleteButton.dataset.folderId, deleteButton.dataset.fileId);
+    sidebarResizeHandle.addEventListener('pointerdown', (event) => {
+      if (mainLayout.classList.contains('sidebar-collapsed')) return;
+      sidebarResizeStart = {
+        pointerId: event.pointerId,
+        x: event.clientX,
+        width: document.getElementById('activitySidebar').getBoundingClientRect().width,
+      };
+      sidebarResizeHandle.setPointerCapture(event.pointerId);
+      document.body.classList.add('sidebar-resizing');
     });
 
-    window.addEventListener('storage', (event) => {
-      if (event.key !== STORAGE_KEY) return;
-      folderState = loadFolderState();
-      Object.keys(folders).forEach((key) => delete folders[key]);
-      Object.assign(folders, folderState.folders);
-      renderFolders();
+    sidebarResizeHandle.addEventListener('pointermove', (event) => {
+      if (!sidebarResizeStart) return;
+      applySidebarWidth(sidebarResizeStart.width + event.clientX - sidebarResizeStart.x);
+    });
+
+    function finishSidebarResize(event) {
+      if (!sidebarResizeStart || event.pointerId !== sidebarResizeStart.pointerId) return;
+      sidebarResizeStart = null;
+      document.body.classList.remove('sidebar-resizing');
+    }
+
+    sidebarResizeHandle.addEventListener('pointerup', finishSidebarResize);
+    sidebarResizeHandle.addEventListener('pointercancel', finishSidebarResize);
+
+    document.addEventListener('click', (event) => {
+      const folderToggle = event.target.closest('[data-toggle-folder]');
+      if (folderToggle) {
+        const folder = folders[folderToggle.dataset.toggleFolder];
+        if (folder) {
+          folder.open = !folder.open;
+          renderFolders();
+        }
+        return;
+      }
+
+      const renameButton = event.target.closest('[data-rename-folder]');
+      if (renameButton) {
+        renameFolder(renameButton.dataset.renameFolder);
+        return;
+      }
+
+      const deleteButton = event.target.closest('[data-delete-file]');
+      if (deleteButton) {
+        const [folderId, fileId] = deleteButton.dataset.deleteFile.split(':');
+        deleteFile(folderId, fileId);
+        return;
+      }
+
+      const infoButton = event.target.closest('.analysis-info-button');
+      if (infoButton) {
+        const infoBox = document.getElementById(infoButton.dataset.infoTarget);
+        if (infoBox) infoBox.hidden = !infoBox.hidden;
+      }
+    });
+
+    function clearDropOverFolders(exceptFolder = null) {
+      document.querySelectorAll('.drop-folder.drop-over').forEach((folder) => {
+        if (folder !== exceptFolder) folder.classList.remove('drop-over');
+      });
+    }
+
+    document.addEventListener('dragover', (event) => {
+      const target = event.target.closest('.drop-folder');
+      if (!target || !Array.from(event.dataTransfer.types).includes('Files')) {
+        clearDropOverFolders();
+        return;
+      }
+      event.preventDefault();
+      clearDropOverFolders(target);
+      target.classList.add('drop-over');
+    });
+
+    document.addEventListener('dragleave', (event) => {
+      const target = event.target.closest('.drop-folder');
+      if (target && !target.contains(event.relatedTarget)) {
+        target.classList.remove('drop-over');
+      }
+    });
+
+    document.addEventListener('drop', (event) => {
+      const target = event.target.closest('.drop-folder');
+      if (!target || !event.dataTransfer.files.length) return;
+      event.preventDefault();
+      clearDropOverFolders();
+      addFilesToFolder(target.dataset.folderId, event.dataTransfer.files);
+    });
+
+    document.addEventListener('dragend', () => {
+      clearDropOverFolders();
+    });
+
+    document.querySelector('[data-analysis-start]').addEventListener('click', () => {
+      renderDashboardState();
+      analysisDashboard.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
 
     renderFolders();
   </script>
-  <script src="auth-nav.js"></script>
 </body>
 </html>

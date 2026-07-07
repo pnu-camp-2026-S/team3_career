@@ -34,13 +34,22 @@
     document.querySelectorAll('[data-logout]').forEach((button) => {
       button.addEventListener('click', () => {
         clearAccountState();
-        window.location.href = 'main.html';
+        window.location.href = 'login.html';
       });
     });
 
     document.addEventListener('click', () => closeAllMenus());
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape') closeAllMenus();
+    });
+  }
+
+  function wireAuthLoginButtons() {
+    document.querySelectorAll('[data-login]').forEach((button) => {
+      button.addEventListener('click', () => {
+        sessionStorage.setItem(LOGIN_KEY, 'true');
+        window.location.href = 'main.html';
+      });
     });
   }
 
@@ -66,6 +75,15 @@
     `;
   }
 
-  wireProfileMenus();
-  renderLoggedOutMain();
-})();
+  function initAuthNav() {
+    wireAuthLoginButtons();
+    wireProfileMenus();
+    renderLoggedOutMain();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAuthNav);
+  } else {
+    initAuthNav();
+  }
+}());

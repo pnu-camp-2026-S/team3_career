@@ -302,22 +302,6 @@ const scheduleDates = {
   10: '2026-10-04'
 };
 
-function parseScheduleDate(date) {
-  const [year, month, day] = date.split('-').map(Number);
-  return year * 10000 + month * 100 + day;
-}
-
-function formatScheduleDate(date) {
-  const [, month, day] = date.split('-').map(Number);
-  return `${month}/${day}`;
-}
-
-function getDateKey(date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
 
 function getTodayDate() {
   const today = new Date();
@@ -361,6 +345,24 @@ function getReadinessScheduleText(id, readinessReason) {
   return `마감일이 ${Math.abs(diffDays)}일 지났지만, ${cleanReason}`;
 }
 
+
+function parseScheduleDate(date) {
+  const [year, month, day] = date.split('-').map(Number);
+  return year * 10000 + month * 100 + day;
+}
+
+function formatScheduleDate(date) {
+  const [, month, day] = date.split('-').map(Number);
+  return `${month}/${day}`;
+}
+
+function getDateKey(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 function getSortedSavedSchedules() {
   return savedSchedules
     .map((event, index) => ({ ...event, savedIndex: index }))
@@ -368,20 +370,22 @@ function getSortedSavedSchedules() {
 }
 
 function updateSaveButton(item) {
-  const isSaved = savedSchedules.some((event) => event.id === item.id);
+    const isSaved = savedSchedules.some((event) => event.id === item.id);
 
   document
     .querySelectorAll(`.activity-card[data-id="${item.id}"]`)
     .forEach((card) => card.classList.toggle('is-saved', isSaved));
-
+  
   if (!activeDetailElement) return;
 
   const saveButton = activeDetailElement.querySelector('#save-calendar');
   if (!saveButton) return;
 
+  
   saveButton.disabled = false;
   saveButton.textContent = isSaved ? '저장 취소' : '저장하기';
   saveButton.classList.toggle('is-danger', isSaved);
+
 }
 
 function animateCalendarTurn(direction) {

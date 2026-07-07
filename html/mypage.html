@@ -1,35 +1,17 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Myfitfolio - 마이페이지</title>
-  <link rel="stylesheet" href="fitfolio.css" />
+  <link rel="stylesheet" href="../css/common.css" />
+  <link rel="stylesheet" href="../css/mypage.css" />
 </head>
 <body>
   <div class="app-shell">
-    <header class="top-nav">
-      <a class="brand-word" href="main.html">Myfit<span>folio</span></a>
-      <nav class="nav-tabs" aria-label="주요 메뉴">
-        <a class="nav-tab" href="main.html">메인</a>
-        <a class="nav-tab" href="create.html">파일관리</a>
-        <a class="nav-tab" href="portfolio_create.html">포트폴리오 생성</a>
-        <a class="nav-tab" href="portfolio_manage.html">포트폴리오 관리</a>
-        <a class="nav-tab" href="contest.html">활동 추천</a>
-        <a class="nav-tab active" href="mypage.html">마이페이지</a>
-      </nav>
-      <div class="nav-actions">
-        <div class="profile-menu">
-          <button class="user-chip" type="button" data-profile-toggle aria-label="프로필 메뉴 열기" aria-haspopup="menu" aria-expanded="false">
-            <span class="avatar"></span>
-          </button>
-          <div class="profile-dropdown" data-profile-menu role="menu">
-            <a href="mypage.html" role="menuitem">마이페이지</a>
-            <button type="button" data-logout role="menuitem">로그아웃</button>
-          </div>
-        </div>
-      </div>
-    </header>
+    <div data-shared-nav data-active="mypage"></div>
+    <script src="../js/shared-nav.js"></script>
+    <script src="../js/auth-nav.js"></script>
 
     <main class="mypage">
       <div class="mypage-content">
@@ -108,21 +90,36 @@
                   <label>세부직무 선택</label>
                   <button class="picker-trigger" type="button" data-open-search="detailJob">
                     <span class="placeholder" data-picked-value="detailJob">검색하여 선택</span>
-                    <span aria-hidden="true">⌕</span>
+                     <span class="picker-search-icon" aria-hidden="true">
+                      <svg class="svg-icon" viewBox="0 0 24 24">
+                        <circle cx="10.8" cy="10.8" r="5.9"></circle>
+                        <path d="m15.4 15.4 3.8 3.8"></path>
+                      </svg>
+                    </span>
                   </button>
                 </div>
                 <div class="form-field">
                   <label>희망 업종</label>
                   <button class="picker-trigger" type="button" data-open-search="workIndustry">
                     <span class="placeholder" data-picked-value="workIndustry">검색하여 선택</span>
-                    <span aria-hidden="true">⌕</span>
+                     <span class="picker-search-icon" aria-hidden="true">
+                      <svg class="svg-icon" viewBox="0 0 24 24">
+                        <circle cx="10.8" cy="10.8" r="5.9"></circle>
+                        <path d="m15.4 15.4 3.8 3.8"></path>
+                      </svg>
+                    </span>
                   </button>
                 </div>
                 <div class="form-field">
                   <label>희망근무지역</label>
                   <button class="picker-trigger" type="button" data-open-search="workRegion">
                     <span class="placeholder" data-picked-value="workRegion">검색하여 선택</span>
-                    <span aria-hidden="true">⌕</span>
+                     <span class="picker-search-icon" aria-hidden="true">
+                      <svg class="svg-icon" viewBox="0 0 24 24">
+                        <circle cx="10.8" cy="10.8" r="5.9"></circle>
+                        <path d="m15.4 15.4 3.8 3.8"></path>
+                      </svg>
+                    </span>
                   </button>
                 </div>
                 <div class="form-field">
@@ -151,6 +148,20 @@
             </div>
           </section>
 
+           <section class="profile-section account-section" id="account">
+            <h2 class="section-heading">계정 관리</h2>
+            <div class="account-card">
+              <div>
+                <h3>로그인 계정 관리</h3>
+                <p>현재 계정에서 로그아웃하거나 회원 탈퇴 절차로 이동할 수 있습니다.</p>
+              </div>
+              <div class="account-actions">
+                <button class="outline-button" type="button" data-logout>로그아웃</button>
+                <a class="danger-button" href="withdraw.html">탈퇴하기</a>
+              </div>
+            </div>
+          </section>
+
           <div class="form-actions" data-form-actions></div>
         </div>
       </div>
@@ -161,6 +172,7 @@
         <button type="button" data-anchor-target="school">학력</button>
         <button type="button" data-anchor-target="condition">희망근무조건</button>
         <button type="button" data-anchor-target="interest">관심분야</button>
+        <button type="button" data-anchor-target="account">계정 관리</button>
       </aside>
     </main>
     <div id="modalRoot"></div>
@@ -530,7 +542,10 @@
             <button class="icon-button modal-close" type="button" data-close-modal aria-label="닫기">×</button>
           </div>
           <div class="modal-search-box">
-            <span aria-hidden="true">⌕</span>
+            <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="10.8" cy="10.8" r="5.9"></circle>
+              <path d="m15.4 15.4 3.8 3.8"></path>
+            </svg>
             <input data-search-input type="search" placeholder="${config.placeholder}" autofocus />
           </div>
           <div class="search-options" data-search-options>${renderSearchOptions(type)}</div>
@@ -829,6 +844,5 @@
     loadSavedProfile();
     renderAllDynamicParts();
   </script>
-  <script src="auth-nav.js"></script>
 </body>
 </html>

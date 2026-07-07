@@ -1,63 +1,53 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Myfitfolio - 파일 관리</title>
-  <link rel="stylesheet" href="fitfolio.css" />
+  <link rel="stylesheet" href="../css/common.css" />
+  <link rel="stylesheet" href="../css/create.css" />
 </head>
 <body>
   <div class="app-shell">
-    <header class="top-nav">
-      <a class="brand-word" href="main.html">Myfit<span>folio</span></a>
-      <nav class="nav-tabs" aria-label="주요 메뉴">
-        <a class="nav-tab" href="main.html">메인</a>
-        <a class="nav-tab active" href="create.html">파일관리</a>
-        <a class="nav-tab" href="portfolio_create.html">포트폴리오 생성</a>
-        <a class="nav-tab" href="portfolio_manage.html">포트폴리오 관리</a>
-        <a class="nav-tab" href="contest.html">활동 추천</a>
-        <a class="nav-tab" href="mypage.html">마이페이지</a>
-      </nav>
-      <div class="nav-actions">
-        <div class="profile-menu">
-          <button class="user-chip" type="button" data-profile-toggle aria-label="프로필 메뉴 열기" aria-haspopup="menu" aria-expanded="false">
-            <span class="avatar"></span>
-          </button>
-          <div class="profile-dropdown" data-profile-menu role="menu">
-            <a href="mypage.html" role="menuitem">마이페이지</a>
-            <button type="button" data-logout role="menuitem">로그아웃</button>
-          </div>
-        </div>
-      </div>
-    </header>
+    <div data-shared-nav data-active="create"></div>
+    <script src="../js/shared-nav.js"></script>
+    <script src="../js/auth-nav.js"></script>
 
     <main class="page-shell file-manager-page">
       <section class="file-manager-hero">
         <div>
           <p class="section-kicker">파일 관리</p>
-          <h1 class="page-title">활동 자료를 프로젝트와 세부 폴더별로 정리하세요</h1>
-          <p class="page-subtitle">메인 페이지와 같은 폴더 데이터를 사용하므로 업로드한 자료와 폴더 상태가 함께 반영됩니다.</p>
+          <h1 class="page-title">프로젝트 폴더별 자료를 확인하고 수정하세요</h1>
+          <p class="page-subtitle">메인 사이드바에서 선택한 폴더가 이 화면의 수정 가능한 자료 관리 패널로 연결됩니다.</p>
         </div>
         <div class="file-manager-actions">
-          <button class="ghost-button" type="button" data-action="make-md">AI 요약으로 md 만들기</button>
+          <button class="ghost-button" type="button" data-action="make-md">AI 대화로 md 만들기</button>
+          <button class="outline-button" type="button" data-action="sync-github">GitHub 동기화</button>
+          <button class="primary-button" type="button" data-action="analyze">분석하기</button>
         </div>
       </section>
 
-      <section class="panel ai-status-panel" aria-label="AI 정리 상태">
-        <div class="panel-head">
-          <div>
-            <h2 class="panel-title">AI 정리 상태</h2>
-            <p class="panel-note" id="analysisMessage">폴더를 선택하면 자료 수, 세부 폴더, 정리 진행 상태를 이곳에서 확인할 수 있습니다.</p>
-          </div>
-          <span class="status-pill" id="analysisStatus">대기</span>
-        </div>
-        <div class="manager-progress"><span id="analysisProgress"></span></div>
-        <div class="file-artifact-grid">
-          <div><strong>summary.md</strong><span id="summaryState">요약 생성 대기</span></div>
-          <div><strong>index.json</strong><span id="indexState">폴더 구조 반영 대기</span></div>
-          <div><strong>log.md</strong><span id="logState">변경 이력 없음</span></div>
-          <div><strong>Git 연결</strong><span id="gitState">세부 폴더를 선택하면 연결 상태가 표시됩니다.</span></div>
-        </div>
+      <section class="file-dashboard" aria-label="파일 관리 요약">
+        <article class="file-stat-card">
+          <span class="stat-label">전체 자료</span>
+          <strong id="totalFileCount">0</strong>
+          <small>모든 프로젝트 폴더 합계</small>
+        </article>
+        <article class="file-stat-card">
+          <span class="stat-label">분석 완료</span>
+          <strong id="completedFileCount">0</strong>
+          <small>AI 요약 또는 분석 완료 자료</small>
+        </article>
+        <article class="file-stat-card">
+          <span class="stat-label">선택된 폴더</span>
+          <strong id="selectedFolderName">개인 프로젝트</strong>
+          <small id="selectedFolderGroup">완료된 활동 폴더</small>
+        </article>
+        <article class="file-stat-card">
+          <span class="stat-label">최근 변경 상태</span>
+          <strong id="latestChangeState">대기</strong>
+          <small>클릭하면 상태가 이곳에 반영됩니다.</small>
+        </article>
       </section>
 
       <section class="file-manager-layout">
@@ -65,37 +55,64 @@
           <div class="panel-head">
             <div>
               <h2 class="panel-title">폴더 목록</h2>
-              <p class="panel-note">최초 진입 시 폴더를 크게 보여 주고, 프로젝트를 클릭하면 오른쪽에 상태창이 열립니다.</p>
+              <p class="panel-note">메인 사이드바와 같은 폴더 형식입니다.</p>
             </div>
+            <button class="ghost-button compact-button" type="button" data-action="create-folder">폴더 추가</button>
           </div>
-          <div id="fileManagerFolderGroups" class="manager-folder-groups large-folder-groups"></div>
+          <div id="fileManagerFolderGroups" class="manager-folder-groups"></div>
         </aside>
 
         <section class="panel editable-file-panel">
           <div class="panel-head">
             <div>
-              <h2 class="panel-title" id="editablePanelTitle">개인 프로젝트 상태창</h2>
-              <p class="panel-note" id="editablePanelDesc">선택한 프로젝트의 파일과 세부 폴더를 확인합니다.</p>
+              <h2 class="panel-title" id="editablePanelTitle">개인 프로젝트 자료</h2>
+              <p class="panel-note" id="editablePanelDesc">선택한 폴더의 자료를 확인하고 클릭 반응을 테스트합니다.</p>
             </div>
             <input class="visually-hidden" id="managedFileInput" type="file" multiple />
             <button class="primary-button compact-button" type="button" data-action="add-file">자료 추가</button>
           </div>
 
-          <div class="project-status-card" id="projectStatus"></div>
-
           <div class="manager-dropzone" data-action="add-file">
-            <strong>자료를 추가하거나 선택한 프로젝트에 배치하세요</strong>
-            <span>실제 파일 내용은 저장하지 않고 파일명과 상태만 화면에 반영합니다.</span>
+            <strong>자료를 추가하거나 선택한 폴더에 배치하세요</strong>
+            <span>실제 저장 없이 파일명과 상태만 화면에 반영됩니다.</span>
           </div>
 
-          <div class="subfolder-toolbar">
-            <h3>세부 폴더</h3>
-            <button class="ghost-button compact-button" type="button" data-action="create-subfolder">세부 폴더 추가</button>
-          </div>
-          <div id="subfolderList" class="subfolder-list"></div>
-
-          <h3 class="manager-section-title">프로젝트 자료</h3>
           <div id="managedFileList" class="manager-file-list"></div>
+        </section>
+      </section>
+
+      <section class="file-manager-layout secondary-layout">
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2 class="panel-title">AI 정리 상태</h2>
+              <p class="panel-note" id="analysisMessage">자료를 선택하고 AI 요약 또는 분석하기를 눌러 상태 변화를 확인하세요.</p>
+            </div>
+            <span class="status-pill" id="analysisStatus">미분석</span>
+          </div>
+          <div class="manager-progress"><span id="analysisProgress"></span></div>
+          <div class="file-artifact-grid">
+            <div><strong>summary.md</strong><span id="summaryState">생성 대기</span></div>
+            <div><strong>index.json</strong><span id="indexState">폴더 순서 반영 대기</span></div>
+            <div><strong>log.md</strong><span id="logState">변경 이력 없음</span></div>
+            <div><strong>우선순위</strong><span>목록 순서대로 분석</span></div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2 class="panel-title">AI 대화창</h2>
+              <p class="panel-note">자료 정리 방향을 묻는 클릭 확인용 대화 영역입니다.</p>
+            </div>
+          </div>
+          <div class="manager-chat-log" id="chatLog">
+            <div class="manager-bubble ai">선택한 폴더의 자료를 기준으로 파일 요약, 누락 정보, 포트폴리오 연결 방향을 정리할 수 있어요.</div>
+          </div>
+          <div class="manager-chat-input">
+            <input id="chatInput" type="text" placeholder="예: 이 자료를 어떻게 정리하면 좋아?" />
+            <button class="primary-button compact-button" type="button" data-action="send-chat">전송</button>
+          </div>
         </section>
       </section>
     </main>
@@ -107,14 +124,13 @@
     <div class="manager-modal-card">
       <div class="panel-head">
         <h2 class="panel-title" id="modalTitle">상세 정보</h2>
-        <button class="icon-button" type="button" data-action="close-modal" aria-label="닫기">x</button>
+        <button class="icon-button" type="button" data-action="close-modal" aria-label="닫기">×</button>
       </div>
       <div id="modalBody"></div>
     </div>
   </div>
 
   <script>
-    const STORAGE_KEY = 'myfitfolioFolderState';
     const folderTypes = [
       { key: 'personal', label: '개인 프로젝트' },
       { key: 'team', label: '팀 프로젝트' },
@@ -123,84 +139,41 @@
       { key: 'education', label: '교육' },
       { key: 'volunteer', label: '봉사' },
     ];
+
     const folderGroups = [
       { key: 'completed', label: '완료된 활동 폴더' },
       { key: 'ready', label: '준비된 활동 폴더' },
     ];
 
+    const folders = {};
+    const files = {};
     let selectedFolderId = new URLSearchParams(window.location.search).get('folder') || 'completed-personal';
-    let selectedSubfolderId = null;
+    let nextFileId = 1;
     let toastTimer = null;
-    let state = loadFolderState();
 
-    function createDefaultState() {
-      const folders = {};
-      folderGroups.forEach((group) => {
-        folderTypes.forEach((type) => {
-          const folderId = `${group.key}-${type.key}`;
-          folders[folderId] = {
-            id: folderId,
-            group: group.key,
-            type: type.key,
-            label: type.label,
-            files: [],
-            subfolders: [
-              { id: `${folderId}-planning`, name: '기획 자료', gitUrl: '' },
-              { id: `${folderId}-result`, name: '결과 자료', gitUrl: '' },
-            ],
-          };
-        });
+    folderGroups.forEach((group) => {
+      folderTypes.forEach((type) => {
+        const folderId = `${group.key}-${type.key}`;
+        folders[folderId] = { id: folderId, group: group.key, label: type.label };
+        files[folderId] = [];
       });
+    });
 
-      folders['completed-personal'].files.push({ id: createFileId('서비스_기획서.pdf'), name: '서비스_기획서.pdf', type: 'PDF', status: '분석완료' });
-      folders['completed-team'].files.push({ id: createFileId('팀프로젝트_회의록.md'), name: '팀프로젝트_회의록.md', type: 'MD', status: '작성완료' });
-      folders['ready-contest'].files.push({ id: createFileId('공모전_발표자료.pptx'), name: '공모전_발표자료.pptx', type: 'PPTX', status: '분석대기' });
-      folders['ready-education'].files.push({ id: createFileId('교육과정_수료증.png'), name: '교육과정_수료증.png', type: 'PNG', status: '분석대기' });
+    if (!folders[selectedFolderId]) selectedFolderId = 'completed-personal';
 
-      return { folders };
-    }
+    addSeedFile('completed-personal', '서비스_기획서.pdf', 'PDF', '분석완료');
+    addSeedFile('completed-team', '팀프로젝트_회의록.md', 'MD', '작성완료');
+    addSeedFile('ready-contest', '공모전_발표자료.pptx', 'PPT', '분석대기');
+    addSeedFile('ready-education', '교육과정_수료증.png', 'IMG', '분석대기');
 
-    function loadFolderState() {
-      try {
-        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-        if (saved?.folders) return normalizeState(saved);
-      } catch (error) {
-        console.warn('폴더 상태를 읽지 못했습니다.', error);
-      }
-      return createDefaultState();
-    }
-
-    function normalizeState(saved) {
-      const defaults = createDefaultState();
-      folderGroups.forEach((group) => {
-        folderTypes.forEach((type) => {
-          const folderId = `${group.key}-${type.key}`;
-          const savedFolder = saved.folders[folderId] || {};
-          defaults.folders[folderId] = {
-            ...defaults.folders[folderId],
-            ...savedFolder,
-            files: Array.isArray(savedFolder.files) ? savedFolder.files : defaults.folders[folderId].files,
-            subfolders: Array.isArray(savedFolder.subfolders) ? savedFolder.subfolders : defaults.folders[folderId].subfolders,
-          };
-        });
-      });
-      return defaults;
-    }
-
-    function saveFolderState() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    }
-
-    function createFileId(fileName) {
-      return `${Date.now()}-${Math.random().toString(16).slice(2)}-${fileName}`;
+    function addSeedFile(folderId, name, type, status) {
+      files[folderId].push({ id: `file-${nextFileId++}`, name, type, status });
     }
 
     function render() {
-      if (!state.folders[selectedFolderId]) selectedFolderId = 'completed-personal';
       renderFolderGroups();
-      renderProjectPanel();
-      updateAiStatus();
-      saveFolderState();
+      renderFilePanel();
+      updateDashboard();
     }
 
     function renderFolderGroups() {
@@ -211,12 +184,11 @@
           <div class="manager-folder-list">
             ${folderTypes.map((type) => {
               const folderId = `${group.key}-${type.key}`;
-              const folder = state.folders[folderId];
               return `
                 <button class="manager-folder-item ${folderId === selectedFolderId ? 'active' : ''}" type="button" data-folder-id="${folderId}">
                   <span class="mini-folder" aria-hidden="true"></span>
-                  <span>${folder.label}</span>
-                  <strong>${folder.files.length}</strong>
+                  <span>${type.label}</span>
+                  <strong>${files[folderId].length}</strong>
                 </button>
               `;
             }).join('')}
@@ -225,88 +197,58 @@
       `).join('');
     }
 
-    function renderProjectPanel() {
-      const folder = state.folders[selectedFolderId];
-      const files = folder.files;
-      document.getElementById('editablePanelTitle').textContent = `${folder.label} 상태창`;
-      document.getElementById('editablePanelDesc').textContent = `${getGroupLabel(folder.group)} 안의 ${folder.label} 자료를 관리합니다.`;
-      document.getElementById('projectStatus').innerHTML = `
-        <div><span>프로젝트</span><strong>${folder.label}</strong></div>
-        <div><span>자료 수</span><strong>${files.length}개</strong></div>
-        <div><span>세부 폴더</span><strong>${folder.subfolders.length}개</strong></div>
-        <div><span>Git 연결</span><strong>${folder.subfolders.filter((item) => item.gitUrl).length}개</strong></div>
-      `;
-      renderSubfolders(folder);
-      renderFiles(folder);
-    }
-
-    function renderSubfolders(folder) {
-      const list = document.getElementById('subfolderList');
-      list.innerHTML = folder.subfolders.map((subfolder) => `
-        <article class="subfolder-card ${selectedSubfolderId === subfolder.id ? 'active' : ''}" data-subfolder-id="${subfolder.id}">
-          <div>
-            <strong>${escapeHtml(subfolder.name)}</strong>
-            <span>${subfolder.gitUrl ? escapeHtml(subfolder.gitUrl) : 'Git 레포지토리 미연결'}</span>
-          </div>
-          <button class="outline-button compact-button" type="button" data-action="connect-git" data-subfolder-id="${subfolder.id}">
-            ${subfolder.gitUrl ? 'Git 변경' : 'Git 연결'}
-          </button>
-        </article>
-      `).join('');
-    }
-
-    function renderFiles(folder) {
-      const list = document.getElementById('managedFileList');
-      list.innerHTML = folder.files.length
-        ? folder.files.map((file, index) => `
+    function renderFilePanel() {
+      const selectedFolder = folders[selectedFolderId];
+      const selectedFiles = files[selectedFolderId];
+      document.getElementById('editablePanelTitle').textContent = `${selectedFolder.label} 자료`;
+      document.getElementById('editablePanelDesc').textContent = `${getGroupLabel(selectedFolder.group)}의 ${selectedFolder.label} 폴더를 수정하는 클릭 확인용 패널입니다.`;
+      document.getElementById('managedFileList').innerHTML = selectedFiles.length
+        ? selectedFiles.map((file, index) => `
             <article class="manager-file-card">
-              <div class="file-type-chip">${escapeHtml(file.type)}</div>
+              <div class="file-type-chip">${file.type}</div>
               <div>
                 <strong title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</strong>
-                <span>${folder.label} · 우선순위 ${index + 1}</span>
+                <span>${selectedFolder.label} · 우선순위 ${index + 1}</span>
               </div>
               <div class="manager-file-actions">
-                <span class="status-pill ${getStatusClass(file.status)}">${escapeHtml(file.status)}</span>
+                <span class="status-pill ${getStatusClass(file.status)}">${file.status}</span>
                 <button class="ghost-button compact-button" type="button" data-action="preview-file" data-file-id="${file.id}">미리보기</button>
                 <button class="ghost-button compact-button" type="button" data-action="summarize-file" data-file-id="${file.id}">AI 요약</button>
                 <button class="ghost-button compact-button danger-button" type="button" data-action="delete-file" data-file-id="${file.id}">삭제</button>
               </div>
             </article>
           `).join('')
-        : '<div class="manager-empty"><strong>이 프로젝트에는 아직 자료가 없습니다.</strong><span>자료 추가 버튼으로 파일 관리 흐름을 확인하세요.</span></div>';
+        : '<div class="manager-empty"><strong>이 폴더에는 아직 자료가 없습니다.</strong><span>자료 추가 버튼을 눌러 파일 관리 흐름을 확인하세요.</span></div>';
     }
 
-    function updateAiStatus() {
-      const folder = state.folders[selectedFolderId];
-      const allFiles = Object.values(state.folders).flatMap((folderItem) => folderItem.files);
+    function updateDashboard() {
+      const allFiles = Object.values(files).flat();
       const completedFiles = allFiles.filter((file) => file.status === '분석완료' || file.status === '작성완료');
-      const progress = allFiles.length ? Math.round((completedFiles.length / allFiles.length) * 100) : 0;
-      const selectedGit = folder.subfolders.find((item) => item.id === selectedSubfolderId)?.gitUrl;
-
-      document.getElementById('analysisStatus').textContent = progress === 100 ? '정리완료' : '정리중';
-      document.getElementById('analysisStatus').className = `status-pill ${progress === 100 ? 'done' : 'ready'}`;
-      document.getElementById('analysisMessage').textContent = `${folder.label}에 자료 ${folder.files.length}개와 세부 폴더 ${folder.subfolders.length}개가 있습니다.`;
-      document.getElementById('analysisProgress').style.width = `${Math.max(progress, 8)}%`;
-      document.getElementById('summaryState').textContent = completedFiles.length ? '요약 초안 생성됨' : '요약 생성 대기';
-      document.getElementById('indexState').textContent = '공통 폴더 상태와 동기화됨';
-      document.getElementById('logState').textContent = allFiles.length ? '최근 변경 이력 있음' : '변경 이력 없음';
-      document.getElementById('gitState').textContent = selectedGit || '세부 폴더를 선택하면 연결 상태가 표시됩니다.';
+      const selectedFolder = folders[selectedFolderId];
+      document.getElementById('totalFileCount').textContent = allFiles.length;
+      document.getElementById('completedFileCount').textContent = completedFiles.length;
+      document.getElementById('selectedFolderName').textContent = selectedFolder.label;
+      document.getElementById('selectedFolderGroup').textContent = getGroupLabel(selectedFolder.group);
+      document.getElementById('summaryState').textContent = completedFiles.length ? '요약 초안 생성됨' : '생성 대기';
+      document.getElementById('indexState').textContent = allFiles.length ? '폴더 목록과 파일 순서 반영됨' : '폴더 순서 반영 대기';
+      document.getElementById('logState').textContent = allFiles.length ? '최근 변경 기록 있음' : '변경 이력 없음';
     }
 
     function addFileFromName(fileName) {
       const type = (fileName.split('.').pop() || 'FILE').toUpperCase();
-      state.folders[selectedFolderId].files.push({ id: createFileId(fileName), name: fileName, type, status: '분석대기' });
+      files[selectedFolderId].push({ id: `file-${nextFileId++}`, name: fileName, type, status: '분석대기' });
+      setLatestChange('자료 추가');
       render();
-      showToast('선택한 프로젝트에 자료가 추가되었습니다.');
+      showToast('선택한 폴더에 자료가 추가되었습니다.');
     }
 
     function addFakeFile() {
-      const samples = ['활동_증빙자료.pdf', '결과_이미지.png', '팀_회의록.md', '발표_초안.pptx'];
-      addFileFromName(samples[Math.floor(Math.random() * samples.length)]);
+      const samples = ['활동_증빙자료.pdf', '결과_이미지.png', '팀회의록.md', '발표_초안.pptx'];
+      addFileFromName(samples[nextFileId % samples.length]);
     }
 
     function getSelectedFile(fileId) {
-      return state.folders[selectedFolderId].files.find((file) => file.id === fileId);
+      return files[selectedFolderId].find((file) => file.id === fileId);
     }
 
     function previewFile(fileId) {
@@ -315,8 +257,8 @@
       showModal('파일 미리보기', `
         <div class="manager-preview">
           <strong>${escapeHtml(file.name)}</strong>
-          <p>실제 파일을 서버에 저장하지 않는 프로토타입이므로 파일명, 유형, 상태를 중심으로 확인합니다.</p>
-          <p>파일 유형: ${escapeHtml(file.type)}<br>현재 상태: ${escapeHtml(file.status)}<br>연결 폴더: ${state.folders[selectedFolderId].label}</p>
+          <p>실제 파일을 읽지 않고, 미리보기 클릭이 가능한지 확인하는 화면입니다.</p>
+          <p>파일 유형: ${file.type}<br>현재 상태: ${file.status}<br>연결 폴더: ${folders[selectedFolderId].label}</p>
         </div>
       `);
     }
@@ -325,47 +267,46 @@
       const file = getSelectedFile(fileId);
       if (!file) return;
       file.status = '분석완료';
+      document.getElementById('analysisStatus').textContent = '요약완료';
+      document.getElementById('analysisStatus').className = 'status-pill done';
+      document.getElementById('analysisMessage').textContent = `${file.name} 파일의 AI 요약이 완료된 것처럼 표시했습니다.`;
+      document.getElementById('analysisProgress').style.width = '72%';
+      setLatestChange('AI 요약 완료');
       render();
       showToast('AI 요약 상태로 변경했습니다.');
     }
 
     function deleteFile(fileId) {
-      const folder = state.folders[selectedFolderId];
-      folder.files = folder.files.filter((file) => file.id !== fileId);
+      const targetFiles = files[selectedFolderId];
+      files[selectedFolderId] = targetFiles.filter((file) => file.id !== fileId);
+      setLatestChange('자료 삭제');
       render();
       showToast('자료가 목록에서 삭제되었습니다.');
     }
 
-    function createSubfolder() {
-      const name = prompt('추가할 세부 폴더 이름을 입력하세요.', '새 세부 폴더');
-      if (!name?.trim()) return;
-      const folder = state.folders[selectedFolderId];
-      const subfolder = { id: `${selectedFolderId}-${Date.now()}`, name: name.trim(), gitUrl: '' };
-      folder.subfolders.push(subfolder);
-      selectedSubfolderId = subfolder.id;
-      render();
-      showToast('세부 폴더가 추가되었습니다.');
+    function runAnalysis() {
+      document.getElementById('analysisStatus').textContent = '분석완료';
+      document.getElementById('analysisStatus').className = 'status-pill done';
+      document.getElementById('analysisMessage').textContent = '선택한 폴더의 자료를 기반으로 분석 결과가 생성된 것처럼 표시했습니다.';
+      document.getElementById('analysisProgress').style.width = '100%';
+      setLatestChange('분석 완료');
+      showModal('분석 결과', `
+        <div class="manager-preview">
+          <strong>${folders[selectedFolderId].label} 분석 결과</strong>
+          <p>파일 순서, 폴더 구조, AI 요약 상태를 참조해 분석하기 버튼의 클릭 흐름을 확인했습니다.</p>
+        </div>
+      `);
     }
 
-    function connectGit(subfolderId) {
-      const folder = state.folders[selectedFolderId];
-      const subfolder = folder.subfolders.find((item) => item.id === subfolderId);
-      if (!subfolder) return;
-      selectedSubfolderId = subfolderId;
-      const gitUrl = prompt('연결할 Git 레포지토리 URL을 입력하세요.', subfolder.gitUrl || 'https://github.com/사용자/저장소');
-      if (gitUrl === null) {
-        render();
-        return;
-      }
-      subfolder.gitUrl = gitUrl.trim();
-      render();
-      showToast(subfolder.gitUrl ? 'Git 레포지토리를 연결했습니다.' : 'Git 연결을 해제했습니다.');
+    function syncGithub() {
+      setLatestChange('GitHub 동기화 완료');
+      showToast('GitHub 동기화 버튼 클릭을 확인했습니다.');
     }
 
     function openMdModal() {
-      showModal('AI 요약으로 md 만들기', `
-        <p class="panel-note">선택한 프로젝트의 자료 목록을 바탕으로 Markdown 초안을 만드는 흐름입니다.</p>
-        <textarea class="textarea-box" id="mdInput">${state.folders[selectedFolderId].label} 활동 자료 요약 초안</textarea>
+      showModal('AI 대화로 md 만들기', `
+        <p class="panel-note">파일이 없을 때 활동 내용을 입력하고 Markdown 자료를 생성하는 흐름입니다.</p>
+        <textarea class="textarea-box" id="mdInput">팀 프로젝트에서 요구사항 분석과 발표 자료 제작을 담당했습니다.</textarea>
         <div class="form-actions">
           <button class="primary-button" type="button" data-action="create-md-file">md 파일 생성</button>
         </div>
@@ -373,10 +314,31 @@
     }
 
     function createMdFile() {
-      state.folders[selectedFolderId].files.push({ id: createFileId('ai_activity_summary.md'), name: 'ai_activity_summary.md', type: 'MD', status: '작성완료' });
+      files[selectedFolderId].push({ id: `file-${nextFileId++}`, name: 'ai_activity_summary.md', type: 'MD', status: '작성완료' });
       hideModal();
+      setLatestChange('AI 생성 md 추가');
       render();
-      showToast('AI 생성 md 파일을 추가했습니다.');
+      showToast('AI 생성 md 파일이 추가되었습니다.');
+    }
+
+    function createFolder() {
+      showToast('프로토타입에서는 기존 폴더 구조 안에서 관리합니다.');
+      setLatestChange('폴더 추가 클릭');
+    }
+
+    function sendChat() {
+      const input = document.getElementById('chatInput');
+      const text = input.value.trim();
+      if (!text) return;
+      const chatLog = document.getElementById('chatLog');
+      chatLog.insertAdjacentHTML('beforeend', `<div class="manager-bubble user">${escapeHtml(text)}</div>`);
+      chatLog.insertAdjacentHTML('beforeend', '<div class="manager-bubble ai">좋아요. 이 요청은 summary.md와 index.json에 반영되는 흐름으로 연결할 수 있습니다.</div>');
+      input.value = '';
+      chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    function setLatestChange(text) {
+      document.getElementById('latestChangeState').textContent = text;
     }
 
     function showModal(title, body) {
@@ -421,19 +383,11 @@
       const folderButton = event.target.closest('[data-folder-id]');
       if (folderButton) {
         selectedFolderId = folderButton.dataset.folderId;
-        selectedSubfolderId = null;
         const nextUrl = new URL(window.location.href);
         nextUrl.searchParams.set('folder', selectedFolderId);
         window.history.replaceState({}, '', nextUrl);
         render();
-        showToast(`${state.folders[selectedFolderId].label} 폴더를 선택했습니다.`);
-        return;
-      }
-
-      const subfolderCard = event.target.closest('.subfolder-card');
-      if (subfolderCard && !event.target.closest('[data-action]')) {
-        selectedSubfolderId = subfolderCard.dataset.subfolderId;
-        render();
+        showToast(`${folders[selectedFolderId].label} 폴더를 선택했습니다.`);
         return;
       }
 
@@ -446,35 +400,31 @@
       if (action === 'preview-file') previewFile(fileId);
       if (action === 'summarize-file') summarizeFile(fileId);
       if (action === 'delete-file') deleteFile(fileId);
+      if (action === 'analyze') runAnalysis();
+      if (action === 'sync-github') syncGithub();
       if (action === 'make-md') openMdModal();
       if (action === 'create-md-file') createMdFile();
-      if (action === 'create-subfolder') createSubfolder();
-      if (action === 'connect-git') connectGit(actionButton.dataset.subfolderId);
+      if (action === 'create-folder') createFolder();
+      if (action === 'send-chat') sendChat();
       if (action === 'close-modal') hideModal();
     });
 
     document.getElementById('managedFileInput').addEventListener('change', (event) => {
       const selectedFiles = Array.from(event.target.files);
-      if (selectedFiles.length === 0) {
-        addFakeFile();
-        return;
-      }
+      if (selectedFiles.length === 0) return;
       selectedFiles.forEach((file) => addFileFromName(file.name));
       event.target.value = '';
+    });
+
+    document.getElementById('chatInput').addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') sendChat();
     });
 
     document.getElementById('modalBackdrop').addEventListener('click', (event) => {
       if (event.target.id === 'modalBackdrop') hideModal();
     });
 
-    window.addEventListener('storage', (event) => {
-      if (event.key !== STORAGE_KEY) return;
-      state = loadFolderState();
-      render();
-    });
-
     render();
   </script>
-  <script src="auth-nav.js"></script>
 </body>
 </html>

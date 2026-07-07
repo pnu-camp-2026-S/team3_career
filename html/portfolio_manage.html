@@ -1,47 +1,38 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Myfitfolio - 포트폴리오 관리</title>
-  <link rel="stylesheet" href="fitfolio.css?v=portfolio-actions" />
+  <link rel="stylesheet" href="../css/common.css" />
+  <link rel="stylesheet" href="../css/portfolio_manage.css" />
 </head>
 <body>
   <div class="app-shell">
-    <header class="top-nav">
-      <a class="brand-word" href="main.html">Myfit<span>folio</span></a>
-      <nav class="nav-tabs" aria-label="주요 메뉴">
-        <a class="nav-tab" href="main.html">메인</a>
-        <a class="nav-tab" href="create.html">파일관리</a>
-        <a class="nav-tab" href="portfolio_create.html">포트폴리오 생성</a>
-        <a class="nav-tab active" href="portfolio_manage.html">포트폴리오 관리</a>
-        <a class="nav-tab" href="contest.html">활동 추천</a>
-        <a class="nav-tab" href="mypage.html">마이페이지</a>
-      </nav>
-      <div class="nav-actions">
-        <div class="profile-menu">
-          <button class="user-chip" type="button" data-profile-toggle aria-label="프로필 메뉴 열기" aria-haspopup="menu" aria-expanded="false">
-            <span class="avatar"></span>
-          </button>
-          <div class="profile-dropdown" data-profile-menu role="menu">
-            <a href="mypage.html" role="menuitem">마이페이지</a>
-            <button type="button" data-logout role="menuitem">로그아웃</button>
+    <div data-shared-nav data-active="portfolio_manage"></div>
+    <script src="../js/shared-nav.js"></script>
+    <script src="../js/auth-nav.js"></script>
+
+    <div class="portfolio-manage">
+      <main class="manage-content">
+        <section class="manage-head">
+          <div>
+            <h1 class="page-title">포트폴리오 관리</h1>
+            <p class="page-subtitle">생성한 초안과 제출용 포트폴리오를 한 곳에서 검색하고 관리합니다.</p>
           </div>
-        </div>
-      </div>
-    </header>
+          <a class="primary-button" href="portfolio_create.html">새 포트폴리오 만들기</a>
+        </section>
 
-    <main class="portfolio-library-page">
-      <section class="portfolio-library-head">
-        <div>
-          <h1 class="page-title">포트폴리오 관리</h1>
-          <p class="page-subtitle">중요한 포트폴리오를 빠르게 확인하고 바로 열람·수정·저장하세요.</p>
-        </div>
-        <a class="primary-button portfolio-library-create" href="portfolio_create.html#pfWorkspaceScreen">새 포트폴리오 만들기</a>
-      </section>
+        <section class="manage-toolbar" aria-label="포트폴리오 검색">
+          <label class="manage-search">
+            <span aria-hidden="true">⌕</span>
+            <input id="searchInput" type="search" placeholder="포트폴리오 검색" />
+          </label>
+        </section>
 
-      <section class="portfolio-library-list" id="portfolioList" aria-label="포트폴리오 목록"></section>
-    </main>
+        <section id="portfolioList" class="portfolio-list" aria-label="포트폴리오 목록"></section>
+      </main>
+    </div>
   </div>
 
   <script>
@@ -53,130 +44,64 @@
         createdAt: '2026-07-02T09:00:00.000Z',
         purpose: '데이터 분석 직무 지원',
         summary: '공공데이터 시각화 프로젝트 경험을 중심으로 정리한 포트폴리오입니다.',
-        liked: true,
-        coverLines: ['공공데이터 분석', '시각화 대시보드', '인사이트 도출'],
-        content: '공공데이터 수집과 전처리, 시각화 대시보드 제작 경험을 STAR 흐름에 맞게 정리했습니다.'
+        status: 'done',
+        content: '데이터 수집, 전처리, 시각화, 인사이트 도출 경험을 흐름에 맞게 구성했습니다.'
       },
       {
         id: 'portfolio-contest',
         title: '공모전 제출용 포트폴리오',
-        createdAt: '2026-07-02T08:00:00.000Z',
+        createdAt: '2026-07-01T15:30:00.000Z',
         purpose: '공모전 제출',
         summary: '문제 정의, 기획 의도, 팀 역할, 결과물을 중심으로 구성한 제출용 예시입니다.',
-        liked: false,
-        coverLines: ['문제 정의', '기획 의도', '결과물'],
-        content: '공모전 심사자가 빠르게 맥락을 파악하도록 핵심 경험과 결과를 앞쪽에 배치했습니다.'
-      },
-      {
-        id: 'portfolio-ux',
-        title: 'UX 프로젝트 중심 포트폴리오',
-        createdAt: '2026-06-30T10:00:00.000Z',
-        purpose: 'UX 리서치 직무 지원',
-        summary: '사용자 조사와 화면 개선 사례를 중심으로 정리한 포트폴리오입니다.',
-        liked: false,
-        coverLines: ['사용자 조사', '화면 개선', '검증 결과'],
-        content: '사용자 조사, 문제 발견, 개선안 도출, 검증 결과를 순서대로 정리했습니다.'
-      },
-      {
-        id: 'portfolio-marketing',
-        title: '마케팅 인턴 지원 포트폴리오',
-        createdAt: '2026-06-29T11:30:00.000Z',
-        purpose: '마케팅 인턴 지원',
-        summary: '콘텐츠 기획과 캠페인 성과를 중심으로 구성한 포트폴리오입니다.',
-        liked: false,
-        coverLines: ['콘텐츠 기획', '캠페인 운영', '성과 분석'],
-        content: '콘텐츠 캘린더 작성, 카드뉴스 제작, 캠페인 지표 분석 경험을 지원 직무와 연결해 정리했습니다.'
-      },
-      {
-        id: 'portfolio-ai-service',
-        title: 'AI 포트폴리오 추천 서비스',
-        createdAt: '2026-06-28T14:20:00.000Z',
-        purpose: '서비스 기획 직무 지원',
-        summary: 'AI 추천 흐름과 사용자 문제 해결 과정을 보여주는 서비스 기획 포트폴리오입니다.',
-        liked: true,
-        coverLines: ['문제 발견', 'AI 추천 흐름', '프로토타입'],
-        content: '사용자 활동 자료를 기반으로 포트폴리오 방향을 추천하는 서비스의 문제 정의, 핵심 기능, 화면 흐름을 정리했습니다.'
-      },
-      {
-        id: 'portfolio-design-team',
-        title: '캡스톤 디자인 팀 프로젝트',
-        createdAt: '2026-06-25T16:00:00.000Z',
-        purpose: '팀 프로젝트 제출',
-        summary: '팀 내 역할과 협업 과정을 중심으로 정리한 캡스톤 프로젝트 포트폴리오입니다.',
-        liked: false,
-        coverLines: ['팀 역할', '협업 과정', '결과물'],
-        content: '기획, 디자인, 구현 파트를 나누어 진행한 캡스톤 프로젝트에서 맡은 역할과 의사결정 과정을 정리했습니다.'
-      },
-      {
-        id: 'portfolio-volunteer',
-        title: '봉사 활동 멘토링 포트폴리오',
-        createdAt: '2026-06-21T09:40:00.000Z',
-        purpose: '대외활동 지원',
-        summary: '멘토링 활동에서의 문제 해결과 소통 경험을 담은 포트폴리오입니다.',
-        liked: false,
-        coverLines: ['멘토링 운영', '소통 경험', '성장 기록'],
-        content: '학습 멘토링 활동에서 참여자의 어려움을 파악하고 맞춤형 자료를 제공한 경험을 중심으로 구성했습니다.'
-      },
-      {
-        id: 'portfolio-sw-idea',
-        title: '교내 SW 아이디어 공모전',
-        createdAt: '2026-06-18T13:10:00.000Z',
-        purpose: '아이디어 공모전 제출',
-        summary: '아이디어 배경, 핵심 기능, 기대 효과를 중심으로 만든 공모전 포트폴리오입니다.',
-        liked: false,
-        coverLines: ['아이디어 배경', '핵심 기능', '기대 효과'],
-        content: '교내 문제를 해결하기 위한 SW 아이디어를 사용자 시나리오와 기능 우선순위 중심으로 정리했습니다.'
+        status: 'done',
+        content: '공모전 심사자가 빠르게 맥락을 이해할 수 있도록 핵심 성과를 앞쪽에 배치했습니다.'
       }
     ];
 
-    function normalizePortfolio(item, index) {
-      return {
-        id: item.id || `portfolio-${index}`,
-        title: String(item.title || seedPortfolios[index % seedPortfolios.length].title).replace(/\s*초안\s*/g, ' '),
-        createdAt: item.createdAt || seedPortfolios[index % seedPortfolios.length].createdAt,
-        purpose: item.purpose || item.targetRole || seedPortfolios[index % seedPortfolios.length].purpose,
-        summary: String(item.summary || item.content || seedPortfolios[index % seedPortfolios.length].summary).replace(/\s*초안\s*/g, ' '),
-        liked: Boolean(item.liked),
-        coverLines: item.coverLines || [item.title, item.purpose || item.targetRole, item.summary || item.content],
-        content: item.content || item.summary || seedPortfolios[index % seedPortfolios.length].content
-      };
-    }
+    const portfolioList = document.getElementById('portfolioList');
+    const searchInput = document.getElementById('searchInput');
+    let portfolios = loadPortfolios();
 
-    function mergeWithSeedPortfolios(items) {
-      const usedIds = new Set(items.map((item) => item.id));
-      const missingSeeds = seedPortfolios.filter((item) => !usedIds.has(item.id));
-      return [...items, ...missingSeeds];
-    }
-
-    function readPortfolios() {
+    function readJson(key) {
       try {
-        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-        if (!Array.isArray(saved) || !saved.length) return seedPortfolios;
-        return mergeWithSeedPortfolios(saved.map(normalizePortfolio));
+        const parsed = JSON.parse(localStorage.getItem(key)) || [];
+        return Array.isArray(parsed) ? parsed : [];
       } catch {
-        return seedPortfolios;
+        return [];
       }
     }
 
-    function writePortfolios(items) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    function normalizePortfolio(item, index) {
+      return {
+        id: item.id || `portfolio-${Date.now()}-${index}`,
+        title: item.title || item.format || '저장된 포트폴리오',
+        createdAt: item.createdAt || item.updatedAt || new Date().toISOString(),
+        purpose: item.purpose || item.targetRole || '포트폴리오',
+        summary: item.summary || item.content || '저장된 포트폴리오입니다.',
+        status: 'done',
+        content: item.content || item.summary || ''
+      };
     }
 
-    function sortPortfolios(items) {
-      return [...items].sort((a, b) => {
-        if (Boolean(a.liked) !== Boolean(b.liked)) return a.liked ? -1 : 1;
-        return new Date(b.createdAt) - new Date(a.createdAt);
-      });
+    function loadPortfolios() {
+      const stored = readJson(STORAGE_KEY).map(normalizePortfolio);
+      if (stored.length) return stored;
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(seedPortfolios));
+      return seedPortfolios;
+    }
+
+    function savePortfolios() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(portfolios));
     }
 
     function escapeHtml(value) {
-      return String(value || '').replace(/[&<>"']/g, (char) => ({
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#39;',
-      })[char]);
+      return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
     }
 
     function formatDate(value) {
@@ -185,101 +110,113 @@
       return new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(date);
     }
 
-    function safeFileName(value) {
-      return `${value || 'portfolio'}`.replace(/[\\/:*?"<>|]/g, '_');
+    function statusLabel(status) {
+      return '완료';
     }
 
-    function createPptxBlob(portfolio) {
-      const fakePptx = [
-        'Myfitfolio PPTX',
-        portfolio.title || '포트폴리오',
-        portfolio.purpose || '',
-        portfolio.summary || '',
-        portfolio.content || ''
-      ].join('\n\n');
-      return new Blob([fakePptx], { type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation' });
+    function getVisiblePortfolios() {
+      const query = searchInput.value.trim().toLowerCase();
+      return portfolios
+        .filter((portfolio) => {
+          const haystack = `${portfolio.title} ${portfolio.purpose} ${portfolio.summary}`.toLowerCase();
+          return !query || haystack.includes(query);
+        })
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     }
 
-    function downloadPortfolioPpt(portfolio) {
-      const url = URL.createObjectURL(createPptxBlob(portfolio));
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${safeFileName(portfolio.title)}.pptx`;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-    }
+    function render() {
+      const visible = getVisiblePortfolios();
+      portfolioList.innerHTML = '';
 
-    function firstPagePreview(portfolio) {
-      const lines = portfolio.coverLines?.length ? portfolio.coverLines : [portfolio.title, portfolio.purpose, portfolio.summary];
-      const image = portfolio.coverImage || portfolio.thumbnail || portfolio.firstPageImage;
-      if (image) {
-        return `
-          <div class="portfolio-library-thumb" aria-label="${escapeHtml(portfolio.title)} 첫페이지 미리보기">
-            <img src="${escapeHtml(image)}" alt="" />
-          </div>
-        `;
-      }
-      return `
-        <div class="portfolio-library-thumb" aria-label="${escapeHtml(portfolio.title)} 첫페이지 미리보기">
-          <span>${escapeHtml(lines[0])}</span>
-          <span>${escapeHtml(lines[1])}</span>
-          <span>${escapeHtml(lines[2])}</span>
-          <strong></strong>
-        </div>
-      `;
-    }
-
-    function renderPortfolios() {
-      const list = document.getElementById('portfolioList');
-      const portfolios = sortPortfolios(readPortfolios());
-      list.innerHTML = portfolios.map((portfolio) => `
-        <article class="portfolio-library-card" data-id="${escapeHtml(portfolio.id)}">
-          ${firstPagePreview(portfolio)}
-          <div class="portfolio-library-info">
-            <div class="portfolio-library-title">
-              <h2>${escapeHtml(portfolio.title)}</h2>
-            </div>
-            <p class="portfolio-library-meta">${formatDate(portfolio.createdAt)} 생성 <b>${escapeHtml(portfolio.purpose)}</b></p>
-            <p class="portfolio-library-summary">${escapeHtml(portfolio.summary)}</p>
-          </div>
-          <div class="portfolio-library-actions">
-            <button class="like-action ${portfolio.liked ? 'liked' : ''}" type="button" data-action="like" data-id="${escapeHtml(portfolio.id)}" aria-label="좋아요">
-              ${portfolio.liked ? '♥' : '♡'}
-            </button>
-            <a class="outline-button" href="portfolio_viewer.html?id=${encodeURIComponent(portfolio.id)}#viewerContent">열기</a>
-            <a class="ghost-button" href="portfolio_create.html?edit=${encodeURIComponent(portfolio.id)}#pfWorkspaceScreen">수정</a>
-            <a class="ghost-button" href="#" data-action="ppt" data-id="${escapeHtml(portfolio.id)}" download="${safeFileName(portfolio.title)}.pptx">PPT 저장</a>
-          </div>
-        </article>
-      `).join('');
-    }
-
-    document.getElementById('portfolioList').addEventListener('click', (event) => {
-      const target = event.target.closest('[data-action]');
-      if (!target) return;
-      const portfolios = readPortfolios();
-      const portfolio = portfolios.find((item) => item.id === target.dataset.id);
-      if (!portfolio) return;
-
-      if (target.dataset.action === 'like') {
-        portfolio.liked = !portfolio.liked;
-        writePortfolios(portfolios);
-        target.classList.toggle('liked', portfolio.liked);
-        target.textContent = portfolio.liked ? '♥' : '♡';
+      if (!visible.length) {
+        portfolioList.innerHTML = '<div class="empty">조건에 맞는 포트폴리오가 없습니다.</div>';
         return;
       }
 
-      if (target.dataset.action === 'ppt') {
-        event.preventDefault();
-        downloadPortfolioPpt(portfolio);
+      visible.forEach((portfolio) => {
+        const card = document.createElement('article');
+        card.className = `portfolio-card ${portfolio.status}`;
+        card.innerHTML = `
+          <div class="portfolio-thumb" aria-hidden="true">
+            <div class="thumb-lines">
+              <span class="thumb-line"></span>
+              <span class="thumb-line short"></span>
+              <span class="thumb-line"></span>
+            </div>
+            <span class="thumb-chart"></span>
+          </div>
+          <div class="portfolio-info">
+            <div class="portfolio-title-row">
+              <h2>${escapeHtml(portfolio.title)}</h2>
+              <span class="status ${portfolio.status}">${statusLabel(portfolio.status)}</span>
+            </div>
+            <div class="portfolio-meta">
+              <span>${formatDate(portfolio.createdAt)} 생성</span>
+              <span>${escapeHtml(portfolio.purpose)}</span>
+            </div>
+            <p class="portfolio-summary">${escapeHtml(portfolio.summary)}</p>
+          </div>
+          <div class="portfolio-actions">
+            <button class="action-btn primary" type="button" data-action="open" data-id="${portfolio.id}">
+              열기
+            </button>
+            <button class="action-btn" type="button" data-action="edit" data-id="${portfolio.id}">
+              수정
+            </button>
+            <button class="action-btn" type="button" data-action="ppt" data-id="${portfolio.id}">
+              PPT 저장
+            </button>
+          </div>
+        `;
+
+        portfolioList.appendChild(card);
+      });
+    }
+
+    function openPortfolio(id) {
+      const portfolio = portfolios.find((item) => item.id === id);
+      if (!portfolio) return;
+      alert(`${portfolio.title}\n\n${portfolio.content || portfolio.summary}`);
+    }
+
+    function downloadPpt(id) {
+      const portfolio = portfolios.find((item) => item.id === id);
+      if (!portfolio) return;
+
+      const body = [
+        'Myfitfolio Portfolio',
+        '',
+        `제목: ${portfolio.title}`,
+        `생성 날짜: ${formatDate(portfolio.createdAt)}`,
+        `사용 목적: ${portfolio.purpose}`,
+        '',
+        portfolio.summary,
+        '',
+        portfolio.content
+      ].join('\n');
+      const blob = new Blob([body], {
+        type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+      });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `${portfolio.title.replace(/[\\/:*?"<>|]/g, '_')}.pptx`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    }
+
+    portfolioList.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-action]');
+      if (!button) return;
+      event.stopPropagation();
+      if (button.dataset.action === 'open') openPortfolio(button.dataset.id);
+      if (button.dataset.action === 'ppt') downloadPpt(button.dataset.id);
+      if (button.dataset.action === 'edit') {
+        window.location.href = `portfolio_create.html?edit=${encodeURIComponent(button.dataset.id)}`;
       }
     });
 
-    writePortfolios(readPortfolios());
-    renderPortfolios();
+    searchInput.addEventListener('input', render);
+    render();
   </script>
-  <script src="auth-nav.js"></script>
 </body>
 </html>
