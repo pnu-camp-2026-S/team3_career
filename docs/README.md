@@ -14,6 +14,8 @@
 - [GitHub 임시 연동 기준](github.md)
 - [보안 기준](security.md)
 - [개발 우선순위와 코드 작업 규칙](development.md)
+- [단일 파일 AI 분석 MVP 구현 계획](single-file-ai-analysis-mvp.md)
+- [단일 파일 AI 분석 MVP 파일 구성 안내](single-file-analysis-files.md)
 
 ## 문서 관리 원칙
 
