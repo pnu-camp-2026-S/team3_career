@@ -364,7 +364,7 @@ for (const file of ['index.html', 'main.html']) {
 }
 
 const packageJson = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
-assert.strictEqual(packageJson.scripts.dev, 'next dev', 'project should expose the Next.js dev server command');
+assert.strictEqual(packageJson.scripts.dev, 'next dev --webpack', 'project should expose the Next.js dev server command without Turbopack path issues on Korean Windows folders');
 assert.strictEqual(packageJson.scripts.build, 'next build', 'project should expose the Next.js build command');
 assert.strictEqual(packageJson.scripts.start, 'next start', 'project should run the Next.js production server');
 assert.ok(packageJson.dependencies.next, 'project should depend on Next.js');
