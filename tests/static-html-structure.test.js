@@ -304,6 +304,11 @@ assert.match(
 );
 assert.match(
   mainHtml,
+  /const\s+sidebarResizeHandle\s*=\s*document\.getElementById\('sidebarResizeHandle'\)/,
+  'main sidebar should keep the resize handle element wired in JavaScript'
+);
+assert.match(
+  mainHtml,
   /myfitfolioSidebarWidth/,
   'main sidebar should persist the resized sidebar width'
 );
@@ -320,10 +325,9 @@ assert.match(
   /data-analysis-start/,
   'main sidebar should move analysis start to the top action area'
 );
-assert.match(
-  mainHtml,
-  /id="fileInput"[^>]*type="file"[^>]*multiple/,
-  'main sidebar should retain a hidden multi-file input for drag and folder uploads'
+assert.ok(
+  !mainHtml.includes('id="fileInput"') && !mainHtml.includes('type="file"'),
+  'main sidebar should not keep the removed file select input'
 );
 assert.match(
   mainHtml,
@@ -342,7 +346,7 @@ assert.match(
 );
 assert.match(
   mainHtml,
-  /\{\s*key:\s*'other',\s*label:\s*'기타'\s*\}/,
+  /\{\s*key:\s*'other',\s*label:\s*'기타',\s*color:\s*'#[0-9a-fA-F]{6}'\s*\}/,
   'main sidebar should include an other folder type inside each activity group'
 );
 assert.match(
@@ -471,8 +475,8 @@ assert.match(
 );
 assert.match(
   mainHtml,
-  /분석된 프로젝트/,
-  'main dashboard should rename analyzed materials to analyzed projects'
+  /분석된 자료/,
+  'main dashboard should label completed file totals as analyzed materials'
 );
 assert.match(
   mainHtml,
@@ -481,8 +485,97 @@ assert.match(
 );
 assert.match(
   mainHtml,
+  /분석된 자료/,
+  'main dashboard should label the completed-file total as analyzed materials'
+);
+assert.match(
+  mainHtml,
+  /id="analysisCompletionPercent"/,
+  'main dashboard should expose a visual completion percent for activity classification'
+);
+assert.match(
+  mainHtml,
+  /id="completedActivityTotal"[\s\S]*id="inProgressActivityTotal"/,
+  'main dashboard should show completed and in-progress file totals in the analyzed materials card'
+);
+assert.match(
+  mainHtml,
+  /function\s+getFolderFileTotal[\s\S]*folder\.group\s*===\s*groupKey[\s\S]*sum\s*\+\s*folder\.files\.length/,
+  'main dashboard should total analysis counts from files inside each folder group'
+);
+assert.match(
+  mainHtml,
+  /analyzedProjectTotal'\)\.textContent\s*=\s*completedFileTotal/,
+  'main dashboard should count analyzed materials from completed folder files, not completed folder count'
+);
+assert.match(
+  mainHtml,
+  /analysisSummaryBar[\s\S]*completedShare/,
+  'main dashboard should visualize completed file share with a progress bar'
+);
+assert.match(
+  mainHtml,
+  /\{\s*key:\s*'personal',\s*label:\s*'개인 프로젝트',\s*color:\s*'#[0-9a-fA-F]{6}'\s*\}/,
+  'main dashboard folder types should define category colors for analysis charts'
+);
+assert.match(
+  mainHtml,
+  /function\s+buildDonutGradient[\s\S]*conic-gradient[\s\S]*item\.color/,
+  'main dashboard should build the classification donut from category-specific colors'
+);
+assert.match(
+  mainHtml,
+  /inProgressBreakdownItem[\s\S]*label:\s*'진행중인 활동'[\s\S]*color:\s*'#[0-9a-fA-F]{6}'[\s\S]*count:\s*inProgressFileTotal/,
+  'main dashboard should add in-progress activity as a gray chart item'
+);
+assert.match(
+  mainHtml,
+  /buildDonutGradient\(chartBreakdown,\s*allFileTotal\)/,
+  'main dashboard donut should include completed category files and in-progress files'
+);
+assert.match(
+  mainHtml,
+  /const\s+itemShare\s*=\s*allFileTotal\s*\?\s*Math\.round\(\(item\.count\s*\/\s*allFileTotal\)\s*\*\s*100\)/,
+  'main dashboard category bars should scale against all chart files including in-progress activity'
+);
+assert.match(
+  mainHtml,
+  /--category-color:\s*\$\{item\.color\}/,
+  'main dashboard should pass each folder color into its category bar row'
+);
+assert.match(
+  fitfolioCss,
+  /--in-progress-color:\s*#[0-9a-fA-F]{6}/,
+  'main dashboard should use a distinct color token for in-progress activity'
+);
+assert.match(
+  fitfolioCss,
+  /\.category-bar i\s*\{[^}]*background:\s*var\(--category-color\)/s,
+  'main dashboard category bars should use their per-folder color'
+);
+assert.match(
+  mainHtml,
   /analysis-info-button/,
   'main dashboard cards should include info buttons'
+);
+assert.match(
+  mainHtml,
+  /id="analysisOverview"[\s\S]*id="analysisOverviewText"/,
+  'main dashboard should include an AI analysis overview panel below the analysis cards'
+);
+assert.match(
+  mainHtml,
+  /function\s+renderAnalysisOverview[\s\S]*analysisOverviewText\.textContent/,
+  'main dashboard should render a simple AI analysis overview after analysis starts'
+);
+assert.match(
+  mainHtml,
+  /document\.querySelector\('\[data-analysis-start\]'\)\.addEventListener\('click',\s*\(\)\s*=>\s*\{[\s\S]*updateAnalysisSummary\(\)/,
+  'main dashboard should update analysis numbers from the analysis start action'
+);
+assert.ok(
+  !/function\s+renderDashboardState\(\)\s*\{[^}]*updateAnalysisSummary\(\)/.test(mainHtml),
+  'main dashboard should not refresh analysis numbers just because folders render'
 );
 assert.ok(
   !mainHtml.includes('커리어 준비도'),

@@ -24,8 +24,6 @@
           <span>user@univ.ac.kr</span>
         </div>
 
-        <input class="visually-hidden" id="fileInput" type="file" multiple />
-
         <section class="sidebar-analysis-start">
           <button class="primary-button sidebar-primary-action" type="button" data-analysis-start>분석 시작</button>
           <p>완료된 활동 폴더에 있는 파일을 바탕으로 분석해드려요</p>
@@ -92,28 +90,50 @@
           </section>
 
           <section class="analysis-grid focused-analysis-grid" aria-label="AI 전체 분석 요약">
-            <article class="analysis-card focused-analysis-card">
+            <article class="analysis-card focused-analysis-card analyzed-material-card">
               <div class="analysis-card-head">
-                <h2 class="small-title">분석된 프로젝트</h2>
-                <button class="analysis-info-button" type="button" data-info-target="projectInfo" aria-label="분석된 프로젝트 설명 보기">i</button>
+                <h2 class="small-title">분석된 자료</h2>
+                <button class="analysis-info-button" type="button" data-info-target="projectInfo" aria-label="분석된 자료 설명 보기">i</button>
               </div>
               <div class="analysis-info-box" id="projectInfo" hidden>
-                완료된 활동 폴더 중 파일이 1개 이상 있는 프로젝트 폴더 수입니다.
+                완료된 활동 폴더 안에 들어있는 파일의 총합입니다.
               </div>
-              <div class="stat-value"><span class="stat-number" id="analyzedProjectTotal">0</span><span class="stat-unit">개</span></div>
-              <p class="analysis-card-note">완료된 활동 폴더 기준</p>
+              <div class="analysis-total-row">
+                <span class="analysis-total-icon" aria-hidden="true"></span>
+                <div class="stat-value"><span class="stat-number" id="analyzedProjectTotal">0</span><span class="stat-unit">개</span></div>
+              </div>
+              <div class="analysis-progress-track" aria-hidden="true">
+                <span id="analysisSummaryBar"></span>
+              </div>
+              <div class="analysis-legend">
+                <span><i class="legend-dot completed"></i>완료된 활동 <strong id="completedActivityTotal">0</strong></span>
+                <span><i class="legend-dot in-progress"></i>진행중인 활동 <strong id="inProgressActivityTotal">0</strong></span>
+              </div>
             </article>
 
-            <article class="analysis-card focused-analysis-card">
+            <article class="analysis-card focused-analysis-card classification-card">
               <div class="analysis-card-head">
                 <h2 class="small-title">활동 분류 현황</h2>
+                <span class="analysis-before-badge">분석 전</span>
                 <button class="analysis-info-button" type="button" data-info-target="categoryInfo" aria-label="활동 분류 현황 설명 보기">i</button>
               </div>
               <div class="analysis-info-box" id="categoryInfo" hidden>
-                완료된 활동 폴더의 파일을 프로젝트 유형별로 모아 보여줍니다.
+                완료된 활동 파일이 전체 파일 중 어느 정도인지와 유형별 분포를 보여줍니다.
               </div>
-              <div class="category-breakdown" id="categoryBreakdown"></div>
+              <div class="classification-visual">
+                <div class="classification-donut" id="classificationDonut" aria-label="완료된 활동 비율">
+                  <span id="analysisCompletionPercent">0%</span>
+                </div>
+                <div class="category-breakdown" id="categoryBreakdown"></div>
+              </div>
             </article>
+          </section>
+
+          <section class="analysis-overview-panel" id="analysisOverview" hidden>
+            <div class="analysis-card-head">
+              <h2 class="small-title">AI 분석 결과 개요</h2>
+            </div>
+            <p id="analysisOverviewText">분석 시작을 누르면 업로드된 자료를 바탕으로 간단한 개요를 보여드려요.</p>
           </section>
         </section>
       </main>
@@ -126,13 +146,13 @@
     const SIDEBAR_WIDTH_KEY = 'myfitfolioSidebarWidth';
 
     const folderTypes = [
-      { key: 'personal', label: '개인 프로젝트' },
-      { key: 'team', label: '팀 프로젝트' },
-      { key: 'contest', label: '공모전' },
-      { key: 'certificate', label: '자격증' },
-      { key: 'education', label: '교육' },
-      { key: 'volunteer', label: '봉사' },
-      { key: 'other', label: '기타' },
+      { key: 'personal', label: '개인 프로젝트', color: '#5965e8' },
+      { key: 'team', label: '팀 프로젝트', color: '#2f80ed' },
+      { key: 'contest', label: '공모전', color: '#f2994a' },
+      { key: 'certificate', label: '자격증', color: '#9b51e0' },
+      { key: 'education', label: '교육', color: '#27ae60' },
+      { key: 'volunteer', label: '봉사', color: '#eb5757' },
+      { key: 'other', label: '기타', color: '#60758f' },
     ];
 
     const folderGroups = [
@@ -140,12 +160,14 @@
       { key: 'inProgress', label: '진행중인 활동 폴더', containerId: 'inProgressFolderList' },
     ];
 
-    const fileInput = document.getElementById('fileInput');
     const sidebarToggle = document.getElementById('sidebarToggle');
     const sidebarResizeHandle = document.getElementById('sidebarResizeHandle');
+
     const mainLayout = document.getElementById('mainLayout');
     const profileNeededPanel = document.getElementById('profileNeededPanel');
     const analysisDashboard = document.getElementById('analysisDashboard');
+    const analysisOverview = document.getElementById('analysisOverview');
+    const analysisOverviewText = document.getElementById('analysisOverviewText');
 
     let folders = loadFolderState();
 
@@ -251,40 +273,98 @@
       }
     }
 
-    function getCompletedFoldersWithFiles() {
-      return Object.values(folders).filter((folder) => (
-        folder.group === 'completed' && folder.files.length > 0
-      ));
+    function getFolderFileTotal(groupKey) {
+      return Object.values(folders).reduce((sum, folder) => (
+        folder.group === groupKey ? sum + folder.files.length : sum
+      ), 0);
     }
 
     function getCompletedFileCount(folder) {
       return folder.files.length;
     }
 
+    function buildDonutGradient(items, total) {
+      if (!total) return 'conic-gradient(#e8edf5 0 100%)';
+
+      let start = 0;
+      const segments = items
+        .filter((item) => item.count > 0)
+        .map((item, index, activeItems) => {
+          const end = index === activeItems.length - 1
+            ? 100
+            : start + (item.count / total) * 100;
+          const segment = `${item.color} ${start}% ${end}%`;
+          start = end;
+          return segment;
+        });
+
+      return `conic-gradient(${segments.join(', ')})`;
+    }
+
+    function renderAnalysisOverview(completedFileTotal, inProgressFileTotal, breakdown) {
+      const topCategory = breakdown
+        .filter((item) => item.count > 0)
+        .sort((a, b) => b.count - a.count)[0];
+
+      if (!completedFileTotal && !inProgressFileTotal) {
+        analysisOverviewText.textContent = '아직 분석할 자료가 없습니다. 완료된 활동 폴더에 파일을 추가한 뒤 다시 분석을 시작해보세요.';
+      } else if (!completedFileTotal) {
+        analysisOverviewText.textContent = `진행중인 활동 자료 ${inProgressFileTotal}개가 준비되어 있어요. 완료된 활동 폴더로 옮기면 AI 분석 결과에 반영됩니다.`;
+      } else {
+        const categoryText = topCategory ? `${topCategory.label} 자료가 가장 많고, ` : '';
+        analysisOverviewText.textContent = `완료된 자료 ${completedFileTotal}개와 진행중인 자료 ${inProgressFileTotal}개를 확인했어요. ${categoryText}완료된 자료를 중심으로 강점과 활동 흐름을 정리할 수 있습니다.`;
+      }
+
+      analysisOverview.hidden = false;
+    }
+
     function updateAnalysisSummary() {
-      const completedFolders = getCompletedFoldersWithFiles();
-      document.getElementById('analyzedProjectTotal').textContent = completedFolders.length;
+      const completedFileTotal = getFolderFileTotal('completed');
+      const inProgressFileTotal = getFolderFileTotal('inProgress');
+      const allFileTotal = completedFileTotal + inProgressFileTotal;
+      const completedShare = allFileTotal ? Math.round((completedFileTotal / allFileTotal) * 100) : 0;
+
+      document.getElementById('analyzedProjectTotal').textContent = completedFileTotal;
+      document.getElementById('completedActivityTotal').textContent = completedFileTotal;
+      document.getElementById('inProgressActivityTotal').textContent = inProgressFileTotal;
+      document.getElementById('analysisSummaryBar').style.width = `${completedShare}%`;
+      document.getElementById('analysisCompletionPercent').textContent = `${completedShare}%`;
 
       const breakdown = folderTypes.map((type) => {
         const folder = folders[`completed-${type.key}`];
-        return { label: type.label, count: folder ? getCompletedFileCount(folder) : 0 };
-      }).filter((item) => item.count > 0);
+        return {
+          label: type.label,
+          color: type.color,
+          count: folder ? getCompletedFileCount(folder) : 0,
+        };
+      });
+      const inProgressBreakdownItem = {
+        label: '진행중인 활동',
+        color: '#98a2b3',
+        count: inProgressFileTotal,
+      };
+      const chartBreakdown = [...breakdown, inProgressBreakdownItem];
+      document.getElementById('classificationDonut').style.background = buildDonutGradient(chartBreakdown, allFileTotal);
 
-      document.getElementById('categoryBreakdown').innerHTML = breakdown.length
-        ? breakdown.map((item) => `
-            <div class="category-row">
-              <span>${escapeHtml(item.label)}</span>
+      document.getElementById('categoryBreakdown').innerHTML = chartBreakdown.length
+        ? chartBreakdown.map((item) => {
+            const itemShare = allFileTotal ? Math.round((item.count / allFileTotal) * 100) : 0;
+            return `
+            <div class="category-row ${item.count ? '' : 'empty'}" style="--category-color: ${item.color}">
+              <span class="category-label">${escapeHtml(item.label)}</span>
+              <span class="category-bar" aria-hidden="true"><i style="width: ${itemShare}%"></i></span>
               <strong>${item.count}개</strong>
             </div>
-          `).join('')
+          `;
+          }).join('')
         : '<p class="empty-folder">완료된 활동 폴더에 파일을 추가하면 분류가 표시됩니다.</p>';
+      renderAnalysisOverview(completedFileTotal, inProgressFileTotal, breakdown);
     }
 
     function renderDashboardState() {
       const isProfileSaved = hasSavedProfile();
       profileNeededPanel.hidden = isProfileSaved;
       analysisDashboard.hidden = !isProfileSaved;
-      if (isProfileSaved) updateAnalysisSummary();
     }
 
     function renderFolders() {
@@ -492,6 +572,7 @@
 
     document.querySelector('[data-analysis-start]').addEventListener('click', () => {
       renderDashboardState();
+      updateAnalysisSummary();
       analysisDashboard.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
 
