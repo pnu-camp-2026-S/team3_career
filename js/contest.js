@@ -231,10 +231,10 @@ function getDistributedMatchScore(index, total) {
   }
 
   if (index < bands.high + bands.middle) {
-    return interpolateScore(84, 65, index - bands.high, bands.middle);
+    return interpolateScore(84, 50, index - bands.high, bands.middle);
   }
 
-  return interpolateScore(64, 35, index - bands.high - bands.middle, bands.low);
+  return interpolateScore(49, 12, index - bands.high - bands.middle, bands.low);
 }
 
 function formatDateFromDeadlineDays(deadlineDays) {
