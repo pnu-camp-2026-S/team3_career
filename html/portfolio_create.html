@@ -92,57 +92,21 @@
               <div class="form-row">
                 <div class="form-field">
                   <label for="pfPurposeSelect">생성 목적</label>
-                  <select id="pfPurposeSelect" class="setting-native-select">
+                  <select id="pfPurposeSelect" class="setting-select">
                     <option>취업 지원용</option>
                     <option>인턴 지원용</option>
                     <option>공모전 제출용</option>
                     <option>대학원 진학</option>
                   </select>
-                  <div class="setting-choice-grid" role="radiogroup" aria-label="생성 목적">
-                    <button class="setting-choice selected" type="button" role="radio" aria-checked="true" data-purpose-option="취업 지원용">
-                      <strong>취업 지원용</strong>
-                      <span>직무 적합도와 핵심 경험 중심</span>
-                    </button>
-                    <button class="setting-choice" type="button" role="radio" aria-checked="false" data-purpose-option="인턴 지원용">
-                      <strong>인턴 지원용</strong>
-                      <span>학습 가능성과 협업 경험 중심</span>
-                    </button>
-                    <button class="setting-choice" type="button" role="radio" aria-checked="false" data-purpose-option="공모전 제출용">
-                      <strong>공모전 제출용</strong>
-                      <span>문제 정의와 결과물 중심</span>
-                    </button>
-                    <button class="setting-choice" type="button" role="radio" aria-checked="false" data-purpose-option="대학원 진학">
-                      <strong>대학원 진학</strong>
-                      <span>연구 관심과 프로젝트 과정 중심</span>
-                    </button>
-                  </div>
                 </div>
                 <div class="form-field">
                   <label for="pfMajorSelect">전공 선택</label>
-                  <select id="pfMajorSelect" class="setting-native-select">
+                  <select id="pfMajorSelect" class="setting-select">
                     <option value="industrial">산업공학과</option>
                     <option value="chemical">화학공학과</option>
                     <option value="electrical">전기공학과</option>
                     <option value="computer">컴퓨터공학과</option>
                   </select>
-                  <div class="setting-choice-grid major-choice-grid" role="radiogroup" aria-label="전공 선택">
-                    <button class="setting-choice selected" type="button" role="radio" aria-checked="true" data-major-option="industrial">
-                      <strong>산업공학과</strong>
-                      <span>데이터 · 프로세스 · 최적화</span>
-                    </button>
-                    <button class="setting-choice" type="button" role="radio" aria-checked="false" data-major-option="chemical">
-                      <strong>화학공학과</strong>
-                      <span>공정 · 실험 · 품질 분석</span>
-                    </button>
-                    <button class="setting-choice" type="button" role="radio" aria-checked="false" data-major-option="electrical">
-                      <strong>전기공학과</strong>
-                      <span>회로 · 제어 · 전력 시스템</span>
-                    </button>
-                    <button class="setting-choice" type="button" role="radio" aria-checked="false" data-major-option="computer">
-                      <strong>컴퓨터공학과</strong>
-                      <span>개발 · 데이터 · 시스템 설계</span>
-                    </button>
-                  </div>
                 </div>
               </div>
 
@@ -260,14 +224,6 @@
       card.addEventListener('click', () => selectFormat(card.dataset.format));
     });
 
-    document.querySelectorAll('[data-purpose-option]').forEach((button) => {
-      button.addEventListener('click', () => selectSettingOption('purpose', button.dataset.purposeOption));
-    });
-
-    document.querySelectorAll('[data-major-option]').forEach((button) => {
-      button.addEventListener('click', () => selectSettingOption('major', button.dataset.majorOption));
-    });
-
     majorSelect.addEventListener('change', renderKeywordPool);
     document.getElementById('generatePortfolioBtn').addEventListener('click', triggerGeneratePortfolio);
     document.getElementById('pfAssistantSendBtn').addEventListener('click', sendPfAssistantChat);
@@ -285,21 +241,6 @@
         card.classList.toggle('selected', isSelected);
         card.setAttribute('aria-checked', String(isSelected));
       });
-    }
-
-    function selectSettingOption(type, value) {
-      const select = type === 'major' ? majorSelect : purposeSelect;
-      const selector = type === 'major' ? '[data-major-option]' : '[data-purpose-option]';
-      const dataName = type === 'major' ? 'majorOption' : 'purposeOption';
-
-      select.value = value;
-      document.querySelectorAll(selector).forEach((button) => {
-        const isSelected = button.dataset[dataName] === value;
-        button.classList.toggle('selected', isSelected);
-        button.setAttribute('aria-checked', String(isSelected));
-      });
-
-      select.dispatchEvent(new Event('change'));
     }
 
     function renderKeywordPool() {
