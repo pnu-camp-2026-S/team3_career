@@ -423,6 +423,116 @@ assert.match(
   'chat API should move from Express to a Next route handler'
 );
 
+// 단일 파일 AI 분석 MVP (docs/single-file-ai-analysis-mvp.md)
+const analysisLibDir = path.join(libDir, 'analysis');
+for (const moduleName of [
+  'subfolder-config.mjs',
+  'ids.mjs',
+  'repository.mjs',
+  'extractor.mjs',
+  'ai-client.mjs',
+  'validator.mjs',
+  'templates.mjs',
+  'service.mjs',
+]) {
+  assert.ok(
+    fs.existsSync(path.join(analysisLibDir, moduleName)),
+    `single-file analysis module ${moduleName} should live in lib/analysis`
+  );
+}
+
+const subfolderConfig = fs.readFileSync(path.join(analysisLibDir, 'subfolder-config.mjs'), 'utf8');
+for (const projectType of ['personal', 'team', 'contest', 'certificate', 'education', 'volunteer', 'other']) {
+  assert.ok(
+    new RegExp(`${projectType}:\\s*\\[`).test(subfolderConfig) || subfolderConfig.includes(`${projectType}: DEFAULT_ORDER`),
+    `subfolder config should define subfolders for the ${projectType} project type`
+  );
+}
+assert.match(
+  subfolderConfig,
+  /contest:\s*\['submission'/,
+  'contest projects should prioritize the submission subfolder'
+);
+
+for (const templateName of ['summary.md', 'index.json', 'log-entry.md']) {
+  assert.ok(
+    fs.existsSync(path.join(rootDir, 'templates', templateName)),
+    `analysis template ${templateName} should live in the templates directory`
+  );
+}
+const indexTemplate = fs.readFileSync(path.join(rootDir, 'templates', 'index.json'), 'utf8');
+assert.match(
+  indexTemplate,
+  /"folderId":\s*"pending"/,
+  'index.json template should keep folderId as pending until user confirmation'
+);
+assert.match(
+  indexTemplate,
+  /"requiresUserConfirmation":\s*true/,
+  'index.json template should always require user confirmation'
+);
+
+for (const promptName of ['single-file-analysis.md', 'template-writing-guide.md']) {
+  assert.ok(
+    fs.existsSync(path.join(rootDir, 'prompts', promptName)),
+    `analysis prompt ${promptName} should live in the prompts directory`
+  );
+}
+const analysisPrompt = fs.readFileSync(path.join(rootDir, 'prompts', 'single-file-analysis.md'), 'utf8');
+assert.ok(
+  analysisPrompt.includes('{{allowedSubfolders}}') && analysisPrompt.includes('{{projectType}}'),
+  'analysis prompt should inject the project type and its allowed subfolders'
+);
+assert.ok(
+  analysisPrompt.includes('requiresUserConfirmation은 항상 true'),
+  'analysis prompt should force user confirmation'
+);
+
+const analysisSingleFileRoute = fs.readFileSync(
+  path.join(appDir, 'api', 'analysis', 'single-file', 'route.js'),
+  'utf8'
+);
+assert.match(
+  analysisSingleFileRoute,
+  /export async function POST\(request\)[\s\S]*request\.formData\(\)[\s\S]*analyzeSingleFile/,
+  'single-file analysis API should accept multipart uploads through a Next route handler'
+);
+const analysisSubfoldersRoute = fs.readFileSync(
+  path.join(appDir, 'api', 'analysis', 'subfolders', 'route.js'),
+  'utf8'
+);
+assert.match(
+  analysisSubfoldersRoute,
+  /getSubfoldersForProjectType/,
+  'subfolders API should expose the per-project subfolder configuration'
+);
+assert.ok(
+  fs.existsSync(path.join(appDir, 'api', 'analysis', '[analysisId]', 'route.js')),
+  'analysis bundle lookup route should exist'
+);
+
+const analysisHtml = fs.readFileSync(path.join(htmlDir, 'analysis.html'), 'utf8');
+assert.match(
+  analysisHtml,
+  /href="\.\.\/css\/common\.css"[\s\S]*href="\.\.\/css\/analysis\.css"/,
+  'analysis test page should use separated common and page-specific stylesheets'
+);
+assert.match(
+  analysisHtml,
+  /id="projectType"[\s\S]*id="analysisFile"[\s\S]*fetch\('\/api\/analysis\/single-file'/,
+  'analysis test page should upload a file with a project type to the analysis API'
+);
+for (const downloadKind of ['summary', 'index', 'log', 'result']) {
+  assert.ok(
+    analysisHtml.includes(`data-download="${downloadKind}"`),
+    `analysis test page should offer the ${downloadKind} download`
+  );
+}
+assert.ok(
+  !analysisHtml.includes('shared-nav.js'),
+  'analysis test page should stay standalone without the shared app navigation'
+);
+
 const mainHtml = fs.readFileSync(path.join(htmlDir, 'main.html'), 'utf8');
 assert.match(
   mainHtml,

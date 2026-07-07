@@ -1,0 +1,79 @@
+{
+  "schemaVersion": "1.0.0",
+  "project": {
+    "projectId": "single-file-session",
+    "projectName": "임시 단일 파일 분석",
+    "projectType": "personal"
+  },
+  "folders": [
+    {
+      "folderId": "planning",
+      "folderName": "기획서",
+      "order": 1
+    },
+    {
+      "folderId": "code",
+      "folderName": "코드",
+      "order": 2
+    },
+    {
+      "folderId": "data",
+      "folderName": "데이터",
+      "order": 3
+    },
+    {
+      "folderId": "report",
+      "folderName": "보고서",
+      "order": 4
+    },
+    {
+      "folderId": "presentation",
+      "folderName": "발표자료",
+      "order": 5
+    },
+    {
+      "folderId": "visual",
+      "folderName": "이미지/시각자료",
+      "order": 6
+    },
+    {
+      "folderId": "submission",
+      "folderName": "제출 자료",
+      "order": 7
+    },
+    {
+      "folderId": "pending",
+      "folderName": "분류 대기",
+      "order": 99
+    },
+    {
+      "folderId": "other",
+      "folderName": "기타",
+      "order": 9
+    }
+  ],
+  "files": [
+    {
+      "fileId": "file_20260708_ac0920",
+      "analysisId": "analysis_20260708_9811cc",
+      "folderId": "pending",
+      "fileName": "file-management.md",
+      "fileType": "md",
+      "order": 1,
+      "priority": null,
+      "uploadStatus": "uploaded",
+      "analysisStatus": "completed",
+      "reviewStatus": "pending_review",
+      "summary": null,
+      "tags": [],
+      "aiRecommendation": {
+        "recommendedFolderId": "planning",
+        "recommendedFolderName": "기획서",
+        "confidence": 0.95,
+        "recommendedPriority": 3,
+        "recommendedSummary": "프로젝트별 자료 업로드 방식, 폴더 구조화, 상태값 및 삭제 기준을 정의한 기획 및 설계 문서",
+        "requiresUserConfirmation": true
+      }
+    }
+  ]
+}
