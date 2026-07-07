@@ -768,8 +768,8 @@ assert.ok(
 );
 assert.match(
   contestHtml,
-  /<h1>[\s\S]*<span class="recommend-count">추천 활동 10개<\/span>[\s\S]*<\/h1>/,
-  'contest page should show the recommendation count next to the title'
+  /<h1>[\s\S]*<span class="recommend-count" id="recommendCount">추천 활동 0개<\/span>[\s\S]*<\/h1>/,
+  'contest page should show the dynamic recommendation count next to the title'
 );
 assert.match(
   contestHtml,
@@ -1070,6 +1070,26 @@ assert.match(
   'contest should limit saved schedule previews to five items'
 );
 assert.match(
+  contestHtml,
+  /id="recommendCount"/,
+  'contest recommendation count should have a stable render target'
+);
+assert.match(
+  contestJs,
+  /const\s+recommendationMatchThreshold\s*=\s*85/,
+  'contest recommendation count should use an 85 percent match threshold'
+);
+assert.match(
+  contestJs,
+  /getMatchScore\(item\)\s*>=\s*recommendationMatchThreshold/,
+  'contest recommendation count should include only activities over the match threshold'
+);
+assert.match(
+  contestJs,
+  /function\s+renderRecommendationCount/,
+  'contest should render the threshold-based recommendation count'
+);
+assert.match(
   contestJs,
   /sortedSchedules\.slice\(0,\s*visibleScheduleLimit\)/,
   'contest schedule list should render only the nearest saved schedules'
@@ -1077,12 +1097,31 @@ assert.match(
 assert.match(
   contestJs,
   /savedSchedules\.length\s*>\s*visibleScheduleLimit/,
-  'contest should show a more link only when more than five schedules are saved'
+  'contest should show a more control only when more than five schedules are saved'
 );
 assert.match(
   contestJs,
-  /href="https:\/\/calendar\.google\.com\/calendar\/u\/0\/r"/,
-  'contest more schedules link should open Google Calendar'
+  /let\s+isScheduleExpanded\s*=\s*false/,
+  'contest schedule list should keep an expanded state for more schedules'
+);
+assert.match(
+  contestJs,
+  /isScheduleExpanded\s*\?\s*sortedSchedules\s*:\s*sortedSchedules\.slice\(0,\s*visibleScheduleLimit\)/,
+  'contest more schedules control should reveal the hidden saved schedules inline'
+);
+assert.match(
+  contestJs,
+  /data-toggle-schedule-list/,
+  'contest more schedules control should toggle the inline saved schedule list'
+);
+assert.match(
+  contestJs,
+  /간략화하기/,
+  'contest expanded saved schedule list should provide a compact action'
+);
+assert.ok(
+  !contestJs.includes('https://calendar.google.com/calendar/u/0/r'),
+  'contest more schedules control should not navigate to Google Calendar'
 );
 assert.match(
   contestJs,
