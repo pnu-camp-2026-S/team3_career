@@ -28,11 +28,28 @@
           label: type.label,
           open: false,
           files: [],
+          github: null,
         };
       });
     });
 
     return folders;
+  }
+
+  // 사용자가 파일관리 탭에서 추가한 프로젝트 폴더. 고정 타입이 아닌 커스텀 폴더로
+  // 생성되며, 메인/파일관리가 같은 폴더 데이터를 공유하므로 양쪽에 즉시 반영된다.
+  function createFolder(groupKey, label) {
+    const validGroup = FOLDER_GROUPS.some((group) => group.key === groupKey) ? groupKey : 'inProgress';
+    const id = `custom-${groupKey}-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
+    return {
+      id,
+      group: validGroup,
+      type: 'custom',
+      label: String(label || '새 폴더').trim() || '새 폴더',
+      open: false,
+      files: [],
+      github: null,
+    };
   }
 
   function normalizeFolderLabel(folder, defaultFolder) {
@@ -47,6 +64,10 @@
     return folder.nestedFolders.flatMap((nested) => (
       Array.isArray(nested.files) ? nested.files : []
     ));
+  }
+
+  function normalizeFolderGithub(folder) {
+    return folder && typeof folder.github === 'object' ? folder.github : null;
   }
 
   // 폴더/파일 상태의 유일한 저장소 접근 지점. 추후 Firebase로 교체할 때는
@@ -65,6 +86,7 @@
           ...folder,
           label: normalizeFolderLabel(folder, defaults[folder.id]),
           files: normalizeFolderFiles(folder),
+          github: normalizeFolderGithub(folder),
         };
       });
     } catch (error) {
@@ -83,6 +105,7 @@
     FOLDER_TYPES,
     FOLDER_GROUPS,
     createDefaultFolders,
+    createFolder,
     normalizeFolderLabel,
     normalizeFolderFiles,
     loadFolders,
