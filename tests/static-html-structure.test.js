@@ -108,6 +108,16 @@ assert.ok(
   'login-required prompt should not render an exclamation mark icon'
 );
 assert.match(
+  fitfolioCss,
+  /\.profile-readonly\s+\.form-field\s+select:disabled\s*\{[^}]*background-image:\s*none;/s,
+  'mypage readonly selects should hide the native dropdown arrow'
+);
+assert.match(
+  fitfolioCss,
+  /\.profile-readonly\s+\.date-trigger:disabled\s+\.calendar-icon,\s*\.profile-readonly\s+\.major-trigger:disabled\s+\.select-chevron,\s*\.profile-readonly\s+\.picker-trigger:disabled\s+span\[aria-hidden="true"\]\s*\{[^}]*display:\s*none;/s,
+  'mypage readonly picker and date controls should hide decorative icons'
+);
+assert.match(
   mainHtml,
   /id="sidebarToggle"/,
   'main sidebar should have a collapse toggle button'

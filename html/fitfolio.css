@@ -1488,6 +1488,8 @@ button {
 
 .profile-readonly .form-field select:disabled {
   color: #273244;
+  padding-right: 14px;
+  background-image: none;
 }
 
 .profile-readonly [data-photo-button],
@@ -1515,7 +1517,16 @@ button {
 .profile-readonly .date-trigger:disabled .calendar-icon,
 .profile-readonly .major-trigger:disabled .select-chevron,
 .profile-readonly .picker-trigger:disabled span[aria-hidden="true"] {
-  opacity: 0.58;
+  display: none;
+}
+
+.profile-readonly .major-trigger:disabled {
+  padding-right: 14px;
+}
+
+.profile-readonly .picker-trigger:disabled,
+.profile-readonly .date-trigger:disabled {
+  justify-content: flex-start;
 }
 
 .anchor-menu {
