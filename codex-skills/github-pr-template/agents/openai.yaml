@@ -1,0 +1,4 @@
+interface:
+  display_name: "GitHub PR Template"
+  short_description: "FitFolio PR description template"
+  default_prompt: "Use $github-pr-template to draft a FitFolio pull request description."

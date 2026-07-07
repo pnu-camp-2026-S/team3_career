@@ -1,0 +1,4 @@
+interface:
+  display_name: "GitHub Bug Issue Template"
+  short_description: "FitFolio bug report issue template"
+  default_prompt: "Use $github-bug-issue-template to draft a FitFolio bug issue."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "GitHub Issue Labeling"
+  short_description: "FitFolio issue label selection rules"
+  default_prompt: "Use $github-issue-labeling to choose labels for a FitFolio GitHub issue."

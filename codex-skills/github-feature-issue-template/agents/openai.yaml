@@ -1,0 +1,4 @@
+interface:
+  display_name: "GitHub Feature Issue Template"
+  short_description: "FitFolio feature issue template"
+  default_prompt: "Use $github-feature-issue-template to draft a FitFolio feature issue."
