@@ -1222,6 +1222,24 @@ assert.match(
 );
 assert.match(
   portfolioCreateHtml,
+  /id="pfPurposeSelect"\s+class="setting-select"[\s\S]*<option>취업 지원용<\/option>[\s\S]*<option>대학원 진학<\/option>/,
+  'portfolio_create should keep the generation purpose select while applying the improved selector style'
+);
+assert.match(
+  portfolioCreateHtml,
+  /id="pfMajorSelect"\s+class="setting-select"[\s\S]*<option value="industrial">산업공학과<\/option>[\s\S]*<option value="computer">컴퓨터공학과<\/option>/,
+  'portfolio_create should keep the major select while applying the improved selector style'
+);
+assert.ok(
+  !portfolioCreateHtml.includes('data-purpose-option') && !portfolioCreateHtml.includes('data-major-option'),
+  'portfolio_create setting selector update should not replace selects with button-card choices'
+);
+assert.ok(
+  !portfolioCreateHtml.includes('aria-label="알림"') && !portfolioCreateHtml.includes('notification'),
+  'portfolio_create setting selector update should not add notification UI'
+);
+assert.match(
+  portfolioCreateHtml,
   /id="keywordPool"/,
   'portfolio_create should render major-based keywords into a keyword pool'
 );
@@ -1283,6 +1301,8 @@ assert.match(
 );
 for (const cssPattern of [
   /\.setup-layout\s*\{/,
+  /\.setting-select\s*\{/,
+  /\.setting-select:focus\s*\{/,
   /\.format-card-grid\s*\{/,
   /\.format-card\.selected::after\s*\{/,
   /\.ppt-preview-wrap\s*\{/,
