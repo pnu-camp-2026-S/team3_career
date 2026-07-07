@@ -306,6 +306,62 @@ button {
   background: transparent;
 }
 
+.profile-menu {
+  position: relative;
+}
+
+.profile-menu .user-chip {
+  width: 42px;
+  height: 42px;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.profile-menu .user-chip:hover,
+.profile-menu .user-chip[aria-expanded="true"] {
+  background: #eef2ff;
+}
+
+.profile-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  z-index: 40;
+  min-width: 148px;
+  display: none;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.14);
+}
+
+.profile-dropdown.open {
+  display: grid;
+}
+
+.profile-dropdown a,
+.profile-dropdown button {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  border: 0;
+  border-radius: 6px;
+  padding: 0 12px;
+  background: transparent;
+  color: #344055;
+  text-align: left;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.profile-dropdown a:hover,
+.profile-dropdown button:hover {
+  background: #f1f5ff;
+  color: var(--brand);
+}
+
 .avatar,
 .avatar-lg {
   position: relative;
@@ -2073,13 +2129,33 @@ body {
 .profile-needed-icon {
   width: 72px;
   height: 72px;
-  display: grid;
-  place-items: center;
+  position: relative;
   border-radius: 50%;
   background: #eef2ff;
-  color: var(--brand);
-  font-size: 42px;
-  font-weight: 900;
+  overflow: hidden;
+}
+
+.profile-needed-icon::before,
+.profile-needed-icon::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #c8d0df;
+}
+
+.profile-needed-icon::before {
+  top: 18px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+}
+
+.profile-needed-icon::after {
+  bottom: -10px;
+  width: 54px;
+  height: 38px;
+  border-radius: 50% 50% 0 0;
 }
 
 .profile-needed-card h2 {
@@ -2095,6 +2171,140 @@ body {
   color: #697386;
   font-size: 18px;
   line-height: 1.65;
+}
+
+.login-required-page {
+  min-height: calc(100vh - 72px);
+  display: grid;
+  place-items: center;
+  padding: 44px;
+  background: #fff;
+}
+
+.dashboard-logged-out .login-required-page {
+  min-height: calc(100vh - 184px);
+  padding: 0;
+}
+
+.login-required-card {
+  width: min(720px, 100%);
+  display: grid;
+  grid-template-columns: 82px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+  border: 1px dashed #cfd5e8;
+  border-radius: 12px;
+  padding: 42px;
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(31, 36, 62, 0.025);
+}
+
+.login-required-card h1 {
+  margin: 2px 0 14px;
+  color: #11182f;
+  font-size: 30px;
+  letter-spacing: -0.8px;
+}
+
+.login-required-card p {
+  margin: 0 0 22px;
+  color: #697386;
+  font-size: 17px;
+  line-height: 1.65;
+}
+
+.auth-danger-link {
+  width: 100%;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 12px;
+  border: 1px solid #f4cdd5;
+  border-radius: 8px;
+  background: #fff;
+  color: #bf2940;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.auth-danger-link:hover {
+  background: #fff0f3;
+}
+
+.withdraw-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 34px;
+  background: #f7f8fc;
+}
+
+.withdraw-card {
+  width: min(560px, 100%);
+  display: grid;
+  gap: 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 34px;
+  background: #fff;
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+}
+
+.withdraw-card h1 {
+  margin: 0;
+  color: #11182f;
+  font-size: 28px;
+}
+
+.withdraw-card p {
+  margin: 0;
+  color: #697386;
+  line-height: 1.65;
+}
+
+.withdraw-steps {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 18px 20px;
+  border-radius: 8px;
+  background: #fbfcff;
+  color: #344055;
+  font-weight: 750;
+}
+
+.withdraw-confirm {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: #344055;
+  font-weight: 800;
+}
+
+.withdraw-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.danger-button {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #f05265;
+  border-radius: 8px;
+  padding: 0 18px;
+  background: #f05265;
+  color: #fff;
+  font-weight: 900;
+}
+
+.danger-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .btn-row {
