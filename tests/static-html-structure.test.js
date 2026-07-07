@@ -1203,6 +1203,20 @@ assert.match(
 );
 assert.match(
   portfolioCreateHtml,
+  /AI 포트폴리오 추천 서비스[\s\S]*AI 포트폴리오 추천 서비스[\s\S]*AI 포트폴리오 추천 서비스[\s\S]*AI 포트폴리오 추천 서비스/,
+  'portfolio_create format previews should show the same source experience across all formats'
+);
+assert.match(
+  portfolioCreateHtml,
+  /PROFILE[\s\S]*ACTIVITIES[\s\S]*CASE STUDY[\s\S]*슬라이드별 발표 흐름[\s\S]*지원동기/,
+  'portfolio_create format previews should distinguish summary, case study, presentation, and resume-cover letter forms'
+);
+assert.ok(
+  !portfolioCreateHtml.includes('aria-label="알림"') && !portfolioCreateHtml.includes('notification'),
+  'portfolio_create format preview update should not add notification UI'
+);
+assert.match(
+  portfolioCreateHtml,
   /id="pfMajorSelect"/,
   'portfolio_create should include the major selector from the attachment'
 );
