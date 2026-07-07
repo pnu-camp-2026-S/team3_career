@@ -99,7 +99,7 @@ Next.js App Router 핸들러. Express·multer 없이 동작한다.
 
 두 파일 모두 `.gitignore` 대상이며, 키 값은 로그·산출물에 노출하지 않는다.
 
-## 9. DB 전환 시 해야 할 일
+## 9. DB(Supabase) 전환 시 해야 할 일
 
 1. `lib/analysis/repository.mjs`와 같은 메서드 시그니처로 `DbAnalysisRepository` 구현
 2. 라우트에서 `LocalAnalysisRepository` 대신 주입

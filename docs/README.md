@@ -6,7 +6,7 @@
 ## 기능별 문서
 
 - [로그인 및 모의 계정 기준](auth.md)
-- [마이페이지 및 Firebase 데이터 기준](mypage.md)
+- [마이페이지 및 Supabase 데이터 기준](mypage.md)
 - [자료 입력 및 파일관리 기준](file-management.md)
 - [AI 자동 정리 및 분석 기준](ai-analysis.md)
 - [활동 추천 기준](recommendation.md)

@@ -18,5 +18,6 @@
 ## 개인정보와 API 키
 
 - 개인정보와 API 키는 화면, 로그, 테스트 출력, 커밋에 노출하지 않는다.
-- `key.env`, `.env`, `.env.*`에는 API 키가 들어가므로 커밋하지 않는다.
-- Firebase를 사용할 때는 사용자별 데이터 접근 권한이 분리되도록 보안 규칙을 고려한다.
+- `key.env`(OpenAI), `gemini_key.env`(Gemini), `.env`, `.env.*`에는 API 키가 들어가므로 커밋하지 않는다.
+- AI 분석 산출물(`data/local-analysis/`, `docs/examples/`)에 API 키나 개인정보가 들어가지 않았는지 커밋 전에 확인한다.
+- Supabase를 사용할 때는 RLS(Row Level Security)로 사용자별 데이터 접근 권한이 분리되도록 설계한다.

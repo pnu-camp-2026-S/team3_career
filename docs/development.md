@@ -26,6 +26,7 @@
 - 포트폴리오 초안/완성본 저장
 - 활동 추천 저장
 - AI API를 Next.js API Route 또는 Server Action 기준으로 정리
+  - 일부 구현됨: 단일 파일 분석·종합 분석은 `/api/analysis/*` Route Handler로 동작 ([구현 계획](single-file-ai-analysis-mvp.md) 참고)
 
 3차 개발:
 
@@ -42,8 +43,10 @@
 4. Next.js 라우팅은 `app/`에서 담당한다.
 5. 기존 정적 자산은 `/css`, `/js`, `/*.html` 경로가 깨지지 않게 제공한다.
 6. DB 연동은 Next 전환 이후 페이지별 이슈와 PR로 진행한다.
-7. 새 기능을 추가하면 관련 정적 구조 테스트도 함께 갱신한다.
-8. 사용자가 승인하지 않은 AI 결과를 최종 데이터처럼 저장하지 않는다.
+7. AI 분석 로직은 `lib/analysis/`에 두고, 저장은 Repository 인터페이스(`repository.mjs`)만 거친다. DB(Supabase) 전환 시 Repository 구현체만 교체하고 서비스·프롬프트·템플릿·화면은 유지한다.
+8. AI 프롬프트는 `prompts/`, 산출물 템플릿은 `templates/`에서 관리하고, 작성 규칙은 [템플릿 작성 가이드](../prompts/template-writing-guide.md)를 따른다.
+9. 새 기능을 추가하면 관련 정적 구조 테스트도 함께 갱신한다.
+10. 사용자가 승인하지 않은 AI 결과를 최종 데이터처럼 저장하지 않는다.
 
 ## 작업 완료 전 확인 목록
 
