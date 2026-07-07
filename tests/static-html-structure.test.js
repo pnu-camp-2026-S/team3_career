@@ -90,6 +90,11 @@ assert.match(
 );
 assert.match(
   authNavJs,
+  /window\.location\.href = 'login\.html'/,
+  'logout should redirect directly to the login page'
+);
+assert.match(
+  authNavJs,
   /로그인이 필요해요/,
   'main should render a login-required prompt after logout'
 );
@@ -574,6 +579,7 @@ assert.match(
 );
 
 const loginHtml = fs.readFileSync(path.join(htmlDir, 'login.html'), 'utf8');
+const indexAuthHtml = fs.readFileSync(path.join(htmlDir, 'index.html'), 'utf8');
 const signupHtml = fs.readFileSync(path.join(htmlDir, 'signup.html'), 'utf8');
 const mypageHtml = fs.readFileSync(path.join(htmlDir, 'mypage.html'), 'utf8');
 const withdrawHtml = fs.readFileSync(path.join(htmlDir, 'withdraw.html'), 'utf8');
@@ -607,15 +613,37 @@ for (const [fileName, html] of Object.entries({
   );
 }
 
-assert.match(
-  loginHtml,
-  /href="withdraw\.html"[^>]*>회원 탈퇴<\/a>/,
-  'login page should link to account withdrawal'
+assert.ok(
+  !loginHtml.includes('href="withdraw.html"'),
+  'login page should not link directly to account withdrawal'
+);
+assert.ok(
+  !signupHtml.includes('href="withdraw.html"'),
+  'signup page should not link directly to account withdrawal'
+);
+assert.ok(
+  !indexAuthHtml.includes('href="withdraw.html"'),
+  'auth index page should not link directly to account withdrawal'
 );
 assert.match(
-  signupHtml,
-  /href="withdraw\.html"[^>]*>회원 탈퇴<\/a>/,
-  'signup page should link to account withdrawal'
+  mypageHtml,
+  /id="account"/,
+  'mypage should include an account management section'
+);
+assert.match(
+  mypageHtml,
+  /data-anchor-target="account"/,
+  'mypage side anchor menu should include account management'
+);
+assert.match(
+  mypageHtml,
+  /class="outline-button" type="button" data-logout/,
+  'mypage account management should include a logout button'
+);
+assert.match(
+  mypageHtml,
+  /class="danger-button" href="withdraw\.html"/,
+  'mypage account management should link to withdrawal'
 );
 assert.match(
   withdrawHtml,
