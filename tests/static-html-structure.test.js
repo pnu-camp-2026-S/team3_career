@@ -6,6 +6,8 @@ const rootDir = process.cwd();
 const htmlDir = path.join(rootDir, 'html');
 const cssDir = path.join(rootDir, 'css');
 const jsDir = path.join(rootDir, 'js');
+const appDir = path.join(rootDir, 'app');
+const libDir = path.join(rootDir, 'lib');
 
 const linkedHtmlFiles = [
   'contest.html',
@@ -361,21 +363,64 @@ for (const file of ['index.html', 'main.html']) {
   );
 }
 
-const serverJs = fs.readFileSync(path.join(rootDir, 'server.js'), 'utf8');
+const packageJson = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
+assert.strictEqual(packageJson.scripts.dev, 'next dev', 'project should expose the Next.js dev server command');
+assert.strictEqual(packageJson.scripts.build, 'next build', 'project should expose the Next.js build command');
+assert.strictEqual(packageJson.scripts.start, 'next start', 'project should run the Next.js production server');
+assert.ok(packageJson.dependencies.next, 'project should depend on Next.js');
+assert.ok(packageJson.dependencies.react, 'project should depend on React');
+assert.ok(packageJson.dependencies['react-dom'], 'project should depend on React DOM');
+assert.ok(!packageJson.dependencies.express, 'project should no longer depend on Express after the Next.js migration');
+assert.ok(!fs.existsSync(path.join(rootDir, 'server.js')), 'legacy Express server.js should be removed after the Next.js migration');
+
+const nextLegacyPage = fs.readFileSync(path.join(appDir, '[[...slug]]', 'page.js'), 'utf8');
+const nextLegacyScripts = fs.readFileSync(path.join(appDir, 'LegacyScripts.jsx'), 'utf8');
+const nextLegacyLib = fs.readFileSync(path.join(libDir, 'legacy-page.js'), 'utf8');
+const nextCssRoute = fs.readFileSync(path.join(appDir, 'css', '[...file]', 'route.js'), 'utf8');
+const nextJsRoute = fs.readFileSync(path.join(appDir, 'js', '[...file]', 'route.js'), 'utf8');
+const nextSignupRoute = fs.readFileSync(path.join(appDir, 'api', 'signup', 'route.js'), 'utf8');
+const nextChatRoute = fs.readFileSync(path.join(appDir, 'api', 'chat', 'route.js'), 'utf8');
+
 assert.match(
-  serverJs,
-  /express\.static\(path\.join\(__dirname,\s*['"]html['"]\)\)/,
-  'server should serve active pages from the html directory'
+  nextLegacyPage,
+  /const resolvedParams = await params;[\s\S]*getLegacyPage\(resolvedParams\?\.slug \|\| \[\]\)/,
+  'Next catch-all route should render the existing html pages'
 );
 assert.match(
-  serverJs,
-  /app\.use\(['"]\/css['"],\s*express\.static\(path\.join\(__dirname,\s*['"]css['"]\)\)\)/,
-  'server should serve shared styles from the css directory'
+  nextLegacyScripts,
+  /document\.createElement\('script'\)[\s\S]*document\.body\.appendChild\(element\)/,
+  'Next migration should re-run legacy page scripts in browser order'
 );
 assert.match(
-  serverJs,
-  /app\.use\(['"]\/js['"],\s*express\.static\(path\.join\(__dirname,\s*['"]js['"]\)\)\)/,
-  'server should serve shared scripts from the js directory'
+  nextLegacyLib,
+  /const htmlDir = path\.join\(process\.cwd\(\), 'html'\)/,
+  'Next legacy renderer should keep the current html directory as source of truth'
+);
+assert.ok(
+  nextLegacyLib.includes('function normalizeAssetPath(assetPath)') &&
+    nextLegacyLib.includes(".replace(/^(\\.\\.\\/|\\.\\/)+/, '')") &&
+    nextLegacyLib.includes("normalized.startsWith('/')"),
+  'Next legacy renderer should normalize existing relative asset paths'
+);
+assert.match(
+  nextCssRoute,
+  /const params = await context\.params;[\s\S]*path\.join\(process\.cwd\(\), 'css'/,
+  'Next route handler should serve existing css assets'
+);
+assert.match(
+  nextJsRoute,
+  /const params = await context\.params;[\s\S]*path\.join\(process\.cwd\(\), 'js'/,
+  'Next route handler should serve existing js assets'
+);
+assert.match(
+  nextSignupRoute,
+  /export async function POST\(request\)[\s\S]*bcrypt\.hash/,
+  'signup API should move from Express to a Next route handler'
+);
+assert.match(
+  nextChatRoute,
+  /export async function POST\(request\)[\s\S]*OpenAI/,
+  'chat API should move from Express to a Next route handler'
 );
 
 const mainHtml = fs.readFileSync(path.join(htmlDir, 'main.html'), 'utf8');

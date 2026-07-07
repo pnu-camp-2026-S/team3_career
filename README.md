@@ -1,85 +1,55 @@
-# MyFitfolio
+# Myfitfolio
 
-학적/포트폴리오 기반 커리어 추천 및 포트폴리오 작성 지원 서비스입니다.
+Myfitfolio는 취업을 준비하는 대학생이 흩어진 활동 자료를 정리하고, 직무 맞춤형 포트폴리오와 활동 추천을 받을 수 있도록 돕는 서비스입니다.
 
 ## 기술 스택
 
-- Frontend: HTML, CSS, JavaScript
-- Backend: Node.js, Express
+- Frontend/App: Next.js, React, HTML, CSS, JavaScript
+- API Route: Next.js Route Handler
 - AI API: OpenAI API
 - Auth/Password Utility: bcryptjs
-- Environment Variables: dotenv
-- Deployment: GitHub Pages
+- Environment Variables: dotenv, `key.env`
+- Temporary Storage: localStorage/sessionStorage
+- Future DB/Deploy: Supabase, Vercel
+- Test: Node.js 기본 `assert` 기반 정적 구조 테스트
+
+현재 전환 단계에서는 기존 HTML/CSS/JS 화면과 localStorage 기반 동작을 유지합니다. Supabase DB 연동은 Next.js 전환 이후 페이지별 이슈와 PR로 진행합니다.
 
 ## 개발 환경
 
-- Node.js: 22.12.0
+- Node.js: 프로젝트의 `.nvmrc`, `.node-version` 기준
 - npm: Node.js에 포함된 npm 사용
-
-Node 버전 관리를 사용하는 경우 아래 파일을 참고하세요.
-
-```bash
-.nvmrc
-.node-version
-```
 
 ## 프로젝트 구조
 
 ```text
 .
-├─ index.html                  # GitHub Pages 루트 진입용 리다이렉트 페이지
-├─ html/
-│  ├─ index.html               # 첫 진입 페이지, 로그인 화면
-│  ├─ login.html               # 로그인 화면
-│  ├─ signup.html
-│  ├─ main.html                # 로그인 후 메인 대시보드
-│  ├─ create.html              # 파일 관리
-│  ├─ contest.html             # 활동 추천
-│  ├─ portfolio_create.html    # 포트폴리오 생성
-│  ├─ portfolio_manage.html    # 포트폴리오 관리
-│  ├─ portfolio_viewer.html    # 포트폴리오 슬라이드 보기
-│  ├─ mypage.html              # 마이페이지
-│  ├─ withdraw.html            # 회원 탈퇴
-│  └─ fitfolio_prototype.html  # 프로토타입 보관 화면
-├─ css/
-│  ├─ common.css              # 공통 변수, 버튼, 상단 내비게이션
-│  ├─ index.css
-│  ├─ login.css
-│  ├─ signup.css
-│  ├─ main.css
-│  ├─ create.css
-│  ├─ contest.css
-│  ├─ portfolio_create.css
-│  ├─ portfolio_manage.css
-│  ├─ mypage.css
-│  ├─ withdraw.css
-│  ├─ auth.css                # 로그인/회원가입 공통 인증 스타일
-│  └─ fitfolio_prototype.css  # 프로토타입 전용 스타일
-├─ js/
-│  ├─ shared-nav.js           # 공통 내비게이션 렌더링
-│  ├─ auth-nav.js             # 로그인 상태, 프로필 메뉴, 로그아웃 처리
-│  └─ contest.js              # 활동 추천 페이지 스크립트
-├─ tests/
-│  └─ static-html-structure.test.js
-├─ server.js                  # 로컬 Express 서버
+├─ app/                       # Next.js App Router
+│  ├─ [[...slug]]/page.js      # 기존 html 화면을 렌더링하는 catch-all route
+│  ├─ api/signup/route.js      # 회원가입 API 스캐폴드
+│  ├─ api/chat/route.js        # OpenAI 채팅 API 스캐폴드
+│  ├─ css/[...file]/route.js   # 기존 css 자산 제공
+│  └─ js/[...file]/route.js    # 기존 js 자산 제공
+├─ lib/legacy-page.js          # 기존 HTML을 Next 화면으로 변환하는 유틸
+├─ html/                       # 현재 서비스 화면의 원본 HTML
+├─ css/                        # 공통 및 화면별 스타일
+├─ js/                         # 공통 및 화면별 브라우저 스크립트
+├─ docs/                       # 기능별 기준 문서
+├─ tests/                      # 정적 구조 테스트
 ├─ package.json
 ├─ package-lock.json
-├─ .node-version
-├─ .nvmrc
-└─ key.env                    # 로컬 API 키 파일, Git에 올리지 않음
+└─ AGENTS.md
 ```
 
-## 설치 방법
-
-저장소를 받은 뒤 프로젝트 루트에서 실행합니다.
+## 설치
 
 ```bash
 npm install
 ```
 
-## 환경 변수 설정
+## 환경 변수
 
-프로젝트 루트에 `key.env` 파일을 만들고 아래 값을 설정합니다.
+프로젝트 루트에 `key.env` 파일을 만들고 필요한 값을 설정합니다.
 
 ```env
 OPENAI_API_KEY=your_openai_api_key
@@ -87,21 +57,28 @@ OPENAI_MODEL=gpt-4o-mini
 PORT=3000
 ```
 
-주의: `key.env`, `.env`, `.env.*` 파일은 API 키가 들어가므로 GitHub에 올리지 않습니다.
+주의: `key.env`, `.env`, `.env.*` 파일에는 API 키가 들어갈 수 있으므로 커밋하지 않습니다.
 
 ## 로컬 실행
 
+개발 서버:
+
 ```bash
-npm start
+npm run dev
 ```
 
-브라우저에서 접속합니다.
+접속 주소:
 
 ```text
 http://localhost:3000/
 ```
 
-서버는 `html/` 폴더를 화면 정적 파일 루트로 사용하고, `/css`, `/js` 경로로 공통 스타일과 스크립트를 제공합니다. 따라서 첫 화면은 `html/index.html`이고, 로그인 후 `html/main.html`로 이동합니다.
+프로덕션 빌드 확인:
+
+```bash
+npm run build
+npm start
+```
 
 ## 테스트
 
@@ -109,39 +86,8 @@ http://localhost:3000/
 npm test
 ```
 
-현재 테스트는 활성 HTML 파일이 `html/` 폴더에 있는지, CSS와 JS가 각각 `css/`, `js/` 폴더에서 관리되는지, 서버가 정적 자산 경로를 제공하는지 확인합니다.
+현재 테스트는 기존 HTML/CSS/JS 화면 구조와 Next.js 라우트/API 전환 구조가 함께 유지되는지 확인합니다.
 
-## GitHub Pages 배포
+## 배포 방향
 
-GitHub Pages 설정:
-
-```text
-Source: Deploy from a branch
-Branch: main
-Folder: / (root)
-```
-
-이 설정이면 배포 주소의 루트(`/`)에서 루트 `index.html`이 먼저 열리고, `html/index.html`로 이동합니다.
-
-서비스 흐름:
-
-```text
-배포 주소 접속
-→ index.html 로그인 화면
-→ 로그인 / 구글로 로그인 / 네이버로 로그인 클릭
-→ main.html 이동
-```
-
-## 팀원 작업 순서
-
-```bash
-git clone https://github.com/pnu-camp-2026-S/team3_career.git
-cd team3_career
-npm install
-```
-
-AI API를 로컬에서 테스트할 팀원은 `key.env`를 직접 생성해야 합니다.
-
-```bash
-npm start
-```
+Next.js 전환 이후 배포 기준은 Vercel입니다. Supabase DB와 Auth 연동은 별도 이슈와 PR로 진행합니다.
