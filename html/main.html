@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
@@ -6,7 +6,7 @@
   <title>Myfitfolio - 메인</title>
   <link rel="stylesheet" href="fitfolio.css" />
 </head>
-<body>
+<body data-page="main">
   <div class="app-shell">
     <header class="top-nav">
       <a class="brand-word" href="main.html">Myfit<span>folio</span></a>
@@ -19,10 +19,15 @@
         <a class="nav-tab" href="mypage.html">마이페이지</a>
       </nav>
       <div class="nav-actions">
-        <button class="icon-button" type="button" aria-label="알림">!</button>
-        <a class="user-chip" href="mypage.html" aria-label="마이페이지로 이동">
-          <span class="avatar"></span>
-        </a>
+        <div class="profile-menu">
+          <button class="user-chip" type="button" data-profile-toggle aria-label="프로필 메뉴 열기" aria-haspopup="menu" aria-expanded="false">
+            <span class="avatar"></span>
+          </button>
+          <div class="profile-dropdown" data-profile-menu role="menu">
+            <a href="mypage.html" role="menuitem">마이페이지</a>
+            <button type="button" data-logout role="menuitem">로그아웃</button>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -408,5 +413,6 @@
 
     renderFolders();
   </script>
+  <script src="auth-nav.js"></script>
 </body>
 </html>
