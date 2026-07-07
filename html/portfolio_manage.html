@@ -28,6 +28,7 @@
 
   <script>
     const STORAGE_KEY = 'careerfit_portfolios';
+    const DELETED_PORTFOLIO_STORAGE_KEY = 'careerfit_deleted_portfolios';
     const seedPortfolios = [
       {
         id: 'portfolio-data',
@@ -124,19 +125,34 @@
       };
     }
 
+    function readDeletedPortfolioIds() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(DELETED_PORTFOLIO_STORAGE_KEY));
+        return Array.isArray(parsed) ? parsed.map(String) : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function writeDeletedPortfolioIds(ids) {
+      localStorage.setItem(DELETED_PORTFOLIO_STORAGE_KEY, JSON.stringify([...new Set(ids)]));
+    }
+
     function mergeWithSeedPortfolios(items) {
-      const usedIds = new Set(items.map((item) => item.id));
-      const missingSeeds = seedPortfolios.filter((item) => !usedIds.has(item.id));
-      return [...items, ...missingSeeds];
+      const deletedIds = new Set(readDeletedPortfolioIds());
+      const keptItems = items.filter((item) => !deletedIds.has(item.id));
+      const usedIds = new Set(keptItems.map((item) => item.id));
+      const missingSeeds = seedPortfolios.filter((item) => !usedIds.has(item.id) && !deletedIds.has(item.id));
+      return [...keptItems, ...missingSeeds];
     }
 
     function readPortfolios() {
       try {
         const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-        if (!Array.isArray(saved) || !saved.length) return seedPortfolios;
+        if (!Array.isArray(saved) || !saved.length) return mergeWithSeedPortfolios([]);
         return mergeWithSeedPortfolios(saved.map(normalizePortfolio));
       } catch {
-        return seedPortfolios;
+        return mergeWithSeedPortfolios([]);
       }
     }
 
@@ -216,6 +232,12 @@
     function renderPortfolios() {
       const list = document.getElementById('portfolioList');
       const portfolios = sortPortfolios(readPortfolios());
+
+      if (!portfolios.length) {
+        list.innerHTML = '<div class="empty">포트폴리오가 없습니다.</div>';
+        return;
+      }
+
       list.innerHTML = portfolios.map((portfolio) => `
         <article class="portfolio-library-card" data-id="${escapeHtml(portfolio.id)}">
           ${firstPagePreview(portfolio)}
@@ -233,6 +255,7 @@
             <a class="outline-button" href="portfolio_viewer.html?id=${encodeURIComponent(portfolio.id)}#viewerContent">열기</a>
             <a class="ghost-button" href="portfolio_create.html?edit=${encodeURIComponent(portfolio.id)}#pfWorkspaceScreen">수정</a>
             <a class="ghost-button" href="#" data-action="ppt" data-id="${escapeHtml(portfolio.id)}" download="${safeFileName(portfolio.title)}.pptx">PPT 저장</a>
+            <button class="ghost-button delete-action" type="button" data-action="delete" data-id="${escapeHtml(portfolio.id)}">삭제</button>
           </div>
         </article>
       `).join('');
@@ -256,6 +279,15 @@
       if (target.dataset.action === 'ppt') {
         event.preventDefault();
         downloadPortfolioPpt(portfolio);
+        return;
+      }
+
+      if (target.dataset.action === 'delete') {
+        if (!window.confirm(`"${portfolio.title}" 포트폴리오를 삭제할까요?`)) return;
+        const nextPortfolios = portfolios.filter((item) => item.id !== portfolio.id);
+        writeDeletedPortfolioIds([...readDeletedPortfolioIds(), portfolio.id]);
+        writePortfolios(nextPortfolios);
+        renderPortfolios();
       }
     });
 

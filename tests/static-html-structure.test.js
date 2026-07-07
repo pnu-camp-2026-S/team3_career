@@ -1375,6 +1375,21 @@ assert.match(
 );
 assert.match(
   portfolioManageHtml,
+  /data-action="delete"/,
+  'portfolio_manage should support deleting saved portfolios'
+);
+assert.match(
+  portfolioManageHtml,
+  /포트폴리오를 삭제할까요/,
+  'portfolio_manage should confirm before deleting a portfolio'
+);
+assert.match(
+  portfolioManageHtml,
+  /포트폴리오가 없습니다\./,
+  'portfolio_manage should show a clear empty portfolio message'
+);
+assert.match(
+  portfolioManageHtml,
   /portfolio_viewer\.html\?id=\$\{encodeURIComponent\(portfolio\.id\)\}#viewerContent/,
   'portfolio_manage should open portfolios in portfolio_viewer.html'
 );
@@ -1391,6 +1406,7 @@ for (const cssPattern of [
   /\.portfolio-library-page\s*\{/,
   /\.portfolio-library-card\s*\{/,
   /\.portfolio-library-actions\s+\.like-action\.liked\s*\{/,
+  /\.portfolio-library-actions\s+\.delete-action\s*\{/,
   /\.portfolio-web-viewer\s*\{/,
   /\.portfolio-slide-viewer\s*\{/,
   /\.viewer-control-bar\s*\{/,
