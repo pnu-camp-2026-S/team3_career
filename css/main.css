@@ -719,6 +719,13 @@
   line-height: 1.45;
 }
 
+.sidebar-analysis-start .analysis-notice {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #fff7dd;
+  color: #9a6a00;
+}
+
 .status-completed .folder-title {
   color: #227a4b;
 }

@@ -24,6 +24,7 @@
         <section class="sidebar-analysis-start">
           <button class="primary-button sidebar-primary-action" type="button" data-analysis-start>분석 시작</button>
           <p>완료된 활동 폴더에 있는 파일을 바탕으로 분석해드려요</p>
+          <p class="analysis-notice" id="analysisNotice" hidden></p>
         </section>
 
         <section class="folder-section status-completed" data-folder-section="completed">
@@ -72,13 +73,13 @@
           <section class="keyword-overview">
             <div>
               <p class="section-eyebrow">키워드 중심 활동 개요</p>
-              <h2>꾸준한 실행력과 협업 경험이 드러나요</h2>
-              <p>
+              <h2 id="keywordHeadline">꾸준한 실행력과 협업 경험이 드러나요</h2>
+              <p id="keywordDescription">
                 완료된 프로젝트 자료를 기준으로 기획, 개발, 문제 해결, 발표 경험을 묶어 분석합니다.
                 자료가 추가될수록 강점 키워드와 활동 분류가 더 선명해집니다.
               </p>
             </div>
-            <div class="keyword-chip-list" aria-label="AI 분석 키워드">
+            <div class="keyword-chip-list" id="keywordChipList" aria-label="AI 분석 키워드">
               <span>문제 해결</span>
               <span>협업</span>
               <span>기획</span>
@@ -118,6 +119,7 @@
   <script>
     const PROFILE_KEY = 'myfitfolioProfile';
     const SIDEBAR_WIDTH_KEY = 'myfitfolioSidebarWidth';
+    const AI_KEYWORDS_KEY = 'myfitfolioAiKeywords';
 
     const folderGroupContainers = {
       completed: 'completedFolderList',
@@ -275,11 +277,65 @@
       }
     });
 
-    document.querySelector('[data-analysis-start]').addEventListener('click', () => {
+    // AI 종합 분석 결과를 키워드 개요에 반영하고, 포트폴리오 생성 화면과 공유한다.
+    function applyAiKeywords(result) {
+      if (!result) return;
+      document.getElementById('keywordHeadline').textContent = result.headline || '';
+      document.getElementById('keywordDescription').textContent = result.description || '';
+      const chips = Array.isArray(result.activityKeywords) ? result.activityKeywords : [];
+      document.getElementById('keywordChipList').innerHTML = chips
+        .map((keyword) => `<span>${escapeHtml(keyword)}</span>`)
+        .join('');
+    }
+
+    function restoreAiKeywords() {
+      const saved = localStorage.getItem(AI_KEYWORDS_KEY);
+      if (!saved) return;
+      try {
+        applyAiKeywords(JSON.parse(saved));
+      } catch {
+        localStorage.removeItem(AI_KEYWORDS_KEY);
+      }
+    }
+
+    function showAnalysisNotice(message) {
+      const notice = document.getElementById('analysisNotice');
+      notice.hidden = !message;
+      notice.textContent = message || '';
+    }
+
+    const analysisStartButton = document.querySelector('[data-analysis-start]');
+
+    analysisStartButton.addEventListener('click', async () => {
+      showAnalysisNotice('');
+      analysisStartButton.disabled = true;
+      const originalLabel = analysisStartButton.textContent;
+      analysisStartButton.textContent = '분석 중...';
+
+      try {
+        const response = await fetch('/api/analysis/aggregate', { method: 'POST' });
+        const payload = await response.json();
+
+        if (payload.ok) {
+          applyAiKeywords(payload.result);
+          localStorage.setItem(AI_KEYWORDS_KEY, JSON.stringify(payload.result));
+        } else if (payload.reason === 'no_data') {
+          showAnalysisNotice('아직 분석된 자료가 없어요. 파일 분석 화면(/analysis.html)에서 자료를 먼저 분석해주세요.');
+        } else {
+          showAnalysisNotice('AI 종합 분석에 실패했어요. 잠시 후 다시 시도해주세요.');
+        }
+      } catch {
+        showAnalysisNotice('서버에 연결하지 못했어요. 잠시 후 다시 시도해주세요.');
+      } finally {
+        analysisStartButton.disabled = false;
+        analysisStartButton.textContent = originalLabel;
+      }
+
       renderDashboardState();
       analysisDashboard.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
 
+    restoreAiKeywords();
     renderFolders();
   </script>
 </body>
