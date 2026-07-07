@@ -1197,6 +1197,11 @@ assert.match(
   'portfolio_create loading progress should use the faster attachment timing'
 );
 assert.match(
+  portfolioCreateCss,
+  /\.portfolio-loading\s*\{[\s\S]*min-height:\s*min\(560px,\s*calc\(100vh - 108px\)\)[\s\S]*align-items:\s*center[\s\S]*justify-items:\s*center/,
+  'portfolio_create loading screen should stay centered in the visible viewport after the compact setup layout'
+);
+assert.match(
   portfolioCreateHtml,
   /class="setup-layout"[\s\S]*class="setup-left"[\s\S]*class="setup-right"/,
   'portfolio_create setup should use the attachment two-column layout'
