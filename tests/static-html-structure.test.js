@@ -60,6 +60,10 @@ assert.ok(
   !fs.existsSync(path.join(cssDir, 'fitfolio.css')),
   'old bundled Fitfolio stylesheet should not remain in the css directory'
 );
+assert.ok(
+  fs.existsSync(path.join(jsDir, 'activity-recommendation-dataset.js')),
+  'activity recommendation dummy dataset should live in the js directory'
+);
 
 for (const [htmlFile, cssFile] of Object.entries(pageCssFiles)) {
   assert.ok(
@@ -286,6 +290,45 @@ assert.match(
   /clearAccountState\(\);[\s\S]*window\.location\.href\s*=\s*'main\.html'/,
   'auth navigation should clear account state before logout redirect'
 );
+
+const activityDatasetJs = fs.readFileSync(path.join(jsDir, 'activity-recommendation-dataset.js'), 'utf8');
+const activityDatasetContext = {};
+Function(
+  'window',
+  `${activityDatasetJs}; window.dataset = activityRecommendationDataset;`
+)(activityDatasetContext);
+const activityRecommendationDataset = activityDatasetContext.dataset;
+
+assert.strictEqual(
+  activityRecommendationDataset.length,
+  100,
+  'activity recommendation dataset should include 100 dummy activities'
+);
+assert.strictEqual(
+  activityRecommendationDataset.filter((item) => item.category === 'major-relevant').length,
+  90,
+  'activity recommendation dataset should include 90 major-relevant activities'
+);
+assert.strictEqual(
+  activityRecommendationDataset.filter((item) => item.category === 'arts-adjacent').length,
+  5,
+  'activity recommendation dataset should include 5 arts-adjacent activities'
+);
+assert.strictEqual(
+  activityRecommendationDataset.filter((item) => item.category === 'low-value-noise').length,
+  5,
+  'activity recommendation dataset should include 5 low-value noise activities'
+);
+for (const department of ['컴퓨터공학과', '전기공학과', '화공생명공학과', '산업공학과']) {
+  assert.ok(
+    activityRecommendationDataset.some((item) => item.primaryDepartment === department),
+    `activity recommendation dataset should include activities for ${department}`
+  );
+  assert.ok(
+    activityRecommendationDataset.every((item) => typeof item.departmentFit[department] === 'number'),
+    `activity recommendation dataset should score every activity for ${department}`
+  );
+}
 assert.match(
   fitfolioCss,
   /\.auth-tab\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*center;[^}]*justify-content:\s*center;/s,
@@ -874,6 +917,10 @@ assert.ok(
   'contest recommendation script should live in the js directory'
 );
 assert.ok(
+  fs.existsSync(path.join(jsDir, 'activity-recommendation-dataset.js')),
+  'activity recommendation dummy dataset should live in the js directory'
+);
+assert.ok(
   !fs.existsSync(path.join(htmlDir, 'contest.js')),
   'contest recommendation script should not remain in the html directory'
 );
@@ -893,6 +940,76 @@ assert.match(
   contestJs,
   /function\s+getSortedSavedSchedules/,
   'contest schedule should create a date-sorted list before rendering'
+);
+assert.match(
+  contestHtml,
+  /id="activityPagination"/,
+  'contest page should render pagination below the activity list'
+);
+assert.match(
+  contestHtml,
+  /src="\.\.\/js\/activity-recommendation-dataset\.js"[\s\S]*src="\.\.\/js\/contest\.js"/,
+  'contest page should load the activity dataset before the recommendation script'
+);
+assert.match(
+  contestJs,
+  /const\s+activitiesPerPage\s*=\s*20/,
+  'contest activity list should show 20 recommendations per page'
+);
+assert.match(
+  contestJs,
+  /activityRecommendationDataset/,
+  'contest activity list should use the 100 item dummy dataset when available'
+);
+assert.match(
+  contestJs,
+  /function\s+getRecommendationScore/,
+  'contest activity list should calculate recommendation scores before sorting'
+);
+assert.match(
+  contestJs,
+  /function\s+getScoreBandCounts/,
+  'contest activity list should split recommendation scores into high, middle, and low bands'
+);
+assert.match(
+  contestJs,
+  /Math\.round\(total\s*\/\s*3\.5\)/,
+  'contest score distribution should keep the high band at a 1 ratio'
+);
+assert.match(
+  contestJs,
+  /Math\.round\(\(total\s*\/\s*3\.5\)\s*\*\s*1\.5\)/,
+  'contest score distribution should keep the middle band at a 1.5 ratio'
+);
+assert.match(
+  contestJs,
+  /return interpolateScore\(96,\s*75,[\s\S]*return interpolateScore\(74,\s*40,[\s\S]*return interpolateScore\(40,\s*12,/,
+  'contest displayed match scores should use lower high, middle, and low score ranges'
+);
+assert.match(
+  contestJs,
+  /function\s+getSortedRecommendedActivities/,
+  'contest activity list should sort all activities by recommendation score'
+);
+assert.match(
+  contestJs,
+  /visibleActivities\s*=\s*filtered\.slice\(startIndex,\s*startIndex\s*\+\s*activitiesPerPage\)/,
+  'contest activity list should render one paged slice at a time'
+);
+assert.match(
+  contestJs,
+  /data-page="\$\{page\}"/,
+  'contest pagination buttons should carry page numbers'
+);
+assert.match(
+  contestCss,
+  /\.activity-pagination/s,
+  'contest stylesheet should lay out activity pagination'
+);
+assert.match(
+  contestCss,
+  /\.pagination-button\.active/s,
+  'contest stylesheet should show the active activity page'
 );
 assert.match(
   contestJs,
