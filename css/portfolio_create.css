@@ -520,6 +520,22 @@
   background: #eef4ff;
 }
 
+/* 메인 AI 종합 분석이 추천한 키워드 */
+.tag.ai-tag::before {
+  content: "AI";
+  margin-right: 6px;
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: var(--brand);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.tag.ai-tag:not(.selected)::before {
+  background: #9aa5b5;
+}
+
 .portfolio-loading {
   min-height: min(560px, calc(100vh - 108px));
   display: grid;

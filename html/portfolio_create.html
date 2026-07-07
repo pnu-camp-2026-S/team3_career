@@ -292,13 +292,30 @@
       });
     }
 
+    // 메인 화면의 AI 종합 분석이 저장한 강조 키워드 (분석 시작 → localStorage 공유)
+    function getAiRecommendedKeywords() {
+      try {
+        const saved = JSON.parse(localStorage.getItem('myfitfolioAiKeywords') || 'null');
+        return Array.isArray(saved?.portfolioKeywords) ? saved.portfolioKeywords : [];
+      } catch {
+        return [];
+      }
+    }
+
     function renderKeywordPool() {
       const selectedMajor = majorKeywordMap[majorSelect.value] || majorKeywordMap.industrial;
-      const keywords = [...commonKeywords, ...selectedMajor.keywords];
+      const aiKeywords = getAiRecommendedKeywords();
+      const baseKeywords = [...commonKeywords, ...selectedMajor.keywords]
+        .filter((keyword) => !aiKeywords.includes(keyword));
 
-      keywordPool.innerHTML = keywords.map((keyword) => (
-        `<button class="tag selected" type="button" data-keyword="${escapeHtml(keyword)}" aria-pressed="true">${escapeHtml(keyword)}</button>`
-      )).join('');
+      const renderTag = (keyword, isAi) => (
+        `<button class="tag selected${isAi ? ' ai-tag' : ''}" type="button" data-keyword="${escapeHtml(keyword)}" aria-pressed="true"${isAi ? ' title="AI 종합 분석 추천 키워드"' : ''}>${escapeHtml(keyword)}</button>`
+      );
+
+      keywordPool.innerHTML = [
+        ...aiKeywords.map((keyword) => renderTag(keyword, true)),
+        ...baseKeywords.map((keyword) => renderTag(keyword, false)),
+      ].join('');
 
       keywordPool.querySelectorAll('[data-keyword]').forEach((tag) => {
         tag.addEventListener('click', () => {
