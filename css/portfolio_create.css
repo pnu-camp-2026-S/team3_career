@@ -521,19 +521,22 @@
 }
 
 .portfolio-loading {
-  min-height: 420px;
+  min-height: min(560px, calc(100vh - 108px));
   display: grid;
-  place-items: center;
+  align-items: center;
+  justify-items: center;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: linear-gradient(135deg, #fbfcff, #f4f7ff);
   text-align: center;
   box-shadow: var(--shadow);
+  padding: 28px 24px;
+  box-sizing: border-box;
 }
 
 .portfolio-loading-card {
   max-width: 430px;
-  padding: 32px;
+  padding: 24px 32px;
 }
 
 .loading-face {
