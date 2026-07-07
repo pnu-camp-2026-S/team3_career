@@ -121,11 +121,60 @@ const sharedNavJs = fs.existsSync(sharedNavJsPath)
 const authNavJs = fs.existsSync(authNavJsPath)
   ? fs.readFileSync(authNavJsPath, 'utf8')
   : '';
+
+const folderStoreJsPath = path.join(jsDir, 'folder-store.js');
+assert.ok(
+  fs.existsSync(folderStoreJsPath),
+  'folder data store script should live in the js directory (Firebase-ready abstraction)'
+);
+const folderStoreJs = fs.readFileSync(folderStoreJsPath, 'utf8');
+assert.match(
+  folderStoreJs,
+  /myfitfolioFolders/,
+  'folder store should persist folder and file state under the shared storage key'
+);
+assert.match(
+  folderStoreJs,
+  /key:\s*'completed'[\s\S]*key:\s*'inProgress'/,
+  'folder store should define completed and in-progress folder groups'
+);
+assert.match(
+  folderStoreJs,
+  /\{\s*key:\s*'other',\s*label:\s*'기타'\s*\}/,
+  'folder store should include an other folder type inside each activity group'
+);
+assert.match(
+  folderStoreJs,
+  /function\s+normalizeFolderLabel[\s\S]*folder\.type\s*===\s*'other'[\s\S]*folder\.label\s*===\s*'기타 폴더'[\s\S]*return '기타'/,
+  'folder store should migrate the old other-folder label to 기타'
+);
+for (const folderLabel of ['개인 프로젝트', '팀 프로젝트', '공모전', '자격증', '교육', '봉사', '기타']) {
+  assert.ok(
+    folderStoreJs.includes(`label: '${folderLabel}'`),
+    `folder store should include the ${folderLabel} folder type`
+  );
+}
+assert.match(
+  folderStoreJs,
+  /function\s+createFolder\(/,
+  'folder store should expose a helper to create custom project folders (#132)'
+);
+assert.match(
+  folderStoreJs,
+  /github:\s*null/,
+  'folder store folders should carry a per-project github connection field (#132)'
+);
+assert.match(
+  folderStoreJs,
+  /window\.FolderStore\s*=/,
+  'folder store should expose its API on window.FolderStore'
+);
+
 for (const [file, activeKey] of sharedNavPages) {
   const html = fs.readFileSync(path.join(htmlDir, file), 'utf8');
   assert.match(
     html,
-    new RegExp(`<div data-shared-nav data-active="${activeKey}"></div>\\s*<script src="\\.\\./js/shared-nav\\.js"></script>`),
+    new RegExp(`<div data-shared-nav data-active="${activeKey}"></div>\\s*(?:<script src="\\.\\./js/folder-store\\.js"></script>\\s*)?<script src="\\.\\./js/shared-nav\\.js"></script>`),
     `${file} should mount the shared navigation with the ${activeKey} active key`
   );
   assert.ok(
@@ -292,15 +341,18 @@ assert.match(
   /<body\s+data-page="main">/,
   'main page should expose its page key for auth-nav logged-out rendering'
 );
-assert.match(
-  mainHtml,
-  /id="sidebarToggle"/,
-  'main sidebar should have a collapse toggle button'
+assert.ok(
+  !mainHtml.includes('id="sidebarToggle"') && !mainHtml.includes('class="sidebar-toggle"'),
+  'main sidebar should not include the open/close toggle button'
+);
+assert.ok(
+  !/<span class="folder-count">/.test(mainHtml),
+  'main sidebar folder rows should not display the file count number'
 );
 assert.match(
   mainHtml,
   /id="sidebarResizeHandle"/,
-  'main sidebar should expose a resize handle'
+  'main sidebar should keep the width resize handle'
 );
 assert.match(
   mainHtml,
@@ -320,10 +372,9 @@ assert.match(
   /data-analysis-start/,
   'main sidebar should move analysis start to the top action area'
 );
-assert.match(
-  mainHtml,
-  /id="fileInput"[^>]*type="file"[^>]*multiple/,
-  'main sidebar should retain a hidden multi-file input for drag and folder uploads'
+assert.ok(
+  !mainHtml.includes('id="fileInput"'),
+  'main sidebar should not offer a file upload input (uploads happen in file management only)'
 );
 assert.match(
   mainHtml,
@@ -335,68 +386,21 @@ assert.match(
   /진행중인 활동 폴더/,
   'main sidebar should rename ready folders to in-progress folders'
 );
-assert.match(
-  mainHtml,
-  /\['completed',\s*'inProgress'\]/,
-  'main sidebar should create folders inside completed and in-progress groups'
-);
-assert.match(
-  mainHtml,
-  /\{\s*key:\s*'other',\s*label:\s*'기타'\s*\}/,
-  'main sidebar should include an other folder type inside each activity group'
-);
-assert.match(
-  mainHtml,
-  /function\s+normalizeFolderLabel[\s\S]*folder\.type\s*===\s*'other'[\s\S]*folder\.label\s*===\s*'기타 폴더'[\s\S]*return '기타'/,
-  'main sidebar should migrate the old other-folder label to 기타'
-);
 assert.ok(
   !mainHtml.includes('data-folder-section="other"'),
   'main sidebar should not render a separate other folder section'
 );
-assert.match(
-  mainHtml,
-  /data-rename-folder/,
-  'main sidebar should support folder renaming'
-);
-assert.match(
-  fitfolioCss,
-  /\.main-sidebar\s+\.icon-tool-button\s*\{[^}]*min-width:\s*56px;[^}]*padding:\s*0 10px;[^}]*white-space:\s*nowrap;[^}]*line-height:\s*1;/s,
-  'main sidebar rename buttons should be wide enough to keep the label visible on one line'
-);
-assert.match(
-  mainHtml,
-  /data-delete-file/,
-  'main sidebar should show per-file delete controls'
-);
-assert.match(
-  mainHtml,
-  /class="trash-icon"/,
-  'main file delete buttons should render a trash can icon'
-);
-assert.match(
-  mainHtml,
-  /파일을 삭제하시겠습니까/,
-  'main sidebar should confirm before deleting a file'
-);
-assert.match(
-  mainHtml,
-  /folder\.files\.length\s*\?\s*folder\.files\.map[\s\S]*파일을 이 폴더로 끌어오세요/,
-  'main sidebar should render an empty-folder placeholder for folders with no files'
-);
-assert.match(
-  fitfolioCss,
-  /\.main-sidebar\s+\.uploaded-file-list\s*\{[^}]*display:\s*grid;/s,
-  'main sidebar should show each empty-folder placeholder before any upload'
+assert.ok(
+  !mainHtml.includes('data-rename-folder') && !mainHtml.includes('폴더명 수정'),
+  'main sidebar should not offer folder renaming'
 );
 assert.ok(
-  !/\.main-sidebar\s+\.uploaded-file-list\s*\{[^}]*display:\s*none;/s.test(fitfolioCss),
-  'main sidebar uploaded-file-list should not be hidden until a folder is opened'
+  !mainHtml.includes('data-delete-file') && !mainHtml.includes('data-toggle-folder'),
+  'main sidebar should not expose per-file delete or per-folder expand controls'
 );
-assert.match(
-  mainHtml,
-  /function\s+getFileTypeIcon/,
-  'main sidebar should map file extensions to file type icons'
+assert.ok(
+  !mainHtml.includes('event.target.closest(\'.drop-folder\')') && !mainHtml.includes('clearDropOverFolders'),
+  'main sidebar should not accept drag-and-drop uploads'
 );
 assert.ok(
   !mainHtml.includes('기획 자료') && !mainHtml.includes('결과 자료') && !mainHtml.includes('renderNestedFolder'),
@@ -404,31 +408,34 @@ assert.ok(
 );
 assert.match(
   mainHtml,
-  /event\.target\.closest\('\.drop-folder'\)/,
-  'main sidebar should allow files to be dropped directly on each visible folder row'
-);
-assert.match(
-  mainHtml,
-  /clearDropOverFolders\(\)/,
-  'main sidebar should clear drag highlight when the pointer leaves a folder'
-);
-assert.match(
-  mainHtml,
-  /<script src="\.\.\/js\/shared-nav\.js"><\/script>/,
-  'main should load the shared navigation script'
+  /<script src="\.\.\/js\/folder-store\.js"><\/script>\s*<script src="\.\.\/js\/shared-nav\.js"><\/script>/,
+  'main should load the shared folder store before the navigation script'
 );
 assert.match(
   mainHtml,
   /<script src="\.\.\/js\/auth-nav\.js"><\/script>/,
   'main should load the auth navigation script'
 );
-
-for (const folderLabel of ['개인 프로젝트', '팀 프로젝트', '공모전', '자격증', '교육', '봉사', '기타']) {
-  assert.ok(
-    mainHtml.includes(`label: '${folderLabel}'`),
-    `main sidebar should include the ${folderLabel} folder`
-  );
-}
+assert.match(
+  mainHtml,
+  /FolderStore\.loadFolders\(\)/,
+  'main dashboard should load folder state through the shared folder store'
+);
+assert.match(
+  mainHtml,
+  /FolderStore\.saveFolders\(folders\)/,
+  'main dashboard should persist folder state through the shared folder store'
+);
+assert.match(
+  mainHtml,
+  /FolderStore\.FOLDER_GROUPS/,
+  'main sidebar should render folder groups from the shared folder store'
+);
+assert.match(
+  mainHtml,
+  /href="create\.html\?folder=\$\{escapeHtml\(folder\.id\)\}"/,
+  'main folder rows should link to the matching folder in file management'
+);
 
 assert.match(
   mainHtml,
@@ -458,11 +465,6 @@ assert.match(
   mainHtml,
   /myfitfolioProfile/,
   'main dashboard should read the saved mypage profile'
-);
-assert.match(
-  mainHtml,
-  /myfitfolioFolders/,
-  'main dashboard should persist folder and file state'
 );
 assert.match(
   mainHtml,
@@ -639,8 +641,83 @@ assert.match(
 );
 assert.match(
   createHtml,
-  /data-folder-id="\$\{folderId\}"/,
-  'file management folder buttons should expose folder ids'
+  /data-folder-id="\$\{escapeHtml\(folder\.id\)\}"/,
+  'file management folder buttons should expose folder ids from real folder data'
+);
+assert.match(
+  createHtml,
+  /<script src="\.\.\/js\/folder-store\.js"><\/script>\s*<script src="\.\.\/js\/shared-nav\.js"><\/script>/,
+  'file management should load the shared folder store before the navigation script'
+);
+assert.match(
+  createHtml,
+  /FolderStore\.loadFolders\(\)/,
+  'file management should load folder state through the shared folder store'
+);
+assert.match(
+  createHtml,
+  /FolderStore\.saveFolders\(folders\)/,
+  'file management should persist folder state through the shared folder store'
+);
+assert.match(
+  createHtml,
+  /FolderStore\.FOLDER_GROUPS/,
+  'file management should render folder groups from the shared folder store'
+);
+assert.ok(
+  !createHtml.includes("key: 'ready'") && !createHtml.includes('준비된 활동 폴더'),
+  'file management should use the unified in-progress folder group instead of the old ready group'
+);
+assert.ok(
+  !createHtml.includes('AI 대화창') && !createHtml.includes('id="chatLog"') && !createHtml.includes('id="chatInput"'),
+  'file management should not render the AI chat panel'
+);
+assert.ok(
+  !createHtml.includes('class="file-dashboard"') && !createHtml.includes('class="file-stat-card"'),
+  'file management should not render the old four-box summary dashboard'
+);
+assert.ok(
+  !createHtml.includes('class="ai-status-summary"'),
+  'file management should not keep the 전체 자료 중 분석 완료 summary box (#132)'
+);
+assert.match(
+  createHtml,
+  /id="analysisPanelTitle"/,
+  'file management should give the AI status panel a dynamic, per-project title (#132)'
+);
+assert.match(
+  createHtml,
+  /\$\{selectedFolder\.label\} AI 정리 상태/,
+  'file management AI status title should follow the [프로젝트 이름] AI 정리 상태 format (#132)'
+);
+assert.match(
+  createHtml,
+  /data-action="connect-repo"[^>]*id="repoConnectButton"/,
+  'file management should expose a per-project repo connect button (#132)'
+);
+assert.match(
+  createHtml,
+  /data-action="connect-repo-save"/,
+  'file management repo modal should save the per-project connection (#132)'
+);
+assert.match(
+  createHtml,
+  /FolderStore\.createFolder\(/,
+  'file management should create real folders through the shared folder store (#132)'
+);
+assert.match(
+  createHtml,
+  /data-action="create-folder-confirm"/,
+  'file management folder-add modal should confirm creation (#132)'
+);
+assert.ok(
+  !createHtml.includes('function setLatestChange'),
+  'file management should drop the removed latest-change summary hook (#132)'
+);
+assert.match(
+  createCss,
+  /\.visually-hidden\s*\{/,
+  'file management stylesheet should define visually-hidden so the file input stays hidden (#132)'
 );
 assert.match(
   fitfolioCss,
