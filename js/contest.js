@@ -207,6 +207,36 @@ function getRecommendationScore(item) {
   );
 }
 
+function getScoreBandCounts(total) {
+  const highCount = Math.round(total / 3.5);
+  const middleCount = Math.round((total / 3.5) * 1.5);
+
+  return {
+    high: highCount,
+    middle: middleCount,
+    low: total - highCount - middleCount
+  };
+}
+
+function interpolateScore(max, min, index, count) {
+  if (count <= 1) return max;
+  return Math.round(max - ((max - min) * index) / (count - 1));
+}
+
+function getDistributedMatchScore(index, total) {
+  const bands = getScoreBandCounts(total);
+
+  if (index < bands.high) {
+    return interpolateScore(96, 85, index, bands.high);
+  }
+
+  if (index < bands.high + bands.middle) {
+    return interpolateScore(84, 65, index - bands.high, bands.middle);
+  }
+
+  return interpolateScore(64, 35, index - bands.high - bands.middle, bands.low);
+}
+
 function formatDateFromDeadlineDays(deadlineDays) {
   const date = new Date(2026, 6, 7 + Number(deadlineDays || 0));
   const year = date.getFullYear();
@@ -354,8 +384,14 @@ const scheduleDates = {
   10: '2026-10-04'
 };
 function normalizeActivityDataset(dataset) {
-  return dataset.map((item) => {
-    const score = Math.max(0, Math.min(99, getRecommendationScore(item)));
+  const rankedItems = [...dataset].sort(
+    (a, b) =>
+      getRecommendationScore(b) - getRecommendationScore(a) ||
+      a.id - b.id
+  );
+
+  return rankedItems.map((item, index) => {
+    const score = getDistributedMatchScore(index, rankedItems.length);
 
     if (!scheduleDates[item.id]) {
       scheduleDates[item.id] = formatDateFromDeadlineDays(item.deadlineDays);

@@ -889,6 +889,26 @@ assert.match(
 );
 assert.match(
   contestJs,
+  /function\s+getScoreBandCounts/,
+  'contest activity list should split recommendation scores into high, middle, and low bands'
+);
+assert.match(
+  contestJs,
+  /Math\.round\(total\s*\/\s*3\.5\)/,
+  'contest score distribution should keep the high band at a 1 ratio'
+);
+assert.match(
+  contestJs,
+  /Math\.round\(\(total\s*\/\s*3\.5\)\s*\*\s*1\.5\)/,
+  'contest score distribution should keep the middle band at a 1.5 ratio'
+);
+assert.match(
+  contestJs,
+  /return interpolateScore\(96,\s*85,[\s\S]*return interpolateScore\(84,\s*65,[\s\S]*return interpolateScore\(64,\s*35,/,
+  'contest displayed match scores should use lower high, middle, and low score ranges'
+);
+assert.match(
+  contestJs,
   /function\s+getSortedRecommendedActivities/,
   'contest activity list should sort all activities by recommendation score'
 );
