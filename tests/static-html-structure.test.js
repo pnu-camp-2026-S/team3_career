@@ -2060,18 +2060,22 @@ assert.ok(
 );
 assert.match(
   portfolioCreateHtml,
-  /id="pfMajorSelect"/,
-  'portfolio_create should include the major selector from the attachment'
-);
-assert.match(
-  portfolioCreateHtml,
   /id="pfPurposeSelect"\s+class="setting-select"[\s\S]*<option>취업 지원용<\/option>[\s\S]*<option>대학원 진학<\/option>/,
   'portfolio_create should keep the generation purpose select while applying the improved selector style'
 );
 assert.match(
   portfolioCreateHtml,
-  /id="pfMajorSelect"\s+class="setting-select"[\s\S]*<option value="industrial">산업공학과<\/option>[\s\S]*<option value="computer">컴퓨터공학과<\/option>/,
-  'portfolio_create should keep the major select while applying the improved selector style'
+  /id="pfMajorDisplay"[\s\S]*data-major-value=""/,
+  'portfolio_create should display the mypage major instead of rendering a separate major selector'
+);
+assert.ok(
+  !portfolioCreateHtml.includes('id="pfMajorSelect"'),
+  'portfolio_create should not let users pick a separate major on the generation page'
+);
+assert.match(
+  portfolioCreateHtml,
+  /id="experienceDataList"[\s\S]*업로드한 경험 데이터를 불러오는 중입니다\./,
+  'portfolio_create should render the experience list container for uploaded user files'
 );
 assert.ok(
   !portfolioCreateHtml.includes('data-purpose-option') && !portfolioCreateHtml.includes('data-major-option'),
@@ -2084,7 +2088,32 @@ assert.ok(
 assert.match(
   portfolioCreateHtml,
   /id="keywordPool"/,
-  'portfolio_create should render major-based keywords into a keyword pool'
+  'portfolio_create should render recommended keywords into a keyword pool'
+);
+assert.match(
+  portfolioCreateHtml,
+  /const\s+PROFILE_ENDPOINT\s*=\s*'\/api\/profile'/,
+  'portfolio_create should define the mypage profile API endpoint for the major display'
+);
+assert.match(
+  portfolioCreateHtml,
+  /const\s+ACTIVITY_FILES_ENDPOINT\s*=\s*'\/api\/activity-files'/,
+  'portfolio_create should define the uploaded activity file API endpoint'
+);
+assert.match(
+  portfolioCreateHtml,
+  /async function\s+loadProfileMajor\(\)[\s\S]*fetch\(PROFILE_ENDPOINT,[\s\S]*profileMajor\s*=\s*educations\.find\(\(education\)\s*=>\s*education\?\.major\)\?\.major/,
+  'portfolio_create should load the displayed major from mypage education data'
+);
+assert.match(
+  portfolioCreateHtml,
+  /async function\s+loadExperienceData\(\)[\s\S]*fetch\(ACTIVITY_FILES_ENDPOINT,[\s\S]*activityFiles\s*=\s*Array\.isArray\(result\.files\)\s*\?\s*result\.files\s*:\s*\[\]/,
+  'portfolio_create should load uploaded files as selectable experience data'
+);
+assert.match(
+  portfolioCreateHtml,
+  /function\s+getExperienceKeywordRecommendations\(\)[\s\S]*experienceKeywordRules[\s\S]*getSelectedExperienceLabels\(\)/,
+  'portfolio_create should recommend keyword chips from selected experience files'
 );
 assert.match(
   portfolioCreateHtml,
@@ -2144,8 +2173,8 @@ assert.match(
 );
 assert.match(
   portfolioCreateHtml,
-  /const\s+commonKeywords[\s\S]*const\s+majorKeywordMap/,
-  'portfolio_create should generate keyword options from common and major-specific maps'
+  /const\s+commonKeywords[\s\S]*const\s+majorKeywordMap[\s\S]*const\s+experienceKeywordRules/,
+  'portfolio_create should generate keyword options from common, major, and selected-experience rules'
 );
 assert.match(
   portfolioCreateHtml,
@@ -2162,8 +2191,10 @@ for (const cssPattern of [
   /\.setup-layout\s*\{/,
   /\.setting-select\s*\{/,
   /\.setting-select:focus\s*\{/,
+  /\.profile-major-display\s*\{/,
   /\.format-card-grid\s*\{/,
   /\.format-card\.selected::after\s*\{/,
+  /\.experience-checkbox-group\s*\{[\s\S]*max-height:\s*214px;[\s\S]*overflow-y:\s*auto;/,
   /\.ppt-preview-wrap\s*\{/,
   /\.ppt-slide\s*\{/,
   /\.slide-arrow\s*\{/,

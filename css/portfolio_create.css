@@ -106,6 +106,20 @@
   box-shadow: 0 0 0 3px rgba(89, 101, 232, 0.14);
 }
 
+.profile-major-display {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  border: 1px solid #d7deee;
+  border-radius: 8px;
+  padding: 0 14px;
+  color: #17203a;
+  background: #f8faff;
+  box-shadow: 0 8px 18px rgba(31, 36, 62, 0.04);
+  font-size: 14px;
+  font-weight: 850;
+}
+
 .format-card-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(160px, 1fr));
@@ -463,17 +477,20 @@
 .experience-checkbox-group {
   display: grid;
   gap: 8px;
+  max-height: 214px;
   margin-top: 6px;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
 .experience-option {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
   min-height: 44px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  padding: 0 12px;
+  padding: 10px 12px;
   background: #fbfcff;
   color: #344055;
   font-size: 13px;
@@ -487,9 +504,38 @@
 }
 
 .experience-option input {
+  flex: 0 0 auto;
   width: 18px;
   height: 18px;
+  margin-top: 2px;
   accent-color: var(--brand);
+}
+
+.experience-option span {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.experience-option strong {
+  color: #17203a;
+  font-size: 13px;
+  font-weight: 850;
+  line-height: 1.35;
+}
+
+.experience-option small,
+.experience-empty,
+.keyword-empty {
+  color: #697586;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.experience-empty,
+.keyword-empty {
+  margin: 0;
+  padding: 12px 2px;
 }
 
 .keyword-pool {
