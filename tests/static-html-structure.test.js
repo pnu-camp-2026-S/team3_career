@@ -1981,7 +1981,7 @@ assert.match(
 );
 assert.match(
   portfolioCreateHtml,
-  /pfLoadingScreen'\)\.classList\.remove\('hidden'\)[\s\S]*startLoadingProgress\(\(\)\s*=>\s*\{[\s\S]*pfLoadingScreen'\)\.classList\.add\('hidden'\)[\s\S]*pfWorkspaceScreen'\)\.classList\.remove\('hidden'\)/,
+  /pfLoadingScreen'\)\.classList\.remove\('hidden'\)[\s\S]*startLoadingProgress\(async\s*\(\)\s*=>\s*\{[\s\S]*pfLoadingScreen'\)\.classList\.add\('hidden'\)[\s\S]*pfWorkspaceScreen'\)\.classList\.remove\('hidden'\)/,
   'portfolio_create should transition from loading screen to workspace screen'
 );
 assert.match(
@@ -2093,6 +2093,21 @@ assert.match(
 );
 assert.match(
   portfolioCreateHtml,
+  /async function\s+requestPortfolioGeneration\(\{[\s\S]*fetch\('\/api\/portfolio\/generate'/,
+  'portfolio_create should request OpenAI portfolio generation through the server API'
+);
+assert.match(
+  portfolioCreateHtml,
+  /async function\s+requestPortfolioRevision\([\s\S]*fetch\('\/api\/portfolio\/revise'/,
+  'portfolio_create should request OpenAI portfolio revision through the server API'
+);
+assert.match(
+  portfolioCreateHtml,
+  /function\s+renderPortfolioImagePreview\(\)[\s\S]*renderCaseStudyPortfolio/,
+  'portfolio_create should render ChatGPT JSON as visual portfolio previews'
+);
+assert.match(
+  portfolioCreateHtml,
   /<textarea id="pfAssistantInput"[\s\S]*id="pfAssistantSendBtn"/,
   'portfolio_create assistant should use a textarea and dedicated send button'
 );
@@ -2151,6 +2166,10 @@ for (const cssPattern of [
   /\.flat-action\.danger\s*\{/,
   /\.chat-input\s+textarea\s*\{/,
   /\.chat-send-button\s*\{/,
+  /\.portfolio-canvas\s*\{/,
+  /\.compact-case-canvas\s*\{/,
+  /\.case-summary-strip\s*\{/,
+  /\.deck-grid\s*\{/,
   /\.portfolio-workspace\.leaving\s*\{/,
 ]) {
   assert.match(

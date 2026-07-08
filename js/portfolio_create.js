@@ -105,8 +105,9 @@
       const major = majorKeywordMap[majorSelect.value] || majorKeywordMap.industrial;
       const experiences = getSelectedExperienceLabels();
       const keywords = getSelectedKeywords();
+      const portfolioShell = buildPortfolioShell({ format, purpose, major, experiences, keywords });
 
-      currentPortfolio = buildPortfolioDraft({ format, purpose, major, experiences, keywords });
+      currentPortfolio = null;
       currentSlideIndex = 0;
       chatHistory = [];
 
@@ -114,8 +115,27 @@
       document.getElementById('pfWorkspaceScreen').classList.add('hidden');
       document.getElementById('pfLoadingScreen').classList.remove('hidden');
       document.getElementById('workspaceTitle').textContent = `${format} 초안`;
-      startLoadingProgress(() => {
-        renderPortfolioPreview();
+      startLoadingProgress(async () => {
+        try {
+          const aiDraft = await requestPortfolioGeneration({ format, purpose, major: major.label, experiences, keywords });
+          currentPortfolio = normalizeGeneratedPortfolio(aiDraft, portfolioShell);
+          showToast('ChatGPT API로 초안을 생성했습니다.');
+          renderPortfolioPreview();
+        } catch (error) {
+          console.warn('OpenAI portfolio generation failed.', error);
+          currentPortfolio = {
+            ...portfolioShell,
+            blocks: [],
+            slides: [],
+            raw: null,
+            sourceLabel: 'ChatGPT 실패',
+            errorMessage: error.message || 'ChatGPT API 호출에 실패했습니다.',
+            updatedAt: new Date().toISOString(),
+          };
+          renderPortfolioError(currentPortfolio.format, currentPortfolio.errorMessage);
+          showToast('ChatGPT API 생성에 실패했습니다.');
+        }
+
         document.getElementById('pfLoadingScreen').classList.add('hidden');
         document.getElementById('pfWorkspaceScreen').classList.remove('hidden');
       });
@@ -144,9 +164,102 @@
       }, 60);
     }
 
+    function buildPortfolioShell({ format, purpose, major, experiences, keywords }) {
+      return {
+        id: `portfolio-${Date.now()}`,
+        format,
+        purpose,
+        major: major.label || major,
+        experiences,
+        keywords,
+        sourceLabel: 'ChatGPT 생성',
+        updatedAt: new Date().toISOString(),
+      };
+    }
+
+    function readMyPageInfo() {
+      const storageKeys = ['careerfit_mypage', 'myfitfolio_mypage', 'mypage_profile', 'userProfile'];
+      for (const key of storageKeys) {
+        try {
+          const parsed = JSON.parse(localStorage.getItem(key));
+          if (parsed && typeof parsed === 'object') return parsed;
+        } catch {
+          // 저장 형식이 다르면 다음 후보를 확인합니다.
+        }
+      }
+      return {};
+    }
+
+    async function requestPortfolioGeneration({ format, purpose, major, experiences, keywords }) {
+      const response = await fetch('/api/portfolio/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+          format,
+          purpose,
+          major,
+          experiences,
+          keywords,
+          myPageInfo: readMyPageInfo(),
+        }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || payload.success === false) {
+        throw new Error(payload.error || `ChatGPT API 요청 실패: ${response.status}`);
+      }
+      return payload.data || payload;
+    }
+
+    async function requestPortfolioRevision(revisionRequest) {
+      const response = await fetch('/api/portfolio/revise', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+          currentDraft: currentPortfolio,
+          revisionRequest,
+          chatHistory,
+        }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || payload.success === false) {
+        throw new Error(payload.error || `ChatGPT 수정 요청 실패: ${response.status}`);
+      }
+      return payload.data || payload;
+    }
+
+    function normalizeTextBlocks(blocks) {
+      return (Array.isArray(blocks) ? blocks : [])
+        .map((block, index) => ({
+          title: block.title || `${index + 1}. 포트폴리오 섹션`,
+          body: block.body || block.description || '',
+        }))
+        .filter((block) => block.title || block.body);
+    }
+
+    function normalizeGeneratedPortfolio(aiDraft, shell) {
+      const blocks = normalizeTextBlocks(aiDraft.blocks);
+      const slides = normalizeTextBlocks(aiDraft.slides);
+
+      return {
+        ...shell,
+        title: aiDraft.title || `${shell.format} - ${shell.purpose}`,
+        summary: aiDraft.summary || blocks[0]?.body || '',
+        blocks: blocks.length ? blocks : buildPortfolioDraft(shell).blocks,
+        slides: slides.length ? slides : buildSlides(shell.format, shell.purpose, shell.major, shell.experiences, shell.keywords),
+        competencies: aiDraft.competencies || [],
+        applicationSentences: aiDraft.applicationSentences || [],
+        raw: aiDraft.raw || null,
+        sourceLabel: 'ChatGPT 생성',
+        updatedAt: new Date().toISOString(),
+      };
+    }
+
     function buildPortfolioDraft({ format, purpose, major, experiences, keywords }) {
       const experienceText = experiences.length ? experiences.join(', ') : '선택한 경험 없음';
       const keywordText = keywords.length ? keywords.join(', ') : '강조 키워드 없음';
+      const majorLabel = typeof major === 'string' ? major : major.label;
 
       const blocks = [
         {
@@ -155,7 +268,7 @@
         },
         {
           title: '2. 전공 기반 역량 재해석',
-          body: `${major.label} 관점에서 ${keywordText} 역량이 드러나도록 경험을 재배치했습니다. 전공 적합성과 AI 활용 역량을 함께 읽히는 흐름입니다.`
+          body: `${majorLabel} 관점에서 ${keywordText} 역량이 드러나도록 경험을 재배치했습니다. 전공 적합성과 AI 활용 역량을 함께 읽히는 흐름입니다.`
         },
         {
           title: '3. 반영 경험',
@@ -171,11 +284,11 @@
         id: `portfolio-${Date.now()}`,
         format,
         purpose,
-        major: major.label,
+        major: majorLabel,
         experiences,
         keywords,
         blocks,
-        slides: buildSlides(format, purpose, major.label, experiences, keywords),
+        slides: buildSlides(format, purpose, majorLabel, experiences, keywords),
         updatedAt: new Date().toISOString()
       };
     }
@@ -209,7 +322,12 @@
 
       document.getElementById('workspaceTitle').textContent = `${currentPortfolio.format} 초안`;
       document.getElementById('workspaceSubtitle').textContent = `${currentPortfolio.major} / ${currentPortfolio.purpose} 기준으로 생성한 초안입니다.`;
-      document.getElementById('workspaceBadge').textContent = currentPortfolio.format === 'PPT 발표 스펙' ? 'PPT 프리뷰' : '초안 생성';
+      document.getElementById('workspaceBadge').textContent = currentPortfolio.sourceLabel || (currentPortfolio.format === 'PPT 발표 스펙' ? 'PPT 프리뷰' : '초안 생성');
+
+      if (currentPortfolio.raw) {
+        renderPortfolioImagePreview();
+        return;
+      }
 
       if (currentPortfolio.format === 'PPT 발표 스펙') {
         renderPptPreview();
@@ -222,6 +340,204 @@
           <p>${escapeHtml(block.body)}</p>
         </div>
       `).join('');
+    }
+
+    function renderPortfolioError(format, message) {
+      document.getElementById('workspaceTitle').textContent = `${format} 생성 실패`;
+      document.getElementById('workspaceSubtitle').textContent = '환경변수 또는 ChatGPT API 응답을 확인해 주세요.';
+      document.getElementById('workspaceBadge').textContent = 'ChatGPT 실패';
+      document.getElementById('workspaceContent').innerHTML = `
+        <div class="portfolio-block">
+          <h3>ChatGPT API 응답을 받아오지 못했습니다.</h3>
+          <p>${escapeHtml(message)}</p>
+        </div>
+      `;
+    }
+
+    function renderPortfolioImagePreview() {
+      const raw = currentPortfolio.raw || {};
+      if (currentPortfolio.format === '1페이지 요약본') {
+        renderOnePagePortfolio(raw);
+        return;
+      }
+      if (currentPortfolio.format === '상세 기술 포트폴리오') {
+        renderCaseStudyPortfolio(raw);
+        return;
+      }
+      if (currentPortfolio.format === 'PPT 발표 스펙') {
+        renderDeckPortfolio(raw);
+        return;
+      }
+      if (currentPortfolio.format === '자기소개서 연결형') {
+        renderCoverLetterPortfolio(raw);
+        return;
+      }
+      document.getElementById('workspaceContent').innerHTML = currentPortfolio.blocks.map((block) => `
+        <div class="portfolio-block">
+          <h3>${escapeHtml(block.title)}</h3>
+          <p>${escapeHtml(block.body)}</p>
+        </div>
+      `).join('');
+    }
+
+    function renderOnePagePortfolio(raw) {
+      const info = raw.basic_info || {};
+      const competencies = raw.core_competencies || [];
+      const experiences = raw.experiences || [];
+      document.getElementById('workspaceContent').innerHTML = `
+        <article class="portfolio-canvas">
+          <header class="canvas-hero">
+            <span class="canvas-kicker">One Page Portfolio</span>
+            <h3>${escapeHtml(raw.headline || currentPortfolio.title || '1페이지 요약본')}</h3>
+            <p>${escapeHtml(currentPortfolio.summary || '핵심 경험과 역량을 한 장으로 압축했습니다.')}</p>
+          </header>
+          <div class="resume-grid">
+            <section class="resume-profile-panel">
+              <div class="profile-avatar">${escapeHtml((info.name || 'MY').slice(0, 2))}</div>
+              ${renderInfoRows([
+                ['이름', info.name],
+                ['학교', info.school],
+                ['전공', info.major || currentPortfolio.major],
+                ['연계전공', info.minor],
+                ['이메일', info.email],
+                ['전화번호', info.phone],
+              ])}
+            </section>
+            <section class="mini-section">
+              <h4>핵심 역량</h4>
+              ${renderBulletList(competencies.map((item) => `${item.title || ''} ${item.description || ''}`.trim()))}
+            </section>
+            <section class="mini-section">
+              <h4>핵심 활동</h4>
+              ${renderBulletList(experiences.map((item) => `${item.project || ''} / ${item.role || ''} / ${item.highlight || ''}`.trim()))}
+            </section>
+            <section class="mini-section">
+              <h4>Skills</h4>
+              ${renderChipSection(raw.skills || currentPortfolio.keywords)}
+            </section>
+            <section class="mini-section">
+              <h4>Awards</h4>
+              ${renderBulletList((raw.licenses_and_awards || []).map((item) => `${item.year || ''} ${item.title || ''}`.trim()))}
+            </section>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderCaseStudyPortfolio(raw) {
+      const problem = raw.problem_definition || {};
+      const process = raw.design_process || {};
+      const implementation = raw.implementation || {};
+      const result = raw.result || {};
+      document.getElementById('workspaceContent').innerHTML = `
+        <article class="portfolio-canvas compact-case-canvas">
+          <header class="canvas-hero">
+            <span class="canvas-kicker">Case Study</span>
+            <h3>${escapeHtml(raw.project_title || currentPortfolio.title || '상세 기술 포트폴리오')}</h3>
+            <p>${escapeHtml(compactText(raw.selection_reason || raw.headline || currentPortfolio.summary, 130))}</p>
+          </header>
+          <div class="case-summary-strip">
+            ${renderSummaryPill('문제', problem.goal || problem.background)}
+            ${renderSummaryPill('도구', (implementation.tools_used || []).slice(0, 3).join(', '))}
+            ${renderSummaryPill('성과', result.qualitative_result || result.quantitative_result)}
+          </div>
+          <div class="case-section-grid">
+            ${renderCaseCard('문제 정의', [problem.background, problem.goal])}
+            ${renderCaseCard('설계 과정', [...(process.approach_steps || []), ...(process.design_decisions || []).map((item) => `${item.decision}: ${item.reason}`)])}
+            ${renderCaseCard('구현 및 기여도', [...(implementation.my_contribution || []), implementation.team_context])}
+            ${renderCaseCard('결과 및 성과', [result.quantitative_result, result.qualitative_result, raw.reflection?.learned])}
+          </div>
+        </article>
+      `;
+    }
+
+    function renderDeckPortfolio(raw) {
+      const slides = currentPortfolio.slides || [];
+      document.getElementById('workspaceContent').innerHTML = `
+        <article class="portfolio-canvas">
+          <header class="canvas-hero">
+            <span class="canvas-kicker">Presentation Preview</span>
+            <h3>${escapeHtml(raw.cover?.headline || currentPortfolio.title || 'PPT 발표 스펙')}</h3>
+            <p>${escapeHtml(currentPortfolio.summary || '발표 흐름에 맞춰 핵심 슬라이드를 구성했습니다.')}</p>
+          </header>
+          <div class="deck-grid">
+            ${slides.slice(0, 6).map((slide, index) => `
+              <section class="deck-slide-card">
+                <span>Slide ${index + 1}</span>
+                <h4>${escapeHtml(slide.title)}</h4>
+                ${renderBulletList(String(slide.body || '').split(/\n+/).slice(0, 4))}
+              </section>
+            `).join('')}
+          </div>
+        </article>
+      `;
+    }
+
+    function renderCoverLetterPortfolio(raw) {
+      const items = raw.items || [];
+      document.getElementById('workspaceContent').innerHTML = `
+        <article class="portfolio-canvas">
+          <header class="canvas-hero">
+            <span class="canvas-kicker">Story Portfolio</span>
+            <h3>${escapeHtml(raw.name_title || currentPortfolio.title || '자기소개서 연결형')}</h3>
+            <p>${escapeHtml(currentPortfolio.summary || '경험을 자기소개서 문항으로 확장했습니다.')}</p>
+          </header>
+          ${renderChipSection([
+            raw.core_summary?.competency,
+            raw.core_summary?.experience,
+            raw.core_summary?.skill,
+          ].filter(Boolean))}
+          ${items.map((item) => `
+            <section class="coverletter-question">
+              <h4>${escapeHtml(item.question_title || '자기소개서 문항')}</h4>
+              <small>${escapeHtml(item.question_reason || '경험과 직무 연결')}</small>
+              <p>${escapeHtml(item.answer || '')}</p>
+            </section>
+          `).join('')}
+        </article>
+      `;
+    }
+
+    function renderInfoRows(rows) {
+      return `<dl class="info-rows">${rows.filter(([, value]) => value).map(([label, value]) => `
+        <div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>
+      `).join('')}</dl>`;
+    }
+
+    function renderBulletList(items) {
+      const list = (items || []).filter(Boolean);
+      if (!list.length) return '<p>제공된 정보가 부족합니다.</p>';
+      return `<ul>${list.map((item) => `<li>${escapeHtml(compactText(item, 140))}</li>`).join('')}</ul>`;
+    }
+
+    function renderChipSection(items) {
+      const chips = (items || []).filter(Boolean);
+      if (!chips.length) return '<p>제공된 정보가 부족합니다.</p>';
+      return `<div class="canvas-chip-list">${chips.map((item) => `<span>${escapeHtml(item)}</span>`).join('')}</div>`;
+    }
+
+    function renderSummaryPill(label, value) {
+      return `
+        <div>
+          <b>${escapeHtml(label)}</b>
+          <span>${escapeHtml(compactText(value || '정보 보완 필요', 44))}</span>
+        </div>
+      `;
+    }
+
+    function renderCaseCard(title, items) {
+      return `
+        <section class="case-card">
+          <h4>${escapeHtml(title)}</h4>
+          ${renderBulletList((items || []).filter(Boolean).map((item) => compactText(item, 72)))}
+        </section>
+      `;
+    }
+
+    function compactText(value, maxLength) {
+      const text = String(value || '').replace(/\s+/g, ' ').trim();
+      if (text.length <= maxLength) return text;
+      return `${text.slice(0, maxLength - 1)}…`;
     }
 
     function renderPptPreview() {
@@ -419,17 +735,17 @@
 
       const shouldRevise = /수정해줘\s*$/.test(message);
       const reply = shouldRevise
-        ? '대화 맥락을 반영해 왼쪽 초안을 업데이트했습니다.'
+        ? '대화 맥락을 반영해 ChatGPT로 왼쪽 초안을 다시 다듬고 있습니다.'
         : '좋습니다. 방향을 기억해둘게요. 마지막에 "수정해줘"라고 입력하면 초안에 바로 반영합니다.';
 
-      window.setTimeout(() => {
+      window.setTimeout(async () => {
         appendChatBubble('ai', reply);
         chatHistory.push({ role: 'ai', content: reply });
-        if (shouldRevise) reviseDraftFromConversation();
+        if (shouldRevise) await reviseDraftFromConversation();
       }, 180);
     }
 
-    function reviseDraftFromConversation() {
+    async function reviseDraftFromConversation() {
       if (!currentPortfolio) return;
 
       const userContext = chatHistory
@@ -438,6 +754,23 @@
         .filter(Boolean)
         .join(' / ');
       const revisionNote = userContext || '사용자 요청';
+
+      try {
+        const revised = await requestPortfolioRevision(revisionNote);
+        const nextBlocks = normalizeTextBlocks(revised.blocks);
+        const nextSlides = normalizeTextBlocks(revised.slides);
+        if (nextBlocks.length) currentPortfolio.blocks = nextBlocks;
+        if (nextSlides.length) currentPortfolio.slides = nextSlides;
+        currentPortfolio.raw = null;
+        currentPortfolio.sourceLabel = 'ChatGPT 수정';
+        currentPortfolio.updatedAt = new Date().toISOString();
+        renderPortfolioPreview();
+        appendChatBubble('ai', revised.assistantMessage || 'ChatGPT가 요청을 반영해 초안을 수정했습니다.');
+        showToast('ChatGPT 수정 요청을 초안에 반영했습니다.');
+        return;
+      } catch (error) {
+        console.warn('OpenAI portfolio revision failed. Falling back to local revision.', error);
+      }
 
       currentPortfolio.updatedAt = new Date().toISOString();
 
