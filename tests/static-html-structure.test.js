@@ -9,6 +9,17 @@ const jsDir = path.join(rootDir, 'js');
 const appDir = path.join(rootDir, 'app');
 const libDir = path.join(rootDir, 'lib');
 
+function readHtml(fileName) {
+  return fs.readFileSync(path.join(htmlDir, fileName), 'utf8');
+}
+
+function readPageSource(fileName) {
+  const html = readHtml(fileName);
+  const scriptPath = path.join(jsDir, fileName.replace(/\.html$/i, '.js'));
+  if (!fs.existsSync(scriptPath)) return html;
+  return `${html}\n${fs.readFileSync(scriptPath, 'utf8')}`;
+}
+
 const linkedHtmlFiles = [
   'contest.html',
   'create.html',
@@ -192,6 +203,44 @@ for (const [file, activeKey] of sharedNavPages) {
     /<script src="\.\.\/js\/auth-nav\.js"><\/script>/,
     `${file} should load the auth navigation behavior`
   );
+}
+for (const file of [
+  'create.html',
+  'fitfolio_prototype.html',
+  'main.html',
+  'mypage.html',
+  'portfolio_create.html',
+  'portfolio_manage.html',
+  'portfolio_viewer.html',
+  'withdraw.html',
+]) {
+  const html = readHtml(file);
+  const scriptName = file.replace(/\.html$/i, '.js');
+  const scriptPath = path.join(jsDir, scriptName);
+  const script = fs.readFileSync(scriptPath, 'utf8');
+
+  assert.ok(
+    fs.existsSync(scriptPath),
+    `${scriptName} should exist in the js directory after extracting inline scripts`
+  );
+  assert.ok(
+    !/<script\b(?![^>]*\bsrc=)/i.test(html),
+    `${file} should not keep inline script blocks`
+  );
+  assert.match(
+    html,
+    new RegExp(`<script src="\\.\\./js/${scriptName.replace('.', '\\.')}" defer><\\/script>`),
+    `${file} should load its extracted page script with defer`
+  );
+  for (const section of [
+    '1. 전역 상수 및 상태 변수 선언',
+    '2. DOM 요소 선택',
+    '3. 유틸리티 및 일반 함수 정의',
+    '4. 이벤트 리스너 등록',
+    '5. 초기화 실행',
+  ]) {
+    assert.ok(script.includes(section), `${scriptName} should include the ${section} section`);
+  }
 }
 for (const authFile of ['index.html', 'login.html']) {
   const html = fs.readFileSync(path.join(htmlDir, authFile), 'utf8');
@@ -567,7 +616,7 @@ assert.match(
   'portfolios schema should restrict portfolio rows to their owner'
 );
 
-const mainHtml = fs.readFileSync(path.join(htmlDir, 'main.html'), 'utf8');
+const mainHtml = readPageSource('main.html');
 assert.match(
   mainHtml,
   /<body\s+data-page="main">/,
@@ -864,7 +913,7 @@ assert.ok(
   'old portfolio.html should be renamed to portfolio_create.html'
 );
 
-const mypageHtml = fs.readFileSync(path.join(htmlDir, 'mypage.html'), 'utf8');
+const mypageHtml = readPageSource('mypage.html');
 for (const text of [
   '경영지원',
   '광고/브랜드',
@@ -987,7 +1036,7 @@ assert.match(
   'mypage account management actions should stack cleanly on small screens'
 );
 
-const withdrawHtml = fs.readFileSync(path.join(htmlDir, 'withdraw.html'), 'utf8');
+const withdrawHtml = readPageSource('withdraw.html');
 assert.match(
   withdrawHtml,
   /<title>Myfitfolio - 회원 탈퇴<\/title>/,
@@ -1035,7 +1084,7 @@ assert.match(
   'contest page should render the activity recommendation list'
 );
 
-const createHtml = fs.readFileSync(path.join(htmlDir, 'create.html'), 'utf8');
+const createHtml = readPageSource('create.html');
 assert.match(
   createHtml,
   /data-shared-nav data-active="create"/,
@@ -1715,7 +1764,7 @@ for (const file of fs.readdirSync(htmlDir).filter((name) => name.endsWith('.html
   );
 }
 
-const portfolioCreateHtml = fs.readFileSync(path.join(htmlDir, 'portfolio_create.html'), 'utf8');
+const portfolioCreateHtml = readPageSource('portfolio_create.html');
 const portfolioCreateCss = fs.readFileSync(path.join(cssDir, 'portfolio_create.css'), 'utf8');
 assert.match(
   portfolioCreateHtml,
@@ -1967,8 +2016,8 @@ assert.ok(
 const loginHtml = fs.readFileSync(path.join(htmlDir, 'login.html'), 'utf8');
 const indexAuthHtml = fs.readFileSync(path.join(htmlDir, 'index.html'), 'utf8');
 const signupHtml = fs.readFileSync(path.join(htmlDir, 'signup.html'), 'utf8');
-const portfolioManageHtml = fs.readFileSync(path.join(htmlDir, 'portfolio_manage.html'), 'utf8');
-const portfolioViewerHtml = fs.readFileSync(path.join(htmlDir, 'portfolio_viewer.html'), 'utf8');
+const portfolioManageHtml = readPageSource('portfolio_manage.html');
+const portfolioViewerHtml = readPageSource('portfolio_viewer.html');
 const portfolioManageCss = fs.readFileSync(path.join(cssDir, 'portfolio_manage.css'), 'utf8');
 
 assert.match(
