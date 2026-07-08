@@ -9,3 +9,4 @@ claude.md
 gemini_key.env
 .claude
 .mcp.json
+data/local-analysis/

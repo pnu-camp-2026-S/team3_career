@@ -232,6 +232,13 @@
   font-weight: 900;
 }
 
+.analysis-file-note {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
 .danger-button {
   border-color: #ffd3db;
   color: #d33d51;
@@ -259,6 +266,11 @@
 .status-pill.ready {
   background: #fff7dd;
   color: #9a6a00;
+}
+
+.status-pill.fail {
+  background: #fdecec;
+  color: #c0392b;
 }
 
 .manager-empty {
@@ -479,6 +491,35 @@
   color: #4c556c;
   background: #fbfcff;
   line-height: 1.7;
+}
+
+.analysis-artifact-preview {
+  display: grid;
+  gap: 14px;
+}
+
+.analysis-artifact-preview section {
+  display: grid;
+  gap: 8px;
+}
+
+.analysis-artifact-preview h3 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.analysis-artifact-preview pre {
+  max-height: 220px;
+  overflow: auto;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: #27324a;
+  font: 12px/1.6 Consolas, "Courier New", monospace;
+  white-space: pre-wrap;
 }
 
 @media (max-width: 1100px) {

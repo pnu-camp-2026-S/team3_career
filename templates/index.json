@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0.0",
+  "project": {
+    "projectId": "{{projectId}}",
+    "projectName": "{{projectName}}",
+    "projectType": "{{projectType}}"
+  },
+  "folders": {{foldersJson}},
+  "files": [
+    {
+      "fileId": "{{fileId}}",
+      "analysisId": "{{analysisId}}",
+      "folderId": "pending",
+      "fileName": "{{originalFileName}}",
+      "fileType": "{{extension}}",
+      "order": 1,
+      "priority": null,
+      "uploadStatus": "{{uploadStatus}}",
+      "analysisStatus": "{{analysisStatus}}",
+      "reviewStatus": "{{reviewStatus}}",
+      "summary": null,
+      "tags": [],
+      "aiRecommendation": {
+        "recommendedFolderId": "{{recommendedFolderId}}",
+        "recommendedFolderName": "{{recommendedFolderName}}",
+        "confidence": {{confidence}},
+        "recommendedPriority": {{recommendedPriority}},
+        "recommendedSummary": "{{recommendedSummary}}",
+        "requiresUserConfirmation": true
+      }
+    }
+  ]
+}
