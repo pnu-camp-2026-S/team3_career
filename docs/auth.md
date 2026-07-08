@@ -10,12 +10,14 @@
 - 소셜 로그인 버튼 클릭 시 Supabase OAuth 시작
 - 로그인 성공 시 메인 화면으로 이동
 - 로그아웃 시 세션 정리 후 로그인 화면으로 이동
+- 회원 탈퇴 시 Supabase Auth 사용자와 연결된 앱 데이터를 삭제한 뒤 로그인 화면으로 이동
 
 ## 소셜 로그인 처리 기준
 
 - 소셜 로그인은 `/api/auth/social`(GET, `provider` 파라미터)이 Supabase `signInWithOAuth`로 시작하고, `/api/auth/callback`이 콜백을 처리한다.
 - 세션은 Supabase가 발급한 쿠키로 유지하며, 서버는 `lib/supabase-server.js`의 `createSupabaseServerClient()`로 세션을 읽는다.
 - 현재 로그인 사용자와 프로필은 `/api/auth/me`(GET)로 조회하고, 로그아웃은 `/api/auth/logout`이 처리한다.
+- 회원 탈퇴는 `/api/auth/withdraw`(POST)가 현재 세션 사용자를 확인한 뒤 서버의 service role 권한으로 Storage 객체, 앱 테이블 데이터, Supabase Auth 사용자를 삭제한다.
 - `auth.users`에 사용자가 생기면 `handle_new_user()` 트리거가 `public.profiles`(이메일, 이름, 아바타, provider)를 자동 채운다.
 - 화면 편의를 위한 로그인 플래그 `sessionStorage.myfitfolioLoggedIn`을 함께 쓸 수 있으나, 인증의 실제 근거는 Supabase 세션이다. 로그아웃·탈퇴 시 `localStorage`와 `sessionStorage`를 함께 정리한다.
 

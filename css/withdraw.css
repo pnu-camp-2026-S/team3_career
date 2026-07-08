@@ -60,6 +60,19 @@
   gap: 12px;
 }
 
+.withdraw-message {
+  min-height: 22px;
+  margin: 0;
+  color: #526077;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+.withdraw-message.error {
+  color: #d92d20;
+}
+
 .danger-button {
   min-height: 48px;
   display: inline-flex;

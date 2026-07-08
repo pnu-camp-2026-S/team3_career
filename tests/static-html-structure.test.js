@@ -468,6 +468,7 @@ const socialAuthRoutePath = path.join(appDir, 'api', 'auth', 'social', 'route.js
 const authCallbackRoutePath = path.join(appDir, 'api', 'auth', 'callback', 'route.js');
 const authMeRoutePath = path.join(appDir, 'api', 'auth', 'me', 'route.js');
 const authLogoutRoutePath = path.join(appDir, 'api', 'auth', 'logout', 'route.js');
+const authWithdrawRoutePath = path.join(appDir, 'api', 'auth', 'withdraw', 'route.js');
 const userProfileRoutePath = path.join(appDir, 'api', 'profile', 'route.js');
 const activityFilesRoutePath = path.join(appDir, 'api', 'activity-files', 'route.js');
 const portfoliosRoutePath = path.join(appDir, 'api', 'portfolios', 'route.js');
@@ -480,6 +481,7 @@ assert.ok(fs.existsSync(socialAuthRoutePath), 'social login API should live in a
 assert.ok(fs.existsSync(authCallbackRoutePath), 'OAuth callback API should live in app/api/auth/callback/route.js');
 assert.ok(fs.existsSync(authMeRoutePath), 'current-user API should live in app/api/auth/me/route.js');
 assert.ok(fs.existsSync(authLogoutRoutePath), 'logout API should live in app/api/auth/logout/route.js');
+assert.ok(fs.existsSync(authWithdrawRoutePath), 'account withdrawal API should live in app/api/auth/withdraw/route.js');
 assert.ok(fs.existsSync(userProfileRoutePath), 'mypage profile API should live in app/api/profile/route.js');
 assert.ok(fs.existsSync(activityFilesRoutePath), 'activity file API should live in app/api/activity-files/route.js');
 assert.ok(fs.existsSync(portfoliosRoutePath), 'portfolio API should live in app/api/portfolios/route.js');
@@ -492,6 +494,7 @@ const socialAuthRoute = fs.existsSync(socialAuthRoutePath) ? fs.readFileSync(soc
 const authCallbackRoute = fs.existsSync(authCallbackRoutePath) ? fs.readFileSync(authCallbackRoutePath, 'utf8') : '';
 const authMeRoute = fs.existsSync(authMeRoutePath) ? fs.readFileSync(authMeRoutePath, 'utf8') : '';
 const authLogoutRoute = fs.existsSync(authLogoutRoutePath) ? fs.readFileSync(authLogoutRoutePath, 'utf8') : '';
+const authWithdrawRoute = fs.existsSync(authWithdrawRoutePath) ? fs.readFileSync(authWithdrawRoutePath, 'utf8') : '';
 const userProfileRoute = fs.existsSync(userProfileRoutePath) ? fs.readFileSync(userProfileRoutePath, 'utf8') : '';
 const activityFilesRoute = fs.existsSync(activityFilesRoutePath) ? fs.readFileSync(activityFilesRoutePath, 'utf8') : '';
 const portfoliosRoute = fs.existsSync(portfoliosRoutePath) ? fs.readFileSync(portfoliosRoutePath, 'utf8') : '';
@@ -550,6 +553,26 @@ assert.match(
   userProfileRoute,
   /export async function GET\(\)[\s\S]*\.from\('user_profiles'\)[\s\S]*\.maybeSingle\(\)/,
   'profile API should load the current user mypage profile from Supabase'
+);
+assert.match(
+  authWithdrawRoute,
+  /async function getCurrentUser\(supabase\)[\s\S]*supabase\.auth\.getUser\(\)[\s\S]*export async function POST\(\)[\s\S]*getCurrentUser\(supabase\)[\s\S]*createSupabaseAdminClient\(\)/,
+  'withdrawal API should authenticate the current Supabase user and use the server admin client'
+);
+assert.match(
+  authWithdrawRoute,
+  /\.from\('activity_files'\)[\s\S]*\.select\('storage_bucket, storage_path'\)[\s\S]*storage\.from\(bucket\)\.remove\(paths\)/,
+  'withdrawal API should remove uploaded Storage objects before deleting account data'
+);
+assert.match(
+  authWithdrawRoute,
+  /USER_ROW_TARGETS[\s\S]*activity_files[\s\S]*portfolios[\s\S]*user_profiles[\s\S]*profiles[\s\S]*\.delete\(\)[\s\S]*\.eq\(target\.column, userId\)/,
+  'withdrawal API should hard-delete app-owned rows for the withdrawing user'
+);
+assert.match(
+  authWithdrawRoute,
+  /supabase\.auth\.signOut\(\)[\s\S]*supabaseAdmin\.auth\.admin\.deleteUser\(user\.id\)/,
+  'withdrawal API should end the current session and delete the Supabase Auth user'
 );
 assert.match(
   userProfileRoute,
@@ -1150,8 +1173,8 @@ assert.match(
 );
 assert.match(
   withdrawHtml,
-  /localStorage\.clear\(\);[\s\S]*sessionStorage\.clear\(\);[\s\S]*window\.location\.href\s*=\s*'login\.html'/,
-  'withdraw page should clear local and session state before returning to login'
+  /function clearClientStateAndRedirect\(\)[\s\S]*localStorage\.clear\(\);[\s\S]*sessionStorage\.clear\(\);[\s\S]*window\.location\.href\s*=\s*'login\.html'[\s\S]*fetch\(WITHDRAW_ENDPOINT,[\s\S]*method:\s*'POST'[\s\S]*if \(!response\.ok\)[\s\S]*clearClientStateAndRedirect\(\)/,
+  'withdraw page should call the server withdrawal API before clearing local and session state'
 );
 assert.ok(
   !withdrawHtml.includes('fitfolio.css') && !withdrawHtml.includes('shared-nav.js') && !withdrawHtml.includes('auth-nav.js'),
@@ -2428,6 +2451,11 @@ assert.match(
   withdrawHtml,
   /localStorage\.clear\(\)/,
   'withdrawal should clear locally stored profile data'
+);
+assert.match(
+  withdrawHtml,
+  /id="withdrawMessage"[\s\S]*role="status"[\s\S]*WITHDRAW_ENDPOINT\s*=\s*'\/api\/auth\/withdraw'/,
+  'withdrawal should show server deletion status and target the withdrawal API'
 );
 assert.match(
   mypageHtml,
