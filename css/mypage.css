@@ -608,6 +608,8 @@
 
 .profile-readonly .form-field select:disabled {
   color: #273244;
+  padding-right: 14px;
+  background-image: none;
 }
 
 .profile-readonly [data-photo-button],
@@ -635,7 +637,7 @@
 .profile-readonly .date-trigger:disabled .calendar-icon,
 .profile-readonly .major-trigger:disabled .select-chevron,
 .profile-readonly .picker-trigger:disabled span[aria-hidden="true"] {
-  opacity: 0.58;
+  display: none;
 }
 
 .anchor-menu {
