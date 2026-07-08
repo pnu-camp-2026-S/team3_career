@@ -22,7 +22,6 @@
           <p class="page-subtitle">메인 사이드바에서 선택한 폴더가 이 화면의 수정 가능한 자료 관리 패널로 연결됩니다.</p>
         </div>
         <div class="file-manager-actions">
-          <button class="ghost-button" type="button" data-action="make-md">AI 대화로 md 만들기</button>
           <button class="outline-button" type="button" data-action="sync-github">GitHub 동기화</button>
           <button class="primary-button" type="button" data-action="analyze">분석하기</button>
         </div>
@@ -60,16 +59,31 @@
         <section class="panel editable-file-panel">
           <div class="panel-head">
             <div>
-              <h2 class="panel-title" id="editablePanelTitle">개인 프로젝트 자료</h2>
+              <div class="editable-title-row">
+                <h2 class="panel-title" id="editablePanelTitle">개인 프로젝트 자료</h2>
+                <button class="ghost-button compact-button" type="button" data-action="rename-project">이름 수정</button>
+              </div>
               <p class="panel-note" id="editablePanelDesc">선택한 폴더의 자료를 확인하고 클릭 반응을 테스트합니다.</p>
             </div>
-            <button class="outline-button compact-button" type="button" data-action="connect-repo" id="repoConnectButton">레포 연결</button>
+            <div class="project-actions">
+              <button class="outline-button compact-button" type="button" data-action="connect-repo" id="repoConnectButton">레포 연결</button>
+              <button class="outline-button compact-button" type="button" data-action="organize-project">프로젝트 분석</button>
+              <button class="ghost-button compact-button" type="button" data-action="add-conversation">대화로 내용 추가하기</button>
+              <button class="primary-button compact-button" type="button" data-action="toggle-group" id="moveGroupButton">완료로 이동</button>
+              <button class="ghost-button compact-button danger-button" type="button" data-action="delete-project">프로젝트 삭제</button>
+            </div>
           </div>
+
+          <div class="subfolder-toolbar">
+            <h3 id="subfolderPanelTitle">세부 폴더</h3>
+            <span class="panel-note" id="subfolderPanelHint">활동 유형별 하위 폴더입니다. 하위 폴더를 선택하면 그 안의 자료만 보여요.</span>
+          </div>
+          <div id="subfolderList" class="subfolder-list"></div>
 
           <input class="visually-hidden" id="managedFileInput" type="file" multiple />
           <div class="manager-dropzone" data-action="add-file" role="button" tabindex="0">
             <strong>자료 추가</strong>
-            <span>클릭하거나 파일을 이곳에 끌어다 놓으세요. 실제 저장 없이 파일명과 상태만 화면에 반영됩니다.</span>
+            <span id="dropzoneHint">클릭하거나 파일을 이곳에 끌어다 놓으세요. 선택한 세부 폴더에 자료가 추가됩니다.</span>
           </div>
 
           <div id="managedFileList" class="manager-file-list"></div>

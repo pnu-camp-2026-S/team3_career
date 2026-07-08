@@ -26,6 +26,12 @@
     const analysisOverview = document.getElementById('analysisOverview');
     const analysisOverviewText = document.getElementById('analysisOverviewText');
 
+    // 분석 시작 전에는 키워드 개요·활동 분류를 "분석이 필요합니다" 상태로 두고,
+    // 분석 시작을 누르면 채운다. 실구현에서는 프로젝트별 summary.md를 읽어 최종 요약으로
+    // 채우지만, FE 단계에서는 아래 mock 키워드와 계산된 분류로 채워 전/후를 비교한다.
+    const ANALYSIS_KEYWORDS = ['문제 해결', '협업', '기획', '데이터 활용', '실행력', '발표'];
+    let hasAnalyzed = false;
+
     let folders = FolderStore.loadFolders();
 
     function escapeHtml(value) {
@@ -82,26 +88,12 @@
 
     function getFolderFileTotal(groupKey) {
       return Object.values(folders).reduce((sum, folder) => (
-        folder.group === groupKey ? sum + folder.files.length : sum
+        folder.group === groupKey ? sum + FolderStore.getFolderFiles(folder).length : sum
       ), 0);
     }
 
     function getCompletedFileCount(folder) {
-      return folder.files.length;
-    }
-
-    function createId(prefix) {
-      return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-    }
-
-    function getFileTypeIcon(fileName) {
-      const extension = String(fileName).split('.').pop().toLowerCase();
-      if (extension === 'pdf') return 'PDF';
-      if (['doc', 'docx', 'hwp', 'txt', 'md'].includes(extension)) return 'DOC';
-      if (['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(extension)) return 'IMG';
-      if (['ppt', 'pptx', 'key'].includes(extension)) return 'PPT';
-      if (['xls', 'xlsx', 'csv'].includes(extension)) return 'XLS';
-      return 'FILE';
+      return FolderStore.getFolderFiles(folder).length;
     }
 
     function mapApiFile(file) {
@@ -128,13 +120,16 @@
         if (!Array.isArray(payload.files)) return;
 
         Object.values(folders).forEach((folder) => {
-          folder.files = [];
+          (folder.subfolders || []).forEach((sub) => {
+            sub.files = [];
+          });
         });
 
         payload.files.forEach((file) => {
-          const folder = folders[file.folderId];
-          if (!folder) return;
-          folder.files.push(mapApiFile(file));
+          const match = FolderStore.findSubfolder(folders, file.folderId);
+          const target = match?.subfolder || folders[file.folderId]?.subfolders?.[0];
+          if (!target) return;
+          target.files.push(mapApiFile(file));
         });
 
         FolderStore.saveFolders(folders);
@@ -221,10 +216,44 @@
       renderAnalysisOverview(completedFileTotal, inProgressFileTotal, breakdown);
     }
 
+    function renderKeywordChips() {
+      document.getElementById('keywordChipList').innerHTML = ANALYSIS_KEYWORDS
+        .map((keyword) => `<span>${escapeHtml(keyword)}</span>`)
+        .join('');
+    }
+
+    // 분석 전/후 화면 전환. 키워드 개요는 하나의 섹션이며 상태에 따라 내용이 바뀐다(#166-3).
+    // 분석 전에는 각 카드가 "분석이 필요합니다" 상태를 보여준다.
+    function applyAnalysisState() {
+      const overview = document.getElementById('keywordOverview');
+      overview.classList.toggle('keyword-overview-empty', !hasAnalyzed);
+      document.getElementById('keywordChipList').hidden = !hasAnalyzed;
+      document.getElementById('keywordOverviewHeading').textContent = hasAnalyzed
+        ? '꾸준한 실행력과 협업 경험이 드러나요'
+        : '분석이 필요합니다';
+      document.getElementById('keywordOverviewText').textContent = hasAnalyzed
+        ? '완료된 프로젝트 자료를 기준으로 기획, 개발, 문제 해결, 발표 경험을 묶어 분석합니다. 자료가 추가될수록 강점 키워드와 활동 분류가 더 선명해집니다.'
+        : '분석 시작을 누르면 완료된 활동 자료를 바탕으로 강점 키워드와 활동 개요를 정리해 드려요.';
+      document.getElementById('analyzedMaterialEmpty').hidden = hasAnalyzed;
+      document.getElementById('analyzedMaterialResult').hidden = !hasAnalyzed;
+      document.getElementById('classificationEmpty').hidden = hasAnalyzed;
+      document.getElementById('classificationResult').hidden = !hasAnalyzed;
+      document.getElementById('classificationBadge').textContent = hasAnalyzed ? '분석 완료' : '분석 전';
+      analysisOverview.hidden = !hasAnalyzed;
+    }
+
+    function runAnalysis() {
+      hasAnalyzed = true;
+      renderKeywordChips();
+      updateAnalysisSummary();
+      applyAnalysisState();
+    }
+
     async function renderDashboardState() {
       const isProfileSaved = await hasSavedDatabaseProfile();
       profileNeededPanel.hidden = isProfileSaved;
       analysisDashboard.hidden = !isProfileSaved;
+      applyAnalysisState();
     }
 
     function renderFolders() {
@@ -240,112 +269,13 @@
 
     function renderFolder(folder) {
       return `
-        <article class="folder-item drop-folder ${folder.open ? 'open' : ''}" data-folder-id="${escapeHtml(folder.id)}">
-          <button class="folder-row" type="button" data-toggle-folder="${escapeHtml(folder.id)}" aria-expanded="${folder.open}">
+        <article class="folder-item" data-folder-id="${escapeHtml(folder.id)}">
+          <a class="folder-row" href="create.html?folder=${escapeHtml(folder.id)}" aria-label="${escapeHtml(folder.label)} 폴더를 파일 관리에서 열기">
             <span class="mini-folder ${folder.group}" aria-hidden="true"></span>
             <span class="folder-label">${escapeHtml(folder.label)}</span>
-          </button>
-          <div class="folder-tools">
-            <button class="icon-tool-button" type="button" data-rename-folder="${escapeHtml(folder.id)}" aria-label="${escapeHtml(folder.label)} 폴더명 변경">폴더명 수정</button>
-          </div>
-          <div class="uploaded-file-list">
-            ${folder.files.length ? folder.files.map((file) => renderFile(folder.id, file)).join('') : '<div class="empty-folder">파일을 이 폴더로 끌어오세요</div>'}
-          </div>
+          </a>
         </article>
       `;
-    }
-
-    function renderFile(folderId, file) {
-      return `
-        <div class="uploaded-file" draggable="true" data-file-id="${escapeHtml(file.id)}">
-          <span class="file-type-icon" aria-hidden="true">${getFileTypeIcon(file.name)}</span>
-          <span class="uploaded-file-name" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</span>
-          <button class="file-delete-btn" type="button" data-delete-file="${escapeHtml(folderId)}:${escapeHtml(file.id)}" aria-label="${escapeHtml(file.name)} 삭제">
-            <span class="trash-icon" aria-hidden="true"></span>
-          </button>
-        </div>
-      `;
-    }
-
-    async function addFilesToFolder(folderId, fileList) {
-      const folder = folders[folderId];
-      if (!folder) return;
-
-      const files = Array.from(fileList);
-      const formData = new FormData();
-      formData.append('folderId', folder.id);
-      formData.append('folderGroup', folder.group || '');
-      formData.append('folderType', folder.type || '');
-      formData.append('folderLabel', folder.label || '');
-      files.forEach((file) => formData.append('files', file));
-
-      try {
-        const response = await fetch(ACTIVITY_FILES_ENDPOINT, {
-          method: 'POST',
-          credentials: 'same-origin',
-          body: formData,
-        });
-
-        if (!response.ok) throw new Error('Activity file upload failed.');
-
-        const payload = await response.json();
-        (payload.files || []).forEach((file) => {
-          folder.files.push(mapApiFile(file));
-        });
-      } catch (error) {
-        console.warn('Activity file upload fell back to local state.', error);
-        files.forEach((file) => {
-          folder.files.push({
-            id: createId('file'),
-            name: file.name,
-          });
-        });
-      }
-
-      folder.open = true;
-      FolderStore.saveFolders(folders);
-      renderFolders();
-    }
-
-    async function deleteFile(folderId, fileId) {
-      const folder = folders[folderId];
-      if (!folder) return;
-
-      const file = folder.files.find((item) => item.id === fileId);
-      if (!file) return;
-      if (!window.confirm(`'${file.name}' 파일을 삭제하시겠습니까?`)) return;
-
-      if (file.storagePath) {
-        try {
-          const response = await fetch(ACTIVITY_FILES_ENDPOINT, {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'same-origin',
-            body: JSON.stringify({ id: file.id, storagePath: file.storagePath }),
-          });
-
-          if (!response.ok) throw new Error('Activity file delete failed.');
-        } catch (error) {
-          console.warn('Activity file delete failed.', error);
-          return;
-        }
-      }
-
-      folder.files = folder.files.filter((item) => item.id !== fileId);
-      FolderStore.saveFolders(folders);
-      renderFolders();
-    }
-
-    function renameFolder(folderId) {
-      const folder = folders[folderId];
-      if (!folder) return;
-
-      const nextName = window.prompt('변경할 폴더명을 입력하세요', folder.label);
-      if (!nextName || !nextName.trim()) return;
-
-      folder.label = nextName.trim();
-      FolderStore.saveFolders(folders);
-      renderFolders();
     }
 
     function clampSidebarWidth(width) {
@@ -398,31 +328,7 @@
     sidebarResizeHandle.addEventListener('pointerup', finishSidebarResize);
     sidebarResizeHandle.addEventListener('pointercancel', finishSidebarResize);
 
-    document.addEventListener('click', async (event) => {
-      const folderToggle = event.target.closest('[data-toggle-folder]');
-      if (folderToggle) {
-        const folder = folders[folderToggle.dataset.toggleFolder];
-        if (folder) {
-          folder.open = !folder.open;
-          FolderStore.saveFolders(folders);
-          renderFolders();
-        }
-        return;
-      }
-
-      const renameButton = event.target.closest('[data-rename-folder]');
-      if (renameButton) {
-        renameFolder(renameButton.dataset.renameFolder);
-        return;
-      }
-
-      const deleteButton = event.target.closest('[data-delete-file]');
-      if (deleteButton) {
-        const [folderId, fileId] = deleteButton.dataset.deleteFile.split(':');
-        await deleteFile(folderId, fileId);
-        return;
-      }
-
+    document.addEventListener('click', (event) => {
       const infoButton = event.target.closest('.analysis-info-button');
       if (infoButton) {
         const infoBox = document.getElementById(infoButton.dataset.infoTarget);
@@ -430,45 +336,8 @@
       }
     });
 
-    function clearDropOverFolders(exceptFolder = null) {
-      document.querySelectorAll('.drop-folder.drop-over').forEach((folder) => {
-        if (folder !== exceptFolder) folder.classList.remove('drop-over');
-      });
-    }
-
-    document.addEventListener('dragover', (event) => {
-      const target = event.target.closest('.drop-folder');
-      if (!target || !Array.from(event.dataTransfer.types).includes('Files')) {
-        clearDropOverFolders();
-        return;
-      }
-      event.preventDefault();
-      clearDropOverFolders(target);
-      target.classList.add('drop-over');
-    });
-
-    document.addEventListener('dragleave', (event) => {
-      const target = event.target.closest('.drop-folder');
-      if (target && !target.contains(event.relatedTarget)) {
-        target.classList.remove('drop-over');
-      }
-    });
-
-    document.addEventListener('drop', async (event) => {
-      const target = event.target.closest('.drop-folder');
-      if (!target || !event.dataTransfer.files.length) return;
-      event.preventDefault();
-      clearDropOverFolders();
-      await addFilesToFolder(target.dataset.folderId, event.dataTransfer.files);
-    });
-
-    document.addEventListener('dragend', () => {
-      clearDropOverFolders();
-    });
-
     document.querySelector('[data-analysis-start]').addEventListener('click', () => {
-      renderDashboardState();
-      updateAnalysisSummary();
+      runAnalysis();
       analysisDashboard.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
 

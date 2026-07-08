@@ -23,7 +23,7 @@
 
         <section class="sidebar-analysis-start">
           <button class="primary-button sidebar-primary-action" type="button" data-analysis-start>분석 시작</button>
-          <p>완료된 활동 폴더에 있는 파일을 바탕으로 분석해드려요</p>
+          <p>분석 시작을 누르면 완료된 활동 폴더의 자료로 강점 키워드와 활동 분류를 정리해 드려요</p>
         </section>
 
         <section class="folder-section status-completed" data-folder-section="completed">
@@ -69,21 +69,13 @@
             <a class="outline-button dashboard-cta" href="mypage.html">내 정보 수정</a>
           </div>
 
-          <section class="keyword-overview">
+          <section class="keyword-overview keyword-overview-empty" id="keywordOverview">
             <div>
               <p class="section-eyebrow">키워드 중심 활동 개요</p>
-              <h2>꾸준한 실행력과 협업 경험이 드러나요</h2>
-              <p>
-                완료된 프로젝트 자료를 기준으로 기획, 개발, 문제 해결, 발표 경험을 묶어 분석합니다.
-                자료가 추가될수록 강점 키워드와 활동 분류가 더 선명해집니다.
-              </p>
+              <h2 id="keywordOverviewHeading">분석이 필요합니다</h2>
+              <p id="keywordOverviewText">분석 시작을 누르면 완료된 활동 자료를 바탕으로 강점 키워드와 활동 개요를 정리해 드려요.</p>
             </div>
-            <div class="keyword-chip-list" aria-label="AI 분석 키워드">
-              <span>문제 해결</span>
-              <span>협업</span>
-              <span>기획</span>
-              <span>데이터 활용</span>
-            </div>
+            <div class="keyword-chip-list" id="keywordChipList" aria-label="AI 분석 키워드" hidden></div>
           </section>
 
           <section class="analysis-grid focused-analysis-grid" aria-label="AI 전체 분석 요약">
@@ -95,29 +87,33 @@
               <div class="analysis-info-box" id="projectInfo" hidden>
                 완료된 활동 폴더 안에 들어있는 파일의 총합입니다.
               </div>
-              <div class="analysis-total-row">
-                <span class="analysis-total-icon" aria-hidden="true"></span>
-                <div class="stat-value"><span class="stat-number" id="analyzedProjectTotal">0</span><span class="stat-unit">개</span></div>
-              </div>
-              <div class="analysis-progress-track" aria-hidden="true">
-                <span id="analysisSummaryBar"></span>
-              </div>
-              <div class="analysis-legend">
-                <span><i class="legend-dot completed"></i>완료된 활동 <strong id="completedActivityTotal">0</strong></span>
-                <span><i class="legend-dot in-progress"></i>진행중인 활동 <strong id="inProgressActivityTotal">0</strong></span>
+              <div class="analysis-empty-state" id="analyzedMaterialEmpty">분석이 필요합니다</div>
+              <div id="analyzedMaterialResult" hidden>
+                <div class="analysis-total-row">
+                  <span class="analysis-total-icon" aria-hidden="true"></span>
+                  <div class="stat-value"><span class="stat-number" id="analyzedProjectTotal">0</span><span class="stat-unit">개</span></div>
+                </div>
+                <div class="analysis-progress-track" aria-hidden="true">
+                  <span id="analysisSummaryBar"></span>
+                </div>
+                <div class="analysis-legend">
+                  <span><i class="legend-dot completed"></i>완료된 활동 <strong id="completedActivityTotal">0</strong></span>
+                  <span><i class="legend-dot in-progress"></i>진행중인 활동 <strong id="inProgressActivityTotal">0</strong></span>
+                </div>
               </div>
             </article>
 
             <article class="analysis-card focused-analysis-card classification-card">
               <div class="analysis-card-head">
                 <h2 class="small-title">활동 분류 현황</h2>
-                <span class="analysis-before-badge">분석 전</span>
+                <span class="analysis-before-badge" id="classificationBadge">분석 전</span>
                 <button class="analysis-info-button" type="button" data-info-target="categoryInfo" aria-label="활동 분류 현황 설명 보기">i</button>
               </div>
               <div class="analysis-info-box" id="categoryInfo" hidden>
                 완료된 활동 파일이 전체 파일 중 어느 정도인지와 유형별 분포를 보여줍니다.
               </div>
-              <div class="classification-visual">
+              <div class="analysis-empty-state" id="classificationEmpty">분석이 필요합니다</div>
+              <div class="classification-visual" id="classificationResult" hidden>
                 <div class="classification-donut" id="classificationDonut" aria-label="완료된 활동 비율">
                   <span id="analysisCompletionPercent">0%</span>
                 </div>
