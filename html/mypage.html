@@ -224,8 +224,10 @@
       "서비스": ["서비스 운영", "매장관리", "호텔서비스", "항공서비스"]
     };
     const companies = ["삼성전자", "SK하이닉스", "네이버", "카카오", "LG CNS", "현대자동차", "롯데", "CJ", "토스", "당근"];
-    const industries = ["반도체", "IT/SW", "금융", "교육", "콘텐츠", "제조", "바이오", "유통", "공공", "게임"];
-    const regions = ["서울", "부산", "대구", "인천", "광주", "대전", "울산", "경기", "세종", "제주", "원격근무"];
+    const ALL_OPTION = "전체";
+    const NO_MINOR_OPTION = "해당 없음";
+    const industries = [ALL_OPTION, "반도체", "IT/SW", "금융", "교육", "콘텐츠", "제조", "바이오", "유통", "공공", "게임"];
+    const regions = [ALL_OPTION, "서울", "부산", "대구", "인천", "광주", "대전", "울산", "경기", "세종", "제주", "원격근무"];
     const schoolTypes = ["대학교 2,3년", "대학교 4년", "대학원 석사", "대학원 박사"];
     const majors = ["전기공학과", "정보컴퓨터공학과", "화공생명공학과", "산업공학과"];
     const salaryRanges = ["회사 내규에 따름", "2,800만원 이상", "3,000만원 이상", "3,500만원 이상", "4,000만원 이상", "5,000만원 이상"];
@@ -283,7 +285,7 @@
     function getDetailJobOptions() {
       const selectedJobs = [...profileState.chips.jobs];
       const options = selectedJobs.flatMap((job) => detailJobs[job] || []);
-      return [...new Set(options.length ? options : Object.values(detailJobs).flat())];
+      return [ALL_OPTION, ...new Set(options.length ? options : Object.values(detailJobs).flat())];
     }
 
     function applyProfilePayload(profile) {
@@ -479,6 +481,8 @@
     }
 
     function renderMajorPicker(index, fieldName, label, value) {
+      const options = fieldName === "minor" ? [NO_MINOR_OPTION, ...majors] : majors;
+
       return `
         <div class="form-field major-field">
           <label>${label}</label>
@@ -487,7 +491,7 @@
             <span class="select-chevron" aria-hidden="true"></span>
           </button>
           <div class="major-menu" data-major-menu="${index}-${fieldName}">
-            ${majors.map((major) => `<button type="button" data-major-option="${index}" data-major-field="${fieldName}" data-major-value="${major}">${major}</button>`).join("")}
+            ${options.map((major) => `<button type="button" data-major-option="${index}" data-major-field="${fieldName}" data-major-value="${major}">${major}</button>`).join("")}
           </div>
         </div>
       `;
