@@ -331,26 +331,34 @@
 
 .subfolder-list {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 10px;
+  margin-bottom: 16px;
 }
 
 .subfolder-card {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 12px;
-  min-height: 78px;
-  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 62px;
+  padding: 12px 14px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fff;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
 }
 
 .subfolder-card.active,
 .subfolder-card:hover {
   border-color: #c8d4ff;
   background: #f5f7ff;
+}
+
+.subfolder-card.active {
+  color: var(--brand);
 }
 
 .subfolder-card strong,
@@ -362,9 +370,17 @@
 }
 
 .subfolder-card span {
-  margin-top: 5px;
   color: var(--muted);
   font-size: 12px;
+  font-weight: 700;
+}
+
+.project-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .manager-progress {

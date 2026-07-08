@@ -181,6 +181,32 @@ assert.match(
   /github:\s*null/,
   'folder store folders should carry a per-project github connection field (#132)'
 );
+// #137-2: 프로젝트 폴더는 활동 유형별 하위 폴더(subfolders)를 가진다
+assert.match(
+  folderStoreJs,
+  /subfolders:\s*buildSubfolders\(/,
+  'folder store folders should carry template subfolders (#137-2)'
+);
+assert.match(
+  folderStoreJs,
+  /const\s+SUBFOLDER_TEMPLATES\s*=/,
+  'folder store should define default subfolder templates per activity type (#137-2)'
+);
+assert.match(
+  folderStoreJs,
+  /function\s+createFolder\(groupKey,\s*label,\s*typeKey\)/,
+  'createFolder should accept an activity type to build matching subfolders (#137-2)'
+);
+assert.match(
+  folderStoreJs,
+  /function\s+getFolderFiles\(folder\)[\s\S]*subfolders[\s\S]*flatMap/,
+  'folder store should expose getFolderFiles that flattens subfolder files (#137-2)'
+);
+assert.match(
+  folderStoreJs,
+  /function\s+findSubfolder\(folders,\s*subfolderId\)/,
+  'folder store should expose findSubfolder to locate a subfolder by id (#137-2)'
+);
 assert.match(
   folderStoreJs,
   /window\.FolderStore\s*=/,
@@ -691,25 +717,22 @@ assert.ok(
   !mainHtml.includes('data-folder-section="other"'),
   'main sidebar should not render a separate other folder section'
 );
-assert.match(
-  mainHtml,
-  /data-rename-folder[\s\S]*폴더명 수정/,
-  'main sidebar should restore folder rename controls'
+assert.ok(
+  !mainHtml.includes('data-rename-folder') && !mainHtml.includes('renameFolder') && !mainHtml.includes('폴더명 수정'),
+  'main sidebar should not offer folder rename controls (#125)'
 );
 assert.match(
   mainHtml,
-  /data-toggle-folder[\s\S]*uploaded-file-list[\s\S]*파일을 이 폴더로 끌어오세요/,
-  'main sidebar should restore expandable folder rows with empty-folder copy'
+  /<a class="folder-row" href="create\.html\?folder=\$\{escapeHtml\(folder\.id\)\}"/,
+  'main sidebar folders should be summary cards linking to file management (#126 5-7)'
 );
-assert.match(
-  mainHtml,
-  /event\.target\.closest\('\.drop-folder'\)[\s\S]*addFilesToFolder\(target\.dataset\.folderId,\s*event\.dataTransfer\.files\)/,
-  'main sidebar should restore drag-and-drop file uploads onto folders'
+assert.ok(
+  !mainHtml.includes('data-toggle-folder') && !mainHtml.includes('파일을 이 폴더로 끌어오세요'),
+  'main sidebar should not expand inline file lists or invite drops (#126 5-7)'
 );
-assert.match(
-  mainHtml,
-  /function\s+renameFolder[\s\S]*window\.prompt\('변경할 폴더명을 입력하세요'/,
-  'main sidebar should restore folder rename behavior'
+assert.ok(
+  !mainHtml.includes('addFilesToFolder') && !mainHtml.includes("addEventListener('drop'") && !mainHtml.includes('data-delete-file'),
+  'main sidebar should not upload or delete files (uploads happen in file management only, #126 5-8)'
 );
 assert.ok(
   !mainHtml.includes('기획 자료') && !mainHtml.includes('결과 자료') && !mainHtml.includes('renderNestedFolder'),
@@ -749,16 +772,6 @@ assert.match(
   mainHtml,
   /FolderStore\.FOLDER_GROUPS/,
   'main sidebar should render folder groups from the shared folder store'
-);
-assert.match(
-  mainHtml,
-  /async function\s+addFilesToFolder[\s\S]*FormData[\s\S]*fetch\(ACTIVITY_FILES_ENDPOINT,\s*\{[\s\S]*method:\s*'POST'/,
-  'main sidebar file drops should upload through the activity file API'
-);
-assert.match(
-  mainHtml,
-  /async function\s+deleteFile[\s\S]*fetch\(ACTIVITY_FILES_ENDPOINT,\s*\{[\s\S]*method:\s*'DELETE'/,
-  'main sidebar file deletes should remove files through the activity file API'
 );
 
 assert.match(
@@ -810,6 +823,33 @@ assert.match(
   /활동 분류 현황/,
   'main dashboard should include the activity classification card'
 );
+// 분석 전에는 키워드 개요·분류가 "분석이 필요합니다" 상태
+assert.match(
+  mainHtml,
+  /id="keywordOverviewEmpty"[\s\S]*분석이 필요합니다/,
+  'main dashboard should show a 분석이 필요합니다 state before analysis'
+);
+assert.match(
+  mainHtml,
+  /id="classificationEmpty"[\s\S]*분석이 필요합니다/,
+  'activity classification should show 분석이 필요합니다 before analysis'
+);
+// 분석 시작 시 mock 키워드/분류를 채우고 전/후를 전환한다
+assert.match(
+  mainHtml,
+  /function\s+applyAnalysisState\(\)[\s\S]*keywordOverviewEmpty[\s\S]*hasAnalyzed/,
+  'main dashboard should toggle before/after analysis states'
+);
+assert.match(
+  mainHtml,
+  /function\s+runAnalysis\(\)[\s\S]*hasAnalyzed\s*=\s*true[\s\S]*renderKeywordChips\(\)[\s\S]*applyAnalysisState\(\)/,
+  'running analysis should fill mock keywords and switch to the analyzed state'
+);
+assert.match(
+  mainHtml,
+  /data-analysis-start\]'\)\.addEventListener\('click',\s*\(\)\s*=>\s*\{\s*runAnalysis\(\)/,
+  'the analysis start button should trigger runAnalysis'
+);
 assert.match(
   mainHtml,
   /분석된 자료/,
@@ -827,7 +867,7 @@ assert.match(
 );
 assert.match(
   mainHtml,
-  /function\s+getFolderFileTotal[\s\S]*folder\.group\s*===\s*groupKey[\s\S]*sum\s*\+\s*folder\.files\.length/,
+  /function\s+getFolderFileTotal[\s\S]*folder\.group\s*===\s*groupKey[\s\S]*sum\s*\+\s*FolderStore\.getFolderFiles\(folder\)\.length/,
   'main dashboard should total analysis counts from files inside each folder group'
 );
 assert.match(
@@ -897,8 +937,8 @@ assert.match(
 );
 assert.match(
   mainHtml,
-  /document\.querySelector\('\[data-analysis-start\]'\)\.addEventListener\('click',\s*\(\)\s*=>\s*\{[\s\S]*updateAnalysisSummary\(\)/,
-  'main dashboard should update analysis numbers from the analysis start action'
+  /function\s+runAnalysis\(\)[\s\S]*updateAnalysisSummary\(\)/,
+  'main dashboard should update analysis numbers when analysis runs'
 );
 assert.ok(
   !/function\s+renderDashboardState\(\)\s*\{[^}]*updateAnalysisSummary\(\)/.test(mainHtml),
@@ -1095,12 +1135,56 @@ assert.match(
   /\{\s*key:\s*'create',\s*href:\s*'create\.html',\s*label:\s*'파일 관리'\s*\}/,
   'file management should keep the shared file management nav link'
 );
-for (const text of ['파일 관리', '폴더 목록', '자료 추가', '미리보기', 'AI 요약', '분석하기', 'GitHub 동기화']) {
+for (const text of ['파일 관리', '폴더 목록', '자료 추가', '미리보기', '분석하기', 'GitHub 동기화', '프로젝트 정리', '대화로 내용 추가하기', '세부 폴더']) {
   assert.ok(
     createHtml.includes(text),
     `file management page should include ${text}`
   );
 }
+// #137-3: 개별 파일 AI 요약 버튼/액션 제거
+assert.ok(
+  !createHtml.includes('data-action="summarize-file"') && !createHtml.includes('function summarizeFile'),
+  'file management should remove the per-file AI 요약 action (#137-3)'
+);
+// #137-5: 상단 공용 'AI 대화로 md 만들기' 제거, 프로젝트별 '대화로 내용 추가하기'로 교체
+assert.ok(
+  !createHtml.includes('AI 대화로 md 만들기') && !createHtml.includes('data-action="make-md"'),
+  'file management should drop the shared top AI md button (#137-5)'
+);
+assert.match(
+  createHtml,
+  /data-action="add-conversation"/,
+  'file management should offer a per-project 대화로 내용 추가하기 action (#137-5)'
+);
+// #137-4: 레포 연결 옆 '프로젝트 정리' 버튼
+assert.match(
+  createHtml,
+  /data-action="organize-project"/,
+  'file management should add a project-level 프로젝트 정리 action next to repo connect (#137-4)'
+);
+// #137-1: 진행중 → 완료 이동
+assert.match(
+  createHtml,
+  /data-action="move-to-completed"[\s\S]*function\s+moveToCompleted[\s\S]*folder\.group\s*=\s*'completed'/,
+  'file management should let an in-progress project move to completed (#137-1)'
+);
+// #137-2: 활동 유형 드롭다운 + 유형별 하위 폴더 생성
+assert.match(
+  createHtml,
+  /id="newFolderType"/,
+  'folder-add modal should offer an activity type dropdown (#137-2)'
+);
+assert.match(
+  createHtml,
+  /FolderStore\.createFolder\(group,\s*name,\s*type\)/,
+  'folder creation should pass the selected activity type to build template subfolders (#137-2)'
+);
+// #137-2: 하위 폴더 내비게이션(세부 폴더 클릭 시 해당 자료만)
+assert.match(
+  createHtml,
+  /data-subfolder-id=/,
+  'file management should render clickable subfolders for the selected project (#137-2)'
+);
 assert.match(
   createHtml,
   /new URLSearchParams\(window\.location\.search\)\.get\('folder'\)/,
@@ -1182,6 +1266,21 @@ assert.ok(
   'file management should drop the removed latest-change summary hook (#132)'
 );
 assert.match(
+  createHtml,
+  /async function\s+addFilesToSelectedFolder[\s\S]*FormData[\s\S]*fetch\(ACTIVITY_FILES_ENDPOINT,\s*\{[\s\S]*method:\s*'POST'/,
+  'file management uploads should go through the activity file API'
+);
+assert.match(
+  createHtml,
+  /async function\s+deleteFile[\s\S]*fetch\(ACTIVITY_FILES_ENDPOINT,\s*\{[\s\S]*method:\s*'DELETE'/,
+  'file management deletes should remove files through the activity file API'
+);
+assert.match(
+  createHtml,
+  /async function\s+loadActivityFilesFromApi\(\)[\s\S]*fetch\(ACTIVITY_FILES_ENDPOINT/,
+  'file management should load uploaded files from the activity file API'
+);
+assert.match(
   createCss,
   /\.visually-hidden\s*\{/,
   'file management stylesheet should define visually-hidden so the file input stays hidden (#132)'
@@ -1245,19 +1344,18 @@ assert.match(
   /\.profile-needed-card\s+\.next-actions\s*\{[^}]*grid-column:\s*2;[^}]*justify-content:\s*flex-start;/s,
   'profile-required action buttons should sit below the message like the original layout'
 );
-assert.match(
-  fitfolioCss,
-  /\.trash-icon/,
-  'shared stylesheet should draw the trash can delete icon'
+assert.ok(
+  !fitfolioCss.includes('.trash-icon') && !fitfolioCss.includes('.icon-tool-button'),
+  'stylesheets should drop the removed sidebar file-delete and rename tool styles (#125, #126)'
 );
 assert.match(
   fitfolioCss,
-  /\.status-completed\s+\.mini-folder,[\s\S]*\.status-completed\s+\.icon-tool-button\s*\{[^}]*color:\s*#227a4b;/,
+  /\.status-completed\s+\.mini-folder\s*\{[^}]*color:\s*#227a4b;/,
   'completed folder icons should match the completed section text color'
 );
 assert.match(
   fitfolioCss,
-  /\.status-in-progress\s+\.mini-folder,[\s\S]*\.status-in-progress\s+\.icon-tool-button\s*\{[^}]*color:\s*#3157c9;/,
+  /\.status-in-progress\s+\.mini-folder\s*\{[^}]*color:\s*#3157c9;/,
   'in-progress folder icons should match the in-progress section text color'
 );
 assert.match(
