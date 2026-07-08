@@ -2065,12 +2065,17 @@ assert.match(
 );
 assert.match(
   portfolioCreateHtml,
-  /id="pfMajorDisplay"[\s\S]*data-major-value=""/,
-  'portfolio_create should display the mypage major instead of rendering a separate major selector'
+  /class="form-field major-inline-field"[\s\S]*<label>전공<\/label>[\s\S]*id="pfMajorDisplay"[\s\S]*data-major-value=""/,
+  'portfolio_create should display the mypage major as an inline card next to the major label'
 );
 assert.ok(
   !portfolioCreateHtml.includes('id="pfMajorSelect"'),
   'portfolio_create should not let users pick a separate major on the generation page'
+);
+assert.match(
+  portfolioCreateHtml,
+  /majorDisplay\.textContent\s*=\s*profileMajor\s*\|\|\s*'마이페이지 전공 입력 필요'/,
+  'portfolio_create major card should show only the department name without repeating the major label'
 );
 assert.match(
   portfolioCreateHtml,
@@ -2191,6 +2196,7 @@ for (const cssPattern of [
   /\.setup-layout\s*\{/,
   /\.setting-select\s*\{/,
   /\.setting-select:focus\s*\{/,
+  /\.major-inline-field\s*\{[\s\S]*grid-template-columns:\s*auto minmax\(0,\s*1fr\);/,
   /\.profile-major-display\s*\{/,
   /\.format-card-grid\s*\{/,
   /\.format-card\.selected::after\s*\{/,
