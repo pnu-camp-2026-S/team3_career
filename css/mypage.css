@@ -542,6 +542,7 @@
 
 .form-actions {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
   gap: 14px;
   margin-top: 18px;
@@ -550,6 +551,16 @@
 .form-actions button {
   min-width: 92px;
   height: 40px;
+}
+
+.save-status {
+  color: #697586;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.save-status.error {
+  color: #d13f52;
 }
 
 .account-card {

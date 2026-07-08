@@ -1028,6 +1028,21 @@ assert.match(
   /async function\s+saveProfile\(\)[\s\S]*fetch\(PROFILE_ENDPOINT,\s*\{[\s\S]*method:\s*"PUT"[\s\S]*body:\s*JSON\.stringify\(payload\)/,
   'mypage should save edited profile values through the Supabase profile API'
 );
+const saveProfileSource = (mypageHtml.match(/async function\s+saveProfile\(\)[\s\S]*?\n    function renderAllDynamicParts/) || [''])[0];
+assert.ok(
+  !saveProfileSource.includes('localStorage.setItem("myfitfolioProfile", JSON.stringify(payload))'),
+  'mypage should not treat local cache fallback as a successful DB profile save'
+);
+assert.match(
+  saveProfileSource,
+  /catch \(error\)[\s\S]*sessionStorage\.removeItem\("myfitfolioProfileSaved"\)[\s\S]*return false;/,
+  'mypage should report DB save failure instead of marking the profile as saved'
+);
+assert.match(
+  mypageHtml,
+  /if \(event\.target\.closest\("\[data-save-profile\]"\)\)[\s\S]*const saved = await saveProfile\(\);[\s\S]*if \(saved\)[\s\S]*profileState\.editing = false;[\s\S]*else[\s\S]*profileState\.saveError = "DB 저장에 실패했습니다\. 다시 저장해주세요\."/,
+  'mypage should leave edit mode only after the DB save succeeds'
+);
 assert.match(
   mypageHtml,
   /function\s+applyProfilePayload\(profile\)[\s\S]*profile\.educations[\s\S]*profile\.preferences[\s\S]*profile\.chips/,
@@ -1080,6 +1095,11 @@ assert.match(
   mypageCss,
   /\.profile-loading\s+\.mypage-content,\s*\.profile-loading\s+\.anchor-menu\s*\{[^}]*visibility:\s*hidden;/s,
   'mypage should hide stale profile content while the profile request is loading'
+);
+assert.match(
+  mypageCss,
+  /\.save-status\.error\s*\{[^}]*color:\s*#d13f52;/s,
+  'mypage should style DB save failure feedback in the form actions'
 );
 assert.match(
   mypageCss,
@@ -2040,18 +2060,27 @@ assert.ok(
 );
 assert.match(
   portfolioCreateHtml,
-  /id="pfMajorSelect"/,
-  'portfolio_create should include the major selector from the attachment'
-);
-assert.match(
-  portfolioCreateHtml,
   /id="pfPurposeSelect"\s+class="setting-select"[\s\S]*<option>취업 지원용<\/option>[\s\S]*<option>대학원 진학<\/option>/,
   'portfolio_create should keep the generation purpose select while applying the improved selector style'
 );
 assert.match(
   portfolioCreateHtml,
-  /id="pfMajorSelect"\s+class="setting-select"[\s\S]*<option value="industrial">산업공학과<\/option>[\s\S]*<option value="computer">컴퓨터공학과<\/option>/,
-  'portfolio_create should keep the major select while applying the improved selector style'
+  /class="form-field major-inline-field"[\s\S]*<label>전공<\/label>[\s\S]*id="pfMajorDisplay"[\s\S]*data-major-value=""/,
+  'portfolio_create should display the mypage major as an inline card next to the major label'
+);
+assert.ok(
+  !portfolioCreateHtml.includes('id="pfMajorSelect"'),
+  'portfolio_create should not let users pick a separate major on the generation page'
+);
+assert.match(
+  portfolioCreateHtml,
+  /majorDisplay\.textContent\s*=\s*profileMajor\s*\|\|\s*'마이페이지 전공 입력 필요'/,
+  'portfolio_create major card should show only the department name without repeating the major label'
+);
+assert.match(
+  portfolioCreateHtml,
+  /id="experienceDataList"[\s\S]*업로드한 경험 데이터를 불러오는 중입니다\./,
+  'portfolio_create should render the experience list container for uploaded user files'
 );
 assert.ok(
   !portfolioCreateHtml.includes('data-purpose-option') && !portfolioCreateHtml.includes('data-major-option'),
@@ -2064,7 +2093,32 @@ assert.ok(
 assert.match(
   portfolioCreateHtml,
   /id="keywordPool"/,
-  'portfolio_create should render major-based keywords into a keyword pool'
+  'portfolio_create should render recommended keywords into a keyword pool'
+);
+assert.match(
+  portfolioCreateHtml,
+  /const\s+PROFILE_ENDPOINT\s*=\s*'\/api\/profile'/,
+  'portfolio_create should define the mypage profile API endpoint for the major display'
+);
+assert.match(
+  portfolioCreateHtml,
+  /const\s+ACTIVITY_FILES_ENDPOINT\s*=\s*'\/api\/activity-files'/,
+  'portfolio_create should define the uploaded activity file API endpoint'
+);
+assert.match(
+  portfolioCreateHtml,
+  /async function\s+loadProfileMajor\(\)[\s\S]*fetch\(PROFILE_ENDPOINT,[\s\S]*profileMajor\s*=\s*educations\.find\(\(education\)\s*=>\s*education\?\.major\)\?\.major/,
+  'portfolio_create should load the displayed major from mypage education data'
+);
+assert.match(
+  portfolioCreateHtml,
+  /async function\s+loadExperienceData\(\)[\s\S]*fetch\(ACTIVITY_FILES_ENDPOINT,[\s\S]*activityFiles\s*=\s*Array\.isArray\(result\.files\)\s*\?\s*result\.files\s*:\s*\[\]/,
+  'portfolio_create should load uploaded files as selectable experience data'
+);
+assert.match(
+  portfolioCreateHtml,
+  /function\s+getExperienceKeywordRecommendations\(\)[\s\S]*experienceKeywordRules[\s\S]*getSelectedExperienceLabels\(\)/,
+  'portfolio_create should recommend keyword chips from selected experience files'
 );
 assert.match(
   portfolioCreateHtml,
@@ -2139,8 +2193,8 @@ assert.match(
 );
 assert.match(
   portfolioCreateHtml,
-  /const\s+commonKeywords[\s\S]*const\s+majorKeywordMap/,
-  'portfolio_create should generate keyword options from common and major-specific maps'
+  /const\s+commonKeywords[\s\S]*const\s+majorKeywordMap[\s\S]*const\s+experienceKeywordRules/,
+  'portfolio_create should generate keyword options from common, major, and selected-experience rules'
 );
 assert.match(
   portfolioCreateHtml,
@@ -2157,8 +2211,11 @@ for (const cssPattern of [
   /\.setup-layout\s*\{/,
   /\.setting-select\s*\{/,
   /\.setting-select:focus\s*\{/,
+  /\.major-inline-field\s*\{[\s\S]*grid-template-columns:\s*auto minmax\(0,\s*1fr\);/,
+  /\.profile-major-display\s*\{/,
   /\.format-card-grid\s*\{/,
   /\.format-card\.selected::after\s*\{/,
+  /\.experience-checkbox-group\s*\{[\s\S]*max-height:\s*214px;[\s\S]*overflow-y:\s*auto;/,
   /\.ppt-preview-wrap\s*\{/,
   /\.ppt-slide\s*\{/,
   /\.slide-arrow\s*\{/,
