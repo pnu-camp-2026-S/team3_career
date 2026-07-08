@@ -2,13 +2,13 @@
   const STORAGE_KEY = 'myfitfolioFolders';
 
   const FOLDER_TYPES = [
-    { key: 'personal', label: '개인 프로젝트' },
-    { key: 'team', label: '팀 프로젝트' },
-    { key: 'contest', label: '공모전' },
-    { key: 'certificate', label: '자격증' },
-    { key: 'education', label: '교육' },
-    { key: 'volunteer', label: '봉사' },
-    { key: 'other', label: '기타' },
+    { key: 'personal', label: '개인 프로젝트', color: '#5965e8' },
+    { key: 'team', label: '팀 프로젝트', color: '#2f80ed' },
+    { key: 'contest', label: '공모전', color: '#f2994a' },
+    { key: 'certificate', label: '자격증', color: '#9b51e0' },
+    { key: 'education', label: '교육', color: '#27ae60' },
+    { key: 'volunteer', label: '봉사', color: '#eb5757' },
+    { key: 'other', label: '기타', color: '#60758f' },
   ];
 
   const FOLDER_GROUPS = [

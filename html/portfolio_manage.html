@@ -29,6 +29,7 @@
   <script>
     const STORAGE_KEY = 'careerfit_portfolios';
     const DELETED_PORTFOLIO_STORAGE_KEY = 'careerfit_deleted_portfolios';
+    const PORTFOLIO_ENDPOINT = '/api/portfolios';
     const seedPortfolios = [
       {
         id: 'portfolio-data',
@@ -146,7 +147,7 @@
       return [...keptItems, ...missingSeeds];
     }
 
-    function readPortfolios() {
+    function readLocalPortfolios() {
       try {
         const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
         if (!Array.isArray(saved) || !saved.length) return mergeWithSeedPortfolios([]);
@@ -154,6 +155,26 @@
       } catch {
         return mergeWithSeedPortfolios([]);
       }
+    }
+
+    async function readPortfolios() {
+      try {
+        const response = await fetch(PORTFOLIO_ENDPOINT, {
+          credentials: 'same-origin',
+          cache: 'no-store',
+        });
+
+        if (response.ok) {
+          const payload = await response.json();
+          const portfolios = Array.isArray(payload.portfolios) ? payload.portfolios.map(normalizePortfolio) : [];
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(portfolios));
+          return portfolios;
+        }
+      } catch (error) {
+        console.warn('Portfolio API list failed.', error);
+      }
+
+      return readLocalPortfolios();
     }
 
     function writePortfolios(items) {
@@ -229,9 +250,9 @@
       `;
     }
 
-    function renderPortfolios() {
+    async function renderPortfolios() {
       const list = document.getElementById('portfolioList');
-      const portfolios = sortPortfolios(readPortfolios());
+      const portfolios = sortPortfolios(await readPortfolios());
 
       if (!portfolios.length) {
         list.innerHTML = '<div class="empty">포트폴리오가 없습니다.</div>';
@@ -261,15 +282,21 @@
       `).join('');
     }
 
-    document.getElementById('portfolioList').addEventListener('click', (event) => {
+    document.getElementById('portfolioList').addEventListener('click', async (event) => {
       const target = event.target.closest('[data-action]');
       if (!target) return;
-      const portfolios = readPortfolios();
+      const portfolios = await readPortfolios();
       const portfolio = portfolios.find((item) => item.id === target.dataset.id);
       if (!portfolio) return;
 
       if (target.dataset.action === 'like') {
         portfolio.liked = !portfolio.liked;
+        await fetch(PORTFOLIO_ENDPOINT, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({ id: portfolio.id, liked: portfolio.liked }),
+        }).catch((error) => console.warn('Portfolio like API failed.', error));
         writePortfolios(portfolios);
         target.classList.toggle('liked', portfolio.liked);
         target.textContent = portfolio.liked ? '♥' : '♡';
@@ -285,13 +312,18 @@
       if (target.dataset.action === 'delete') {
         if (!window.confirm(`"${portfolio.title}" 포트폴리오를 삭제할까요?`)) return;
         const nextPortfolios = portfolios.filter((item) => item.id !== portfolio.id);
+        await fetch(PORTFOLIO_ENDPOINT, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({ id: portfolio.id }),
+        }).catch((error) => console.warn('Portfolio delete API failed.', error));
         writeDeletedPortfolioIds([...readDeletedPortfolioIds(), portfolio.id]);
         writePortfolios(nextPortfolios);
         renderPortfolios();
       }
     });
 
-    writePortfolios(readPortfolios());
     renderPortfolios();
   </script>
 </body>

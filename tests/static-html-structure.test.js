@@ -95,6 +95,7 @@ const withdrawCss = fs.readFileSync(path.join(cssDir, 'withdraw.css'), 'utf8');
 const fitfolioCss = [commonCss, authCss, mainCss, createCss].join('\n');
 const sharedNavJsPath = path.join(jsDir, 'shared-nav.js');
 const authNavJsPath = path.join(jsDir, 'auth-nav.js');
+const folderStoreJsPath = path.join(jsDir, 'folder-store.js');
 const sharedNavPages = [
   ['main.html', 'main'],
   ['create.html', 'create'],
@@ -128,7 +129,6 @@ const authNavJs = fs.existsSync(authNavJsPath)
   ? fs.readFileSync(authNavJsPath, 'utf8')
   : '';
 
-const folderStoreJsPath = path.join(jsDir, 'folder-store.js');
 assert.ok(
   fs.existsSync(folderStoreJsPath),
   'folder data store script should live in the js directory (Firebase-ready abstraction)'
@@ -146,7 +146,7 @@ assert.match(
 );
 assert.match(
   folderStoreJs,
-  /\{\s*key:\s*'other',\s*label:\s*'기타'\s*\}/,
+  /\{\s*key:\s*'other',\s*label:\s*'기타',\s*color:\s*'#[0-9a-fA-F]{6}'\s*\}/,
   'folder store should include an other folder type inside each activity group'
 );
 assert.match(
@@ -264,8 +264,8 @@ assert.ok(
 );
 assert.match(
   authNavJs,
-  /const\s+LOGIN_KEY\s*=\s*'myfitfolioLoggedIn'/,
-  'auth navigation should use the existing login session key'
+  /const\s+AUTH_ME_ENDPOINT\s*=\s*'\/api\/auth\/me'/,
+  'auth navigation should read login state from the Supabase-backed session endpoint'
 );
 assert.match(
   authNavJs,
@@ -274,8 +274,8 @@ assert.match(
 );
 assert.match(
   authNavJs,
-  /sessionStorage\.setItem\(LOGIN_KEY,\s*'true'\);[\s\S]*window\.location\.href\s*=\s*'main\.html'/,
-  'auth navigation should mark login state and move auth users to main'
+  /window\.location\.href\s*=\s*`\/api\/auth\/social\?provider=\$\{provider\}`/,
+  'auth navigation should send social login buttons through the Supabase OAuth API'
 );
 assert.match(
   authNavJs,
@@ -289,8 +289,8 @@ assert.match(
 );
 assert.match(
   authNavJs,
-  /clearAccountState\(\);[\s\S]*window\.location\.href\s*=\s*'main\.html'/,
-  'auth navigation should clear account state before logout redirect'
+  /fetch\(AUTH_LOGOUT_ENDPOINT,\s*\{\s*method:\s*'POST'\s*\}\)/,
+  'auth navigation should call the Supabase logout API before returning to login'
 );
 
 const activityDatasetJs = fs.readFileSync(path.join(jsDir, 'activity-recommendation-dataset.js'), 'utf8');
@@ -364,14 +364,22 @@ for (const file of ['index.html', 'main.html']) {
 }
 
 const packageJson = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
+const nextConfig = fs.readFileSync(path.join(rootDir, 'next.config.js'), 'utf8');
 assert.strictEqual(packageJson.scripts.dev, 'next dev --webpack', 'project should expose the Next.js dev server command without Turbopack path issues on Korean Windows folders');
 assert.strictEqual(packageJson.scripts.build, 'next build', 'project should expose the Next.js build command');
 assert.strictEqual(packageJson.scripts.start, 'next start', 'project should run the Next.js production server');
 assert.ok(packageJson.dependencies.next, 'project should depend on Next.js');
 assert.ok(packageJson.dependencies.react, 'project should depend on React');
 assert.ok(packageJson.dependencies['react-dom'], 'project should depend on React DOM');
+assert.ok(packageJson.dependencies['@supabase/supabase-js'], 'project should depend on the Supabase JavaScript client');
+assert.ok(packageJson.dependencies['@supabase/ssr'], 'project should depend on Supabase SSR helpers for Next.js auth cookies');
 assert.ok(!packageJson.dependencies.express, 'project should no longer depend on Express after the Next.js migration');
 assert.ok(!fs.existsSync(path.join(rootDir, 'server.js')), 'legacy Express server.js should be removed after the Next.js migration');
+assert.match(
+  nextConfig,
+  /require\('dotenv'\)\.config\(\{\s*path:\s*'key\.env'\s*\}\)/,
+  'Next config should load key.env so Supabase environment variables are available in dev and build'
+);
 
 const nextLegacyPage = fs.readFileSync(path.join(appDir, '[[...slug]]', 'page.js'), 'utf8');
 const nextLegacyScripts = fs.readFileSync(path.join(appDir, 'LegacyScripts.jsx'), 'utf8');
@@ -380,6 +388,42 @@ const nextCssRoute = fs.readFileSync(path.join(appDir, 'css', '[...file]', 'rout
 const nextJsRoute = fs.readFileSync(path.join(appDir, 'js', '[...file]', 'route.js'), 'utf8');
 const nextSignupRoute = fs.readFileSync(path.join(appDir, 'api', 'signup', 'route.js'), 'utf8');
 const nextChatRoute = fs.readFileSync(path.join(appDir, 'api', 'chat', 'route.js'), 'utf8');
+const supabaseServerPath = path.join(libDir, 'supabase-server.js');
+const socialAuthRoutePath = path.join(appDir, 'api', 'auth', 'social', 'route.js');
+const authCallbackRoutePath = path.join(appDir, 'api', 'auth', 'callback', 'route.js');
+const authMeRoutePath = path.join(appDir, 'api', 'auth', 'me', 'route.js');
+const authLogoutRoutePath = path.join(appDir, 'api', 'auth', 'logout', 'route.js');
+const userProfileRoutePath = path.join(appDir, 'api', 'profile', 'route.js');
+const activityFilesRoutePath = path.join(appDir, 'api', 'activity-files', 'route.js');
+const portfoliosRoutePath = path.join(appDir, 'api', 'portfolios', 'route.js');
+const profilesSchemaPath = path.join(rootDir, 'docs', 'supabase-profiles.sql');
+const userProfilesSchemaPath = path.join(rootDir, 'docs', 'supabase-user-profiles.sql');
+const activityFilesSchemaPath = path.join(rootDir, 'docs', 'supabase-activity-files.sql');
+const portfoliosSchemaPath = path.join(rootDir, 'docs', 'supabase-portfolios.sql');
+assert.ok(fs.existsSync(supabaseServerPath), 'Supabase server helper should live in lib/supabase-server.js');
+assert.ok(fs.existsSync(socialAuthRoutePath), 'social login API should live in app/api/auth/social/route.js');
+assert.ok(fs.existsSync(authCallbackRoutePath), 'OAuth callback API should live in app/api/auth/callback/route.js');
+assert.ok(fs.existsSync(authMeRoutePath), 'current-user API should live in app/api/auth/me/route.js');
+assert.ok(fs.existsSync(authLogoutRoutePath), 'logout API should live in app/api/auth/logout/route.js');
+assert.ok(fs.existsSync(userProfileRoutePath), 'mypage profile API should live in app/api/profile/route.js');
+assert.ok(fs.existsSync(activityFilesRoutePath), 'activity file API should live in app/api/activity-files/route.js');
+assert.ok(fs.existsSync(portfoliosRoutePath), 'portfolio API should live in app/api/portfolios/route.js');
+assert.ok(fs.existsSync(profilesSchemaPath), 'Supabase profiles schema should be documented for DB setup');
+assert.ok(fs.existsSync(userProfilesSchemaPath), 'Supabase user_profiles schema should be documented for mypage DB setup');
+assert.ok(fs.existsSync(activityFilesSchemaPath), 'Supabase activity_files schema should be documented for file DB setup');
+assert.ok(fs.existsSync(portfoliosSchemaPath), 'Supabase portfolios schema should be documented for portfolio DB setup');
+const supabaseServer = fs.existsSync(supabaseServerPath) ? fs.readFileSync(supabaseServerPath, 'utf8') : '';
+const socialAuthRoute = fs.existsSync(socialAuthRoutePath) ? fs.readFileSync(socialAuthRoutePath, 'utf8') : '';
+const authCallbackRoute = fs.existsSync(authCallbackRoutePath) ? fs.readFileSync(authCallbackRoutePath, 'utf8') : '';
+const authMeRoute = fs.existsSync(authMeRoutePath) ? fs.readFileSync(authMeRoutePath, 'utf8') : '';
+const authLogoutRoute = fs.existsSync(authLogoutRoutePath) ? fs.readFileSync(authLogoutRoutePath, 'utf8') : '';
+const userProfileRoute = fs.existsSync(userProfileRoutePath) ? fs.readFileSync(userProfileRoutePath, 'utf8') : '';
+const activityFilesRoute = fs.existsSync(activityFilesRoutePath) ? fs.readFileSync(activityFilesRoutePath, 'utf8') : '';
+const portfoliosRoute = fs.existsSync(portfoliosRoutePath) ? fs.readFileSync(portfoliosRoutePath, 'utf8') : '';
+const profilesSchema = fs.existsSync(profilesSchemaPath) ? fs.readFileSync(profilesSchemaPath, 'utf8') : '';
+const userProfilesSchema = fs.existsSync(userProfilesSchemaPath) ? fs.readFileSync(userProfilesSchemaPath, 'utf8') : '';
+const activityFilesSchema = fs.existsSync(activityFilesSchemaPath) ? fs.readFileSync(activityFilesSchemaPath, 'utf8') : '';
+const portfoliosSchema = fs.existsSync(portfoliosSchemaPath) ? fs.readFileSync(portfoliosSchemaPath, 'utf8') : '';
 
 assert.match(
   nextLegacyPage,
@@ -390,6 +434,11 @@ assert.match(
   nextLegacyScripts,
   /document\.createElement\('script'\)[\s\S]*document\.body\.appendChild\(element\)/,
   'Next migration should re-run legacy page scripts in browser order'
+);
+assert.match(
+  nextLegacyScripts,
+  /function\s+wrapInlineScript\(content\)[\s\S]*element\.text\s*=\s*wrapInlineScript\(script\.content \|\| ''\)/,
+  'Next legacy script loader should wrap inline scripts so repeated mounts do not redeclare top-level const bindings'
 );
 assert.match(
   nextLegacyLib,
@@ -422,6 +471,91 @@ assert.match(
   /export async function POST\(request\)[\s\S]*OpenAI/,
   'chat API should move from Express to a Next route handler'
 );
+assert.match(
+  userProfileRoute,
+  /export async function GET\(\)[\s\S]*\.from\('user_profiles'\)[\s\S]*\.maybeSingle\(\)/,
+  'profile API should load the current user mypage profile from Supabase'
+);
+assert.match(
+  userProfileRoute,
+  /export async function PUT\(request\)[\s\S]*\.from\('user_profiles'\)[\s\S]*\.upsert\(/,
+  'profile API should upsert the current user mypage profile into Supabase'
+);
+assert.match(
+  userProfileRoute,
+  /user_id:\s*user\.id[\s\S]*birth_date:[\s\S]*educations:[\s\S]*preferences:[\s\S]*chips:/,
+  'profile API should map mypage fields into the user_profiles table'
+);
+assert.match(
+  userProfilesSchema,
+  /create table if not exists public\.user_profiles[\s\S]*user_id uuid primary key references auth\.users\(id\) on delete cascade/,
+  'user_profiles schema should create one mypage profile row per auth user'
+);
+assert.match(
+  userProfilesSchema,
+  /educations jsonb[\s\S]*preferences jsonb[\s\S]*chips jsonb/,
+  'user_profiles schema should store repeatable mypage sections as jsonb'
+);
+assert.match(
+  userProfilesSchema,
+  /enable row level security[\s\S]*auth\.uid\(\) = user_id/,
+  'user_profiles schema should restrict access to the signed-in user'
+);
+assert.match(
+  activityFilesRoute,
+  /export async function GET\(\)[\s\S]*\.from\('activity_files'\)[\s\S]*\.select\(/,
+  'activity file API should list the current user files from Supabase'
+);
+assert.match(
+  activityFilesRoute,
+  /export async function POST\(request\)[\s\S]*request\.formData\(\)[\s\S]*storage\.from\(ACTIVITY_FILE_BUCKET\)\.upload/,
+  'activity file API should upload dropped files to Supabase Storage'
+);
+assert.match(
+  activityFilesRoute,
+  /export async function DELETE\(request\)[\s\S]*storage\.from\(ACTIVITY_FILE_BUCKET\)\.remove[\s\S]*\.from\('activity_files'\)[\s\S]*\.delete\(\)/,
+  'activity file API should remove both Storage objects and activity_files rows'
+);
+assert.match(
+  portfoliosRoute,
+  /export async function GET\(request\)[\s\S]*\.from\('portfolios'\)[\s\S]*deleted_at/,
+  'portfolio API should list non-deleted current user portfolios'
+);
+assert.match(
+  portfoliosRoute,
+  /export async function POST\(request\)[\s\S]*\.from\('portfolios'\)[\s\S]*\.upsert\(/,
+  'portfolio API should save generated portfolios to Supabase'
+);
+assert.match(
+  portfoliosRoute,
+  /export async function PATCH\(request\)[\s\S]*liked[\s\S]*updated_at/,
+  'portfolio API should update portfolio state such as liked'
+);
+assert.match(
+  portfoliosRoute,
+  /export async function DELETE\(request\)[\s\S]*deleted_at/,
+  'portfolio API should soft-delete portfolios'
+);
+assert.match(
+  activityFilesSchema,
+  /create table if not exists public\.activity_files[\s\S]*storage_bucket text[\s\S]*storage_path text/,
+  'activity_files schema should store Storage object metadata'
+);
+assert.match(
+  activityFilesSchema,
+  /insert into storage\.buckets[\s\S]*activity-files/,
+  'activity_files schema should create the activity-files Storage bucket'
+);
+assert.match(
+  portfoliosSchema,
+  /create table if not exists public\.portfolios[\s\S]*experiences jsonb[\s\S]*keywords jsonb[\s\S]*slides jsonb/,
+  'portfolios schema should store generated portfolio content and structured draft data'
+);
+assert.match(
+  portfoliosSchema,
+  /alter table public\.portfolios enable row level security[\s\S]*auth\.uid\(\) = user_id/,
+  'portfolios schema should restrict portfolio rows to their owner'
+);
 
 const mainHtml = fs.readFileSync(path.join(htmlDir, 'main.html'), 'utf8');
 assert.match(
@@ -441,6 +575,11 @@ assert.match(
   mainHtml,
   /id="sidebarResizeHandle"/,
   'main sidebar should keep the width resize handle'
+);
+assert.match(
+  mainHtml,
+  /const\s+sidebarResizeHandle\s*=\s*document\.getElementById\('sidebarResizeHandle'\)/,
+  'main sidebar should keep the resize handle element wired in JavaScript'
 );
 assert.match(
   mainHtml,
@@ -474,21 +613,44 @@ assert.match(
   /진행중인 활동 폴더/,
   'main sidebar should rename ready folders to in-progress folders'
 );
+assert.match(
+  folderStoreJs,
+  /FOLDER_GROUPS[\s\S]*key:\s*'completed'[\s\S]*key:\s*'inProgress'/,
+  'shared folder store should create folders inside completed and in-progress groups'
+);
+assert.match(
+  folderStoreJs,
+  /\{\s*key:\s*'other',\s*label:\s*'기타',\s*color:\s*'#[0-9a-fA-F]{6}'\s*\}/,
+  'shared folder store should include an other folder type with a chart color'
+);
+assert.match(
+  folderStoreJs,
+  /function\s+normalizeFolderLabel[\s\S]*folder\.type\s*===\s*'other'[\s\S]*folder\.label\s*===\s*'기타 폴더'[\s\S]*return '기타'/,
+  'shared folder store should migrate the old other-folder label to 기타'
+);
 assert.ok(
   !mainHtml.includes('data-folder-section="other"'),
   'main sidebar should not render a separate other folder section'
 );
-assert.ok(
-  !mainHtml.includes('data-rename-folder') && !mainHtml.includes('폴더명 수정'),
-  'main sidebar should not offer folder renaming'
+assert.match(
+  mainHtml,
+  /data-rename-folder[\s\S]*폴더명 수정/,
+  'main sidebar should restore folder rename controls'
 );
-assert.ok(
-  !mainHtml.includes('data-delete-file') && !mainHtml.includes('data-toggle-folder'),
-  'main sidebar should not expose per-file delete or per-folder expand controls'
+assert.match(
+  mainHtml,
+  /data-toggle-folder[\s\S]*uploaded-file-list[\s\S]*파일을 이 폴더로 끌어오세요/,
+  'main sidebar should restore expandable folder rows with empty-folder copy'
 );
-assert.ok(
-  !mainHtml.includes('event.target.closest(\'.drop-folder\')') && !mainHtml.includes('clearDropOverFolders'),
-  'main sidebar should not accept drag-and-drop uploads'
+assert.match(
+  mainHtml,
+  /event\.target\.closest\('\.drop-folder'\)[\s\S]*addFilesToFolder\(target\.dataset\.folderId,\s*event\.dataTransfer\.files\)/,
+  'main sidebar should restore drag-and-drop file uploads onto folders'
+);
+assert.match(
+  mainHtml,
+  /function\s+renameFolder[\s\S]*window\.prompt\('변경할 폴더명을 입력하세요'/,
+  'main sidebar should restore folder rename behavior'
 );
 assert.ok(
   !mainHtml.includes('기획 자료') && !mainHtml.includes('결과 자료') && !mainHtml.includes('renderNestedFolder'),
@@ -516,13 +678,28 @@ assert.match(
 );
 assert.match(
   mainHtml,
+  /const\s+ACTIVITY_FILES_ENDPOINT\s*=\s*'\/api\/activity-files'/,
+  'main dashboard should define the Supabase activity file API endpoint'
+);
+assert.match(
+  mainHtml,
+  /async function\s+loadActivityFilesFromApi\(\)[\s\S]*fetch\(ACTIVITY_FILES_ENDPOINT/,
+  'main dashboard should load existing uploaded files from the activity file API'
+);
+assert.match(
+  mainHtml,
   /FolderStore\.FOLDER_GROUPS/,
   'main sidebar should render folder groups from the shared folder store'
 );
 assert.match(
   mainHtml,
-  /href="create\.html\?folder=\$\{escapeHtml\(folder\.id\)\}"/,
-  'main folder rows should link to the matching folder in file management'
+  /async function\s+addFilesToFolder[\s\S]*FormData[\s\S]*fetch\(ACTIVITY_FILES_ENDPOINT,\s*\{[\s\S]*method:\s*'POST'/,
+  'main sidebar file drops should upload through the activity file API'
+);
+assert.match(
+  mainHtml,
+  /async function\s+deleteFile[\s\S]*fetch\(ACTIVITY_FILES_ENDPOINT,\s*\{[\s\S]*method:\s*'DELETE'/,
+  'main sidebar file deletes should remove files through the activity file API'
 );
 
 assert.match(
@@ -551,8 +728,13 @@ assert.ok(
 );
 assert.match(
   mainHtml,
-  /myfitfolioProfile/,
-  'main dashboard should read the saved mypage profile'
+  /const\s+PROFILE_ENDPOINT\s*=\s*'\/api\/profile'/,
+  'main dashboard should read mypage profile status from the Supabase profile API'
+);
+assert.match(
+  mainHtml,
+  /fetch\(PROFILE_ENDPOINT,\s*\{[\s\S]*credentials:\s*'same-origin'[\s\S]*cache:\s*'no-store'/,
+  'main dashboard should request the current user profile without using a stale cache'
 );
 assert.match(
   mainHtml,
@@ -561,8 +743,8 @@ assert.match(
 );
 assert.match(
   mainHtml,
-  /분석된 프로젝트/,
-  'main dashboard should rename analyzed materials to analyzed projects'
+  /분석된 자료/,
+  'main dashboard should label completed file totals as analyzed materials'
 );
 assert.match(
   mainHtml,
@@ -571,8 +753,97 @@ assert.match(
 );
 assert.match(
   mainHtml,
+  /분석된 자료/,
+  'main dashboard should label the completed-file total as analyzed materials'
+);
+assert.match(
+  mainHtml,
+  /id="analysisCompletionPercent"/,
+  'main dashboard should expose a visual completion percent for activity classification'
+);
+assert.match(
+  mainHtml,
+  /id="completedActivityTotal"[\s\S]*id="inProgressActivityTotal"/,
+  'main dashboard should show completed and in-progress file totals in the analyzed materials card'
+);
+assert.match(
+  mainHtml,
+  /function\s+getFolderFileTotal[\s\S]*folder\.group\s*===\s*groupKey[\s\S]*sum\s*\+\s*folder\.files\.length/,
+  'main dashboard should total analysis counts from files inside each folder group'
+);
+assert.match(
+  mainHtml,
+  /analyzedProjectTotal'\)\.textContent\s*=\s*completedFileTotal/,
+  'main dashboard should count analyzed materials from completed folder files, not completed folder count'
+);
+assert.match(
+  mainHtml,
+  /analysisSummaryBar[\s\S]*completedShare/,
+  'main dashboard should visualize completed file share with a progress bar'
+);
+assert.match(
+  folderStoreJs,
+  /\{\s*key:\s*'personal',\s*label:\s*'개인 프로젝트',\s*color:\s*'#[0-9a-fA-F]{6}'\s*\}/,
+  'shared folder store should define category colors for analysis charts'
+);
+assert.match(
+  mainHtml,
+  /function\s+buildDonutGradient[\s\S]*conic-gradient[\s\S]*item\.color/,
+  'main dashboard should build the classification donut from category-specific colors'
+);
+assert.match(
+  mainHtml,
+  /inProgressBreakdownItem[\s\S]*label:\s*'진행중인 활동'[\s\S]*color:\s*'#[0-9a-fA-F]{6}'[\s\S]*count:\s*inProgressFileTotal/,
+  'main dashboard should add in-progress activity as a gray chart item'
+);
+assert.match(
+  mainHtml,
+  /buildDonutGradient\(chartBreakdown,\s*allFileTotal\)/,
+  'main dashboard donut should include completed category files and in-progress files'
+);
+assert.match(
+  mainHtml,
+  /const\s+itemShare\s*=\s*allFileTotal\s*\?\s*Math\.round\(\(item\.count\s*\/\s*allFileTotal\)\s*\*\s*100\)/,
+  'main dashboard category bars should scale against all chart files including in-progress activity'
+);
+assert.match(
+  mainHtml,
+  /--category-color:\s*\$\{item\.color\}/,
+  'main dashboard should pass each folder color into its category bar row'
+);
+assert.match(
+  fitfolioCss,
+  /--in-progress-color:\s*#[0-9a-fA-F]{6}/,
+  'main dashboard should use a distinct color token for in-progress activity'
+);
+assert.match(
+  fitfolioCss,
+  /\.category-bar i\s*\{[^}]*background:\s*var\(--category-color\)/s,
+  'main dashboard category bars should use their per-folder color'
+);
+assert.match(
+  mainHtml,
   /analysis-info-button/,
   'main dashboard cards should include info buttons'
+);
+assert.match(
+  mainHtml,
+  /id="analysisOverview"[\s\S]*id="analysisOverviewText"/,
+  'main dashboard should include an AI analysis overview panel below the analysis cards'
+);
+assert.match(
+  mainHtml,
+  /function\s+renderAnalysisOverview[\s\S]*analysisOverviewText\.textContent/,
+  'main dashboard should render a simple AI analysis overview after analysis starts'
+);
+assert.match(
+  mainHtml,
+  /document\.querySelector\('\[data-analysis-start\]'\)\.addEventListener\('click',\s*\(\)\s*=>\s*\{[\s\S]*updateAnalysisSummary\(\)/,
+  'main dashboard should update analysis numbers from the analysis start action'
+);
+assert.ok(
+  !/function\s+renderDashboardState\(\)\s*\{[^}]*updateAnalysisSummary\(\)/.test(mainHtml),
+  'main dashboard should not refresh analysis numbers just because folders render'
 );
 assert.ok(
   !mainHtml.includes('커리어 준비도'),
@@ -626,6 +897,26 @@ assert.match(
   mypageHtml,
   /<div data-shared-nav data-active="mypage"><\/div>\s*<script src="\.\.\/js\/shared-nav\.js"><\/script>\s*<script src="\.\.\/js\/auth-nav\.js"><\/script>/,
   'mypage should keep the shared nav and auth-nav scripts when applying the attachment'
+);
+assert.match(
+  mypageHtml,
+  /const\s+PROFILE_ENDPOINT\s*=\s*"\/api\/profile"/,
+  'mypage should define the Supabase-backed profile API endpoint'
+);
+assert.match(
+  mypageHtml,
+  /async function\s+loadSavedProfile\(\)[\s\S]*fetch\(PROFILE_ENDPOINT,\s*\{[\s\S]*method:\s*"GET"[\s\S]*credentials:\s*"same-origin"/,
+  'mypage should load saved profile values from the Supabase profile API'
+);
+assert.match(
+  mypageHtml,
+  /async function\s+saveProfile\(\)[\s\S]*fetch\(PROFILE_ENDPOINT,\s*\{[\s\S]*method:\s*"PUT"[\s\S]*body:\s*JSON\.stringify\(payload\)/,
+  'mypage should save edited profile values through the Supabase profile API'
+);
+assert.match(
+  mypageHtml,
+  /function\s+applyProfilePayload\(profile\)[\s\S]*profile\.educations[\s\S]*profile\.preferences[\s\S]*profile\.chips/,
+  'mypage should apply persisted DB profile values back into the existing form state'
 );
 assert.ok(
   !mypageHtml.includes('href="fitfolio.css"') && !mypageHtml.includes('<header class="top-nav">'),
@@ -1543,8 +1834,23 @@ assert.match(
 );
 assert.match(
   portfolioCreateHtml,
-  /class="master-actions"[\s\S]*handleMasterAction\('save'\)[\s\S]*handleMasterAction\('download'\)[\s\S]*handleMasterAction\('exit'\)/,
-  'portfolio_create should use the attachment master action controls'
+  /class="master-actions"[\s\S]*data-master-action="save"[\s\S]*data-master-action="download"[\s\S]*data-master-action="exit"/,
+  'portfolio_create should use event-driven master action controls'
+);
+assert.match(
+  portfolioCreateHtml,
+  /const\s+PORTFOLIO_ENDPOINT\s*=\s*'\/api\/portfolios'/,
+  'portfolio_create should define the Supabase portfolio API endpoint'
+);
+assert.match(
+  portfolioCreateHtml,
+  /async function\s+saveGeneratedPortfolio\(\)[\s\S]*fetch\(PORTFOLIO_ENDPOINT,\s*\{[\s\S]*method:\s*'POST'/,
+  'portfolio_create should save generated portfolios through the portfolio API'
+);
+assert.match(
+  portfolioCreateHtml,
+  /async function\s+openPortfolioEditorFromQuery\(\)[\s\S]*fetch\(`\$\{PORTFOLIO_ENDPOINT\}\?id=/,
+  'portfolio_create should load portfolio edits through the portfolio API'
 );
 assert.match(
   portfolioCreateHtml,
@@ -1648,6 +1954,16 @@ assert.match(
 );
 assert.match(
   portfolioManageHtml,
+  /const\s+PORTFOLIO_ENDPOINT\s*=\s*'\/api\/portfolios'/,
+  'portfolio_manage should define the Supabase portfolio API endpoint'
+);
+assert.match(
+  portfolioManageHtml,
+  /async function\s+readPortfolios\(\)[\s\S]*fetch\(PORTFOLIO_ENDPOINT/,
+  'portfolio_manage should load portfolios from the portfolio API'
+);
+assert.match(
+  portfolioManageHtml,
   /data-action="like"/,
   'portfolio_manage should support liking saved portfolios'
 );
@@ -1673,8 +1989,13 @@ assert.match(
 );
 assert.match(
   portfolioManageHtml,
-  /writePortfolios\(readPortfolios\(\)\)/,
-  'portfolio_manage should persist merged fallback portfolios before rendering'
+  /fetch\(PORTFOLIO_ENDPOINT,\s*\{[\s\S]*method:\s*'PATCH'[\s\S]*liked/,
+  'portfolio_manage should persist like changes through the portfolio API'
+);
+assert.match(
+  portfolioManageHtml,
+  /fetch\(PORTFOLIO_ENDPOINT,\s*\{[\s\S]*method:\s*'DELETE'/,
+  'portfolio_manage should soft-delete portfolios through the portfolio API'
 );
 assert.ok(
   !portfolioManageHtml.includes('id="searchInput"') && !portfolioManageHtml.includes('function openPortfolio'),

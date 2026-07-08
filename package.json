@@ -12,6 +12,8 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@supabase/ssr": "^0.12.0",
+    "@supabase/supabase-js": "^2.110.1",
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.4.2",
     "next": "^16.2.10",

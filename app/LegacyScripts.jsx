@@ -2,6 +2,10 @@
 
 import { useEffect } from 'react';
 
+function wrapInlineScript(content) {
+  return `(() => {\n${content}\n})();`;
+}
+
 export default function LegacyScripts({ pageKey, scripts }) {
   useEffect(() => {
     let cancelled = false;
@@ -20,7 +24,7 @@ export default function LegacyScripts({ pageKey, scripts }) {
             element.onload = resolve;
             element.onerror = resolve;
           } else {
-            element.text = script.content || '';
+            element.text = wrapInlineScript(script.content || '');
           }
 
           document.body.appendChild(element);
