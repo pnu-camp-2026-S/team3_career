@@ -12,23 +12,23 @@
     const PORTFOLIO_ENDPOINT = '/api/portfolios';
     const PROFILE_ENDPOINT = '/api/profile';
     const ACTIVITY_FILES_ENDPOINT = '/api/activity-files';
-    const commonKeywords = ['문제 해결 및 비판적 사고', '소통 및 협업 역량', '적응력 및 학습민첩성'];
+    const commonKeywords = ['문제 해결', '협업', '학습 민첩성'];
     const majorKeywordMap = {
       industrial: {
         label: '산업공학과',
-        keywords: ['데이터 기반 프로세스 최적화', 'SCM 및 물류 효율화', '린 경영 시스템']
+        keywords: ['공정 최적화', 'SCM', '물류 효율화', '데이터 분석', '품질 관리', '운영 관리']
       },
       chemical: {
         label: '화학공학과',
-        keywords: ['공정 설계 및 스케일업', '반응 공학 데이터 분석', '화학 물질 안전 관리']
+        keywords: ['공정 설계', '스케일업', '반응 공학', '실험 설계', '품질 안전', '바이오 공정']
       },
       electrical: {
         label: '전기공학과',
-        keywords: ['회로 및 전력 시스템 설계', '임베디드 제어 알고리즘', '신재생 에너지 변환']
+        keywords: ['회로 설계', '전력 시스템', '임베디드', '제어 알고리즘', '센서 활용', '에너지 변환']
       },
       computer: {
         label: '컴퓨터공학과',
-        keywords: ['대학생 소프트웨어 개발', '알고리즘 최적화', 'AI 및 데이터 모델링']
+        keywords: ['소프트웨어 개발', '알고리즘', 'AI 모델링', '데이터 처리', 'API 설계', '서비스 구현']
       }
     };
     const majorAliasMap = {
@@ -40,13 +40,13 @@
       컴퓨터공학과: 'computer'
     };
     const experienceKeywordRules = [
-      { pattern: /공모|대회|경진|contest|award|수상/i, keywords: ['문제 정의 역량', '기획력', '성과 정리 역량'] },
-      { pattern: /봉사|멘토|서포터|대외|volunteer|supporter/i, keywords: ['소통 및 협업 역량', '책임감', '사용자 이해'] },
-      { pattern: /팀|협업|회의|발표|presentation|team/i, keywords: ['협업 조율 역량', '발표 역량', '문서화 역량'] },
-      { pattern: /개발|코드|github|프로그래밍|테스트|app|web|api/i, keywords: ['구현 역량', '테스트 및 개선 역량', '시스템 설계'] },
-      { pattern: /데이터|분석|ai|인공지능|모델|추천/i, keywords: ['데이터 기반 사고', 'AI 활용 역량', '추천 로직 설계'] },
-      { pattern: /실험|공정|화학|바이오|품질|안전/i, keywords: ['실험 설계 역량', '공정 이해', '품질 및 안전 관리'] },
-      { pattern: /전기|회로|전력|임베디드|제어|센서/i, keywords: ['회로 및 시스템 이해', '제어 설계 역량', '문제 진단 역량'] }
+      { pattern: /공모|대회|경진|contest|award|수상/i, keywords: ['문제 정의', '기획', '성과 정리'] },
+      { pattern: /봉사|멘토|서포터|대외|volunteer|supporter/i, keywords: ['사용자 이해', '책임감', '커뮤니케이션'] },
+      { pattern: /팀|협업|회의|발표|presentation|team/i, keywords: ['협업 조율', '발표', '문서화'] },
+      { pattern: /개발|코드|github|프로그래밍|테스트|app|web|api/i, keywords: ['서비스 구현', '테스트 개선', '시스템 설계'] },
+      { pattern: /데이터|분석|ai|인공지능|모델|추천/i, keywords: ['데이터 분석', 'AI 활용', '추천 시스템'] },
+      { pattern: /실험|공정|화학|바이오|품질|안전/i, keywords: ['실험 설계', '공정 이해', '품질 안전'] },
+      { pattern: /전기|회로|전력|임베디드|제어|센서/i, keywords: ['회로 이해', '제어 설계', '문제 진단'] }
     ];
 
     let currentPortfolio = null;
@@ -121,11 +121,19 @@
         .flatMap((rule) => rule.keywords);
     }
 
+    function pickRandomKeywords(keywords, count) {
+      return [...keywords]
+        .map((keyword) => ({ keyword, weight: Math.random() }))
+        .sort((a, b) => a.weight - b.weight)
+        .slice(0, count)
+        .map((item) => item.keyword);
+    }
+
     function renderKeywordPool() {
       const selectedMajor = getCurrentMajor();
       const recommendedKeywords = [
         ...commonKeywords,
-        ...selectedMajor.keywords,
+        ...pickRandomKeywords(selectedMajor.keywords, 3),
         ...getExperienceKeywordRecommendations()
       ];
       const keywords = [...new Set(recommendedKeywords)].slice(0, 12);
@@ -136,7 +144,7 @@
       }
 
       keywordPool.innerHTML = keywords.map((keyword) => (
-        `<button class="tag selected" type="button" data-keyword="${escapeHtml(keyword)}" aria-pressed="true">${escapeHtml(keyword)}</button>`
+        `<button class="tag" type="button" data-keyword="${escapeHtml(keyword)}" aria-pressed="false">${escapeHtml(keyword)}</button>`
       )).join('');
 
       keywordPool.querySelectorAll('[data-keyword]').forEach((tag) => {
@@ -239,6 +247,14 @@
       const major = getCurrentMajor();
       const experiences = getSelectedExperienceLabels();
       const keywords = getSelectedKeywords();
+
+      if (!keywords.length) {
+        showToast('강조할 AI 역량 키워드를 선택해주세요!');
+        keywordPool.classList.add('keyword-pool-alert');
+        window.setTimeout(() => keywordPool.classList.remove('keyword-pool-alert'), 900);
+        return;
+      }
+
       const portfolioShell = buildPortfolioShell({ format, purpose, major, experiences, keywords });
 
       currentPortfolio = null;
