@@ -390,6 +390,119 @@
       };
     }
 
+    function applyRevisionToCurrentPortfolio(revised) {
+      const nextBlocks = normalizeTextBlocks(revised.blocks);
+      const nextSlides = normalizeTextBlocks(revised.slides);
+
+      if (nextBlocks.length) currentPortfolio.blocks = nextBlocks;
+      if (nextSlides.length) currentPortfolio.slides = nextSlides;
+      if (nextBlocks[0]?.body) currentPortfolio.summary = nextBlocks[0].body;
+      if (currentPortfolio.raw) {
+        currentPortfolio.raw = mergeRawPortfolioText(currentPortfolio.raw, nextBlocks, nextSlides);
+      }
+
+      currentPortfolio.sourceLabel = 'ChatGPT 수정';
+      currentPortfolio.updatedAt = new Date().toISOString();
+    }
+
+    function mergeRawPortfolioText(raw, blocks, slides) {
+      const nextRaw = JSON.parse(JSON.stringify(raw || {}));
+      if (nextRaw.problem_definition || nextRaw.design_process || nextRaw.implementation || nextRaw.result) {
+        mergeCaseStudyRaw(nextRaw, blocks);
+      } else if (nextRaw.basic_info || nextRaw.core_competencies || nextRaw.experiences) {
+        mergeOnePageRaw(nextRaw, blocks);
+      } else if (nextRaw.cover || nextRaw.contents || nextRaw.project_list) {
+        mergeDeckRaw(nextRaw, blocks, slides);
+      } else if (nextRaw.items || nextRaw.core_summary) {
+        mergeCoverLetterRaw(nextRaw, blocks);
+      }
+      return nextRaw;
+    }
+
+    function splitRevisionLines(value) {
+      return String(value || '')
+        .split(/\n+|[•·]\s*/)
+        .map((line) => line.replace(/^[-*\d.\s:]+/, '').trim())
+        .filter(Boolean);
+    }
+
+    function toCompetencyItems(lines) {
+      return lines.map((line) => {
+        const [title, ...rest] = line.split(/\s*[:：]\s*/);
+        return {
+          title: title || line,
+          description: rest.join(': ') || line,
+        };
+      });
+    }
+
+    function mergeCaseStudyRaw(raw, blocks) {
+      const [overview, problem, process, implementation, result, reflection] = blocks;
+      if (overview?.title) raw.project_title = overview.title;
+      if (overview?.body) {
+        raw.selection_reason = overview.body;
+        raw.headline = overview.body;
+      }
+
+      const problemLines = splitRevisionLines(problem?.body);
+      raw.problem_definition = raw.problem_definition || {};
+      if (problemLines[0]) raw.problem_definition.background = problemLines[0];
+      if (problemLines[1]) raw.problem_definition.goal = problemLines[1];
+
+      raw.design_process = raw.design_process || {};
+      const processLines = splitRevisionLines(process?.body);
+      if (processLines.length) raw.design_process.approach_steps = processLines.slice(0, 5);
+
+      raw.implementation = raw.implementation || {};
+      const implementationLines = splitRevisionLines(implementation?.body);
+      if (implementationLines.length) raw.implementation.my_contribution = implementationLines.slice(0, 5);
+
+      raw.result = raw.result || {};
+      const resultLines = splitRevisionLines(result?.body);
+      if (resultLines[0]) raw.result.quantitative_result = resultLines[0];
+      if (resultLines[1]) raw.result.qualitative_result = resultLines.slice(1).join(' ');
+
+      raw.reflection = raw.reflection || {};
+      if (reflection?.body) raw.reflection.learned = reflection.body;
+    }
+
+    function mergeOnePageRaw(raw, blocks) {
+      if (blocks[0]?.body) raw.headline = blocks[0].body;
+      const competencyLines = splitRevisionLines(blocks[2]?.body || blocks[1]?.body);
+      const experienceLines = splitRevisionLines(blocks[3]?.body || blocks[2]?.body);
+      const skillLines = splitRevisionLines(blocks[4]?.body);
+      if (competencyLines.length) raw.core_competencies = toCompetencyItems(competencyLines);
+      if (experienceLines.length) {
+        raw.experiences = experienceLines.map((line) => ({
+          project: line,
+          role: '',
+          highlight: line,
+        }));
+      }
+      if (skillLines.length) raw.skills = skillLines;
+    }
+
+    function mergeDeckRaw(raw, blocks, slides) {
+      const nextSlides = slides.length ? slides : blocks;
+      raw.cover = raw.cover || {};
+      if (nextSlides[0]?.title) raw.cover.headline = nextSlides[0].title;
+      if (nextSlides.length) raw.contents = nextSlides.map((slide) => slide.title).filter(Boolean);
+    }
+
+    function mergeCoverLetterRaw(raw, blocks) {
+      if (blocks[0]?.title) raw.name_title = blocks[0].title;
+      if (blocks[0]?.body) {
+        raw.core_summary = raw.core_summary || {};
+        raw.core_summary.competency = blocks[0].body;
+      }
+      const items = blocks.slice(1).map((block) => ({
+        question_title: block.title,
+        question_reason: '사용자 수정 요청 반영',
+        answer: block.body,
+      })).filter((item) => item.question_title || item.answer);
+      if (items.length) raw.items = items;
+    }
+
     function buildPortfolioDraft({ format, purpose, major, experiences, keywords }) {
       const experienceText = experiences.length ? experiences.join(', ') : '선택한 경험 없음';
       const keywordText = keywords.length ? keywords.join(', ') : '강조 키워드 없음';
@@ -887,14 +1000,16 @@
       setPortfolioRevisionState(true);
       try {
         const revised = await requestPortfolioRevision(revisionNote);
-        const nextBlocks = normalizeTextBlocks(revised.blocks);
-        const nextSlides = normalizeTextBlocks(revised.slides);
-        if (nextBlocks.length) currentPortfolio.blocks = nextBlocks;
-        if (nextSlides.length) currentPortfolio.slides = nextSlides;
-        currentPortfolio.raw = null;
-        currentPortfolio.sourceLabel = 'ChatGPT 수정';
-        currentPortfolio.updatedAt = new Date().toISOString();
-        renderPortfolioPreview();
+        applyRevisionToCurrentPortfolio(revised);
+        if (currentPortfolio.raw) {
+        currentPortfolio.raw = mergeRawPortfolioText(
+          currentPortfolio.raw,
+          currentPortfolio.blocks || [],
+          currentPortfolio.slides || []
+        );
+      }
+
+      renderPortfolioPreview();
         setPortfolioRevisionState(false);
         appendChatBubble('ai', revised.assistantMessage || 'ChatGPT가 요청을 반영해 초안을 수정했습니다.');
         showToast('ChatGPT 수정 요청을 초안에 반영했습니다.');
@@ -953,7 +1068,7 @@
 
     function resetAssistantChat() {
       document.getElementById('pfAssistantLog').innerHTML = '<div class="bubble ai">초안이 생성되었습니다. 원하는 방향을 대화로 알려주면 왼쪽 초안에 바로 반영합니다.</div>';
-assistantInput.value = '';
+      assistantInput.value = '';
       setPortfolioRevisionState(false);
     }
 
