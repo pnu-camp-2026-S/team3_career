@@ -2194,9 +2194,12 @@ assert.match(
 for (const cssPattern of [
   /\.portfolio-create-page\s*\{/,
   /\.setup-layout\s*\{/,
+  /\.setup-right\s+\.form-row\s+\.form-field\s*\{[\s\S]*grid-template-columns:\s*74px var\(--setting-control-width\);/,
   /\.setting-select\s*\{/,
   /\.setting-select:focus\s*\{/,
-  /\.major-inline-field\s*\{[\s\S]*grid-template-columns:\s*auto minmax\(0,\s*1fr\);/,
+  /\.setting-select\s*\{[\s\S]*width:\s*176px;/,
+  /\.major-inline-field\s*\{[\s\S]*display:\s*grid;/,
+  /\.profile-major-display\s*\{[\s\S]*width:\s*176px;/,
   /\.profile-major-display\s*\{/,
   /\.format-card-grid\s*\{/,
   /\.format-card\.selected::after\s*\{/,
