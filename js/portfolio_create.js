@@ -10,6 +10,8 @@
   function runPageScript() {
     const PORTFOLIO_STORAGE_KEY = 'careerfit_portfolios';
     const PORTFOLIO_ENDPOINT = '/api/portfolios';
+    const PROFILE_ENDPOINT = '/api/profile';
+    const ACTIVITY_FILES_ENDPOINT = '/api/activity-files';
     const commonKeywords = ['문제 해결 및 비판적 사고', '소통 및 협업 역량', '적응력 및 학습민첩성'];
     const majorKeywordMap = {
       industrial: {
@@ -29,14 +31,34 @@
         keywords: ['대학생 소프트웨어 개발', '알고리즘 최적화', 'AI 및 데이터 모델링']
       }
     };
+    const majorAliasMap = {
+      산업공학과: 'industrial',
+      화공생명공학과: 'chemical',
+      화학공학과: 'chemical',
+      전기공학과: 'electrical',
+      정보컴퓨터공학과: 'computer',
+      컴퓨터공학과: 'computer'
+    };
+    const experienceKeywordRules = [
+      { pattern: /공모|대회|경진|contest|award|수상/i, keywords: ['문제 정의 역량', '기획력', '성과 정리 역량'] },
+      { pattern: /봉사|멘토|서포터|대외|volunteer|supporter/i, keywords: ['소통 및 협업 역량', '책임감', '사용자 이해'] },
+      { pattern: /팀|협업|회의|발표|presentation|team/i, keywords: ['협업 조율 역량', '발표 역량', '문서화 역량'] },
+      { pattern: /개발|코드|github|프로그래밍|테스트|app|web|api/i, keywords: ['구현 역량', '테스트 및 개선 역량', '시스템 설계'] },
+      { pattern: /데이터|분석|ai|인공지능|모델|추천/i, keywords: ['데이터 기반 사고', 'AI 활용 역량', '추천 로직 설계'] },
+      { pattern: /실험|공정|화학|바이오|품질|안전/i, keywords: ['실험 설계 역량', '공정 이해', '품질 및 안전 관리'] },
+      { pattern: /전기|회로|전력|임베디드|제어|센서/i, keywords: ['회로 및 시스템 이해', '제어 설계 역량', '문제 진단 역량'] }
+    ];
 
     let currentPortfolio = null;
     let chatHistory = [];
     let currentSlideIndex = 0;
+    let profileMajor = '';
+    let activityFiles = [];
 
     const formatSelect = document.getElementById('pfFormatSelect');
     const purposeSelect = document.getElementById('pfPurposeSelect');
-    const majorSelect = document.getElementById('pfMajorSelect');
+    const majorDisplay = document.getElementById('pfMajorDisplay');
+    const experienceDataList = document.getElementById('experienceDataList');
     const keywordPool = document.getElementById('keywordPool');
     const assistantInput = document.getElementById('pfAssistantInput');
 
@@ -44,7 +66,7 @@
       card.addEventListener('click', () => selectFormat(card.dataset.format));
     });
 
-    majorSelect.addEventListener('change', renderKeywordPool);
+    experienceDataList.addEventListener('change', renderKeywordPool);
     document.getElementById('generatePortfolioBtn').addEventListener('click', triggerGeneratePortfolio);
     document.getElementById('pfAssistantSendBtn').addEventListener('click', sendPfAssistantChat);
     document.querySelector('.master-actions').addEventListener('click', async (event) => {
@@ -73,9 +95,41 @@
       });
     }
 
+    function getMajorKey(majorName) {
+      return majorAliasMap[String(majorName || '').trim()] || 'industrial';
+    }
+
+    function getCurrentMajor() {
+      const major = majorKeywordMap[getMajorKey(profileMajor)] || majorKeywordMap.industrial;
+      return {
+        ...major,
+        label: profileMajor || major.label
+      };
+    }
+
+    function getExperienceKeywordRecommendations() {
+      const selectedTexts = getSelectedExperienceLabels();
+      if (!selectedTexts.length) return [];
+
+      const joinedText = selectedTexts.join(' ');
+      return experienceKeywordRules
+        .filter((rule) => rule.pattern.test(joinedText))
+        .flatMap((rule) => rule.keywords);
+    }
+
     function renderKeywordPool() {
-      const selectedMajor = majorKeywordMap[majorSelect.value] || majorKeywordMap.industrial;
-      const keywords = [...commonKeywords, ...selectedMajor.keywords];
+      const selectedMajor = getCurrentMajor();
+      const recommendedKeywords = [
+        ...commonKeywords,
+        ...selectedMajor.keywords,
+        ...getExperienceKeywordRecommendations()
+      ];
+      const keywords = [...new Set(recommendedKeywords)].slice(0, 12);
+
+      if (!getSelectedExperienceLabels().length && activityFiles.length) {
+        keywordPool.innerHTML = '<p class="keyword-empty">경험 데이터를 선택하면 추천 키워드가 표시됩니다.</p>';
+        return;
+      }
 
       keywordPool.innerHTML = keywords.map((keyword) => (
         `<button class="tag selected" type="button" data-keyword="${escapeHtml(keyword)}" aria-pressed="true">${escapeHtml(keyword)}</button>`
@@ -94,6 +148,82 @@
         .map((input) => input.value);
     }
 
+    function getExperienceLabel(file) {
+      const folder = file.folderLabel ? `${file.folderLabel} - ` : '';
+      return `${folder}${file.name || '이름 없는 경험'}`;
+    }
+
+    function renderExperienceOptions() {
+      if (!activityFiles.length) {
+        experienceDataList.innerHTML = '<p class="experience-empty">파일 관리에서 경험 데이터를 업로드하면 이곳에서 선택할 수 있습니다.</p>';
+        renderKeywordPool();
+        return;
+      }
+
+      experienceDataList.innerHTML = activityFiles.map((file) => {
+        const label = getExperienceLabel(file);
+        const meta = [file.folderGroup, file.folderType].filter(Boolean).join(' · ');
+        return `
+          <label class="experience-option">
+            <input type="checkbox" value="${escapeHtml(label)}" data-experience-id="${escapeHtml(file.id)}" />
+            <span>
+              <strong>${escapeHtml(label)}</strong>
+              ${meta ? `<small>${escapeHtml(meta)}</small>` : ''}
+            </span>
+          </label>
+        `;
+      }).join('');
+
+      renderKeywordPool();
+    }
+
+    async function loadProfileMajor() {
+      try {
+        const response = await fetch(PROFILE_ENDPOINT, {
+          method: 'GET',
+          credentials: 'same-origin',
+          cache: 'no-store'
+        });
+        if (!response.ok) throw new Error('Profile load failed.');
+
+        const result = await response.json();
+        const educations = Array.isArray(result.profile?.educations) ? result.profile.educations : [];
+        profileMajor = educations.find((education) => education?.major)?.major || '';
+      } catch (error) {
+        console.warn('Profile major load failed.', error);
+        profileMajor = '';
+      }
+
+      if (majorDisplay) {
+        majorDisplay.dataset.majorValue = profileMajor;
+        majorDisplay.textContent = profileMajor ? `전공: ${profileMajor}` : '전공: 마이페이지에서 전공을 입력해주세요';
+      }
+    }
+
+    async function loadExperienceData() {
+      try {
+        const response = await fetch(ACTIVITY_FILES_ENDPOINT, {
+          method: 'GET',
+          credentials: 'same-origin',
+          cache: 'no-store'
+        });
+        if (!response.ok) throw new Error('Activity file load failed.');
+
+        const result = await response.json();
+        activityFiles = Array.isArray(result.files) ? result.files : [];
+      } catch (error) {
+        console.warn('Activity file API load failed.', error);
+        activityFiles = [];
+      }
+
+      renderExperienceOptions();
+    }
+
+    async function loadPortfolioSetupData() {
+      await Promise.all([loadProfileMajor(), loadExperienceData()]);
+      renderKeywordPool();
+    }
+
     function getSelectedKeywords() {
       return Array.from(document.querySelectorAll('[data-keyword].selected'))
         .map((tag) => tag.textContent.trim());
@@ -102,7 +232,7 @@
     function triggerGeneratePortfolio() {
       const format = formatSelect.value;
       const purpose = purposeSelect.value;
-      const major = majorKeywordMap[majorSelect.value] || majorKeywordMap.industrial;
+      const major = getCurrentMajor();
       const experiences = getSelectedExperienceLabels();
       const keywords = getSelectedKeywords();
 
@@ -501,7 +631,7 @@
       window.setTimeout(() => toast.classList.remove('show'), 1800);
     }
 
-    renderKeywordPool();
+    loadPortfolioSetupData();
     openPortfolioEditorFromQuery();
   }
 

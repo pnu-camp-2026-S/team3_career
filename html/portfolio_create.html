@@ -149,31 +149,15 @@
                   </select>
                 </div>
                 <div class="form-field">
-                  <label for="pfMajorSelect">전공 선택</label>
-                  <select id="pfMajorSelect" class="setting-select">
-                    <option value="industrial">산업공학과</option>
-                    <option value="chemical">화학공학과</option>
-                    <option value="electrical">전기공학과</option>
-                    <option value="computer">컴퓨터공학과</option>
-                  </select>
+                  <label>전공</label>
+                  <div class="profile-major-display" id="pfMajorDisplay" data-major-value="">마이페이지 전공을 불러오는 중</div>
                 </div>
               </div>
 
               <div class="form-field">
                 <label>사용할 경험 데이터 선택</label>
-                <div class="experience-checkbox-group">
-                  <label class="experience-option">
-                    <input type="checkbox" value="AI 포트폴리오 추천 서비스 기획, 개발, 사용자 흐름 설계 경험" checked />
-                    <span>AI 포트폴리오 추천 서비스 기획, 개발, 사용자 흐름 설계 경험</span>
-                  </label>
-                  <label class="experience-option">
-                    <input type="checkbox" value="캡스톤 디자인 팀 프로젝트: 협업, 발표 자료, 테스트 기록" checked />
-                    <span>캡스톤 디자인 팀 프로젝트: 협업, 발표 자료, 테스트 기록</span>
-                  </label>
-                  <label class="experience-option">
-                    <input type="checkbox" value="공모전 참여 기록: 문제 정의, 결과물, 수상 이력" />
-                    <span>공모전 참여 기록: 문제 정의, 결과물, 수상 이력</span>
-                  </label>
+                <div class="experience-checkbox-group" id="experienceDataList" aria-live="polite">
+                  <p class="experience-empty">업로드한 경험 데이터를 불러오는 중입니다.</p>
                 </div>
               </div>
 
