@@ -2197,9 +2197,8 @@ assert.match(
   /const options = fieldName === "minor" \? \[NO_MINOR_OPTION, \.\.\.majors\] : majors;/,
   'mypage minor major picker should include the none option without changing the main major list'
 );
-for (const jobLabel of ['AI/머신러닝', '네트워크/인프라', '전기/전자', '화학/바이오', '금융/보험', '미디어/콘텐츠']) {
-  assert.ok(
-    mypageHtml.includes(`"${jobLabel}"`),
-    `mypage job list should include ${jobLabel}`
-  );
-}
+assert.match(
+  mypageHtml,
+  /const jobs = \[\s*"기획\/전략", "UI\/UX", "개발", "IT\/개발", "데이터", "AI\/머신러닝",\s*"보안", "네트워크\/인프라", "연구개발", "전기\/전자", "화학\/바이오",\s*"생산\/품질", "구매\/자재", "물류\/유통"\s*\];/,
+  'mypage job chip list should only keep target-major-related options'
+);
