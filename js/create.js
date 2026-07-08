@@ -268,10 +268,15 @@
           subfolder.files.push(mapApiFile(file));
         });
       } catch (error) {
-        console.warn('Activity file upload fell back to local state.', error);
-        files.forEach((file) => {
-          subfolder.files.push({ id: `file-${nextFileId++}`, name: file.name, type: getFileType(file.name), status: '분석대기' });
-        });
+        console.warn('Activity file upload failed.', error);
+        setAnalysisPanel(
+          '업로드 실패',
+          'fail',
+          '파일이 화면에만 추가되면 AI 분석을 할 수 없습니다. 로그인 상태, Supabase Storage bucket, activity_files 테이블 설정을 확인해주세요.',
+          '0%'
+        );
+        showToast('서버 업로드에 실패해서 AI 분석 대상에 추가되지 않았습니다.');
+        return;
       }
 
       persistFolders();
@@ -389,9 +394,30 @@
       const folder = getSelectedFolder();
       if (!folder || analysisInFlight) return;
 
-      const serverFiles = FolderStore.getFolderFiles(folder).filter((file) => file.storagePath);
+      let allFiles = FolderStore.getFolderFiles(folder);
+      let serverFiles = allFiles.filter((file) => file.storagePath);
+
       if (!serverFiles.length) {
-        showToast('서버에 업로드된 자료가 없습니다. 자료를 먼저 추가해주세요.');
+        await loadActivityFilesFromApi();
+        render();
+        const refreshedFolder = getSelectedFolder();
+        allFiles = FolderStore.getFolderFiles(refreshedFolder);
+        serverFiles = allFiles.filter((file) => file.storagePath);
+      }
+
+      if (!serverFiles.length) {
+        const hasLocalOnlyFiles = allFiles.length > 0;
+        setAnalysisPanel(
+          '분석대기',
+          'ready',
+          hasLocalOnlyFiles
+            ? '화면에 보이는 파일은 서버 업로드가 완료되지 않은 임시 파일입니다. 파일을 다시 업로드한 뒤 분석해주세요.'
+            : '분석할 서버 업로드 파일이 없습니다. 파일을 먼저 추가해주세요.',
+          '0%'
+        );
+        showToast(hasLocalOnlyFiles
+          ? '서버에 저장된 파일이 없어 분석할 수 없습니다. 파일을 다시 업로드해주세요.'
+          : '서버에 업로드된 자료가 없습니다. 자료를 먼저 추가해주세요.');
         return;
       }
 
