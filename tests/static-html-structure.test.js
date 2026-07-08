@@ -478,6 +478,16 @@ assert.match(
 );
 assert.match(
   userProfileRoute,
+  /function\s+getSocialProfileDefaults\(user\)[\s\S]*user\?\.user_metadata[\s\S]*metadata\.full_name[\s\S]*user\?\.email/,
+  'profile API should derive mypage defaults from the authenticated social user metadata'
+);
+assert.match(
+  userProfileRoute,
+  /function\s+mergeProfileWithSocialDefaults\(row,\s*user\)[\s\S]*toClientProfile\(row\)[\s\S]*savedProfile\.name\s*\|\|\s*socialProfile\.name[\s\S]*savedProfile\.email\s*\|\|\s*socialProfile\.email/,
+  'profile API should fill empty mypage fields from social login defaults'
+);
+assert.match(
+  userProfileRoute,
   /export async function PUT\(request\)[\s\S]*\.from\('user_profiles'\)[\s\S]*\.upsert\(/,
   'profile API should upsert the current user mypage profile into Supabase'
 );
@@ -917,6 +927,16 @@ assert.match(
   mypageHtml,
   /function\s+applyProfilePayload\(profile\)[\s\S]*profile\.educations[\s\S]*profile\.preferences[\s\S]*profile\.chips/,
   'mypage should apply persisted DB profile values back into the existing form state'
+);
+assert.match(
+  mypageHtml,
+  /Object\.hasOwn\(profile,\s*"name"\)[\s\S]*profile\.name\s*\|\|\s*""[\s\S]*Object\.hasOwn\(profile,\s*"email"\)[\s\S]*profile\.email\s*\|\|\s*""/,
+  'mypage should apply empty social profile fields so seed values do not remain visible'
+);
+assert.match(
+  mypageHtml,
+  /function\s+formatDateDisplay\(value\)[\s\S]*if\s*\(!value\)\s*return\s+"";/,
+  'mypage should render an empty birth date when social login does not provide one'
 );
 assert.ok(
   mypageHtml.includes('<label>세부직무</label>') && !mypageHtml.includes('<label>세부직무 선택</label>'),

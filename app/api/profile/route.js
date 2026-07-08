@@ -14,6 +14,53 @@ function normalizeString(value) {
   return typeof value === 'string' ? value.trim() : '';
 }
 
+function pickFirstString(...values) {
+  return values.map(normalizeString).find(Boolean) || '';
+}
+
+function normalizeBirthDate(value) {
+  const normalized = normalizeString(value);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(normalized)) return normalized;
+  if (/^\d{4}\.\d{2}\.\d{2}$/.test(normalized)) return normalized.replaceAll('.', '-');
+  return '';
+}
+
+function normalizeGender(value) {
+  const normalized = normalizeString(value).toLowerCase();
+  if (['female', 'woman', 'women', 'f'].includes(normalized)) return '여성';
+  if (['male', 'man', 'men', 'm'].includes(normalized)) return '남성';
+  if (['여성', '남성', '선택 안 함'].includes(normalizeString(value))) return normalizeString(value);
+  return '';
+}
+
+function normalizeAddress(value) {
+  if (typeof value === 'string') return normalizeString(value);
+  if (!value || typeof value !== 'object') return '';
+
+  return pickFirstString(
+    value.formatted,
+    value.full,
+    [value.country, value.region, value.locality, value.street_address].filter(Boolean).join(' ')
+  );
+}
+
+function getSocialProfileDefaults(user) {
+  const metadata = user?.user_metadata || {};
+
+  return {
+    name: pickFirstString(metadata.full_name, metadata.name, metadata.preferred_username, user?.email),
+    gender: normalizeGender(pickFirstString(metadata.gender, metadata.sex)),
+    birthDate: normalizeBirthDate(pickFirstString(metadata.birth_date, metadata.birthdate, metadata.birthday)),
+    email: pickFirstString(user?.email, metadata.email),
+    phone: pickFirstString(user?.phone, metadata.phone, metadata.phone_number),
+    address: normalizeAddress(metadata.address),
+    educations: [],
+    preferences: {},
+    chips: {},
+    updatedAt: null,
+  };
+}
+
 function toClientProfile(row) {
   if (!row) return null;
 
@@ -28,6 +75,23 @@ function toClientProfile(row) {
     preferences: normalizeObject(row.preferences),
     chips: normalizeObject(row.chips),
     updatedAt: row.updated_at || null,
+  };
+}
+
+function mergeProfileWithSocialDefaults(row, user) {
+  const socialProfile = getSocialProfileDefaults(user);
+  const savedProfile = toClientProfile(row);
+
+  if (!savedProfile) return socialProfile;
+
+  return {
+    ...savedProfile,
+    name: savedProfile.name || socialProfile.name,
+    gender: savedProfile.gender || socialProfile.gender,
+    birthDate: savedProfile.birthDate || socialProfile.birthDate,
+    email: savedProfile.email || socialProfile.email,
+    phone: savedProfile.phone || socialProfile.phone,
+    address: savedProfile.address || socialProfile.address,
   };
 }
 
@@ -60,7 +124,7 @@ export async function GET() {
       return Response.json({ message: error.message }, { status: 500 });
     }
 
-    return Response.json({ profile: toClientProfile(data) });
+    return Response.json({ profile: mergeProfileWithSocialDefaults(data, user) });
   } catch (error) {
     return Response.json(
       { message: error.message || 'Unable to load profile' },
