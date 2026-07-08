@@ -61,6 +61,8 @@
 
     const profileState = {
       editing: false,
+      saving: false,
+      saveError: "",
       birthDate: "",
       datePickerOpen: false,
       periodPicker: null,
@@ -454,8 +456,7 @@
         return true;
       } catch (error) {
         console.warn("Profile API save failed.", error);
-        localStorage.setItem("myfitfolioProfile", JSON.stringify(payload));
-        sessionStorage.setItem("myfitfolioProfileSaved", "true");
+        sessionStorage.removeItem("myfitfolioProfileSaved");
         return false;
       }
     }
@@ -480,8 +481,14 @@
       const actions = document.querySelector("[data-form-actions]");
       if (!actions) return;
 
+      const status = profileState.saveError
+        ? `<span class="save-status error" role="alert">${escapeHtml(profileState.saveError)}</span>`
+        : "";
+      const saveLabel = profileState.saving ? "저장 중" : "저장";
+      const saveDisabled = profileState.saving ? "disabled" : "";
+
       actions.innerHTML = profileState.editing
-        ? '<button class="primary-button" type="button" data-save-profile>저장</button>'
+        ? `${status}<button class="primary-button" type="button" data-save-profile ${saveDisabled}>${saveLabel}</button>`
         : '<button class="primary-button" type="button" data-edit-profile>수정하기</button>';
     }
 
@@ -652,10 +659,23 @@
       }
 
       if (event.target.closest("[data-save-profile]")) {
-        await saveProfile();
-        profileState.editing = false;
-        profileState.datePickerOpen = false;
-        profileState.periodPicker = null;
+        if (profileState.saving) return;
+
+        profileState.saving = true;
+        profileState.saveError = "";
+        renderFormActions();
+
+        const saved = await saveProfile();
+        profileState.saving = false;
+
+        if (saved) {
+          profileState.editing = false;
+          profileState.datePickerOpen = false;
+          profileState.periodPicker = null;
+        } else {
+          profileState.saveError = "DB 저장에 실패했습니다. 다시 저장해주세요.";
+        }
+
         renderAllDynamicParts();
       }
     });
