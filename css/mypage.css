@@ -11,6 +11,15 @@
   min-width: 0;
 }
 
+.profile-loading .mypage-content,
+.profile-loading .anchor-menu {
+  visibility: hidden;
+}
+
+.profile-loading .mypage {
+  pointer-events: none;
+}
+
 .mypage .page-title {
   font-size: 28px;
 }
