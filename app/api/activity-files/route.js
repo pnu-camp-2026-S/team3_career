@@ -19,6 +19,14 @@ function sanitizePathSegment(value) {
     .slice(0, 120);
 }
 
+function getSafeStorageFileName(fileName) {
+  const normalized = String(fileName || 'file').normalize('NFKC');
+  const extensionMatch = normalized.match(/\.([A-Za-z0-9]{1,12})$/);
+  const extension = extensionMatch ? `.${extensionMatch[1].toLowerCase()}` : '';
+
+  return `${Date.now()}-${crypto.randomUUID()}${extension}`;
+}
+
 // file_analyses는 activity_file_id unique 제약 때문에 배열/단일 객체 어느 쪽으로도 올 수 있다.
 function embeddedAnalysis(embedded) {
   if (!embedded) return null;
@@ -120,7 +128,7 @@ export async function POST(request) {
       const storagePath = [
         user.id,
         ...tree.folderPath.split('/').map(sanitizePathSegment),
-        `${Date.now()}-${crypto.randomUUID()}-${sanitizePathSegment(fileName)}`,
+        getSafeStorageFileName(fileName),
       ].join('/');
 
       const { error: uploadError } = await storage.from(ACTIVITY_FILE_BUCKET).upload(storagePath, file, {
