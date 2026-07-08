@@ -1028,6 +1028,21 @@ assert.match(
   /async function\s+saveProfile\(\)[\s\S]*fetch\(PROFILE_ENDPOINT,\s*\{[\s\S]*method:\s*"PUT"[\s\S]*body:\s*JSON\.stringify\(payload\)/,
   'mypage should save edited profile values through the Supabase profile API'
 );
+const saveProfileSource = (mypageHtml.match(/async function\s+saveProfile\(\)[\s\S]*?\n    function renderAllDynamicParts/) || [''])[0];
+assert.ok(
+  !saveProfileSource.includes('localStorage.setItem("myfitfolioProfile", JSON.stringify(payload))'),
+  'mypage should not treat local cache fallback as a successful DB profile save'
+);
+assert.match(
+  saveProfileSource,
+  /catch \(error\)[\s\S]*sessionStorage\.removeItem\("myfitfolioProfileSaved"\)[\s\S]*return false;/,
+  'mypage should report DB save failure instead of marking the profile as saved'
+);
+assert.match(
+  mypageHtml,
+  /if \(event\.target\.closest\("\[data-save-profile\]"\)\)[\s\S]*const saved = await saveProfile\(\);[\s\S]*if \(saved\)[\s\S]*profileState\.editing = false;[\s\S]*else[\s\S]*profileState\.saveError = "DB 저장에 실패했습니다\. 다시 저장해주세요\."/,
+  'mypage should leave edit mode only after the DB save succeeds'
+);
 assert.match(
   mypageHtml,
   /function\s+applyProfilePayload\(profile\)[\s\S]*profile\.educations[\s\S]*profile\.preferences[\s\S]*profile\.chips/,
@@ -1080,6 +1095,11 @@ assert.match(
   mypageCss,
   /\.profile-loading\s+\.mypage-content,\s*\.profile-loading\s+\.anchor-menu\s*\{[^}]*visibility:\s*hidden;/s,
   'mypage should hide stale profile content while the profile request is loading'
+);
+assert.match(
+  mypageCss,
+  /\.save-status\.error\s*\{[^}]*color:\s*#d13f52;/s,
+  'mypage should style DB save failure feedback in the form actions'
 );
 assert.match(
   mypageCss,
