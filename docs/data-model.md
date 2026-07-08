@@ -194,7 +194,7 @@ API는 DB의 snake_case를 클라이언트 camelCase로 바꿔 주고받는다. 
 
 - **파일 업로드**: 파일 관리 탭에서 선택한 세부 폴더 → `/api/activity-files` POST(`folderId` = 세부 폴더 id) → Storage 업로드 + `activity_files` insert → 응답을 해당 세부 폴더 `files`에 매핑·저장. 실패 시 로컬 임시 파일로 폴백.
 - **파일 삭제**: `storagePath` 있으면 `/api/activity-files` DELETE(Storage 객체 + 행 삭제) 후 세부 폴더에서 제거. 없으면 로컬만 제거.
-- **프로젝트 이동/정리**: 진행중 프로젝트는 `완료로 이동`으로 `group`을 completed로 바꾸고, AI 정리는 프로젝트 단위(`프로젝트 정리`)로 실행한다(현재 FE 상태 표시만).
+- **프로젝트 이동/분석**: 프로젝트는 `완료로 이동`/`진행중으로 이동`으로 `group`을 완료↔진행중 전환하고(#166-1), AI 분석은 프로젝트 단위(`프로젝트 분석`)로 실행한다(현재 FE 상태 표시만). 프로젝트 이름 수정과 삭제(`FolderStore.deleteFolder`, 기본 폴더는 tombstone으로 삭제 유지)도 지원한다.
 - **메인 화면**: FolderStore를 읽어 폴더 요약 카드를 그리고, 파일은 `/api/activity-files` GET으로 읽어 세부 폴더에 매핑한다. 분석 개요/분류는 `분석 시작` 전에는 "분석이 필요합니다" 상태이고, 클릭 시 채워진다(FE는 mock, 실구현은 프로젝트별 summary.md 기반).
 - **마이페이지**: `/api/profile` GET/PUT로 `user_profiles`를 읽고 저장하며, 화면 캐시로 `localStorage.myfitfolioProfile`을 함께 갱신한다.
 

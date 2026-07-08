@@ -59,14 +59,18 @@
         <section class="panel editable-file-panel">
           <div class="panel-head">
             <div>
-              <h2 class="panel-title" id="editablePanelTitle">개인 프로젝트 자료</h2>
+              <div class="editable-title-row">
+                <h2 class="panel-title" id="editablePanelTitle">개인 프로젝트 자료</h2>
+                <button class="ghost-button compact-button" type="button" data-action="rename-project">이름 수정</button>
+              </div>
               <p class="panel-note" id="editablePanelDesc">선택한 폴더의 자료를 확인하고 클릭 반응을 테스트합니다.</p>
             </div>
             <div class="project-actions">
               <button class="outline-button compact-button" type="button" data-action="connect-repo" id="repoConnectButton">레포 연결</button>
-              <button class="outline-button compact-button" type="button" data-action="organize-project">프로젝트 정리</button>
+              <button class="outline-button compact-button" type="button" data-action="organize-project">프로젝트 분석</button>
               <button class="ghost-button compact-button" type="button" data-action="add-conversation">대화로 내용 추가하기</button>
-              <button class="primary-button compact-button" type="button" data-action="move-to-completed" id="moveToCompletedButton" hidden>완료로 이동</button>
+              <button class="primary-button compact-button" type="button" data-action="toggle-group" id="moveGroupButton">완료로 이동</button>
+              <button class="ghost-button compact-button danger-button" type="button" data-action="delete-project">프로젝트 삭제</button>
             </div>
           </div>
 

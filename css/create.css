@@ -383,6 +383,13 @@
   gap: 8px;
 }
 
+.editable-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 .manager-progress {
   height: 12px;
   overflow: hidden;

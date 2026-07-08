@@ -89,6 +89,13 @@
 
     function renderFilePanel() {
       const selectedFolder = getSelectedFolder();
+      if (!selectedFolder) {
+        document.getElementById('editablePanelTitle').textContent = '프로젝트 없음';
+        document.getElementById('editablePanelDesc').textContent = '왼쪽에서 프로젝트를 만들어 자료를 관리하세요.';
+        document.getElementById('subfolderList').innerHTML = '';
+        document.getElementById('managedFileList').innerHTML = '<div class="manager-empty"><strong>표시할 프로젝트가 없습니다.</strong><span>폴더 추가로 새 프로젝트를 만들어 보세요.</span></div>';
+        return;
+      }
       const selectedSubfolder = getSelectedSubfolder();
       const selectedFiles = selectedSubfolder ? selectedSubfolder.files : [];
       document.getElementById('analysisPanelTitle').textContent = `${selectedFolder.label} AI 정리 상태`;
@@ -128,8 +135,8 @@
     }
 
     function updateMoveButton(folder) {
-      const button = document.getElementById('moveToCompletedButton');
-      button.hidden = folder.group !== 'inProgress';
+      const button = document.getElementById('moveGroupButton');
+      button.textContent = folder.group === 'completed' ? '진행중으로 이동' : '완료로 이동';
     }
 
     function updateDashboard() {
@@ -282,19 +289,19 @@
       showToast('자료가 목록에서 삭제되었습니다.');
     }
 
-    // 프로젝트 단위 AI 정리/분석(#137-4). 실제로는 프로젝트 자료를 읽어 요약을 생성하지만,
-    // FE 프로토타입에서는 상태 표시만 갱신한다.
+    // 프로젝트 단위 AI 분석(#166-4에서 버튼 명칭 변경). 실제로는 프로젝트 자료를 읽어
+    // 요약을 생성하지만, FE 프로토타입에서는 상태 표시만 갱신한다.
     function organizeProject() {
       const folder = getSelectedFolder();
       const fileCount = FolderStore.getFolderFiles(folder).length;
-      document.getElementById('analysisStatus').textContent = '정리완료';
+      document.getElementById('analysisStatus').textContent = '분석완료';
       document.getElementById('analysisStatus').className = 'status-pill done';
-      document.getElementById('analysisMessage').textContent = `${folder.label} 프로젝트의 자료 ${fileCount}건을 하나로 정리한 것처럼 표시했습니다.`;
+      document.getElementById('analysisMessage').textContent = `${folder.label} 프로젝트의 자료 ${fileCount}건을 묶어 분석한 것처럼 표시했습니다.`;
       document.getElementById('analysisProgress').style.width = '100%';
-      showModal('프로젝트 정리 결과', `
+      showModal('프로젝트 분석 결과', `
         <div class="manager-preview">
-          <strong>${escapeHtml(folder.label)} 프로젝트 정리</strong>
-          <p>세부 폴더와 자료를 묶어 프로젝트 단위 AI 정리를 실행한 흐름을 확인했습니다. 실제 요약 생성은 이후 연동됩니다.</p>
+          <strong>${escapeHtml(folder.label)} 프로젝트 분석</strong>
+          <p>세부 폴더와 자료를 묶어 프로젝트 단위 AI 분석을 실행한 흐름을 확인했습니다. 실제 요약 생성은 이후 연동됩니다.</p>
         </div>
       `);
     }
@@ -317,13 +324,59 @@
       showToast('GitHub 동기화 버튼 클릭을 확인했습니다.');
     }
 
-    function moveToCompleted() {
+    // 완료 ↔ 진행중 양방향 이동(#166-1).
+    function toggleProjectGroup() {
       const folder = getSelectedFolder();
-      if (folder.group === 'completed') return;
-      folder.group = 'completed';
+      if (!folder) return;
+      const nextGroup = folder.group === 'completed' ? 'inProgress' : 'completed';
+      folder.group = nextGroup;
       persistFolders();
       render();
-      showToast(`'${folder.label}' 프로젝트를 완료된 활동으로 이동했습니다.`);
+      const groupLabel = nextGroup === 'completed' ? '완료된 활동' : '진행중인 활동';
+      showToast(`'${folder.label}' 프로젝트를 ${groupLabel}으로 이동했습니다.`);
+    }
+
+    // 프로젝트 이름 수정(사용자 요청).
+    function openRenameModal() {
+      const folder = getSelectedFolder();
+      showModal('프로젝트 이름 수정', `
+        <p class="panel-note">프로젝트 이름을 바꾸면 메인 사이드바에도 즉시 반영됩니다.</p>
+        <div class="repo-form">
+          <label class="repo-field"><span>프로젝트 이름</span><input id="renameInput" type="text" value="${escapeHtml(folder.label)}" /></label>
+          <div class="form-actions">
+            <button class="primary-button" type="button" data-action="save-project-name">이름 저장</button>
+          </div>
+        </div>
+      `);
+    }
+
+    function saveProjectName() {
+      const folder = getSelectedFolder();
+      const name = document.getElementById('renameInput').value.trim();
+      if (!name) {
+        showToast('프로젝트 이름을 입력하세요.');
+        return;
+      }
+      folder.label = name;
+      persistFolders();
+      hideModal();
+      render();
+      showToast('프로젝트 이름을 변경했습니다.');
+    }
+
+    // 프로젝트 삭제(사용자 요청). 폴더와 그 안의 자료가 함께 사라진다.
+    function deleteProject() {
+      const folder = getSelectedFolder();
+      if (!folder) return;
+      if (!window.confirm(`'${folder.label}' 프로젝트를 삭제할까요? 안의 세부 폴더와 자료도 함께 사라집니다.`)) return;
+
+      const removedLabel = folder.label;
+      FolderStore.deleteFolder(folders, folder.id);
+      selectedFolderId = Object.keys(folders)[0] || null;
+      selectedSubfolderId = firstSubfolderId(folders[selectedFolderId]);
+      persistFolders();
+      render();
+      showToast(`'${removedLabel}' 프로젝트를 삭제했습니다.`);
     }
 
     // 프로젝트별 '대화로 내용 추가하기'(#137-5). 현재 선택한 세부 폴더에 md 자료를 추가한다.
@@ -505,7 +558,10 @@
       if (action === 'analyze') runAnalysis();
       if (action === 'sync-github') syncGithub();
       if (action === 'organize-project') organizeProject();
-      if (action === 'move-to-completed') moveToCompleted();
+      if (action === 'toggle-group') toggleProjectGroup();
+      if (action === 'rename-project') openRenameModal();
+      if (action === 'save-project-name') saveProjectName();
+      if (action === 'delete-project') deleteProject();
       if (action === 'add-conversation') openConversationModal();
       if (action === 'add-conversation-save') saveConversationContent();
       if (action === 'create-folder') createFolder();

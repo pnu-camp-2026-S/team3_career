@@ -222,10 +222,18 @@
         .join('');
     }
 
-    // 분석 전/후 화면 전환. 분석 전에는 각 카드가 "분석이 필요합니다" 상태를 보여준다.
+    // 분석 전/후 화면 전환. 키워드 개요는 하나의 섹션이며 상태에 따라 내용이 바뀐다(#166-3).
+    // 분석 전에는 각 카드가 "분석이 필요합니다" 상태를 보여준다.
     function applyAnalysisState() {
-      document.getElementById('keywordOverviewEmpty').hidden = hasAnalyzed;
-      document.getElementById('keywordOverviewResult').hidden = !hasAnalyzed;
+      const overview = document.getElementById('keywordOverview');
+      overview.classList.toggle('keyword-overview-empty', !hasAnalyzed);
+      document.getElementById('keywordChipList').hidden = !hasAnalyzed;
+      document.getElementById('keywordOverviewHeading').textContent = hasAnalyzed
+        ? '꾸준한 실행력과 협업 경험이 드러나요'
+        : '분석이 필요합니다';
+      document.getElementById('keywordOverviewText').textContent = hasAnalyzed
+        ? '완료된 프로젝트 자료를 기준으로 기획, 개발, 문제 해결, 발표 경험을 묶어 분석합니다. 자료가 추가될수록 강점 키워드와 활동 분류가 더 선명해집니다.'
+        : '분석 시작을 누르면 완료된 활동 자료를 바탕으로 강점 키워드와 활동 개요를 정리해 드려요.';
       document.getElementById('analyzedMaterialEmpty').hidden = hasAnalyzed;
       document.getElementById('analyzedMaterialResult').hidden = !hasAnalyzed;
       document.getElementById('classificationEmpty').hidden = hasAnalyzed;

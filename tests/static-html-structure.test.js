@@ -690,7 +690,7 @@ assert.ok(
 );
 assert.match(
   mainHtml,
-  /완료된 활동 폴더에 있는 파일을 바탕으로 분석해드려요/,
+  /완료된 활동 폴더의 자료로 강점 키워드와 활동 분류를 정리해 드려요/,
   'main sidebar should explain that completed folders drive analysis'
 );
 assert.match(
@@ -826,7 +826,7 @@ assert.match(
 // 분석 전에는 키워드 개요·분류가 "분석이 필요합니다" 상태
 assert.match(
   mainHtml,
-  /id="keywordOverviewEmpty"[\s\S]*분석이 필요합니다/,
+  /id="keywordOverviewHeading">분석이 필요합니다/,
   'main dashboard should show a 분석이 필요합니다 state before analysis'
 );
 assert.match(
@@ -834,10 +834,15 @@ assert.match(
   /id="classificationEmpty"[\s\S]*분석이 필요합니다/,
   'activity classification should show 분석이 필요합니다 before analysis'
 );
+// #166-3: 키워드 개요는 단일 섹션으로 상태에 따라 내용만 바뀐다(중복 제거)
+assert.ok(
+  !mainHtml.includes('id="keywordOverviewResult"') && !mainHtml.includes('id="keywordOverviewEmpty"'),
+  'keyword overview should be a single section, not duplicated (#166-3)'
+);
 // 분석 시작 시 mock 키워드/분류를 채우고 전/후를 전환한다
 assert.match(
   mainHtml,
-  /function\s+applyAnalysisState\(\)[\s\S]*keywordOverviewEmpty[\s\S]*hasAnalyzed/,
+  /function\s+applyAnalysisState\(\)[\s\S]*keywordOverview[\s\S]*hasAnalyzed/,
   'main dashboard should toggle before/after analysis states'
 );
 assert.match(
@@ -1135,12 +1140,17 @@ assert.match(
   /\{\s*key:\s*'create',\s*href:\s*'create\.html',\s*label:\s*'파일 관리'\s*\}/,
   'file management should keep the shared file management nav link'
 );
-for (const text of ['파일 관리', '폴더 목록', '자료 추가', '미리보기', '분석하기', 'GitHub 동기화', '프로젝트 정리', '대화로 내용 추가하기', '세부 폴더']) {
+for (const text of ['파일 관리', '폴더 목록', '자료 추가', '미리보기', '분석하기', 'GitHub 동기화', '프로젝트 분석', '대화로 내용 추가하기', '세부 폴더', '이름 수정', '프로젝트 삭제']) {
   assert.ok(
     createHtml.includes(text),
     `file management page should include ${text}`
   );
 }
+// #166-4: '프로젝트 정리' 명칭을 '프로젝트 분석'으로 교체
+assert.ok(
+  !createHtml.includes('프로젝트 정리'),
+  'file management should rename 프로젝트 정리 to 프로젝트 분석 (#166-4)'
+);
 // #137-3: 개별 파일 AI 요약 버튼/액션 제거
 assert.ok(
   !createHtml.includes('data-action="summarize-file"') && !createHtml.includes('function summarizeFile'),
@@ -1156,17 +1166,34 @@ assert.match(
   /data-action="add-conversation"/,
   'file management should offer a per-project 대화로 내용 추가하기 action (#137-5)'
 );
-// #137-4: 레포 연결 옆 '프로젝트 정리' 버튼
+// #137-4/#166-4: 레포 연결 옆 '프로젝트 분석' 버튼
 assert.match(
   createHtml,
   /data-action="organize-project"/,
-  'file management should add a project-level 프로젝트 정리 action next to repo connect (#137-4)'
+  'file management should add a project-level 프로젝트 분석 action next to repo connect'
 );
-// #137-1: 진행중 → 완료 이동
+// #166-1: 완료 ↔ 진행중 양방향 이동
 assert.match(
   createHtml,
-  /data-action="move-to-completed"[\s\S]*function\s+moveToCompleted[\s\S]*folder\.group\s*=\s*'completed'/,
-  'file management should let an in-progress project move to completed (#137-1)'
+  /data-action="toggle-group"[\s\S]*function\s+toggleProjectGroup[\s\S]*folder\.group\s*===\s*'completed'\s*\?\s*'inProgress'\s*:\s*'completed'/,
+  'file management should toggle a project between completed and in-progress (#166-1)'
+);
+// 사용자 요청: 프로젝트 이름 수정 / 삭제
+assert.match(
+  createHtml,
+  /data-action="rename-project"[\s\S]*function\s+saveProjectName[\s\S]*folder\.label\s*=\s*name/,
+  'file management should let a project be renamed'
+);
+assert.match(
+  createHtml,
+  /data-action="delete-project"[\s\S]*function\s+deleteProject[\s\S]*FolderStore\.deleteFolder\(/,
+  'file management should let a project be deleted'
+);
+// folder-store: 프로젝트 삭제 헬퍼(tombstone로 삭제 유지)
+assert.match(
+  folderStoreJs,
+  /function\s+deleteFolder\(folders,\s*id\)[\s\S]*DELETED_KEY|function\s+deleteFolder\(folders,\s*id\)[\s\S]*saveDeletedIds/,
+  'folder store should expose deleteFolder that persists deletions'
 );
 // #137-2: 활동 유형 드롭다운 + 유형별 하위 폴더 생성
 assert.match(

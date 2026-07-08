@@ -1,5 +1,6 @@
 (function () {
   const STORAGE_KEY = 'myfitfolioFolders';
+  const DELETED_KEY = 'myfitfolioDeletedFolders';
 
   const FOLDER_TYPES = [
     { key: 'personal', label: '개인 프로젝트', color: '#5965e8' },
@@ -140,36 +141,68 @@
     return null;
   }
 
+  // 삭제된 프로젝트 폴더의 tombstone. 기본 폴더는 매번 createDefaultFolders로 다시
+  // 생성되므로, 삭제가 유지되도록 삭제된 id를 따로 기록해 loadFolders에서 제외한다.
+  function loadDeletedIds() {
+    try {
+      return new Set(JSON.parse(localStorage.getItem(DELETED_KEY)) || []);
+    } catch (error) {
+      return new Set();
+    }
+  }
+
+  function saveDeletedIds(idSet) {
+    localStorage.setItem(DELETED_KEY, JSON.stringify([...idSet]));
+  }
+
   // 폴더/파일 상태의 유일한 저장소 접근 지점. 추후 Firebase로 교체할 때는
   // 이 파일의 loadFolders/saveFolders 구현만 바꾸면 되고, 호출부는 그대로 둘 수 있다.
   function loadFolders() {
     const defaults = createDefaultFolders();
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (!saved) return defaults;
 
-    try {
-      const parsed = JSON.parse(saved);
-      Object.values(parsed).forEach((folder) => {
-        if (!folder || !folder.id) return;
-        defaults[folder.id] = {
-          ...defaults[folder.id],
-          ...folder,
-          label: normalizeFolderLabel(folder, defaults[folder.id]),
-          subfolders: normalizeFolderSubfolders(folder, defaults[folder.id]),
-          github: normalizeFolderGithub(folder),
-        };
-        delete defaults[folder.id].files;
-        delete defaults[folder.id].nestedFolders;
-      });
-    } catch (error) {
-      console.warn('Folder state could not be loaded.', error);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        Object.values(parsed).forEach((folder) => {
+          if (!folder || !folder.id) return;
+          defaults[folder.id] = {
+            ...defaults[folder.id],
+            ...folder,
+            label: normalizeFolderLabel(folder, defaults[folder.id]),
+            subfolders: normalizeFolderSubfolders(folder, defaults[folder.id]),
+            github: normalizeFolderGithub(folder),
+          };
+          delete defaults[folder.id].files;
+          delete defaults[folder.id].nestedFolders;
+        });
+      } catch (error) {
+        console.warn('Folder state could not be loaded.', error);
+      }
     }
+
+    loadDeletedIds().forEach((id) => {
+      delete defaults[id];
+    });
 
     return defaults;
   }
 
   function saveFolders(folders) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(folders));
+  }
+
+  // 프로젝트 폴더 삭제. 메모리 상태에서 지우고, 기본 폴더라면 tombstone에 기록해
+  // 재로딩 시에도 삭제가 유지되게 한다.
+  function deleteFolder(folders, id) {
+    delete folders[id];
+    if (!String(id).startsWith('custom-')) {
+      const deleted = loadDeletedIds();
+      deleted.add(id);
+      saveDeletedIds(deleted);
+    }
+    saveFolders(folders);
+    return folders;
   }
 
   window.FolderStore = {
@@ -180,6 +213,7 @@
     subfolderTemplateFor,
     createDefaultFolders,
     createFolder,
+    deleteFolder,
     normalizeFolderLabel,
     normalizeFolderFiles,
     normalizeFolderSubfolders,
