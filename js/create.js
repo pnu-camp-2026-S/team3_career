@@ -261,21 +261,31 @@
           body: formData,
         });
 
-        if (!response.ok) throw new Error('Activity file upload failed.');
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          const detail = payload.message || `HTTP ${response.status}`;
+          const uploadError = new Error(detail);
+          uploadError.status = response.status;
+          throw uploadError;
+        }
 
-        const payload = await response.json();
         (payload.files || []).forEach((file) => {
           subfolder.files.push(mapApiFile(file));
         });
       } catch (error) {
         console.warn('Activity file upload failed.', error);
+        const guideMessage = error.status === 401
+          ? '로그인 세션이 만료되었거나 서버에서 사용자를 확인하지 못했습니다. 다시 로그인한 뒤 업로드해주세요.'
+          : `서버 업로드에 실패했습니다. 원인: ${error.message || '알 수 없는 오류'}`;
         setAnalysisPanel(
           '업로드 실패',
           'fail',
-          '파일이 화면에만 추가되면 AI 분석을 할 수 없습니다. 로그인 상태, Supabase Storage bucket, activity_files 테이블 설정을 확인해주세요.',
+          guideMessage,
           '0%'
         );
-        showToast('서버 업로드에 실패해서 AI 분석 대상에 추가되지 않았습니다.');
+        showToast(error.status === 401
+          ? '로그인이 필요합니다. 다시 로그인해주세요.'
+          : '서버 업로드에 실패했습니다. 상세 원인을 확인해주세요.');
         return;
       }
 
