@@ -922,6 +922,11 @@ assert.ok(
   mypageHtml.includes('<label>세부직무</label>') && !mypageHtml.includes('<label>세부직무 선택</label>'),
   'mypage detail job field label should be shortened to 세부직무'
 );
+assert.match(
+  mypageHtml,
+  /function\s+formatMonthDisplay\(value\)[\s\S]*return\s+`\$\{year\}\.\$\{String\(month\)\.padStart\(2,\s*"0"\)\}`;/,
+  'mypage enrollment period buttons should use compact YYYY.MM labels'
+);
 assert.ok(
   !mypageHtml.includes('href="fitfolio.css"') && !mypageHtml.includes('<header class="top-nav">'),
   'mypage should not restore the standalone stylesheet or duplicated header'
