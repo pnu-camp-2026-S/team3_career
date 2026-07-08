@@ -209,6 +209,16 @@ assert.match(
 );
 assert.match(
   folderStoreJs,
+  /ANALYSIS_SUBFOLDER_LABEL\s*=\s*'AI 요약'[\s\S]*function\s+ensureAnalysisSubfolder[\s\S]*analysisSubfolderId/,
+  'folder store should append a dedicated AI 요약 subfolder to each project'
+);
+assert.match(
+  folderStoreJs,
+  /function\s+getAnalysisSubfolder\(folder\)[\s\S]*ensureAnalysisSubfolder/,
+  'folder store should expose the dedicated AI summary subfolder lookup'
+);
+assert.match(
+  folderStoreJs,
   /window\.FolderStore\s*=/,
   'folder store should expose its API on window.FolderStore'
 );
@@ -619,8 +629,13 @@ assert.match(
 );
 assert.match(
   activityFilesRoute,
-  /export async function GET\(\)[\s\S]*\.from\('activity_files'\)[\s\S]*\.select\(/,
+  /export async function GET\(request\)[\s\S]*\.from\('activity_files'\)[\s\S]*\.select\(/,
   'activity file API should list the current user files from Supabase'
+);
+assert.match(
+  activityFilesRoute,
+  /file_analyses\(status, summary_md, index_draft, log_md\)[\s\S]*summaryMd[\s\S]*indexDraft[\s\S]*logMd/,
+  'activity file API should return saved AI summary artifacts for file-management display'
 );
 assert.match(
   activityFilesRoute,
@@ -661,6 +676,174 @@ assert.match(
   activityFilesSchema,
   /insert into storage\.buckets[\s\S]*activity-files/,
   'activity_files schema should create the activity-files Storage bucket'
+);
+
+// #167: 프로젝트-하위폴더 트리 구조 컬럼과 마이그레이션
+assert.match(
+  activityFilesSchema,
+  /project_id text not null[\s\S]*parent_folder_id text[\s\S]*folder_path text not null[\s\S]*folder_level smallint not null/,
+  'activity_files schema should include the folder tree columns (#167)'
+);
+assert.match(
+  activityFilesSchema,
+  /foreign key \(user_id, project_id\)[\s\S]*references public\.activity_folders \(user_id, id\)[\s\S]*on delete cascade/,
+  'activity_files should be connected to activity_folders so folder deletion removes file rows'
+);
+assert.match(
+  activityFilesSchema,
+  /delete from public\.activity_files as af[\s\S]*not exists[\s\S]*public\.activity_folders as folder/,
+  'activity_files schema should document cleanup for files left after a folder was manually deleted'
+);
+const activityFilesTreeMigrationPath = path.join(rootDir, 'docs', 'supabase-activity-files-tree-migration.sql');
+assert.ok(
+  fs.existsSync(activityFilesTreeMigrationPath),
+  'the activity_files tree migration SQL should be documented for existing installs (#167)'
+);
+const activityFilesTreeMigration = fs.readFileSync(activityFilesTreeMigrationPath, 'utf8');
+assert.match(
+  activityFilesTreeMigration,
+  /add column if not exists project_id[\s\S]*split_part\(folder_id, '::', 1\)[\s\S]*replace\(folder_id, '::', '\/'\)/,
+  'the tree migration should backfill tree columns from legacy folder_id values (#167)'
+);
+assert.match(
+  activityFilesRoute,
+  /deriveFolderTree[\s\S]*project_id: tree\.projectId[\s\S]*folder_path: tree\.folderPath/,
+  'activity file API should persist the derived folder tree columns (#167)'
+);
+
+// AI 분석 결과 저장 스키마 + 분석 API
+const analysisSchemaPath = path.join(rootDir, 'docs', 'supabase-analysis.sql');
+assert.ok(fs.existsSync(analysisSchemaPath), 'Supabase analysis schema should be documented for analysis DB setup');
+const analysisSchema = fs.readFileSync(analysisSchemaPath, 'utf8');
+assert.match(
+  analysisSchema,
+  /create table if not exists public\.file_analyses[\s\S]*activity_file_id uuid not null references public\.activity_files\(id\)[\s\S]*unique \(activity_file_id\)/,
+  'file_analyses schema should keep one analysis row per activity file'
+);
+assert.match(
+  analysisSchema,
+  /create table if not exists public\.project_analyses[\s\S]*scope text not null default 'project' check \(scope in \('project', 'user'\)\)[\s\S]*unique \(user_id, scope, project_id\)/,
+  'project_analyses schema should store project and user scoped aggregate results'
+);
+assert.match(
+  analysisSchema,
+  /alter table public\.file_analyses enable row level security[\s\S]*auth\.uid\(\) = user_id[\s\S]*alter table public\.project_analyses enable row level security[\s\S]*auth\.uid\(\) = user_id/,
+  'analysis tables should restrict rows to their owner'
+);
+assert.match(
+  analysisSchema,
+  /delete_project_analysis_for_activity_folder[\s\S]*delete from public\.project_analyses[\s\S]*scope = 'project'[\s\S]*project_id = old\.id[\s\S]*create trigger activity_folders_delete_project_analyses/,
+  'project_analyses should be cleaned up when an activity folder is deleted'
+);
+assert.match(
+  analysisSchema,
+  /delete from public\.project_analyses as pa[\s\S]*pa\.scope = 'project'[\s\S]*not exists[\s\S]*public\.activity_folders as folder/,
+  'analysis schema should document cleanup for project analyses left after a folder was manually deleted'
+);
+
+const projectAnalysisRoutePath = path.join(appDir, 'api', 'analysis', 'project', 'route.js');
+const aggregateAnalysisRoutePath = path.join(appDir, 'api', 'analysis', 'aggregate', 'route.js');
+const dbRepositoryPath = path.join(rootDir, 'ai_analysis', 'db-repository.mjs');
+assert.ok(fs.existsSync(projectAnalysisRoutePath), 'project analysis API should live in app/api/analysis/project/route.js');
+assert.ok(fs.existsSync(aggregateAnalysisRoutePath), 'aggregate analysis API should live in app/api/analysis/aggregate/route.js');
+assert.ok(fs.existsSync(dbRepositoryPath), 'the Supabase analysis repository should live in ai_analysis/db-repository.mjs');
+const projectAnalysisRoute = fs.readFileSync(projectAnalysisRoutePath, 'utf8');
+const aggregateAnalysisRoute = fs.readFileSync(aggregateAnalysisRoutePath, 'utf8');
+const dbRepositorySource = fs.readFileSync(dbRepositoryPath, 'utf8');
+assert.match(
+  projectAnalysisRoute,
+  /export const maxDuration/,
+  'project analysis API should extend the route timeout for multi-file analysis'
+);
+assert.match(
+  projectAnalysisRoute,
+  /function\s+isAnalysisCurrent\(fileRow,\s*analysisRow\)[\s\S]*analysisUpdatedAt >= fileUpdatedAt[\s\S]*pendingFiles = projectFiles\.filter\(\(row\) => !isAnalysisCurrent/,
+  'project analysis API should only analyze new or changed files'
+);
+assert.match(
+  projectAnalysisRoute,
+  /analyzeSingleFile\(\{[\s\S]*repository: fileRepository/,
+  'project analysis API should run the single-file pipeline against the DB repository'
+);
+assert.match(
+  projectAnalysisRoute,
+  /aggregateAnalyses\(\{ repository \}\)/,
+  'project analysis API should refresh the project-level aggregate after analyzing files'
+);
+assert.match(
+  aggregateAnalysisRoute,
+  /projectId: null[\s\S]*aggregateAnalyses\(/,
+  'aggregate analysis API should aggregate across all of the current user analyses'
+);
+assert.match(
+  dbRepositorySource,
+  /class DbAnalysisRepository[\s\S]*saveMetadata[\s\S]*listAnalysisBundles[\s\S]*saveAggregateResult/,
+  'the DB repository should implement the LocalAnalysisRepository interface'
+);
+assert.match(
+  packageJson.dependencies?.['pdf-parse'] || '',
+  /\^?2/,
+  'pdf-parse v2 should be installed for PDF text extraction'
+);
+assert.ok(
+  Boolean(packageJson.dependencies?.mammoth),
+  'mammoth should be installed for docx text extraction'
+);
+
+// 폴더 SQL 저장: 가입 직후 빈 목록 + '폴더 추가' 시 activity_folders에 등록
+const foldersSchemaPath = path.join(rootDir, 'docs', 'supabase-activity-folders.sql');
+assert.ok(fs.existsSync(foldersSchemaPath), 'Supabase activity_folders schema should be documented for folder DB setup');
+const foldersSchema = fs.readFileSync(foldersSchemaPath, 'utf8');
+assert.match(
+  foldersSchema,
+  /create table if not exists public\.activity_folders[\s\S]*group_key text not null[\s\S]*type_key text not null[\s\S]*subfolders jsonb/,
+  'activity_folders schema should store per-user project folders with their subfolder structure'
+);
+assert.match(
+  foldersSchema,
+  /alter table public\.activity_folders enable row level security[\s\S]*auth\.uid\(\) = user_id/,
+  'activity_folders schema should restrict folders to their owner'
+);
+
+const foldersRoutePath = path.join(appDir, 'api', 'folders', 'route.js');
+assert.ok(fs.existsSync(foldersRoutePath), 'folder API should live in app/api/folders/route.js');
+const foldersRoute = fs.readFileSync(foldersRoutePath, 'utf8');
+assert.match(
+  foldersRoute,
+  /export async function GET\(\)[\s\S]*\.from\('activity_folders'\)[\s\S]*\.select\(/,
+  'folder API should list the current user folders from Supabase'
+);
+assert.match(
+  foldersRoute,
+  /export async function POST\(request\)[\s\S]*\.from\('activity_folders'\)[\s\S]*\.insert\(/,
+  'folder API should register new folders in Supabase'
+);
+assert.match(
+  foldersRoute,
+  /export async function PATCH\(request\)[\s\S]*export async function DELETE\(request\)/,
+  'folder API should support updating and deleting folders'
+);
+assert.match(
+  foldersRoute,
+  /removeStorageObjects[\s\S]*deleteProjectChildren[\s\S]*\.from\('file_analyses'\)[\s\S]*\.from\('project_analyses'\)[\s\S]*\.from\('activity_files'\)/,
+  'folder deletion should remove Storage objects, files, and analysis rows together'
+);
+
+// folder-store: 가입 직후 폴더는 비어 있고, API로 불러오고 저장한다
+assert.match(
+  folderStoreJs,
+  /function\s+createDefaultFolders\(\)\s*\{\s*return\s*\{\};\s*\}/,
+  'new users should start with no default folders (empty list)'
+);
+assert.match(
+  folderStoreJs,
+  /async function\s+loadFoldersFromApi\(\)[\s\S]*fetch\(FOLDERS_ENDPOINT/,
+  'folder store should load folders from the server'
+);
+assert.match(
+  folderStoreJs,
+  /async function\s+createFolderRemote\([\s\S]*async function\s+updateFolderRemote\([\s\S]*async function\s+deleteFolderRemote\(/,
+  'folder store should expose remote create/update/delete helpers'
 );
 assert.match(
   portfoliosSchema,
@@ -854,6 +1037,11 @@ assert.match(
   /활동 분류 현황/,
   'main dashboard should include the activity classification card'
 );
+assert.match(
+  mainHtml,
+  /folders = await FolderStore\.loadFoldersFromApi\(\)/,
+  'main dashboard should load folders from the server on init'
+);
 // 분석 전에는 키워드 개요·분류가 "분석이 필요합니다" 상태
 assert.match(
   mainHtml,
@@ -870,7 +1058,7 @@ assert.ok(
   !mainHtml.includes('id="keywordOverviewResult"') && !mainHtml.includes('id="keywordOverviewEmpty"'),
   'keyword overview should be a single section, not duplicated (#166-3)'
 );
-// 분석 시작 시 mock 키워드/분류를 채우고 전/후를 전환한다
+// 분석 시작 시 서버 종합 분석 결과로 키워드/분류를 채우고 전/후를 전환한다
 assert.match(
   mainHtml,
   /function\s+applyAnalysisState\(\)[\s\S]*keywordOverview[\s\S]*hasAnalyzed/,
@@ -878,12 +1066,22 @@ assert.match(
 );
 assert.match(
   mainHtml,
-  /function\s+runAnalysis\(\)[\s\S]*hasAnalyzed\s*=\s*true[\s\S]*renderKeywordChips\(\)[\s\S]*applyAnalysisState\(\)/,
-  'running analysis should fill mock keywords and switch to the analyzed state'
+  /async function\s+runAnalysis\(\)[\s\S]*fetch\(AGGREGATE_ENDPOINT[\s\S]*method:\s*'POST'/,
+  'running analysis should call the aggregate analysis API'
 );
 assert.match(
   mainHtml,
-  /data-analysis-start\]'\)\.addEventListener\('click',\s*\(\)\s*=>\s*\{\s*runAnalysis\(\)/,
+  /function\s+applyAggregateResult\(result\)[\s\S]*hasAnalyzed\s*=\s*true[\s\S]*myfitfolioAiKeywords|AI_KEYWORDS_STORAGE_KEY[\s\S]*renderKeywordChips\(\)[\s\S]*applyAnalysisState\(\)/,
+  'aggregate results should fill keywords, persist them for the portfolio flow, and switch to the analyzed state'
+);
+assert.match(
+  mainHtml,
+  /AI_KEYWORDS_STORAGE_KEY\s*=\s*'myfitfolioAiKeywords'/,
+  'aggregate results should be stored under the shared myfitfolioAiKeywords key'
+);
+assert.match(
+  mainHtml,
+  /data-analysis-start\]'\)\.addEventListener\('click',\s*async\s*\(\)\s*=>\s*\{\s*await runAnalysis\(\)/,
   'the analysis start button should trigger runAnalysis'
 );
 assert.match(
@@ -973,7 +1171,7 @@ assert.match(
 );
 assert.match(
   mainHtml,
-  /function\s+runAnalysis\(\)[\s\S]*updateAnalysisSummary\(\)/,
+  /function\s+applyAggregateResult\(result\)[\s\S]*updateAnalysisSummary\(\)/,
   'main dashboard should update analysis numbers when analysis runs'
 );
 assert.ok(
@@ -1217,7 +1415,7 @@ assert.match(
   /\{\s*key:\s*'create',\s*href:\s*'create\.html',\s*label:\s*'파일 관리'\s*\}/,
   'file management should keep the shared file management nav link'
 );
-for (const text of ['파일 관리', '폴더 목록', '자료 추가', '미리보기', '분석하기', 'GitHub 동기화', '프로젝트 분석', '대화로 내용 추가하기', '세부 폴더', '이름 수정', '프로젝트 삭제']) {
+for (const text of ['파일 관리', '폴더 목록', '자료 추가', '미리보기', '분석하기', 'GitHub 동기화', '대화로 내용 추가하기', '세부 폴더', '이름 수정', '프로젝트 삭제']) {
   assert.ok(
     createHtml.includes(text),
     `file management page should include ${text}`
@@ -1243,11 +1441,31 @@ assert.match(
   /data-action="add-conversation"/,
   'file management should offer a per-project 대화로 내용 추가하기 action (#137-5)'
 );
-// #137-4/#166-4: 레포 연결 옆 '프로젝트 분석' 버튼
+// 프로젝트 분석 진입점은 상단 '분석하기' 하나로 통합한다.
+assert.ok(
+  !createHtml.includes('data-action="organize-project"'),
+  'file management should not keep a duplicate project analysis button next to repo connect'
+);
+// 프로젝트 분석은 실제 분석 API를 호출하고, 미분석 자료만 새로 분석해 종합한다
 assert.match(
   createHtml,
-  /data-action="organize-project"/,
-  'file management should add a project-level 프로젝트 분석 action next to repo connect'
+  /async function\s+organizeProject\(\)[\s\S]*fetch\('\/api\/analysis\/project'[\s\S]*projectId:\s*folder\.id/,
+  'project analysis should call the real analysis API with the selected project'
+);
+assert.match(
+  createHtml,
+  /mapAnalysisSummaryFile[\s\S]*name:\s*`\$\{getFileBaseName\(file\.name\)\} AI 요약\.md`[\s\S]*kind:\s*'analysis-summary'[\s\S]*FolderStore\.getAnalysisSubfolder\(projectFolder\)[\s\S]*analysisTarget\.files\.push\(summaryFile\)/,
+  'file management should show saved AI analysis artifacts in the dedicated AI 요약 subfolder'
+);
+assert.match(
+  createHtml,
+  /formData\.append\('projectId',\s*folder\.id\)/,
+  'file uploads should send the owning project id for the folder tree columns (#167)'
+);
+assert.match(
+  createHtml,
+  /file\.analysisStatus\s*===\s*'completed'\s*\?\s*'분석완료'\s*:\s*'분석대기'/,
+  'file status pills should restore the saved analysis state after reload'
 );
 // #166-1: 완료 ↔ 진행중 양방향 이동
 assert.match(
@@ -1282,6 +1500,16 @@ assert.match(
   createHtml,
   /FolderStore\.createFolder\(group,\s*name,\s*type\)/,
   'folder creation should pass the selected activity type to build template subfolders (#137-2)'
+);
+assert.match(
+  createHtml,
+  /async function\s+confirmCreateFolder\(\)[\s\S]*FolderStore\.createFolderRemote\(folder\)/,
+  'creating a folder should register it on the server'
+);
+assert.match(
+  createHtml,
+  /folders = await FolderStore\.loadFoldersFromApi\(\)/,
+  'file management should load folders from the server on init'
 );
 // #137-2: 하위 폴더 내비게이션(세부 폴더 클릭 시 해당 자료만)
 assert.match(

@@ -34,3 +34,33 @@ AI가 만든 내용에는 가능한 한 근거 파일, 추출 근거, 사용자 
 - 포트폴리오 문장 추천
 - 자기소개서 소재 추천
 - 면접 답변 소재 추천
+
+## 실제 구현 상태
+
+분석 파이프라인은 `ai_analysis/`에 있고(모듈 설명은 [단일 파일 분석 파일 구성](single-file-analysis-files.md) 참고), 다음 API로 화면과 연결되어 있다.
+
+### AI 제공자
+
+- 우선순위: `ANALYSIS_MOCK=1` → mock, 아니면 `key.env`의 `OPENAI_API_KEY`(모델 `OPENAI_MODEL` 또는 `gpt-4o-mini`) → `gemini_key.env`의 `GEMINI_API_KEY` → mock
+- `ANALYSIS_PROVIDER=openai|gemini|mock`으로 명시할 수 있다.
+- 키 값은 로그·산출물·DB에 남기지 않는다(제공자 이름 문자열만 저장).
+
+### API
+
+- `POST /api/analysis/project` — body `{ projectId, projectType, projectName }`. 해당 프로젝트에서 **신규 파일 또는 마지막 분석 후 수정된 파일만** Storage에서 내려받아 단일 파일 분석을 실행하고, 기존 완료 결과와 합쳐 프로젝트 종합(`project_analyses`, scope=`project`)을 갱신한다. 응답에 `analyzedCount / skippedCount / failedCount`, 파일별 성공 여부, 종합 결과(`aggregate`)가 담긴다.
+- `GET /api/analysis/project?projectId=` — 저장된 프로젝트 종합 결과와 파일별 분석 상태(화면 복원용).
+- `POST /api/analysis/aggregate` — 사용자 전체의 완료 분석을 모아 메인 키워드 개요와 포트폴리오 강조 키워드를 생성한다(`project_analyses`, scope=`user`). 자료가 없으면 `{ ok: false, reason: 'no_data' }`.
+- `GET /api/analysis/aggregate` — 마지막 종합 결과 조회(메인 새로고침 복원용).
+
+### 저장(Supabase)
+
+- `file_analyses` — 파일 1건당 분석 1행(`activity_file_id` unique). metadata/analysis_result/index_draft는 jsonb, summary/log/추출 텍스트는 text. 상태는 `pending/analyzing/completed/failed`, 실패 시 `stage`와 `errors`를 남긴다.
+- `project_analyses` — 종합 결과. `(user_id, scope, project_id)` unique로 upsert.
+- 스키마 원본: `docs/supabase-analysis.sql`. 저장 구현은 `ai_analysis/db-repository.mjs`(`DbAnalysisRepository`)이며, 로컬 구현(`repository.mjs`)과 같은 인터페이스를 따른다.
+
+### 화면 연동
+
+- 파일 관리(`html/create.html`)의 상단 `분석하기` 버튼 → `POST /api/analysis/project`. 성공한 파일은 상태 pill이 `분석완료`로 바뀌고, 새로고침 후에도 `/api/activity-files`의 `analysisStatus`로 복원된다.
+- `/api/activity-files`는 `file_analyses.summary_md`, `index_draft`, `log_md`도 함께 내려준다. 화면은 이 값을 프로젝트 맨 오른쪽의 `AI 요약` 세부 폴더에 `원본명 AI 요약.md` 가상 파일로 보여준다.
+- 메인(`html/main.html`)의 `분석 시작` 버튼 → `POST /api/analysis/aggregate`. 키워드 개요(headline/description/activityKeywords)가 AI 결과로 채워지고, 결과 전체가 `localStorage.myfitfolioAiKeywords`에 저장되어 포트폴리오 생성 화면이 재사용할 수 있다.
+- 분석 결과는 사용자가 확인하기 전까지 초안(`requiresUserConfirmation: true`, `reviewStatus: pending_review`)으로 취급한다.

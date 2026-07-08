@@ -17,7 +17,13 @@
 
     let folders = FolderStore.loadFolders();
 
-    if (!folders[selectedFolderId]) selectedFolderId = 'completed-personal';
+    // 선택된 프로젝트가 없으면(가입 직후 빈 목록 등) 첫 폴더로 맞춘다.
+    function ensureSelectedFolder() {
+      if (!folders[selectedFolderId]) {
+        selectedFolderId = Object.keys(folders)[0] || null;
+      }
+      selectedSubfolderId = firstSubfolderId(folders[selectedFolderId]);
+    }
 
     function firstSubfolderId(folder) {
       return folder && folder.subfolders && folder.subfolders[0] ? folder.subfolders[0].id : null;
@@ -38,22 +44,6 @@
       const exists = folder && (folder.subfolders || []).some((sub) => sub.id === selectedSubfolderId);
       if (!exists) selectedSubfolderId = firstSubfolderId(folder);
     }
-
-    function addSeedFile(subfolder, name, type, status) {
-      if (!subfolder) return;
-      subfolder.files.push({ id: `file-${nextFileId++}`, name, type, status });
-    }
-
-    function seedFilesIfEmpty() {
-      const hasAnyFiles = Object.values(folders).some((folder) => FolderStore.getFolderFiles(folder).length > 0);
-      if (hasAnyFiles) return;
-      addSeedFile(folders['completed-personal']?.subfolders?.[0], '서비스_기획서.pdf', 'PDF', '분석완료');
-      addSeedFile(folders['completed-team']?.subfolders?.[0], '팀프로젝트_회의록.md', 'MD', '작성완료');
-      addSeedFile(folders['inProgress-contest']?.subfolders?.[0], '공모전_발표자료.pptx', 'PPT', '분석대기');
-      addSeedFile(folders['inProgress-education']?.subfolders?.[0], '교육과정_수료증.png', 'IMG', '분석대기');
-    }
-
-    seedFilesIfEmpty();
 
     function persistFolders() {
       FolderStore.saveFolders(folders);
@@ -107,20 +97,28 @@
 
       const subfolderLabel = selectedSubfolder ? selectedSubfolder.label : '세부 폴더';
       document.getElementById('managedFileList').innerHTML = selectedFiles.length
-        ? selectedFiles.map((file, index) => `
+        ? selectedFiles.map((file, index) => {
+          const isAnalysisSummary = file.kind === 'analysis-summary';
+          const fileDescription = isAnalysisSummary
+            ? `${subfolderLabel} · ${file.sourceFileName || '원본 자료'} 분석 결과`
+            : `${subfolderLabel} · 우선순위 ${index + 1}`;
+          return `
             <article class="manager-file-card">
               <div class="file-type-chip">${file.type || getFileType(file.name)}</div>
               <div>
                 <strong title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</strong>
-                <span>${escapeHtml(subfolderLabel)} · 우선순위 ${index + 1}</span>
+                <span>${escapeHtml(fileDescription)}</span>
               </div>
               <div class="manager-file-actions">
                 <span class="status-pill ${getStatusClass(file.status)}">${file.status || '분석대기'}</span>
                 <button class="ghost-button compact-button" type="button" data-action="preview-file" data-file-id="${file.id}">미리보기</button>
-                <button class="ghost-button compact-button danger-button" type="button" data-action="delete-file" data-file-id="${file.id}">삭제</button>
+                ${isAnalysisSummary
+                  ? '<span class="analysis-file-note">AI 산출물</span>'
+                  : `<button class="ghost-button compact-button danger-button" type="button" data-action="delete-file" data-file-id="${file.id}">삭제</button>`}
               </div>
             </article>
-          `).join('')
+          `;
+        }).join('')
         : '<div class="manager-empty"><strong>이 세부 폴더에는 아직 자료가 없습니다.</strong><span>자료 추가 버튼을 눌러 선택한 세부 폴더에 자료를 넣어보세요.</span></div>';
     }
 
@@ -158,17 +156,48 @@
       return (String(fileName).split('.').pop() || 'FILE').toUpperCase();
     }
 
+    function getFileBaseName(fileName) {
+      return String(fileName || '자료').replace(/\.[^.]+$/, '');
+    }
+
+    function hasAnalysisArtifact(analysis) {
+      return Boolean(analysis?.summaryMd || analysis?.indexDraft || analysis?.logMd);
+    }
+
     function mapApiFile(file) {
       return {
         id: file.id,
         name: file.name,
         type: getFileType(file.name),
-        status: '분석대기',
+        status: file.analysisStatus === 'completed' ? '분석완료' : '분석대기',
         mimeType: file.mimeType || '',
         size: file.size || 0,
         storagePath: file.storagePath || '',
         createdAt: file.createdAt || new Date().toISOString(),
+        analysis: file.analysis || null,
       };
+    }
+
+    function mapAnalysisSummaryFile(file) {
+      if (!hasAnalysisArtifact(file.analysis)) return null;
+      return {
+        id: `analysis-summary-${file.id}`,
+        name: `${getFileBaseName(file.name)} AI 요약.md`,
+        type: 'MD',
+        status: '작성완료',
+        kind: 'analysis-summary',
+        sourceFileId: file.id,
+        sourceFileName: file.name,
+        summaryMarkdown: file.analysis.summaryMd || '',
+        indexDraft: file.analysis.indexDraft || null,
+        logMarkdown: file.analysis.logMd || '',
+        createdAt: file.createdAt || new Date().toISOString(),
+      };
+    }
+
+    function formatIndexDraft(indexDraft) {
+      if (!indexDraft) return '저장된 index.json 내용이 없습니다.';
+      return JSON.stringify(indexDraft, null, 2);
     }
 
     async function loadActivityFilesFromApi() {
@@ -190,12 +219,19 @@
         });
 
         payload.files.forEach((file) => {
-          // 파일은 하위 폴더 id를 folderId로 저장한다. 못 찾으면 상위 프로젝트 폴더의
-          // 첫 하위 폴더로 되돌려 놓는다(구버전/프로젝트 단위 저장 폴백).
+          // 파일은 하위 폴더 id를 folderId로 저장한다. 못 찾으면 프로젝트(projectId) 또는
+          // 상위 프로젝트 폴더의 첫 하위 폴더로 되돌려 놓는다(구버전/프로젝트 단위 저장 폴백).
           const match = FolderStore.findSubfolder(folders, file.folderId);
-          const target = match?.subfolder || folders[file.folderId]?.subfolders?.[0];
+          const projectFolder = match?.folder || folders[file.projectId] || folders[file.folderId];
+          const target = match?.subfolder
+            || folders[file.projectId]?.subfolders?.[0]
+            || folders[file.folderId]?.subfolders?.[0];
           if (!target) return;
-          target.files.push(mapApiFile(file));
+          const mappedFile = mapApiFile(file);
+          const summaryFile = mapAnalysisSummaryFile(mappedFile);
+          target.files.push(mappedFile);
+          const analysisTarget = FolderStore.getAnalysisSubfolder(projectFolder);
+          if (summaryFile && analysisTarget) analysisTarget.files.push(summaryFile);
         });
 
         persistFolders();
@@ -212,6 +248,7 @@
 
       const formData = new FormData();
       formData.append('folderId', subfolder.id);
+      formData.append('projectId', folder.id);
       formData.append('folderGroup', folder.group || '');
       formData.append('folderType', folder.type || '');
       formData.append('folderLabel', `${folder.label} / ${subfolder.label}`);
@@ -251,6 +288,27 @@
       const file = getSelectedFile(fileId);
       if (!file) return;
       const subfolder = getSelectedSubfolder();
+      if (file.kind === 'analysis-summary') {
+        showModal('AI 요약 파일', `
+          <div class="manager-preview analysis-artifact-preview">
+            <strong>${escapeHtml(file.name)}</strong>
+            <p>원본 자료: ${escapeHtml(file.sourceFileName || '')}</p>
+            <section>
+              <h3>summary.md</h3>
+              <pre>${escapeHtml(file.summaryMarkdown || '저장된 summary.md 내용이 없습니다.')}</pre>
+            </section>
+            <section>
+              <h3>index.json</h3>
+              <pre>${escapeHtml(formatIndexDraft(file.indexDraft))}</pre>
+            </section>
+            <section>
+              <h3>log.md</h3>
+              <pre>${escapeHtml(file.logMarkdown || '저장된 log.md 내용이 없습니다.')}</pre>
+            </section>
+          </div>
+        `);
+        return;
+      }
       showModal('파일 미리보기', `
         <div class="manager-preview">
           <strong>${escapeHtml(file.name)}</strong>
@@ -265,6 +323,10 @@
       if (!subfolder) return;
       const file = subfolder.files.find((item) => item.id === fileId);
       if (!file) return;
+      if (file.kind === 'analysis-summary') {
+        showToast('AI 요약 파일은 원본 자료 분석 결과입니다. 원본 자료 삭제 시 함께 사라집니다.');
+        return;
+      }
 
       if (file.storagePath) {
         try {
@@ -281,41 +343,127 @@
           showToast('서버에서 파일을 삭제하지 못했습니다. 잠시 후 다시 시도해주세요.');
           return;
         }
+        await loadActivityFilesFromApi();
+        render();
+        showToast('자료와 연결된 AI 요약 파일이 함께 삭제되었습니다.');
+        return;
       }
 
-      subfolder.files = subfolder.files.filter((item) => item.id !== fileId);
+      subfolder.files = subfolder.files.filter((item) => item.id !== fileId && item.sourceFileId !== fileId);
       persistFolders();
       render();
       showToast('자료가 목록에서 삭제되었습니다.');
     }
 
-    // 프로젝트 단위 AI 분석(#166-4에서 버튼 명칭 변경). 실제로는 프로젝트 자료를 읽어
-    // 요약을 생성하지만, FE 프로토타입에서는 상태 표시만 갱신한다.
-    function organizeProject() {
+    let analysisInFlight = false;
+
+    // 저장된 프로젝트 종합 결과가 있으면 AI 정리 상태 패널을 복원한다.
+    async function restoreAnalysisPanelState() {
       const folder = getSelectedFolder();
-      const fileCount = FolderStore.getFolderFiles(folder).length;
-      document.getElementById('analysisStatus').textContent = '분석완료';
-      document.getElementById('analysisStatus').className = 'status-pill done';
-      document.getElementById('analysisMessage').textContent = `${folder.label} 프로젝트의 자료 ${fileCount}건을 묶어 분석한 것처럼 표시했습니다.`;
-      document.getElementById('analysisProgress').style.width = '100%';
+      if (!folder) return;
+      try {
+        const response = await fetch(`/api/analysis/project?projectId=${encodeURIComponent(folder.id)}`, {
+          credentials: 'same-origin',
+          cache: 'no-store',
+        });
+        if (!response.ok) return;
+        const payload = await response.json();
+        if (payload.aggregate && getSelectedFolder()?.id === folder.id && !analysisInFlight) {
+          setAnalysisPanel('분석완료', 'done', `이전 분석 결과: ${payload.aggregate.headline || '프로젝트 종합 요약이 저장되어 있습니다.'}`, '100%');
+        }
+      } catch (error) {
+        console.warn('Analysis state could not be restored.', error);
+      }
+    }
+
+    function setAnalysisPanel(statusText, statusClass, message, progress) {
+      document.getElementById('analysisStatus').textContent = statusText;
+      document.getElementById('analysisStatus').className = `status-pill ${statusClass}`;
+      document.getElementById('analysisMessage').textContent = message;
+      document.getElementById('analysisProgress').style.width = progress;
+    }
+
+    // 프로젝트 단위 AI 분석(#166-4). 서버(/api/analysis/project)가 이 프로젝트의
+    // 미분석 자료만 새로 분석하고, 기존 결과와 합쳐 프로젝트 종합 요약을 생성한다.
+    async function organizeProject() {
+      const folder = getSelectedFolder();
+      if (!folder || analysisInFlight) return;
+
+      const serverFiles = FolderStore.getFolderFiles(folder).filter((file) => file.storagePath);
+      if (!serverFiles.length) {
+        showToast('서버에 업로드된 자료가 없습니다. 자료를 먼저 추가해주세요.');
+        return;
+      }
+
+      analysisInFlight = true;
+      setAnalysisPanel('분석중', 'ready', `${folder.label} 프로젝트의 자료를 AI로 분석하고 있습니다. 잠시만 기다려주세요.`, '35%');
+
+      try {
+        const response = await fetch('/api/analysis/project', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({ projectId: folder.id, projectType: folder.type, projectName: folder.label }),
+        });
+
+        if (response.status === 401) {
+          setAnalysisPanel('분석실패', 'fail', '로그인이 필요합니다. 로그인 후 다시 시도해주세요.', '0%');
+          return;
+        }
+
+        const payload = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(payload.message || '프로젝트 분석 요청이 실패했습니다.');
+        }
+
+        if (payload.ok === false && payload.reason === 'no_data') {
+          setAnalysisPanel('분석대기', 'ready', '분석할 자료가 없습니다. 자료를 먼저 추가해주세요.', '0%');
+          return;
+        }
+
+        await applyProjectAnalysisResult(folder, payload);
+      } catch (error) {
+        console.warn('Project analysis failed.', error);
+        setAnalysisPanel('분석실패', 'fail', '프로젝트 분석에 실패했습니다. 잠시 후 다시 시도해주세요.', '0%');
+      } finally {
+        analysisInFlight = false;
+      }
+    }
+
+    async function applyProjectAnalysisResult(folder, payload) {
+      const succeededIds = new Set((payload.files || []).filter((file) => file.ok).map((file) => file.activityFileId));
+      (folder.subfolders || []).forEach((sub) => {
+        sub.files.forEach((file) => {
+          if (succeededIds.has(file.id)) file.status = '분석완료';
+        });
+      });
+      persistFolders();
+      await loadActivityFilesFromApi();
+      render();
+
+      const doneCount = (payload.analyzedCount || 0) + (payload.skippedCount || 0);
+      const failedNote = payload.failedCount ? ` (실패 ${payload.failedCount}건)` : '';
+      setAnalysisPanel(
+        payload.failedCount && !payload.analyzedCount && !payload.skippedCount ? '분석실패' : '분석완료',
+        payload.failedCount && !payload.analyzedCount && !payload.skippedCount ? 'fail' : 'done',
+        `새로 분석 ${payload.analyzedCount || 0}건, 기존 결과 ${payload.skippedCount || 0}건을 묶어 종합했습니다.${failedNote}`,
+        '100%'
+      );
+
+      const aggregate = payload.aggregate;
+      const fileListHtml = (payload.files || []).map((file) => `
+        <li>${escapeHtml(file.name)} — ${file.ok ? '분석 성공' : `분석 실패${file.errors?.length ? ` (${escapeHtml(file.errors.join(' / '))})` : ''}`}</li>
+      `).join('');
+
       showModal('프로젝트 분석 결과', `
         <div class="manager-preview">
           <strong>${escapeHtml(folder.label)} 프로젝트 분석</strong>
-          <p>세부 폴더와 자료를 묶어 프로젝트 단위 AI 분석을 실행한 흐름을 확인했습니다. 실제 요약 생성은 이후 연동됩니다.</p>
-        </div>
-      `);
-    }
-
-    function runAnalysis() {
-      const folder = getSelectedFolder();
-      document.getElementById('analysisStatus').textContent = '분석완료';
-      document.getElementById('analysisStatus').className = 'status-pill done';
-      document.getElementById('analysisMessage').textContent = '선택한 프로젝트의 자료를 기반으로 분석 결과가 생성된 것처럼 표시했습니다.';
-      document.getElementById('analysisProgress').style.width = '100%';
-      showModal('분석 결과', `
-        <div class="manager-preview">
-          <strong>${escapeHtml(folder.label)} 분석 결과</strong>
-          <p>세부 폴더 구조와 자료 순서를 참조해 분석하기 버튼의 클릭 흐름을 확인했습니다.</p>
+          ${aggregate
+            ? `<p><strong>${escapeHtml(aggregate.headline || '')}</strong></p><p>${escapeHtml(aggregate.description || '')}</p>`
+            : '<p>종합 요약을 생성하지 못했습니다. 파일별 결과를 확인해주세요.</p>'}
+          <p>완료된 분석 ${doneCount}건을 기준으로 종합했습니다. 분석 결과는 사용자가 확인하기 전까지 초안으로 취급됩니다.</p>
+          ${fileListHtml ? `<ul>${fileListHtml}</ul>` : ''}
         </div>
       `);
     }
@@ -325,11 +473,20 @@
     }
 
     // 완료 ↔ 진행중 양방향 이동(#166-1).
-    function toggleProjectGroup() {
+    async function toggleProjectGroup() {
       const folder = getSelectedFolder();
       if (!folder) return;
+      const previousGroup = folder.group;
       const nextGroup = folder.group === 'completed' ? 'inProgress' : 'completed';
       folder.group = nextGroup;
+      try {
+        await FolderStore.updateFolderRemote(folder);
+      } catch (error) {
+        console.warn('Folder group change could not be saved.', error);
+        folder.group = previousGroup;
+        showToast('폴더 이동을 저장하지 못했습니다. 잠시 후 다시 시도해주세요.');
+        return;
+      }
       persistFolders();
       render();
       const groupLabel = nextGroup === 'completed' ? '완료된 활동' : '진행중인 활동';
@@ -350,14 +507,23 @@
       `);
     }
 
-    function saveProjectName() {
+    async function saveProjectName() {
       const folder = getSelectedFolder();
       const name = document.getElementById('renameInput').value.trim();
       if (!name) {
         showToast('프로젝트 이름을 입력하세요.');
         return;
       }
+      const previousLabel = folder.label;
       folder.label = name;
+      try {
+        await FolderStore.updateFolderRemote(folder);
+      } catch (error) {
+        console.warn('Folder rename could not be saved.', error);
+        folder.label = previousLabel;
+        showToast('이름 변경을 저장하지 못했습니다. 잠시 후 다시 시도해주세요.');
+        return;
+      }
       persistFolders();
       hideModal();
       render();
@@ -365,12 +531,19 @@
     }
 
     // 프로젝트 삭제(사용자 요청). 폴더와 그 안의 자료가 함께 사라진다.
-    function deleteProject() {
+    async function deleteProject() {
       const folder = getSelectedFolder();
       if (!folder) return;
       if (!window.confirm(`'${folder.label}' 프로젝트를 삭제할까요? 안의 세부 폴더와 자료도 함께 사라집니다.`)) return;
 
       const removedLabel = folder.label;
+      try {
+        await FolderStore.deleteFolderRemote(folder.id);
+      } catch (error) {
+        console.warn('Folder could not be deleted on the server.', error);
+        showToast('폴더를 서버에서 삭제하지 못했습니다. 잠시 후 다시 시도해주세요.');
+        return;
+      }
       FolderStore.deleteFolder(folders, folder.id);
       selectedFolderId = Object.keys(folders)[0] || null;
       selectedSubfolderId = firstSubfolderId(folders[selectedFolderId]);
@@ -434,7 +607,7 @@
       document.getElementById('subfolderPreview').textContent = `생성될 세부 폴더: ${labels.join(', ')}`;
     }
 
-    function confirmCreateFolder() {
+    async function confirmCreateFolder() {
       const name = document.getElementById('newFolderName').value.trim();
       const type = document.getElementById('newFolderType').value;
       const group = document.getElementById('newFolderGroup').value;
@@ -443,6 +616,13 @@
         return;
       }
       const folder = FolderStore.createFolder(group, name, type);
+      try {
+        await FolderStore.createFolderRemote(folder);
+      } catch (error) {
+        console.warn('Folder could not be created on the server.', error);
+        showToast('폴더를 서버에 저장하지 못했습니다. 잠시 후 다시 시도해주세요.');
+        return;
+      }
       folders[folder.id] = folder;
       selectedFolderId = folder.id;
       selectedSubfolderId = firstSubfolderId(folder);
@@ -471,8 +651,9 @@
       `);
     }
 
-    function saveRepo() {
+    async function saveRepo() {
       const folder = folders[selectedFolderId];
+      const previousGithub = folder.github;
       folder.github = {
         connected: true,
         username: document.getElementById('repoUser').value.trim(),
@@ -483,6 +664,14 @@
         syncEnabled: document.getElementById('repoSyncEnabled').checked,
         lastSyncedAt: null,
       };
+      try {
+        await FolderStore.updateFolderRemote(folder);
+      } catch (error) {
+        console.warn('Repo connection could not be saved.', error);
+        folder.github = previousGithub;
+        showToast('레포 연결 정보를 저장하지 못했습니다. 잠시 후 다시 시도해주세요.');
+        return;
+      }
       persistFolders();
       hideModal();
       render();
@@ -555,9 +744,8 @@
       if (action === 'add-file') document.getElementById('managedFileInput').click();
       if (action === 'preview-file') previewFile(fileId);
       if (action === 'delete-file') deleteFile(fileId);
-      if (action === 'analyze') runAnalysis();
+      if (action === 'analyze') organizeProject();
       if (action === 'sync-github') syncGithub();
-      if (action === 'organize-project') organizeProject();
       if (action === 'toggle-group') toggleProjectGroup();
       if (action === 'rename-project') openRenameModal();
       if (action === 'save-project-name') saveProjectName();
@@ -603,8 +791,11 @@
     });
 
     async function initFileManager() {
+      folders = await FolderStore.loadFoldersFromApi();
+      ensureSelectedFolder();
       await loadActivityFilesFromApi();
       render();
+      restoreAnalysisPanelState();
     }
 
     initFileManager();

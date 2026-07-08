@@ -27,10 +27,13 @@
     const analysisOverviewText = document.getElementById('analysisOverviewText');
 
     // 분석 시작 전에는 키워드 개요·활동 분류를 "분석이 필요합니다" 상태로 두고,
-    // 분석 시작을 누르면 채운다. 실구현에서는 프로젝트별 summary.md를 읽어 최종 요약으로
-    // 채우지만, FE 단계에서는 아래 mock 키워드와 계산된 분류로 채워 전/후를 비교한다.
-    const ANALYSIS_KEYWORDS = ['문제 해결', '협업', '기획', '데이터 활용', '실행력', '발표'];
+    // 분석 시작을 누르면 서버 종합 분석(/api/analysis/aggregate) 결과로 채운다.
+    // 결과는 localStorage에도 저장해 포트폴리오 생성 화면이 재사용한다.
+    const AI_KEYWORDS_STORAGE_KEY = 'myfitfolioAiKeywords';
+    const AGGREGATE_ENDPOINT = '/api/analysis/aggregate';
+    let aggregateResult = null;
     let hasAnalyzed = false;
+    let analysisInFlight = false;
 
     let folders = FolderStore.loadFolders();
 
@@ -127,7 +130,9 @@
 
         payload.files.forEach((file) => {
           const match = FolderStore.findSubfolder(folders, file.folderId);
-          const target = match?.subfolder || folders[file.folderId]?.subfolders?.[0];
+          const target = match?.subfolder
+            || folders[file.projectId]?.subfolders?.[0]
+            || folders[file.folderId]?.subfolders?.[0];
           if (!target) return;
           target.files.push(mapApiFile(file));
         });
@@ -217,7 +222,8 @@
     }
 
     function renderKeywordChips() {
-      document.getElementById('keywordChipList').innerHTML = ANALYSIS_KEYWORDS
+      const keywords = aggregateResult?.activityKeywords || [];
+      document.getElementById('keywordChipList').innerHTML = keywords
         .map((keyword) => `<span>${escapeHtml(keyword)}</span>`)
         .join('');
     }
@@ -228,11 +234,11 @@
       const overview = document.getElementById('keywordOverview');
       overview.classList.toggle('keyword-overview-empty', !hasAnalyzed);
       document.getElementById('keywordChipList').hidden = !hasAnalyzed;
-      document.getElementById('keywordOverviewHeading').textContent = hasAnalyzed
-        ? '꾸준한 실행력과 협업 경험이 드러나요'
+      document.getElementById('keywordOverviewHeading').textContent = hasAnalyzed && aggregateResult
+        ? aggregateResult.headline || '활동 키워드 분석이 완료되었습니다'
         : '분석이 필요합니다';
-      document.getElementById('keywordOverviewText').textContent = hasAnalyzed
-        ? '완료된 프로젝트 자료를 기준으로 기획, 개발, 문제 해결, 발표 경험을 묶어 분석합니다. 자료가 추가될수록 강점 키워드와 활동 분류가 더 선명해집니다.'
+      document.getElementById('keywordOverviewText').textContent = hasAnalyzed && aggregateResult
+        ? aggregateResult.description || '분석된 자료를 기준으로 강점 키워드를 정리했습니다.'
         : '분석 시작을 누르면 완료된 활동 자료를 바탕으로 강점 키워드와 활동 개요를 정리해 드려요.';
       document.getElementById('analyzedMaterialEmpty').hidden = hasAnalyzed;
       document.getElementById('analyzedMaterialResult').hidden = !hasAnalyzed;
@@ -242,11 +248,69 @@
       analysisOverview.hidden = !hasAnalyzed;
     }
 
-    function runAnalysis() {
+    function applyAggregateResult(result) {
+      aggregateResult = result;
       hasAnalyzed = true;
+      localStorage.setItem(AI_KEYWORDS_STORAGE_KEY, JSON.stringify(result));
       renderKeywordChips();
       updateAnalysisSummary();
       applyAnalysisState();
+    }
+
+    // 종합 분석 실행. 분석 완료된 자료 전체를 모아 키워드 개요와
+    // 포트폴리오 강조 키워드를 생성한다.
+    async function runAnalysis() {
+      if (analysisInFlight) return;
+      analysisInFlight = true;
+      const overviewText = document.getElementById('keywordOverviewText');
+      overviewText.textContent = '완료된 활동 자료를 모아 AI가 분석하고 있습니다. 잠시만 기다려주세요.';
+
+      try {
+        const response = await fetch(AGGREGATE_ENDPOINT, {
+          method: 'POST',
+          credentials: 'same-origin',
+        });
+
+        if (response.status === 401) {
+          overviewText.textContent = '로그인이 필요합니다. 로그인 후 분석을 시작해주세요.';
+          return;
+        }
+
+        const payload = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(payload.message || '종합 분석 요청이 실패했습니다.');
+        }
+
+        if (payload.ok === false) {
+          overviewText.textContent = payload.reason === 'no_data'
+            ? '분석할 완료된 자료가 없습니다. 파일 관리에서 자료를 업로드하고 분석하기를 먼저 실행해주세요.'
+            : '분석에 실패했습니다. 잠시 후 다시 시도해주세요.';
+          return;
+        }
+
+        applyAggregateResult(payload.result);
+      } catch (error) {
+        console.warn('Aggregate analysis failed.', error);
+        overviewText.textContent = '분석에 실패했습니다. 잠시 후 다시 시도해주세요.';
+      } finally {
+        analysisInFlight = false;
+      }
+    }
+
+    // 저장된 종합 결과가 있으면 새로고침 후에도 분석 상태를 복원한다.
+    async function restoreAggregateResult() {
+      try {
+        const response = await fetch(AGGREGATE_ENDPOINT, {
+          credentials: 'same-origin',
+          cache: 'no-store',
+        });
+        if (!response.ok) return;
+        const payload = await response.json();
+        if (payload.result) applyAggregateResult(payload.result);
+      } catch (error) {
+        console.warn('Saved aggregate result could not be restored.', error);
+      }
     }
 
     async function renderDashboardState() {
@@ -336,14 +400,16 @@
       }
     });
 
-    document.querySelector('[data-analysis-start]').addEventListener('click', () => {
-      runAnalysis();
+    document.querySelector('[data-analysis-start]').addEventListener('click', async () => {
+      await runAnalysis();
       analysisDashboard.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
 
     async function initMainDashboard() {
+      folders = await FolderStore.loadFoldersFromApi();
       await loadActivityFilesFromApi();
       renderFolders();
+      restoreAggregateResult();
     }
 
     initMainDashboard();
