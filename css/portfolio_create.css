@@ -66,11 +66,26 @@
   margin-top: 0 !important;
 }
 
+.setup-right .form-row .form-field {
+  --setting-control-width: 176px;
+  display: grid;
+  grid-template-columns: 74px var(--setting-control-width);
+  align-items: center;
+  justify-content: start;
+  gap: 10px;
+}
+
+.setup-right .form-row .form-field label {
+  margin: 0;
+  white-space: nowrap;
+}
+
 .setup-right > .form-field {
   margin-top: 0 !important;
 }
 
 .setting-select {
+  width: 176px;
   min-height: 44px;
   border: 1px solid #d7deee;
   border-radius: 8px;
@@ -108,9 +123,6 @@
 
 .major-inline-field {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  gap: 10px;
 }
 
 .major-inline-field label {
@@ -119,9 +131,11 @@
 }
 
 .profile-major-display {
+  width: 176px;
   min-height: 44px;
   display: flex;
   align-items: center;
+  box-sizing: border-box;
   border: 1px solid #d7deee;
   border-radius: 8px;
   padding: 0 14px;
@@ -1359,6 +1373,16 @@
   .setup-left .format-card-grid,
   .master-actions {
     grid-template-columns: 1fr;
+  }
+
+  .setup-right .form-row .form-field {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .setting-select,
+  .profile-major-display {
+    width: 100%;
   }
 
   .portfolio-head {

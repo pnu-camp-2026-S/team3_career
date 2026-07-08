@@ -366,7 +366,7 @@ function renderActivities() {
           <div class="card-top">
             <span class="card-chip">${item.icon} ${item.industry}</span>
             <button class="deadline-tag" type="button" data-id="${item.id}" aria-label="${item.title} 일정 저장">
-              ${getActivityDeadline(item.id)}
+              <span class="deadline-tag-label">${getActivityDeadline(item.id)}</span>
             </button>
           </div>
           <h3 class="activity-title">${item.title}</h3>
