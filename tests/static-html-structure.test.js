@@ -1742,8 +1742,28 @@ assert.match(
 );
 assert.match(
   contestCss,
-  /\.deadline-tag::after/s,
-  'contest D-day tag should render as a bookmark ribbon'
+  /\.deadline-tag::before/s,
+  'contest D-day tag should render as one bookmark ribbon shape'
+);
+assert.match(
+  contestCss,
+  /\.deadline-tag\s*\{[^}]*min-width:\s*56px;[^}]*clip-path:\s*polygon\(0 0,\s*100% 0,\s*100% 100%,\s*50% calc\(100% - 13px\),\s*0 100%\);[^}]*font-size:\s*14px;/s,
+  'contest D-day bookmark ribbon notch should connect to the bottom corners'
+);
+assert.match(
+  contestCss,
+  /\.deadline-tag::before\s*\{[^}]*inset:\s*1px;[^}]*background:\s*#fff1e2;[^}]*clip-path:\s*polygon\(0 0,\s*100% 0,\s*100% 100%,\s*50% calc\(100% - 12px\),\s*0 100%\);/s,
+  'contest D-day bookmark ribbon should keep a filled inner notch connected to the bottom corners'
+);
+assert.match(
+  contestCss,
+  /\.activity-card\.is-saved\s+\.deadline-tag::before\s*\{[^}]*background:\s*#a45f2b;/s,
+  'contest saved D-day bookmark ribbon should use the active brown fill'
+);
+assert.match(
+  contestJs,
+  /<span class="deadline-tag-label">\$\{getActivityDeadline\(item\.id\)\}<\/span>/,
+  'contest D-day bookmark text should sit above the ribbon fill'
 );
 assert.match(
   contestCss,
