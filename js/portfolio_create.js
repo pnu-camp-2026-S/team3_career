@@ -54,6 +54,7 @@
     let currentSlideIndex = 0;
     let profileMajor = '';
     let activityFiles = [];
+    let isPortfolioRevising = false;
 
     const formatSelect = document.getElementById('pfFormatSelect');
     const purposeSelect = document.getElementById('pfPurposeSelect');
@@ -61,6 +62,9 @@
     const experienceDataList = document.getElementById('experienceDataList');
     const keywordPool = document.getElementById('keywordPool');
     const assistantInput = document.getElementById('pfAssistantInput');
+    const assistantSendBtn = document.getElementById('pfAssistantSendBtn');
+    const portfolioDraft = document.querySelector('.portfolio-draft');
+    const portfolioRevisionOverlay = document.getElementById('portfolioRevisionOverlay');
 
     document.querySelectorAll('.format-card').forEach((card) => {
       card.addEventListener('click', () => selectFormat(card.dataset.format));
@@ -68,7 +72,7 @@
 
     experienceDataList.addEventListener('change', renderKeywordPool);
     document.getElementById('generatePortfolioBtn').addEventListener('click', triggerGeneratePortfolio);
-    document.getElementById('pfAssistantSendBtn').addEventListener('click', sendPfAssistantChat);
+    assistantSendBtn.addEventListener('click', sendPfAssistantChat);
     document.querySelector('.master-actions').addEventListener('click', async (event) => {
       const actionButton = event.target.closest('[data-master-action]');
       if (!actionButton) return;
@@ -806,7 +810,7 @@
       }
 
       if (action === 'download') {
-        downloadPptPreview();
+        await downloadPptPreview();
         showToast('PPT 다운로드 파일을 준비했습니다.');
         return;
       }
@@ -816,22 +820,21 @@
       }
     }
 
-    function downloadPptPreview() {
+    async function downloadPptPreview() {
       if (!currentPortfolio) return;
 
-      const body = [
-        'Myfitfolio Portfolio',
-        '',
-        `제목: ${currentPortfolio.format} - ${currentPortfolio.purpose}`,
-        `전공: ${currentPortfolio.major}`,
-        '',
-        currentPortfolio.format === 'PPT 발표 스펙'
-          ? currentPortfolio.slides.map((slide, index) => `Slide ${index + 1}. ${slide.title}\n${slide.body}`).join('\n\n')
-          : currentPortfolio.blocks.map((block) => `${block.title}\n${block.body}`).join('\n\n')
-      ].join('\n');
-      const blob = new Blob([body], {
-        type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+      const response = await fetch('/api/portfolio/export-pptx', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify(currentPortfolio),
       });
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.error || 'PPT 파일 생성에 실패했습니다.');
+      }
+
+      const blob = await response.blob();
       const link = document.createElement('a');
       const downloadUrl = URL.createObjectURL(blob);
       link.href = downloadUrl;
@@ -855,24 +858,20 @@
       }, 180);
     }
 
-    function sendPfAssistantChat() {
+    async function sendPfAssistantChat() {
       const message = assistantInput.value.trim();
-      if (!message) return;
+      if (!message || isPortfolioRevising) return;
+      if (!currentPortfolio) {
+        appendChatBubble('ai', '먼저 포트폴리오를 생성한 뒤 수정 요청을 입력해주세요.');
+        return;
+      }
 
       appendChatBubble('user', message);
       chatHistory.push({ role: 'user', content: message });
       assistantInput.value = '';
 
-      const shouldRevise = /수정해줘\s*$/.test(message);
-      const reply = shouldRevise
-        ? '대화 맥락을 반영해 ChatGPT로 왼쪽 초안을 다시 다듬고 있습니다.'
-        : '좋습니다. 방향을 기억해둘게요. 마지막에 "수정해줘"라고 입력하면 초안에 바로 반영합니다.';
-
-      window.setTimeout(async () => {
-        appendChatBubble('ai', reply);
-        chatHistory.push({ role: 'ai', content: reply });
-        if (shouldRevise) await reviseDraftFromConversation();
-      }, 180);
+      appendChatBubble('ai', '수정 요청을 반영해 왼쪽 초안을 다시 작성하고 있습니다.');
+      await reviseDraftFromConversation();
     }
 
     async function reviseDraftFromConversation() {
@@ -885,6 +884,7 @@
         .join(' / ');
       const revisionNote = userContext || '사용자 요청';
 
+      setPortfolioRevisionState(true);
       try {
         const revised = await requestPortfolioRevision(revisionNote);
         const nextBlocks = normalizeTextBlocks(revised.blocks);
@@ -895,6 +895,7 @@
         currentPortfolio.sourceLabel = 'ChatGPT 수정';
         currentPortfolio.updatedAt = new Date().toISOString();
         renderPortfolioPreview();
+        setPortfolioRevisionState(false);
         appendChatBubble('ai', revised.assistantMessage || 'ChatGPT가 요청을 반영해 초안을 수정했습니다.');
         showToast('ChatGPT 수정 요청을 초안에 반영했습니다.');
         return;
@@ -942,9 +943,18 @@
       log.scrollTop = log.scrollHeight;
     }
 
+    function setPortfolioRevisionState(isRevising) {
+      isPortfolioRevising = isRevising;
+      portfolioDraft?.classList.toggle('revising', isRevising);
+      portfolioRevisionOverlay?.classList.toggle('hidden', !isRevising);
+      assistantInput.disabled = isRevising;
+      assistantSendBtn.disabled = isRevising;
+    }
+
     function resetAssistantChat() {
-      document.getElementById('pfAssistantLog').innerHTML = '<div class="bubble ai">초안이 생성되었습니다. 원하는 방향을 대화로 알려주세요. 문장 끝에 "수정해줘"라고 입력하면 왼쪽 초안에 즉시 반영합니다.</div>';
-      assistantInput.value = '';
+      document.getElementById('pfAssistantLog').innerHTML = '<div class="bubble ai">초안이 생성되었습니다. 원하는 방향을 대화로 알려주면 왼쪽 초안에 바로 반영합니다.</div>';
+assistantInput.value = '';
+      setPortfolioRevisionState(false);
     }
 
     function escapeHtml(value) {

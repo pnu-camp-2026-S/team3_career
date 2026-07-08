@@ -703,6 +703,50 @@
   padding: 28px;
 }
 
+.portfolio-draft.revising #workspaceContent {
+  filter: blur(3px);
+  opacity: 0.55;
+  pointer-events: none;
+  transition: filter 160ms ease, opacity 160ms ease;
+}
+
+.portfolio-revision-overlay {
+  position: absolute;
+  inset: 92px 28px 28px;
+  display: grid;
+  place-items: center;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.portfolio-revision-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #dbe4ff;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 14px 40px rgba(19, 31, 57, 0.12);
+  color: var(--brand);
+  padding: 12px 16px;
+  font-size: 14px;
+}
+
+.revision-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #dbe4ff;
+  border-top-color: var(--brand);
+  border-radius: 50%;
+  animation: revisionSpin 800ms linear infinite;
+}
+
+@keyframes revisionSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .portfolio-head {
   display: flex;
   align-items: flex-start;

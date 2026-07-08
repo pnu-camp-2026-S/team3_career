@@ -255,7 +255,7 @@ for (const file of [
   );
   assert.match(
     html,
-    new RegExp(`<script src="\\.\\./js/${scriptName.replace('.', '\\.')}" defer><\\/script>`),
+    new RegExp(`<script src="\\.\\./js/${scriptName.replace('.', '\\.')}(?:\\?[^"]+)?" defer><\\/script>`),
     `${file} should load its extracted page script with defer`
   );
   for (const section of [
@@ -2203,8 +2203,32 @@ assert.match(
 );
 assert.match(
   portfolioCreateHtml,
-  /new Blob\(\[body\][\s\S]*application\/vnd\.openxmlformats-officedocument\.presentationml\.presentation/,
-  'portfolio_create should create a PPT download blob'
+  /async function\s+downloadPptPreview\(\)[\s\S]*fetch\('\/api\/portfolio\/export-pptx'[\s\S]*JSON\.stringify\(currentPortfolio\)[\s\S]*response\.blob\(\)/,
+  'portfolio_create should download editable PowerPoint files through the server export API'
+);
+
+const portfolioExportPptxRoutePath = path.join(appDir, 'api', 'portfolio', 'export-pptx', 'route.js');
+const portfolioExportPptxRoute = fs.existsSync(portfolioExportPptxRoutePath)
+  ? fs.readFileSync(portfolioExportPptxRoutePath, 'utf8')
+  : '';
+assert.ok(
+  fs.existsSync(portfolioExportPptxRoutePath),
+  'portfolio PPTX export API should live in app/api/portfolio/export-pptx/route.js'
+);
+assert.match(
+  portfolioExportPptxRoute,
+  /import pptxgen from 'pptxgenjs'/,
+  'portfolio PPTX export should use pptxgenjs instead of a hand-written fake pptx blob'
+);
+assert.match(
+  portfolioExportPptxRoute,
+  /addOverviewSlide\(pptx,\s*portfolio,\s*blocks\)[\s\S]*addDetailSlides\(pptx,\s*portfolio,\s*blocks\.slice/,
+  'portfolio PPTX export should create editable text overview and detail slides'
+);
+assert.match(
+  portfolioExportPptxRoute,
+  /slide\.addText\([\s\S]*Content-Disposition[\s\S]*myfitfolio-portfolio\.pptx/,
+  'portfolio PPTX export should return a real downloadable pptx file with editable text boxes'
 );
 for (const cssPattern of [
   /\.portfolio-create-page\s*\{/,
