@@ -30,20 +30,6 @@
       </div>
     </section>
   </main>
-
-  <script>
-    const confirmInput = document.getElementById('withdrawConfirm');
-    const withdrawButton = document.getElementById('withdrawButton');
-
-    confirmInput.addEventListener('change', () => {
-      withdrawButton.disabled = !confirmInput.checked;
-    });
-
-    withdrawButton.addEventListener('click', () => {
-      localStorage.clear();
-      sessionStorage.clear();
-      window.location.href = 'login.html';
-    });
-  </script>
+  <script src="../js/withdraw.js" defer></script>
 </body>
 </html>
