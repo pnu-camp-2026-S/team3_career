@@ -5,8 +5,9 @@
 
 ## 기능별 문서
 
-- [로그인 및 모의 계정 기준](auth.md)
-- [마이페이지 및 Firebase 데이터 기준](mypage.md)
+- [데이터 구조 및 API 기준](data-model.md)
+- [로그인 및 계정 기준](auth.md)
+- [마이페이지 및 프로필 데이터 기준](mypage.md)
 - [자료 입력 및 파일관리 기준](file-management.md)
 - [AI 자동 정리 및 분석 기준](ai-analysis.md)
 - [활동 추천 기준](recommendation.md)
@@ -14,6 +15,15 @@
 - [GitHub 임시 연동 기준](github.md)
 - [보안 기준](security.md)
 - [개발 우선순위와 코드 작업 규칙](development.md)
+
+## Supabase 스키마 원본
+
+기능 문서의 데이터 기준을 실제로 적용하는 SQL은 아래 파일에 있고, 요약은 [데이터 구조 및 API 기준](data-model.md)에 정리한다.
+
+- `supabase-profiles.sql` — 계정 신원(`public.profiles`)과 신규 사용자 트리거
+- `supabase-user-profiles.sql` — 마이페이지 프로필(`public.user_profiles`)
+- `supabase-activity-files.sql` — 업로드 파일 메타데이터(`public.activity_files`)와 Storage 정책
+- `supabase-portfolios.sql` — 포트폴리오(`public.portfolios`)
 
 ## 문서 관리 원칙
 

@@ -5,3 +5,7 @@ out/
 key.env
 .env
 .env.*
+claude.md
+gemini_key.env
+.claude
+.mcp.json
