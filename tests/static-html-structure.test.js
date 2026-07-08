@@ -2177,6 +2177,26 @@ assert.match(
   /const majors = \["전기공학과", "정보컴퓨터공학과", "화공생명공학과", "산업공학과"\]/,
   'mypage major pickers should use the requested department list'
 );
+assert.match(
+  mypageHtml,
+  /const ALL_OPTION = "전체";[\s\S]*const industries = \[ALL_OPTION,/,
+  'mypage work industry picker should include the all option'
+);
+assert.match(
+  mypageHtml,
+  /const regions = \[ALL_OPTION,/,
+  'mypage work region picker should include the all option'
+);
+assert.match(
+  mypageHtml,
+  /return \[ALL_OPTION, \.\.\.new Set\(options\.length \? options : Object\.values\(detailJobs\)\.flat\(\)\)\]/,
+  'mypage detail job picker should include the all option'
+);
+assert.match(
+  mypageHtml,
+  /const options = fieldName === "minor" \? \[NO_MINOR_OPTION, \.\.\.majors\] : majors;/,
+  'mypage minor major picker should include the none option without changing the main major list'
+);
 for (const jobLabel of ['AI/머신러닝', '네트워크/인프라', '전기/전자', '화학/바이오', '금융/보험', '미디어/콘텐츠']) {
   assert.ok(
     mypageHtml.includes(`"${jobLabel}"`),
