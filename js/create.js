@@ -394,32 +394,8 @@
       const folder = getSelectedFolder();
       if (!folder || analysisInFlight) return;
 
-      let allFiles = FolderStore.getFolderFiles(folder);
-      let serverFiles = allFiles.filter((file) => file.storagePath);
-
-      if (!serverFiles.length) {
-        await loadActivityFilesFromApi();
-        render();
-        const refreshedFolder = getSelectedFolder();
-        allFiles = FolderStore.getFolderFiles(refreshedFolder);
-        serverFiles = allFiles.filter((file) => file.storagePath);
-      }
-
-      if (!serverFiles.length) {
-        const hasLocalOnlyFiles = allFiles.length > 0;
-        setAnalysisPanel(
-          '분석대기',
-          'ready',
-          hasLocalOnlyFiles
-            ? '화면에 보이는 파일은 서버 업로드가 완료되지 않은 임시 파일입니다. 파일을 다시 업로드한 뒤 분석해주세요.'
-            : '분석할 서버 업로드 파일이 없습니다. 파일을 먼저 추가해주세요.',
-          '0%'
-        );
-        showToast(hasLocalOnlyFiles
-          ? '서버에 저장된 파일이 없어 분석할 수 없습니다. 파일을 다시 업로드해주세요.'
-          : '서버에 업로드된 자료가 없습니다. 자료를 먼저 추가해주세요.');
-        return;
-      }
+      await loadActivityFilesFromApi();
+      render();
 
       analysisInFlight = true;
       setAnalysisPanel('분석중', 'ready', `${folder.label} 프로젝트의 자료를 AI로 분석하고 있습니다. 잠시만 기다려주세요.`, '35%');
@@ -444,7 +420,7 @@
         }
 
         if (payload.ok === false && payload.reason === 'no_data') {
-          setAnalysisPanel('분석대기', 'ready', '분석할 자료가 없습니다. 자료를 먼저 추가해주세요.', '0%');
+          setAnalysisPanel('분석대기', 'ready', '서버에서 이 프로젝트에 연결된 파일을 찾지 못했습니다. 파일을 현재 선택한 프로젝트 폴더에 다시 업로드한 뒤 분석해주세요.', '0%');
           return;
         }
 
