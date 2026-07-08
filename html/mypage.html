@@ -289,12 +289,12 @@
     function applyProfilePayload(profile) {
       if (!profile) return;
 
-      if (profile.name) document.querySelector("#profileName").value = profile.name;
-      if (profile.gender) document.querySelector("#profileGender").value = profile.gender;
-      if (profile.birthDate) profileState.birthDate = profile.birthDate;
-      if (profile.email) document.querySelector("#profileEmail").value = profile.email;
-      if (profile.phone) document.querySelector("#profilePhone").value = profile.phone;
-      if (profile.address) document.querySelector("#profileAddress").value = profile.address;
+      if (Object.hasOwn(profile, "name")) document.querySelector("#profileName").value = profile.name || "";
+      if (Object.hasOwn(profile, "gender")) document.querySelector("#profileGender").value = profile.gender || "";
+      if (Object.hasOwn(profile, "birthDate")) profileState.birthDate = profile.birthDate || "";
+      if (Object.hasOwn(profile, "email")) document.querySelector("#profileEmail").value = profile.email || "";
+      if (Object.hasOwn(profile, "phone")) document.querySelector("#profilePhone").value = profile.phone || "";
+      if (Object.hasOwn(profile, "address")) document.querySelector("#profileAddress").value = profile.address || "";
       if (Array.isArray(profile.educations) && profile.educations.length) profileState.educations = profile.educations;
       if (profile.preferences) profileState.preferences = { ...profileState.preferences, ...profile.preferences };
       if (profile.chips) {
@@ -344,11 +344,12 @@
     }
 
     function getDateParts(value) {
-      const [year, month, day] = value.split("-").map(Number);
-      return { year, month, day };
+      const [year, month, day] = (value || "2001-01-01").split("-").map(Number);
+      return { year: year || 2001, month: month || 1, day: day || 1 };
     }
 
     function formatDateDisplay(value) {
+      if (!value) return "";
       const { year, month, day } = getDateParts(value);
       return `${year}.${String(month).padStart(2, "0")}.${String(day).padStart(2, "0")}`;
     }
