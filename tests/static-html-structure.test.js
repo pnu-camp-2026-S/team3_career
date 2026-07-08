@@ -232,7 +232,6 @@ for (const [file, activeKey] of sharedNavPages) {
 }
 for (const file of [
   'create.html',
-  'fitfolio_prototype.html',
   'main.html',
   'mypage.html',
   'portfolio_create.html',
@@ -352,6 +351,10 @@ assert.match(
   /window\.location\.href\s*=\s*`\/api\/auth\/social\?provider=\$\{provider\}`/,
   'auth navigation should send social login buttons through the Supabase OAuth API'
 );
+assert.ok(
+  !/\.naver-icon/.test(authCss),
+  'auth stylesheet should drop the unused Naver login icon style'
+);
 assert.match(
   authNavJs,
   /function\s+wireProfileMenus/,
@@ -427,7 +430,7 @@ assert.match(
   'auth pages should style the account withdrawal link as a danger action'
 );
 
-for (const file of ['index.html', 'main.html']) {
+for (const file of ['index.html']) {
   assert.ok(
     fs.existsSync(path.join(rootDir, file)),
     `${file} should exist at the project root as a GitHub Pages fallback redirect`
@@ -437,6 +440,11 @@ for (const file of ['index.html', 'main.html']) {
     `${file} should also live in the html directory`
   );
 }
+
+assert.ok(
+  !fs.existsSync(path.join(rootDir, 'main.html')),
+  'main.html should only live in the html directory now that Vercel renders it through Next.js'
+);
 
 const packageJson = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
 const nextConfig = fs.readFileSync(path.join(rootDir, 'next.config.js'), 'utf8');
@@ -2266,6 +2274,21 @@ assert.ok(
 const loginHtml = fs.readFileSync(path.join(htmlDir, 'login.html'), 'utf8');
 const indexAuthHtml = fs.readFileSync(path.join(htmlDir, 'index.html'), 'utf8');
 const signupHtml = fs.readFileSync(path.join(htmlDir, 'signup.html'), 'utf8');
+for (const [fileName, html] of [
+  ['index.html', indexAuthHtml],
+  ['login.html', loginHtml],
+  ['signup.html', signupHtml],
+]) {
+  assert.ok(
+    !/data-provider="naver"|Naver|네이버|naver-icon/.test(html),
+    `${fileName} should not expose Naver login because Supabase OAuth is not configured for it`
+  );
+  assert.match(
+    html,
+    /data-provider="google"/,
+    `${fileName} should keep Google as the available Supabase OAuth provider`
+  );
+}
 const portfolioManageHtml = readPageSource('portfolio_manage.html');
 const portfolioViewerHtml = readPageSource('portfolio_viewer.html');
 const portfolioManageCss = fs.readFileSync(path.join(cssDir, 'portfolio_manage.css'), 'utf8');

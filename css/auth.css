@@ -161,11 +161,6 @@
   box-shadow: 3px 3px 0 -1px #2a1715;
 }
 
-.naver-icon {
-  color: #03c75a;
-  font-size: 32px;
-}
-
 .auth-note {
   margin-top: 34px;
   color: var(--muted);
