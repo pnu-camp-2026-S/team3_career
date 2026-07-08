@@ -196,7 +196,7 @@
 
       if (majorDisplay) {
         majorDisplay.dataset.majorValue = profileMajor;
-        majorDisplay.textContent = profileMajor ? `전공: ${profileMajor}` : '전공: 마이페이지에서 전공을 입력해주세요';
+        majorDisplay.textContent = profileMajor || '마이페이지 전공 입력 필요';
       }
     }
 
