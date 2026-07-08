@@ -7,13 +7,13 @@
   <link rel="stylesheet" href="../css/common.css" />
   <link rel="stylesheet" href="../css/mypage.css" />
 </head>
-<body>
+<body class="profile-loading profile-readonly">
   <div class="app-shell">
     <div data-shared-nav data-active="mypage"></div>
     <script src="../js/shared-nav.js"></script>
     <script src="../js/auth-nav.js"></script>
 
-    <main class="mypage">
+    <main class="mypage" aria-busy="true">
       <div class="mypage-content">
         <h1 class="page-title">마이페이지</h1>
         <p class="page-subtitle">내 정보를 입력하고 취업 조건을 관리해보세요.</p>
@@ -31,12 +31,13 @@
               </div>
               <div class="form-field">
                 <label for="profileName">이름</label>
-                <input id="profileName" type="text" value="김예지" />
+                <input id="profileName" type="text" value="" />
               </div>
               <div class="form-field">
                 <label for="profileGender">성별</label>
                 <select id="profileGender">
-                  <option selected>여성</option>
+                  <option value="" selected></option>
+                  <option>여성</option>
                   <option>남성</option>
                   <option>선택 안 함</option>
                 </select>
@@ -45,7 +46,7 @@
                 <label>생년월일</label>
                 <div class="date-control" data-date-control>
                   <button class="date-trigger" type="button" data-toggle-date-picker>
-                    <span data-birth-display>2001.03.15</span>
+                    <span data-birth-display></span>
                     <span class="calendar-icon" aria-hidden="true"></span>
                   </button>
                   <div data-date-picker></div>
@@ -59,15 +60,15 @@
             <div class="inline-fields">
               <div class="form-field">
                 <label for="profileEmail">이메일</label>
-                <input id="profileEmail" type="email" value="user@univ.ac.kr" />
+                <input id="profileEmail" type="email" value="" />
               </div>
               <div class="form-field">
                 <label for="profilePhone">휴대폰번호</label>
-                <input id="profilePhone" type="tel" value="010-1234-5678" />
+                <input id="profilePhone" type="tel" value="" />
               </div>
               <div class="form-field">
                 <label for="profileAddress">주소</label>
-                <input id="profileAddress" type="text" value="부산광역시 금정구 장전동" />
+                <input id="profileAddress" type="text" value="" />
               </div>
             </div>
           </section>

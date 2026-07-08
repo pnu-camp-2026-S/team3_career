@@ -61,26 +61,26 @@
 
     const profileState = {
       editing: false,
-      birthDate: "2001-03-15",
+      birthDate: "",
       datePickerOpen: false,
       periodPicker: null,
       photo: localStorage.getItem("myfitfolioPhoto") || "",
       educations: [
         {
-          schoolType: "대학교 4년",
-          school: "부산대학교",
-          periodStart: "2020-03",
-          periodEnd: "2026-02",
-          major: "정보컴퓨터공학과",
+          schoolType: "",
+          school: "",
+          periodStart: "",
+          periodEnd: "",
+          major: "",
           minor: "",
-          gpa: "4.1/4.5"
+          gpa: ""
         }
       ],
       chips: {
-        jobs: new Set(["IT/개발"]),
-        interestFields: new Set(["채용", "공모전"]),
-        companies: new Set(["네이버", "카카오"]),
-        industries: new Set(["IT/SW"])
+        jobs: new Set(),
+        interestFields: new Set(),
+        companies: new Set(),
+        industries: new Set()
       },
       preferences: {
         detailJob: "",
@@ -247,6 +247,7 @@
             <div class="form-field">
               <label>학교 구분</label>
               <select data-edu-field="schoolType" data-edu-index="${index}">
+                <option value="" ${!education.schoolType ? "selected" : ""}></option>
                 ${schoolTypes.map((type) => `<option ${type === education.schoolType ? "selected" : ""}>${type}</option>`).join("")}
               </select>
             </div>
@@ -468,6 +469,11 @@
       renderPickedValues();
       renderFormActions();
       renderEditState();
+    }
+
+    function revealProfilePage() {
+      document.body.classList.remove("profile-loading");
+      document.querySelector(".mypage")?.removeAttribute("aria-busy");
     }
 
     function renderFormActions() {
@@ -726,8 +732,12 @@
     });
 
     async function initProfilePage() {
-      await loadSavedProfile();
-      renderAllDynamicParts();
+      try {
+        await loadSavedProfile();
+      } finally {
+        renderAllDynamicParts();
+        revealProfilePage();
+      }
     }
 
     initProfilePage();

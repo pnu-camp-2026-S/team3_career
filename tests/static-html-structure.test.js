@@ -1004,6 +1004,17 @@ assert.match(
 );
 assert.match(
   mypageHtml,
+  /<body class="profile-loading profile-readonly">[\s\S]*<main class="mypage" aria-busy="true">/,
+  'mypage should start hidden in readonly loading state until the profile request finishes'
+);
+for (const sampleValue of ['김예지', 'user@univ.ac.kr', '010-1234-5678', '부산광역시 금정구 장전동', '2001.03.15', '2001-03-15', '부산대학교', '4.1/4.5']) {
+  assert.ok(
+    !mypageHtml.includes(sampleValue),
+    `mypage initial markup should not expose the old sample value ${sampleValue}`
+  );
+}
+assert.match(
+  mypageHtml,
   /const\s+PROFILE_ENDPOINT\s*=\s*"\/api\/profile"/,
   'mypage should define the Supabase-backed profile API endpoint'
 );
@@ -1032,6 +1043,16 @@ assert.match(
   /function\s+formatDateDisplay\(value\)[\s\S]*if\s*\(!value\)\s*return\s+"";/,
   'mypage should render an empty birth date when social login does not provide one'
 );
+assert.match(
+  mypageHtml,
+  /function\s+revealProfilePage\(\)[\s\S]*classList\.remove\("profile-loading"\)[\s\S]*removeAttribute\("aria-busy"\)/,
+  'mypage should reveal the page only after profile loading completes'
+);
+assert.match(
+  mypageHtml,
+  /async function\s+initProfilePage\(\)[\s\S]*finally\s*\{[\s\S]*renderAllDynamicParts\(\);[\s\S]*revealProfilePage\(\);/,
+  'mypage should render and reveal the profile page in a finally block after loading'
+);
 assert.ok(
   mypageHtml.includes('<label>세부직무</label>') && !mypageHtml.includes('<label>세부직무 선택</label>'),
   'mypage detail job field label should be shortened to 세부직무'
@@ -1054,6 +1075,11 @@ assert.match(
   mypageCss,
   /\.profile-readonly\s+\.date-trigger:disabled\s+\.calendar-icon,\s*\.profile-readonly\s+\.major-trigger:disabled\s+\.select-chevron,\s*\.profile-readonly\s+\.picker-trigger:disabled\s+span\[aria-hidden="true"\]\s*\{[^}]*display:\s*none;/s,
   'mypage readonly date, major, and search picker icons should be hidden until edit mode'
+);
+assert.match(
+  mypageCss,
+  /\.profile-loading\s+\.mypage-content,\s*\.profile-loading\s+\.anchor-menu\s*\{[^}]*visibility:\s*hidden;/s,
+  'mypage should hide stale profile content while the profile request is loading'
 );
 assert.match(
   mypageCss,
