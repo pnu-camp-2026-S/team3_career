@@ -21,3 +21,4 @@
 - `key.env`, `.env`, `.env.*`에는 API 키가 들어가므로 커밋하지 않는다.
 - Supabase 서비스 롤 키(`SUPABASE_SERVICE_ROLE_KEY`)는 서버(`app/api/*`, `lib/`)에서만 사용하고 클라이언트에 노출하지 않는다.
 - Supabase 테이블은 RLS 정책(`auth.uid()` 기준)으로 사용자별 데이터 접근 권한을 분리한다. Storage 객체도 경로 첫 세그먼트가 본인 사용자 ID인 파일만 접근하도록 제한한다.
+- 회원 탈퇴처럼 사용자 데이터 전체를 삭제하는 서버 API는 현재 Supabase 세션 사용자를 먼저 확인하고, service role 권한은 서버 내부 삭제 작업에만 사용한다.
