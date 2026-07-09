@@ -891,26 +891,212 @@
     }
 
     function renderDeckPortfolio(raw) {
-      const slides = currentPortfolio.slides || [];
-      const pages = chunkItems(slides, 4).map((pageSlides, pageIndex) => `
-        <article class="portfolio-canvas">
-          <header class="canvas-hero">
-            <span class="canvas-kicker">Presentation Preview</span>
-            <h3>${escapeHtml(raw.cover?.headline || currentPortfolio.title || 'PPT 발표 스펙')}</h3>
-            <p>${escapeHtml(currentPortfolio.summary || '발표 흐름에 맞춰 핵심 슬라이드를 구성했습니다.')}</p>
-          </header>
-          <div class="deck-grid">
-            ${pageSlides.map((slide, index) => `
-              <section class="deck-slide-card">
-                <span>Slide ${pageIndex * 4 + index + 1}</span>
-                <h4>${escapeHtml(slide.title)}</h4>
-                ${renderBulletList(String(slide.body || '').split(/\n+/).slice(0, 4))}
-              </section>
+      const data = normalizeDeckPreviewData(raw);
+      const pages = [
+        renderDeckCoverPage(data),
+        renderDeckProfilePage(data),
+        ...data.experiences.flatMap((experience, index) => [
+          renderDeckExperiencePage(experience, index),
+          renderDeckResultPage(experience, index),
+        ]),
+      ];
+      document.getElementById('workspaceContent').innerHTML = renderDraftPageViewer(pages);
+    }
+
+    function normalizeDeckPreviewData(raw) {
+      const cover = raw.cover || {};
+      const profile = raw.profile || {};
+      const fallbackSlides = currentPortfolio.slides || [];
+      const fallbackExperience = {
+        projectLabel: 'Project 01',
+        introTitle: fallbackSlides[2]?.title || '?? 1 : ???? ?? ??',
+        cards: {
+          customerNeed: { description: splitPreviewLines(fallbackSlides[2]?.body)[0] || '????? ??? ??? ??????.', keyword: '?? ??' },
+          problemOpportunity: { description: splitPreviewLines(fallbackSlides[2]?.body)[1] || '?? ??? ?? ??? ??????.', keyword: '?? ??' },
+          comparisonTarget: { description: splitPreviewLines(fallbackSlides[2]?.body)[2] || '?? ??? ???? ?? ??? ??????.', keyword: '?? ??' },
+        },
+        resultTitle: fallbackSlides[3]?.title || '??? : ? ??? ??? ? ???? KPI',
+        visual: {
+          title: currentPortfolio.title || '????? ??',
+          items: splitPreviewLines(fallbackSlides[3]?.body).slice(0, 3),
+        },
+        actions: {
+          problemAction: splitPreviewLines(fallbackSlides[3]?.body).slice(0, 2),
+          productivityAction: splitPreviewLines(fallbackSlides[4]?.body).slice(0, 2),
+          communicationAction: splitPreviewLines(fallbackSlides[5]?.body).slice(0, 2),
+        },
+      };
+
+      return {
+        cover: {
+          headline: cover.headline || currentPortfolio.title || '???? ???? ??????.',
+          description: cover.description || currentPortfolio.summary || '?????? ?? ???? ??? ??? ???.',
+          name: cover.name || '???',
+          mobile: cover.mobile || cover.phone || '000-0000-0000',
+          email: cover.email || 'email@example.com',
+          web: cover.web || 'portfolio.example.com',
+        },
+        profile: {
+          greeting: profile.greeting || '?????\n??????.',
+          intro: profile.intro || '?? ???? ??? ???? ??? ???.',
+          about: normalizePreviewList(profile.about || [cover.name, cover.email, cover.mobile || cover.phone], 4),
+          education: normalizePreviewList(profile.education, 4),
+          experience: normalizePreviewList(profile.experience, 4),
+          licenses: normalizePreviewList(profile.licenses, 4),
+          skills: normalizePreviewList(profile.skills, 4),
+        },
+        experiences: (Array.isArray(raw.experiences) && raw.experiences.length ? raw.experiences : [fallbackExperience]).slice(0, 4),
+      };
+    }
+
+    function normalizePreviewList(items, limit = 4) {
+      return (Array.isArray(items) ? items : [])
+        .map((item) => {
+          if (!item) return '';
+          if (typeof item === 'string') return item;
+          return [item.period, item.content, item.name, item.level].filter(Boolean).join(' ');
+        })
+        .map((item) => compactText(item, 44))
+        .filter(Boolean)
+        .slice(0, limit);
+    }
+
+    function splitPreviewLines(value) {
+      return String(value || '')
+        .replace(/\u2022/g, '\n')
+        .split(/\n+|-/)
+        .map((item) => item.replace(/^[\s:]+/, '').trim())
+        .filter(Boolean);
+    }
+
+    function renderDeckCoverPage(data) {
+      const contact = [
+        ['Name', data.cover.name],
+        ['Mobile', data.cover.mobile],
+        ['E-mail', data.cover.email],
+        ['Web', data.cover.web],
+      ];
+      return `
+        <article class="portfolio-canvas deck-reference-canvas deck-cover-page">
+          <div class="deck-top-mark"></div>
+          <section class="deck-cover-center">
+            <p>Portfolio</p>
+            <h3>${escapeHtml(compactText(data.cover.headline, 34))}</h3>
+            <span>${escapeHtml(compactText(data.cover.description, 58))}</span>
+          </section>
+          <dl class="deck-contact-bar">
+            ${contact.map(([label, value]) => `
+              <div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value || '-')}</dd></div>
             `).join('')}
+          </dl>
+        </article>
+      `;
+    }
+
+    function renderDeckProfilePage(data) {
+      return `
+        <article class="portfolio-canvas deck-reference-canvas deck-profile-page">
+          <aside class="deck-profile-side">
+            <div class="deck-profile-photo"></div>
+            <h3>${escapeHtml(data.profile.greeting).replace(/\\n/g, '<br>')}</h3>
+            <section>
+              <h4>About</h4>
+              ${renderDeckPlainList(data.profile.about)}
+            </section>
+          </aside>
+          <main class="deck-profile-main">
+            <p>${escapeHtml(compactText(data.profile.intro, 86))}</p>
+            <div class="deck-profile-grid">
+              ${renderDeckInfoGroup('Education', data.profile.education)}
+              ${renderDeckInfoGroup('Experience', data.profile.experience)}
+              ${renderDeckInfoGroup('Licenses', data.profile.licenses)}
+              ${renderDeckInfoGroup('Skills', data.profile.skills)}
+            </div>
+          </main>
+        </article>
+      `;
+    }
+
+    function renderDeckExperiencePage(experience, index) {
+      const cards = experience.cards || {};
+      const specs = [
+        ['customerNeed', '?? ??'],
+        ['problemOpportunity', '?? OR ????'],
+        ['comparisonTarget', '?? ??'],
+      ];
+      return `
+        <article class="portfolio-canvas deck-reference-canvas deck-project-page">
+          ${renderDeckProjectHeader(experience.projectLabel || 'Project ' + String(index + 1).padStart(2, '0'), experience.introTitle || '?? ' + (index + 1) + ' : ???? ?? ??')}
+          <div class="deck-three-columns">
+            ${specs.map(([key, title]) => {
+              const card = cards[key] || {};
+              return `
+                <section class="deck-reference-card">
+                  <div class="deck-image-placeholder"></div>
+                  <h4>${escapeHtml(title)}</h4>
+                  <p>${escapeHtml(compactText(card.description || '?? ??? ???? ??? ???.', 56))}</p>
+                  <strong>${escapeHtml(compactText(card.keyword || title, 12))}</strong>
+                </section>
+              `;
+            }).join('')}
           </div>
         </article>
-      `);
-      document.getElementById('workspaceContent').innerHTML = renderDraftPageViewer(pages);
+      `;
+    }
+
+    function renderDeckResultPage(experience, index) {
+      const actions = experience.actions || {};
+      return `
+        <article class="portfolio-canvas deck-reference-canvas deck-result-page">
+          ${renderDeckProjectHeader(experience.projectLabel || 'Project ' + String(index + 1).padStart(2, '0'), experience.resultTitle || '??? : ? ??? ??? ? ???? KPI')}
+          <div class="deck-result-layout">
+            <section class="deck-chart-card">
+              <strong>${escapeHtml(compactText(experience.visual?.title || '????? ??', 22))}</strong>
+              <div class="deck-chart-lines"></div>
+              ${renderDeckPlainList(normalizePreviewList(experience.visual?.items, 3))}
+            </section>
+            <div class="deck-result-arrow">?</div>
+            <div class="deck-action-list">
+              ${renderDeckActionBox('01. ?? ?? ??', actions.problemAction)}
+              ${renderDeckActionBox('02. ??? ?? ??', actions.productivityAction)}
+              ${renderDeckActionBox('03. ????/?? ??', actions.communicationAction)}
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderDeckProjectHeader(label, title) {
+      return `
+        <header class="deck-project-header">
+          <span>${escapeHtml(label)}</span>
+          <h3>${escapeHtml(compactText(title, 46))}</h3>
+        </header>
+      `;
+    }
+
+    function renderDeckInfoGroup(title, items) {
+      return `
+        <section class="deck-info-group">
+          <h4>${escapeHtml(title)}</h4>
+          ${renderDeckPlainList(items)}
+        </section>
+      `;
+    }
+
+    function renderDeckActionBox(title, items) {
+      return `
+        <section class="deck-action-box">
+          <h4>${escapeHtml(title)}</h4>
+          ${renderDeckPlainList(normalizePreviewList(items, 2))}
+        </section>
+      `;
+    }
+
+    function renderDeckPlainList(items) {
+      const list = (items || []).filter(Boolean);
+      if (!list.length) return '<p>?? ?? ??</p>';
+      return `<ul>${list.map((item) => `<li>${escapeHtml(compactText(item, 44))}</li>`).join('')}</ul>`;
     }
 
     function renderCoverLetterPortfolio(raw) {

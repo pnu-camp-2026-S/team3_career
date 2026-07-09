@@ -3289,8 +3289,8 @@ assert.match(
 );
 assert.match(
   portfolioCreateHtml,
-  /function\s+renderDeckPortfolio\(raw\)[\s\S]*chunkItems\(slides,\s*4\)[\s\S]*renderDraftPageViewer\(pages\)/,
-  'portfolio_create should paginate PPT draft preview cards four slides at a time'
+  /function\s+renderDeckPortfolio\(raw\)[\s\S]*renderDeckCoverPage\(data\)[\s\S]*renderDeckProfilePage\(data\)[\s\S]*renderDeckExperiencePage\(experience,\s*index\)[\s\S]*renderDeckResultPage\(experience,\s*index\)[\s\S]*renderDraftPageViewer\(pages\)/,
+  'portfolio_create should render PPT draft preview as reference-style slide pages'
 );
 assert.ok(
   !/fetch\(KEYWORD_RECOMMEND_ENDPOINT/.test(portfolioCreateHtml),
