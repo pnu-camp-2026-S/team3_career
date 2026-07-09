@@ -269,7 +269,9 @@
         try {
           const aiDraft = await requestPortfolioGeneration({ format, purpose, major: major.label, experiences, keywords });
           currentPortfolio = normalizeGeneratedPortfolio(aiDraft, portfolioShell);
-          showToast('ChatGPT API로 초안을 생성했습니다.');
+          showToast(currentPortfolio.sourceLabel === '목데이터 생성'
+            ? '목데이터로 초안을 생성했습니다.'
+            : 'ChatGPT API로 초안을 생성했습니다.');
           renderPortfolioPreview();
         } catch (error) {
           console.warn('OpenAI portfolio generation failed.', error);
@@ -401,7 +403,7 @@
         competencies: aiDraft.competencies || [],
         applicationSentences: aiDraft.applicationSentences || [],
         raw: aiDraft.raw || null,
-        sourceLabel: 'ChatGPT 생성',
+        sourceLabel: aiDraft.sourceLabel || 'ChatGPT 생성',
         updatedAt: new Date().toISOString(),
       };
     }
