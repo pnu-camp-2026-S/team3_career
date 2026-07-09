@@ -1063,6 +1063,254 @@ html.portfolio-edit-entry #pfLoadingScreen.hidden {
   color: #17203a;
 }
 
+.onepage-summary-canvas {
+  width: min(760px, 100%);
+  min-height: 1040px;
+  margin: 0 auto;
+  padding: 54px 58px;
+  background: #f3f4f1;
+  color: #222;
+}
+
+.onepage-top {
+  display: grid;
+  grid-template-columns: 132px minmax(0, 1fr) 270px;
+  gap: 28px;
+  align-items: start;
+}
+
+.onepage-profile-visual {
+  display: grid;
+  justify-items: center;
+  padding-top: 14px;
+}
+
+.onepage-profile-visual img,
+.onepage-human-icon {
+  width: 92px;
+  height: 92px;
+  border-radius: 999px;
+  background: #e7ebee;
+}
+
+.onepage-profile-visual img {
+  object-fit: cover;
+}
+
+.onepage-human-icon {
+  position: relative;
+  display: block;
+}
+
+.onepage-human-icon::before,
+.onepage-human-icon::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #c5cbd3;
+}
+
+.onepage-human-icon::before {
+  top: 20px;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+}
+
+.onepage-human-icon::after {
+  bottom: 13px;
+  width: 70px;
+  height: 40px;
+  border-radius: 42px 42px 12px 12px;
+}
+
+.onepage-headline {
+  min-width: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.onepage-headline .canvas-kicker {
+  color: #3f776f;
+  background: transparent;
+  padding: 0;
+}
+
+.onepage-headline h3 {
+  margin: 4px 0 0;
+  font-size: 30px;
+  line-height: 1.15;
+}
+
+.onepage-headline p {
+  margin: 0;
+  color: #697471;
+  line-height: 1.65;
+}
+
+.onepage-headline .onepage-self-intro {
+  color: #222;
+}
+
+.onepage-headline strong {
+  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  border-radius: 999px;
+  padding: 0 18px;
+  color: #fff;
+  background: #3f776f;
+  font-size: 14px;
+}
+
+.onepage-about-card,
+.onepage-card,
+.onepage-experience-card {
+  border: 1px solid #e1e6e2;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 1px 0 rgba(20, 28, 38, 0.02);
+}
+
+.onepage-about-card {
+  padding: 22px 26px;
+}
+
+.onepage-about-card h4,
+.onepage-card h4,
+.onepage-experience-section > h4 {
+  margin: 0 0 20px;
+  color: #222;
+  font-size: 18px;
+  font-weight: 950;
+}
+
+.onepage-about-card .info-rows,
+.target-card .info-rows {
+  margin: 0;
+}
+
+.onepage-about-card .info-rows div,
+.target-card .info-rows div {
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 10px;
+  align-items: baseline;
+}
+
+.onepage-about-card .info-rows dt,
+.target-card .info-rows dt {
+  color: #3f776f;
+  font-size: 12px;
+}
+
+.onepage-about-card .info-rows dd,
+.target-card .info-rows dd {
+  color: #222;
+  font-size: 12.5px;
+  font-weight: 850;
+}
+
+.onepage-mid-grid,
+.onepage-bottom-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 34px;
+  margin-top: 58px;
+}
+
+.onepage-card {
+  min-height: 190px;
+  padding: 28px 30px;
+}
+
+.onepage-card ul {
+  font-size: 16px;
+  font-weight: 850;
+  line-height: 1.7;
+}
+
+.onepage-experience-section {
+  margin-top: 56px;
+}
+
+.onepage-experience-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 26px;
+}
+
+.onepage-experience-card {
+  min-height: 180px;
+  padding: 28px 24px 22px;
+}
+
+.onepage-experience-card span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  border-radius: 999px;
+  padding: 0 14px;
+  color: #3f776f;
+  background: #eaf3f1;
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.onepage-experience-card h5 {
+  margin: 16px 0 18px;
+  color: #222;
+  font-size: 17px;
+  line-height: 1.35;
+}
+
+.onepage-experience-card p {
+  margin: 0 0 16px;
+  color: #4c5754;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.onepage-experience-card strong {
+  color: #2e625c;
+  font-size: 13px;
+}
+
+.onepage-missing-card span {
+  color: #697471;
+  background: #f2f4f3;
+}
+
+.onepage-bottom-grid {
+  margin-top: 52px;
+}
+
+.onepage-bottom-grid .onepage-card {
+  min-height: 118px;
+}
+
+.onepage-bottom-grid .canvas-chip-list span {
+  color: #fff;
+  background: #3f776f;
+  border-color: #3f776f;
+}
+
+.onepage-differentiator {
+  margin: 38px 0 0;
+  color: #222;
+  font-size: 15px;
+  font-weight: 850;
+  line-height: 1.5;
+}
+
+.onepage-differentiator b {
+  margin-right: 18px;
+  color: #3f776f;
+  font-size: 13px;
+  letter-spacing: 0.01em;
+}
+
 .case-flow-preview {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
