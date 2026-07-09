@@ -1768,7 +1768,7 @@ assert.match(
 );
 assert.match(
   createCss,
-  /\.status-pill\s*\{[^}]*display:\s*inline-flex;[^}]*justify-content:\s*center;[^}]*align-items:\s*center;[^}]*width:\s*80px;[^}]*padding:\s*0;/s,
+  /\.status-pill\s*\{[^}]*justify-content:\s*center;[^}]*align-items:\s*center;[^}]*width:\s*80px;[^}]*height:\s*28px;[^}]*padding:\s*0;[^}]*line-height:\s*1;[^}]*\}[\s\S]*\.manager-file-card\s+\.status-pill\s*\{[^}]*display:\s*inline-flex;[^}]*margin-top:\s*0;/s,
   '파일 상태 뱃지는 5글자 기준 고정 폭 안에서 텍스트를 중앙 정렬해야 한다'
 );
 // #166-1: 완료 ↔ 진행중 양방향 이동
