@@ -52,6 +52,15 @@
     return ensureAnalysisSubfolder(folderId, baseSubfolders);
   }
 
+  function createSubfolder(folder, label) {
+    const folderId = folder?.id || 'project';
+    return {
+      id: `${folderId}::custom-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
+      label: String(label || '새 세부 폴더').trim() || '새 세부 폴더',
+      files: [],
+    };
+  }
+
   function ensureAnalysisSubfolder(folderId, subfolders) {
     const normalized = (subfolders || []).map((sub) => ({
       id: sub.id,
@@ -284,6 +293,7 @@
         id: folder.id,
         group: folder.group,
         label: folder.label,
+        subfolders: stripSubfolderFiles(folder.subfolders),
         github: folder.github || null,
       }),
     });
@@ -324,6 +334,7 @@
     subfolderTemplateFor,
     createDefaultFolders,
     createFolder,
+    createSubfolder,
     deleteFolder,
     normalizeFolderLabel,
     normalizeFolderFiles,

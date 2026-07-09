@@ -52,21 +52,23 @@
               <p class="panel-note" id="editablePanelDesc">선택한 폴더의 자료를 확인하고 클릭 반응을 테스트합니다.</p>
             </div>
             <div class="project-actions">
-              <button class="ghost-button compact-button" type="button" data-action="add-conversation">대화로 내용 추가하기</button>
               <button class="primary-button compact-button" type="button" data-action="toggle-group" id="moveGroupButton">완료로 이동</button>
             </div>
           </div>
 
           <div class="subfolder-toolbar">
-            <h3 id="subfolderPanelTitle">세부 폴더</h3>
-            <span class="panel-note" id="subfolderPanelHint">활동 유형별 하위 폴더입니다. 하위 폴더를 선택하면 그 안의 자료만 보여요.</span>
+            <div>
+              <h3 id="subfolderPanelTitle">세부 폴더</h3>
+              <span class="panel-note" id="subfolderPanelHint">활동 유형별 하위 폴더입니다. 하위 폴더를 선택하면 그 안의 자료만 보여요.</span>
+            </div>
+            <button class="ghost-button compact-button" type="button" data-action="create-subfolder">세부 폴더 추가</button>
           </div>
           <div id="subfolderList" class="subfolder-list"></div>
 
-          <input class="visually-hidden" id="managedFileInput" type="file" multiple />
+          <input class="visually-hidden" id="managedFileInput" type="file" multiple accept=".pdf,.md,.txt,.csv,.docx,application/pdf,text/markdown,text/plain,text/csv,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
           <div class="manager-dropzone" data-action="add-file" role="button" tabindex="0">
             <strong>자료 추가</strong>
-            <span id="dropzoneHint">클릭하거나 파일을 이곳에 끌어다 놓으세요. 선택한 세부 폴더에 자료가 추가됩니다.</span>
+            <span id="dropzoneHint">PDF, Markdown, TXT, CSV, DOCX 자료를 추가하면 선택한 세부 폴더에 저장되고 AI 요약을 시도합니다.</span>
           </div>
 
           <div id="managedFileList" class="manager-file-list"></div>
