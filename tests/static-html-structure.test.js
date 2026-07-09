@@ -1360,9 +1360,26 @@ assert.match(
 );
 assert.match(
   mypageHtml,
-  /<div class="section-stack">\s*<div class="profile-top-actions">\s*<div class="form-actions" data-form-actions><\/div>\s*<\/div>\s*<section class="profile-section" id="basic">\s*<h2 class="section-heading">기본 정보<\/h2>/,
+  /<div class="section-stack">\s*<div class="profile-top-actions">\s*<div class="form-actions" data-form-actions><\/div>\s*<\/div>\s*<section class="profile-section" id="basic">\s*<h2 class="section-heading">기본 정보[\s\S]*?<\/h2>/,
   'mypage edit and save actions should sit above the basic information card'
 );
+assert.match(
+  mypageHtml,
+  /<section class="profile-section" id="basic">[\s\S]*기본 정보 <span class="required-marker" aria-label="필수 입력">\*<\/span>/,
+  'mypage basic information heading should show the required marker'
+);
+assert.match(
+  mypageHtml,
+  /<section class="profile-section" id="contact">[\s\S]*연락처 정보 <span class="required-marker" aria-label="필수 입력">\*<\/span>/,
+  'mypage contact information heading should show the required marker'
+);
+for (const optionalSectionId of ['school', 'condition', 'interest']) {
+  assert.match(
+    mypageHtml,
+    new RegExp(`<section class="profile-section" id="${optionalSectionId}">[\\s\\S]*class="section-note"[\\s\\S]*입력하지 않으면 추후 기능 사용이 어려울 수 있습니다`),
+    `mypage ${optionalSectionId} section should explain optional-but-recommended profile input`
+  );
+}
 assert.ok(
   !/<section class="profile-section" id="basic">[\s\S]*<div class="form-actions" data-form-actions><\/div>/.test(mypageHtml),
   'mypage should not keep the edit and save actions inside the basic information card'
@@ -1387,6 +1404,21 @@ assert.match(
   mypageHtml,
   /async function\s+saveProfile\(\)[\s\S]*fetch\(PROFILE_ENDPOINT,\s*\{[\s\S]*method:\s*"PUT"[\s\S]*body:\s*JSON\.stringify\(payload\)/,
   'mypage should save edited profile values through the Supabase profile API'
+);
+assert.match(
+  mypageHtml,
+  /const requiredFieldRules = \[[\s\S]*key:\s*"name"[\s\S]*key:\s*"gender"[\s\S]*key:\s*"birthDate"[\s\S]*key:\s*"email"[\s\S]*key:\s*"phone"[\s\S]*key:\s*"address"/,
+  'mypage should define required basic and contact profile fields'
+);
+assert.match(
+  mypageHtml,
+  /function\s+validateRequiredProfileFields\(\)[\s\S]*profileState\.validationErrors\s*=\s*new Set[\s\S]*scrollIntoView\(\{ behavior:\s*"smooth",\s*block:\s*"start" \}\)[\s\S]*필수 정보를 모두 입력해주세요/,
+  'mypage should scroll to the first missing required section and show a validation message'
+);
+assert.match(
+  mypageHtml,
+  /if\s*\(!validateRequiredProfileFields\(\)\)\s*\{[\s\S]*renderFormActions\(\);[\s\S]*return;[\s\S]*\}[\s\S]*profileState\.saving\s*=\s*true;/,
+  'mypage should validate required fields before entering saving state'
 );
 const saveProfileSource = (mypageHtml.match(/async function\s+saveProfile\(\)[\s\S]*?\n    function renderAllDynamicParts/) || [''])[0];
 assert.ok(
@@ -1469,6 +1501,21 @@ assert.match(
   mypageCss,
   /\.education-grid\s*\{[^}]*grid-template-columns:\s*140px 1fr 1\.3fr 1fr 1fr;/s,
   'mypage education grid should use five columns after removing GPA'
+);
+assert.match(
+  mypageCss,
+  /\.required-marker\s*\{[^}]*color:\s*#d13f52;/s,
+  'mypage required markers should use the red required color'
+);
+assert.match(
+  mypageCss,
+  /\.section-note\s*\{[^}]*color:\s*#8b95a7;[\s\S]*\.section-note-icon\s*\{[^}]*border:\s*1px solid #a4adbc;/s,
+  'mypage optional section notes should use a muted circular info icon'
+);
+assert.match(
+  mypageCss,
+  /\.form-field\.has-error input,\s*\.form-field\.has-error select,\s*\.form-field\.has-error \.date-trigger\s*\{[^}]*border-color:\s*#d13f52;/s,
+  'mypage missing required fields should show a red border'
 );
 assert.match(
   mypageCss,
