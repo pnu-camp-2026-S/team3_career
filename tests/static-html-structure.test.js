@@ -339,8 +339,17 @@ assert.match(
 );
 assert.match(
   sharedNavJs,
-  /href="withdraw\.html"[\s\S]*회원 탈퇴/,
-  'shared navigation profile dropdown should link to account withdrawal'
+  /class="avatar" data-profile-avatar/,
+  'shared navigation should expose the avatar element for persisted profile photos'
+);
+assert.match(
+  sharedNavJs,
+  /data-profile-name-card/,
+  'shared navigation should render a passive user name card next to the profile icon'
+);
+assert.ok(
+  !sharedNavJs.includes('href="withdraw.html"') && !sharedNavJs.includes('profile-danger-link'),
+  'shared navigation profile dropdown should not expose account withdrawal'
 );
 assert.ok(
   !/aria-label="알림"|<button class="icon-button"[^>]*>\s*!/.test(sharedNavJs),
@@ -369,6 +378,11 @@ assert.match(
   authNavJs,
   /function\s+wireProfileMenus/,
   'auth navigation should wire profile dropdown menus'
+);
+assert.match(
+  authNavJs,
+  /function\s+renderProfileAvatars\(account\)[\s\S]*account\?\.avatarUrl[\s\S]*<img src="\$\{escapeAttribute\(photo\)\}" alt="프로필 사진" \/>[\s\S]*classList\.toggle\('has-photo'/,
+  'auth navigation should render the saved profile photo inside the shared avatar'
 );
 assert.match(
   authNavJs,
@@ -419,6 +433,15 @@ for (const department of ['컴퓨터공학과', '전기공학과', '화공생명
     `activity recommendation dataset should score every activity for ${department}`
   );
 }
+assert.ok(
+  activityRecommendationDataset.every(
+    (item) =>
+      Array.isArray(item.targetCompanies) &&
+      Array.isArray(item.targetIndustries) &&
+      Array.isArray(item.interestFields)
+  ),
+  'activity recommendation dataset should include company, industry, and interest field mock signals'
+);
 assert.match(
   fitfolioCss,
   /\.auth-tab\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*center;[^}]*justify-content:\s*center;/s,
@@ -489,10 +512,12 @@ const authLogoutRoutePath = path.join(appDir, 'api', 'auth', 'logout', 'route.js
 const authWithdrawRoutePath = path.join(appDir, 'api', 'auth', 'withdraw', 'route.js');
 const userProfileRoutePath = path.join(appDir, 'api', 'profile', 'route.js');
 const activityFilesRoutePath = path.join(appDir, 'api', 'activity-files', 'route.js');
+const activitySchedulesRoutePath = path.join(appDir, 'api', 'activity-schedules', 'route.js');
 const portfoliosRoutePath = path.join(appDir, 'api', 'portfolios', 'route.js');
 const profilesSchemaPath = path.join(rootDir, 'docs', 'supabase-profiles.sql');
 const userProfilesSchemaPath = path.join(rootDir, 'docs', 'supabase-user-profiles.sql');
 const activityFilesSchemaPath = path.join(rootDir, 'docs', 'supabase-activity-files.sql');
+const activitySchedulesSchemaPath = path.join(rootDir, 'docs', 'supabase-activity-schedules.sql');
 const portfoliosSchemaPath = path.join(rootDir, 'docs', 'supabase-portfolios.sql');
 assert.ok(fs.existsSync(supabaseServerPath), 'Supabase server helper should live in lib/supabase-server.js');
 assert.ok(fs.existsSync(socialAuthRoutePath), 'social login API should live in app/api/auth/social/route.js');
@@ -502,10 +527,12 @@ assert.ok(fs.existsSync(authLogoutRoutePath), 'logout API should live in app/api
 assert.ok(fs.existsSync(authWithdrawRoutePath), 'account withdrawal API should live in app/api/auth/withdraw/route.js');
 assert.ok(fs.existsSync(userProfileRoutePath), 'mypage profile API should live in app/api/profile/route.js');
 assert.ok(fs.existsSync(activityFilesRoutePath), 'activity file API should live in app/api/activity-files/route.js');
+assert.ok(fs.existsSync(activitySchedulesRoutePath), 'activity schedule API should live in app/api/activity-schedules/route.js');
 assert.ok(fs.existsSync(portfoliosRoutePath), 'portfolio API should live in app/api/portfolios/route.js');
 assert.ok(fs.existsSync(profilesSchemaPath), 'Supabase profiles schema should be documented for DB setup');
 assert.ok(fs.existsSync(userProfilesSchemaPath), 'Supabase user_profiles schema should be documented for mypage DB setup');
 assert.ok(fs.existsSync(activityFilesSchemaPath), 'Supabase activity_files schema should be documented for file DB setup');
+assert.ok(fs.existsSync(activitySchedulesSchemaPath), 'Supabase activity_schedules schema should be documented for recommendation calendar DB setup');
 assert.ok(fs.existsSync(portfoliosSchemaPath), 'Supabase portfolios schema should be documented for portfolio DB setup');
 const supabaseServer = fs.existsSync(supabaseServerPath) ? fs.readFileSync(supabaseServerPath, 'utf8') : '';
 const socialAuthRoute = fs.existsSync(socialAuthRoutePath) ? fs.readFileSync(socialAuthRoutePath, 'utf8') : '';
@@ -515,10 +542,12 @@ const authLogoutRoute = fs.existsSync(authLogoutRoutePath) ? fs.readFileSync(aut
 const authWithdrawRoute = fs.existsSync(authWithdrawRoutePath) ? fs.readFileSync(authWithdrawRoutePath, 'utf8') : '';
 const userProfileRoute = fs.existsSync(userProfileRoutePath) ? fs.readFileSync(userProfileRoutePath, 'utf8') : '';
 const activityFilesRoute = fs.existsSync(activityFilesRoutePath) ? fs.readFileSync(activityFilesRoutePath, 'utf8') : '';
+const activitySchedulesRoute = fs.existsSync(activitySchedulesRoutePath) ? fs.readFileSync(activitySchedulesRoutePath, 'utf8') : '';
 const portfoliosRoute = fs.existsSync(portfoliosRoutePath) ? fs.readFileSync(portfoliosRoutePath, 'utf8') : '';
 const profilesSchema = fs.existsSync(profilesSchemaPath) ? fs.readFileSync(profilesSchemaPath, 'utf8') : '';
 const userProfilesSchema = fs.existsSync(userProfilesSchemaPath) ? fs.readFileSync(userProfilesSchemaPath, 'utf8') : '';
 const activityFilesSchema = fs.existsSync(activityFilesSchemaPath) ? fs.readFileSync(activityFilesSchemaPath, 'utf8') : '';
+const activitySchedulesSchema = fs.existsSync(activitySchedulesSchemaPath) ? fs.readFileSync(activitySchedulesSchemaPath, 'utf8') : '';
 const portfoliosSchema = fs.existsSync(portfoliosSchemaPath) ? fs.readFileSync(portfoliosSchemaPath, 'utf8') : '';
 
 assert.match(
@@ -573,6 +602,11 @@ assert.match(
   'profile API should load the current user mypage profile from Supabase'
 );
 assert.match(
+  authMeRoute,
+  /\.from\('user_profiles'\)[\s\S]*\.select\('preferences'\)[\s\S]*uploadedPhoto[\s\S]*avatarUrl:\s*uploadedPhoto\s*\|\|\s*profile\?\.avatar_url/,
+  'auth me API should prefer the persisted mypage photo for the shared avatar'
+);
+assert.match(
   authWithdrawRoute,
   /async function getCurrentUser\(supabase\)[\s\S]*supabase\.auth\.getUser\(\)[\s\S]*export async function POST\(\)[\s\S]*getCurrentUser\(supabase\)[\s\S]*createSupabaseAdminClient\(\)/,
   'withdrawal API should authenticate the current Supabase user and use the server admin client'
@@ -584,7 +618,7 @@ assert.match(
 );
 assert.match(
   authWithdrawRoute,
-  /USER_ROW_TARGETS[\s\S]*activity_files[\s\S]*portfolios[\s\S]*user_profiles[\s\S]*profiles[\s\S]*\.delete\(\)[\s\S]*\.eq\(target\.column, userId\)/,
+  /USER_ROW_TARGETS[\s\S]*activity_schedules[\s\S]*activity_files[\s\S]*portfolios[\s\S]*user_profiles[\s\S]*profiles[\s\S]*\.delete\(\)[\s\S]*\.eq\(target\.column, userId\)/,
   'withdrawal API should hard-delete app-owned rows for the withdrawing user'
 );
 assert.match(
@@ -609,8 +643,23 @@ assert.match(
 );
 assert.match(
   userProfileRoute,
-  /user_id:\s*user\.id[\s\S]*birth_date:[\s\S]*educations:[\s\S]*preferences:[\s\S]*chips:/,
+  /user_id:\s*user\.id[\s\S]*birth_date:[\s\S]*educations:[\s\S]*preferences[:,][\s\S]*chips:/,
   'profile API should map mypage fields into the user_profiles table'
+);
+assert.match(
+  userProfileRoute,
+  /function\s+normalizePhoto\(value\)[\s\S]*startsWith\('data:image\/'\)/,
+  'profile API should validate persisted mypage profile photos'
+);
+assert.match(
+  userProfileRoute,
+  /photo:\s*normalizePhoto\(normalizeObject\(row\.preferences\)\.profilePhoto\)/,
+  'profile API should return the persisted mypage profile photo to the client'
+);
+assert.match(
+  userProfileRoute,
+  /preferences\.profilePhoto\s*=\s*normalizePhoto\(payload\.photo\)/,
+  'profile API should persist and return the mypage profile photo through preferences.profilePhoto'
 );
 assert.match(
   userProfilesSchema,
@@ -648,6 +697,26 @@ assert.match(
   'activity file API should remove both Storage objects and activity_files rows'
 );
 assert.match(
+  activitySchedulesRoute,
+  /export async function GET\(\)[\s\S]*\.from\('activity_schedules'\)[\s\S]*\.eq\('user_id',\s*user\.id\)/,
+  'activity schedule API should list saved recommendation calendar items for the current user'
+);
+assert.match(
+  activitySchedulesRoute,
+  /PROFILE_SCHEDULE_KEY\s*=\s*'savedActivitySchedules'[\s\S]*function\s+loadProfileScheduleFallback\(supabase,\s*userId\)[\s\S]*\.from\('user_profiles'\)/,
+  'activity schedule API should restore saved calendar items from user_profiles when the schedule table is unavailable'
+);
+assert.match(
+  activitySchedulesRoute,
+  /export async function PUT\(request\)[\s\S]*\.from\('activity_schedules'\)[\s\S]*\.delete\(\)[\s\S]*\.insert\(rows\)/,
+  'activity schedule API should replace saved calendar items in Supabase'
+);
+assert.match(
+  activitySchedulesRoute,
+  /function\s+saveProfileScheduleFallback\(supabase,\s*userId,\s*schedules\)[\s\S]*\[PROFILE_SCHEDULE_KEY\]:\s*toClientSchedules\(schedules\)[\s\S]*\.from\('user_profiles'\)[\s\S]*upsert\(/,
+  'activity schedule API should persist saved calendar items to user_profiles as a migration-safe fallback'
+);
+assert.match(
   portfoliosRoute,
   /export async function GET\(request\)[\s\S]*\.from\('portfolios'\)[\s\S]*deleted_at/,
   'portfolio API should list non-deleted current user portfolios'
@@ -676,6 +745,16 @@ assert.match(
   activityFilesSchema,
   /insert into storage\.buckets[\s\S]*activity-files/,
   'activity_files schema should create the activity-files Storage bucket'
+);
+assert.match(
+  activitySchedulesSchema,
+  /create table if not exists public\.activity_schedules[\s\S]*user_id uuid not null references auth\.users\(id\) on delete cascade[\s\S]*primary key \(user_id, activity_id\)/,
+  'activity_schedules schema should store saved recommendation calendar items per user'
+);
+assert.match(
+  activitySchedulesSchema,
+  /alter table public\.activity_schedules enable row level security[\s\S]*auth\.uid\(\) = user_id/,
+  'activity_schedules schema should restrict saved calendar items to their owner'
 );
 
 // #167: 프로젝트-하위폴더 트리 구조 컬럼과 마이그레이션
@@ -867,50 +946,65 @@ assert.ok(
   'main sidebar should not include the open/close toggle button'
 );
 assert.ok(
-  !/<span class="folder-count">/.test(mainHtml),
-  'main sidebar folder rows should not display the file count number'
+  !mainHtml.includes('id="activitySidebar"') && !mainHtml.includes('id="sidebarResizeHandle"'),
+  'main page should remove the old activity sidebar and resize handle'
 );
 assert.match(
   mainHtml,
-  /id="sidebarResizeHandle"/,
-  'main sidebar should keep the width resize handle'
+  /id="mainTutorialPanel"[\s\S]*id="mainTutorialToggle"[\s\S]*aria-controls="mainTutorialBody"/,
+  'main page should include a collapsible tutorial panel'
 );
 assert.match(
   mainHtml,
-  /const\s+sidebarResizeHandle\s*=\s*document\.getElementById\('sidebarResizeHandle'\)/,
-  'main sidebar should keep the resize handle element wired in JavaScript'
+  /myfitfolioMainTutorialSeen/,
+  'main tutorial should remember whether the user has already seen it'
 );
 assert.match(
   mainHtml,
-  /myfitfolioSidebarWidth/,
-  'main sidebar should persist the resized sidebar width'
+  /function\s+initializeTutorialPanel\(\)[\s\S]*localStorage\.getItem\(TUTORIAL_SEEN_KEY\)[\s\S]*setTutorialOpen\(shouldOpen\)[\s\S]*localStorage\.setItem\(TUTORIAL_SEEN_KEY,\s*'true'\)/,
+  'main tutorial should open for first-time users and collapse by default after it has been seen'
 );
 assert.ok(
   !mainHtml.includes('id="deleteModeBtn"'),
   'main sidebar should remove the old delete mode button'
 );
 assert.ok(
-  !mainHtml.includes('활동 자료 업로드'),
-  'main sidebar should remove the activity upload button'
-);
-assert.match(
-  mainHtml,
-  /data-analysis-start/,
-  'main sidebar should move analysis start to the top action area'
+  !mainHtml.includes('id="fileInput"'),
+  'main dashboard should not offer a file upload input'
 );
 assert.ok(
-  !mainHtml.includes('id="fileInput"'),
-  'main sidebar should not offer a file upload input (uploads happen in file management only)'
+  !mainHtml.includes('data-analysis-start') && !mainHtml.includes('class="dashboard-head"'),
+  'main dashboard should remove the visible AI full analysis title and start button'
 );
 assert.match(
   mainHtml,
-  /완료된 활동 폴더의 자료로 강점 키워드와 활동 분류를 정리해 드려요/,
-  'main sidebar should explain that completed folders drive analysis'
+  /<ol class="tutorial-groups">[\s\S]*href="mypage\.html">[\s\S]*href="create\.html">[\s\S]*href="portfolio_create\.html">[\s\S]*href="portfolio_manage\.html">[\s\S]*href="contest\.html">/ ,
+  'main tutorial should show one row per destination with navigation actions'
 );
 assert.match(
   mainHtml,
-  /진행중인 활동 폴더/,
-  'main sidebar should rename ready folders to in-progress folders'
+  /<img class="tutorial-illustration" src="data:image\/svg\+xml,[^"]+" alt="" \/>/,
+  'main tutorial should include an image with each explanation'
+);
+assert.match(
+  mainHtml,
+  /class="tutorial-group tutorial-group-nested"[\s\S]*class="tutorial-substeps"[\s\S]*portfolio_create\.html/ ,
+  'main tutorial should group same-page portfolio creation tasks inside one nested box'
+);
+assert.match(
+  mainHtml,
+  /tutorial-step-meta[\s\S]*1단계[\s\S]*tutorial-nav-name">마이페이지[\s\S]*tutorial-step-meta[\s\S]*2단계[\s\S]*tutorial-nav-name">파일관리[\s\S]*tutorial-step-meta[\s\S]*3-4단계[\s\S]*tutorial-nav-name">포트폴리오 생성[\s\S]*tutorial-step-meta[\s\S]*5단계[\s\S]*tutorial-nav-name">포트폴리오 관리[\s\S]*tutorial-step-meta[\s\S]*6단계[\s\S]*tutorial-nav-name">활동 추천/,
+  'main tutorial should show the matching top navigation tab name next to each step label'
+);
+assert.match(
+  mainHtml,
+  /<ol class="tutorial-substeps"[\s\S]*<li class="tutorial-substep"><strong>3\. 원하는 형식 선택<\/strong><span>[\s\S]*<li class="tutorial-substep"><strong>4\. AI 대화창에서 내용 수정<\/strong><span>/,
+  'main tutorial should list portfolio creation steps 3 and 4 as one-line rows'
+);
+assert.match(
+  mainHtml,
+  /<li class="tutorial-substep"><strong>3\. 원하는 형식 선택<\/strong><span>[\s\S]*<figure class="tutorial-image-slot">[\s\S]*src="\/images\/tutorial\/portfolio_format\.png"[\s\S]*<li class="tutorial-substep"><strong>4\. AI 대화창에서 내용 수정<\/strong><span>[\s\S]*<figure class="tutorial-image-slot">[\s\S]*src="\/images\/tutorial\/portfolio_modify\.png"/,
+  'main tutorial should keep portfolio creation screenshots under each matching step'
 );
 assert.match(
   folderStoreJs,
@@ -935,10 +1029,9 @@ assert.ok(
   !mainHtml.includes('data-rename-folder') && !mainHtml.includes('renameFolder') && !mainHtml.includes('폴더명 수정'),
   'main sidebar should not offer folder rename controls (#125)'
 );
-assert.match(
-  mainHtml,
-  /<a class="folder-row" href="create\.html\?folder=\$\{escapeHtml\(folder\.id\)\}"/,
-  'main sidebar folders should be summary cards linking to file management (#126 5-7)'
+assert.ok(
+  !mainHtml.includes('<a class="folder-row"') && !/function\s+renderFolder\(/.test(mainHtml),
+  'main page should remove sidebar folder summary cards'
 );
 assert.ok(
   !mainHtml.includes('data-toggle-folder') && !mainHtml.includes('파일을 이 폴더로 끌어오세요'),
@@ -982,34 +1075,28 @@ assert.match(
   /async function\s+loadActivityFilesFromApi\(\)[\s\S]*fetch\(ACTIVITY_FILES_ENDPOINT/,
   'main dashboard should load existing uploaded files from the activity file API'
 );
-assert.match(
-  mainHtml,
-  /FolderStore\.FOLDER_GROUPS/,
-  'main sidebar should render folder groups from the shared folder store'
+assert.ok(
+  !mainHtml.includes('FolderStore.FOLDER_GROUPS'),
+  'main page should not render sidebar folder groups'
 );
 
 assert.match(
   mainHtml,
-  /내 정보 입력이 필요해요/,
+  /id="profileNeededPanel"[\s\S]*class="next-card profile-needed-card"/,
   'main dashboard should show a large profile-required message before profile save'
 );
 assert.match(
   mainHtml,
-  /class="next-card profile-needed-card"[\s\S]*class="metric-icon"[\s\S]*![\s\S]*내 정보 입력이 필요해요/,
+  /class="next-card profile-needed-card"[\s\S]*class="metric-icon"[\s\S]*!/,
   'main profile-required warning should keep the original large next-card icon layout'
 );
 assert.match(
   mainHtml,
-  /href="mypage\.html">내 정보 작성하기<\/a>/,
-  'main profile-required warning should keep the mypage call to action'
-);
-assert.match(
-  mainHtml,
-  /href="create\.html">활동기록 먼저 정리하기<\/a>/,
-  'main profile-required warning should keep the activity organization call to action'
+  /class="next-card profile-needed-card"[\s\S]*href="mypage\.html"[\s\S]*href="create\.html"/,
+  'main profile-required warning should keep the mypage and activity organization calls to action'
 );
 assert.ok(
-  !mainHtml.includes('파일 관리로 이동'),
+  !mainHtml.includes('<a class="folder-row"'),
   'main sidebar should remove per-folder file management shortcut buttons'
 );
 assert.match(
@@ -1081,8 +1168,8 @@ assert.match(
 );
 assert.match(
   mainHtml,
-  /data-analysis-start\]'\)\.addEventListener\('click',\s*async\s*\(\)\s*=>\s*\{\s*await runAnalysis\(\)/,
-  'the analysis start button should trigger runAnalysis'
+  /async function\s+renderDashboardState\(\)[\s\S]*analysisDashboard\.hidden\s*=\s*!isProfileSaved/,
+  'main dashboard should keep the analysis panel below the tutorial for saved profiles'
 );
 assert.match(
   mainHtml,
@@ -1101,8 +1188,18 @@ assert.match(
 );
 assert.match(
   mainHtml,
-  /function\s+getFolderFileTotal[\s\S]*folder\.group\s*===\s*groupKey[\s\S]*sum\s*\+\s*FolderStore\.getFolderFiles\(folder\)\.length/,
-  'main dashboard should total analysis counts from files inside each folder group'
+  /function\s+getFolderFileTotal\(groupKey\)[\s\S]*folder\.group\s*===\s*groupKey[\s\S]*sum\s*\+\s*getUserActivityFiles\(folder\)\.length[\s\S]*function\s+getUserActivityFiles\(folder\)[\s\S]*file\.kind\s*!==\s*'analysis-summary'/,
+  'main dashboard should total analysis counts from user files inside each folder group'
+);
+assert.match(
+  mainHtml,
+  /function\s+isAnalyzedActivityFile\(file\)[\s\S]*file\.status\s*===\s*'분석완료'[\s\S]*file\.analysisStatus\s*===\s*'completed'[\s\S]*function\s+hasAnalyzedActivityFiles\(\)[\s\S]*getUserActivityFiles\(folder\)\.some\(isAnalyzedActivityFile\)/,
+  'main dashboard should detect files analyzed from the file management analyze button'
+);
+assert.match(
+  mainHtml,
+  /function\s+applyAnalysisState\(\)[\s\S]*shouldShowAnalysisCards\s*=\s*hasAnalyzed\s*\|\|\s*hasAnalyzedFiles[\s\S]*classificationResult'\)\.hidden\s*=\s*!shouldShowAnalysisCards/,
+  'main dashboard should show the classification donut after file analysis even before aggregate keyword analysis'
 );
 assert.match(
   mainHtml,
@@ -1161,6 +1258,30 @@ assert.match(
 );
 assert.match(
   mainHtml,
+  /analysis-info-control[\s\S]*analysis-info-tooltip/,
+  'main dashboard info buttons should show hover tooltips instead of click-open boxes'
+);
+assert.ok(
+  !mainHtml.includes('data-info-target') && !mainHtml.includes('analysis-info-box'),
+  'main dashboard info help should not depend on click toggled info boxes'
+);
+assert.match(
+  fitfolioCss,
+  /\.keyword-overview\[hidden\]\s*\{[^}]*display:\s*none;/s,
+  'main dashboard should fully hide the keyword overview box when hidden'
+);
+assert.match(
+  fitfolioCss,
+  /\.analysis-empty-state\[hidden\]\s*\{[^}]*display:\s*none;/s,
+  'main dashboard should hide the 분석이 필요합니다 empty state after analysis'
+);
+assert.match(
+  fitfolioCss,
+  /\.classification-visual\[hidden\]\s*\{[^}]*display:\s*none;/s,
+  'main dashboard should hide the classification donut before analysis'
+);
+assert.match(
+  mainHtml,
   /id="analysisOverview"[\s\S]*id="analysisOverviewText"/,
   'main dashboard should include an AI analysis overview panel below the analysis cards'
 );
@@ -1174,9 +1295,10 @@ assert.match(
   /function\s+applyAggregateResult\(result\)[\s\S]*updateAnalysisSummary\(\)/,
   'main dashboard should update analysis numbers when analysis runs'
 );
-assert.ok(
-  !/function\s+renderDashboardState\(\)\s*\{[^}]*updateAnalysisSummary\(\)/.test(mainHtml),
-  'main dashboard should not refresh analysis numbers just because folders render'
+assert.match(
+  mainHtml,
+  /async function\s+renderDashboardState\(\)\s*\{[\s\S]*updateAnalysisSummary\(\)[\s\S]*applyAnalysisState\(\)/,
+  'main dashboard should refresh analysis numbers when folders render so file-management analysis can reveal the chart'
 );
 assert.ok(
   !mainHtml.includes('커리어 준비도'),
@@ -1188,6 +1310,11 @@ assert.ok(
 );
 
 const mypageHtml = readPageSource('mypage.html');
+assert.match(
+  mypageHtml,
+  /<h1 class="page-title">내 정보를 관리하세요<\/h1>[\s\S]*<p class="page-subtitle">기본 정보와 목표 조건을 채워 맞춤 추천과 포트폴리오 생성에 활용하세요\.<\/p>/,
+  'mypage should use the unified two-line page header copy'
+);
 for (const text of [
   '경영지원',
   '광고/브랜드',
@@ -1238,9 +1365,26 @@ assert.match(
 );
 assert.match(
   mypageHtml,
-  /<div class="section-stack">\s*<div class="profile-top-actions">\s*<div class="form-actions" data-form-actions><\/div>\s*<\/div>\s*<section class="profile-section" id="basic">\s*<h2 class="section-heading">기본 정보<\/h2>/,
+  /<div class="section-stack">\s*<div class="profile-top-actions">\s*<div class="form-actions" data-form-actions><\/div>\s*<\/div>\s*<section class="profile-section" id="basic">\s*<h2 class="section-heading">기본 정보[\s\S]*?<\/h2>/,
   'mypage edit and save actions should sit above the basic information card'
 );
+assert.match(
+  mypageHtml,
+  /<section class="profile-section" id="basic">[\s\S]*기본 정보 <span class="required-marker" aria-label="필수 입력">\*<\/span>/,
+  'mypage basic information heading should show the required marker'
+);
+assert.match(
+  mypageHtml,
+  /<section class="profile-section" id="contact">[\s\S]*연락처 정보 <span class="required-marker" aria-label="필수 입력">\*<\/span>/,
+  'mypage contact information heading should show the required marker'
+);
+for (const optionalSectionId of ['school', 'condition', 'interest']) {
+  assert.match(
+    mypageHtml,
+    new RegExp(`<section class="profile-section" id="${optionalSectionId}">[\\s\\S]*class="section-note"[\\s\\S]*입력하지 않으면 추후 기능 사용이 어려울 수 있습니다`),
+    `mypage ${optionalSectionId} section should explain optional-but-recommended profile input`
+  );
+}
 assert.ok(
   !/<section class="profile-section" id="basic">[\s\S]*<div class="form-actions" data-form-actions><\/div>/.test(mypageHtml),
   'mypage should not keep the edit and save actions inside the basic information card'
@@ -1266,6 +1410,21 @@ assert.match(
   /async function\s+saveProfile\(\)[\s\S]*fetch\(PROFILE_ENDPOINT,\s*\{[\s\S]*method:\s*"PUT"[\s\S]*body:\s*JSON\.stringify\(payload\)/,
   'mypage should save edited profile values through the Supabase profile API'
 );
+assert.match(
+  mypageHtml,
+  /const requiredFieldRules = \[[\s\S]*key:\s*"name"[\s\S]*key:\s*"gender"[\s\S]*key:\s*"birthDate"[\s\S]*key:\s*"email"[\s\S]*key:\s*"phone"[\s\S]*key:\s*"address"/,
+  'mypage should define required basic and contact profile fields'
+);
+assert.match(
+  mypageHtml,
+  /function\s+validateRequiredProfileFields\(\)[\s\S]*profileState\.validationErrors\s*=\s*new Set[\s\S]*scrollIntoView\(\{ behavior:\s*"smooth",\s*block:\s*"start" \}\)[\s\S]*필수 정보를 모두 입력해주세요/,
+  'mypage should scroll to the first missing required section and show a validation message'
+);
+assert.match(
+  mypageHtml,
+  /if\s*\(!validateRequiredProfileFields\(\)\)\s*\{[\s\S]*renderFormActions\(\);[\s\S]*return;[\s\S]*\}[\s\S]*profileState\.saving\s*=\s*true;/,
+  'mypage should validate required fields before entering saving state'
+);
 const saveProfileSource = (mypageHtml.match(/async function\s+saveProfile\(\)[\s\S]*?\n    function renderAllDynamicParts/) || [''])[0];
 assert.ok(
   !saveProfileSource.includes('localStorage.setItem("myfitfolioProfile", JSON.stringify(payload))'),
@@ -1285,6 +1444,16 @@ assert.match(
   mypageHtml,
   /function\s+applyProfilePayload\(profile\)[\s\S]*profile\.educations[\s\S]*profile\.preferences[\s\S]*profile\.chips/,
   'mypage should apply persisted DB profile values back into the existing form state'
+);
+assert.match(
+  mypageHtml,
+  /Object\.hasOwn\(profile,\s*"photo"\)[\s\S]*profileState\.photo\s*=\s*profile\.photo\s*\|\|\s*""[\s\S]*localStorage\.setItem\("myfitfolioPhoto",\s*profileState\.photo\)/,
+  'mypage should hydrate the photo preview from the persisted DB profile photo'
+);
+assert.match(
+  mypageHtml,
+  /photo:\s*profileState\.photo[\s\S]*const savedProfile\s*=\s*result\.profile\s*\|\|\s*payload[\s\S]*localStorage\.setItem\("myfitfolioPhoto",\s*profileState\.photo\)/,
+  'mypage should save the selected photo through the profile API before caching it locally'
 );
 assert.match(
   mypageHtml,
@@ -1310,6 +1479,15 @@ assert.ok(
   mypageHtml.includes('<label>세부직무</label>') && !mypageHtml.includes('<label>세부직무 선택</label>'),
   'mypage detail job field label should be shortened to 세부직무'
 );
+assert.ok(
+  !mypageHtml.includes('<label>학점</label>') && !mypageHtml.includes('data-edu-field="gpa"'),
+  'mypage education card should not render a GPA field'
+);
+assert.match(
+  mypageHtml,
+  /profile\.educations\.map\(\(\{\s*gpa,\s*\.\.\.education\s*\}\)\s*=>\s*education\)/,
+  'mypage should strip legacy GPA values from persisted education data'
+);
 assert.match(
   mypageHtml,
   /function\s+formatMonthDisplay\(value\)[\s\S]*return\s+`\$\{year\}\.\$\{String\(month\)\.padStart\(2,\s*"0"\)\}`;/,
@@ -1326,8 +1504,33 @@ assert.match(
 );
 assert.match(
   mypageCss,
+  /\.education-grid\s*\{[^}]*grid-template-columns:\s*140px 1fr 1\.3fr 1fr 1fr;/s,
+  'mypage education grid should use five columns after removing GPA'
+);
+assert.match(
+  mypageCss,
+  /\.required-marker\s*\{[^}]*color:\s*#d13f52;/s,
+  'mypage required markers should use the red required color'
+);
+assert.match(
+  mypageCss,
+  /\.section-note\s*\{[^}]*color:\s*#8b95a7;[\s\S]*\.section-note-icon\s*\{[^}]*border:\s*1px solid #a4adbc;/s,
+  'mypage optional section notes should use a muted circular info icon'
+);
+assert.match(
+  mypageCss,
+  /\.form-field\.has-error input,\s*\.form-field\.has-error select,\s*\.form-field\.has-error \.date-trigger\s*\{[^}]*border-color:\s*#d13f52;/s,
+  'mypage missing required fields should show a red border'
+);
+assert.match(
+  mypageCss,
   /\.profile-readonly\s+\.form-field\s+input:disabled\s*\{[^}]*background-color:\s*#fff;/s,
   'mypage readonly text inputs should keep a white background after saving profile data'
+);
+assert.match(
+  mypageCss,
+  /\.form-field\s+input:-webkit-autofill,[\s\S]*\.form-field\s+input:-webkit-autofill:disabled\s*\{[^}]*box-shadow:\s*0 0 0 1000px #fff inset;/s,
+  'mypage browser-autofilled text inputs should keep a white background after validation and saving'
 );
 assert.match(
   mypageCss,
@@ -1435,11 +1638,20 @@ assert.match(
   'file management should use the shared top navigation mount'
 );
 assert.match(
+  createHtml,
+  /<h1 class="page-title">프로젝트 자료를 한곳에서 정리하세요<\/h1>[\s\S]*<p class="page-subtitle">업로드한 활동 자료를 폴더별로 확인하고, AI 분석에 사용할 경험 데이터를 관리합니다\.<\/p>/,
+  'file management should use the unified two-line page header copy'
+);
+assert.ok(
+  !createHtml.includes('class="section-kicker"') && !createCss.includes('.section-kicker'),
+  'file management should remove the small kicker line from the page header'
+);
+assert.match(
   sharedNavJs,
   /\{\s*key:\s*'create',\s*href:\s*'create\.html',\s*label:\s*'파일 관리'\s*\}/,
   'file management should keep the shared file management nav link'
 );
-for (const text of ['파일 관리', '폴더 목록', '자료 추가', '미리보기', '분석하기', 'GitHub 동기화', '대화로 내용 추가하기', '세부 폴더', '이름 수정', '프로젝트 삭제']) {
+for (const text of ['파일 관리', '폴더 목록', '자료 추가', '미리보기', '분석하기', '대화로 내용 추가하기', '세부 폴더', '이름 수정', '프로젝트 삭제']) {
   assert.ok(
     createHtml.includes(text),
     `file management page should include ${text}`
@@ -1576,6 +1788,11 @@ assert.match(
   /FolderStore\.FOLDER_GROUPS/,
   'file management should render folder groups from the shared folder store'
 );
+assert.match(
+  createHtml,
+  /FolderStore\.FOLDER_TYPES\.map[\s\S]*folder\.type\s*===\s*type\.key[\s\S]*manager-folder-section-head/,
+  'file management should group the left folder list by activity type (#227)'
+);
 assert.ok(
   !createHtml.includes("key: 'ready'") && !createHtml.includes('준비된 활동 폴더'),
   'file management should use the unified in-progress folder group instead of the old ready group'
@@ -1592,25 +1809,11 @@ assert.ok(
   !createHtml.includes('class="ai-status-summary"'),
   'file management should not keep the 전체 자료 중 분석 완료 summary box (#132)'
 );
-assert.match(
-  createHtml,
-  /id="analysisPanelTitle"/,
-  'file management should give the AI status panel a dynamic, per-project title (#132)'
-);
-assert.match(
-  createHtml,
-  /\$\{selectedFolder\.label\} AI 정리 상태/,
-  'file management AI status title should follow the [프로젝트 이름] AI 정리 상태 format (#132)'
-);
-assert.match(
-  createHtml,
-  /data-action="connect-repo"[^>]*id="repoConnectButton"/,
-  'file management should expose a per-project repo connect button (#132)'
-);
-assert.match(
-  createHtml,
-  /data-action="connect-repo-save"/,
-  'file management repo modal should save the per-project connection (#132)'
+assert.ok(
+  !createHtml.includes('AI 정리 상태')
+    && !createHtml.includes('GitHub 동기화')
+    && !createHtml.includes('data-action="connect-repo"'),
+  'file management should remove the unused AI status and GitHub connection UI (#225)'
 );
 assert.match(
   createHtml,
@@ -1660,6 +1863,21 @@ assert.match(
   fitfolioCss,
   /\.profile-menu\s*\{[^}]*position:\s*relative;/s,
   'shared stylesheet should position the profile dropdown menu'
+);
+assert.match(
+  fitfolioCss,
+  /\.profile-name-card\s*\{[^}]*border-radius:\s*999px;[^}]*white-space:\s*nowrap;/s,
+  'shared stylesheet should render the profile name as a compact passive card'
+);
+assert.match(
+  fitfolioCss,
+  /\.profile-menu\s+\.user-chip\s*\{[^}]*width:\s*42px;[^}]*height:\s*42px;[^}]*aspect-ratio:\s*1\s*\/\s*1;[^}]*border-radius:\s*50%;/s,
+  'shared profile button should stay perfectly circular'
+);
+assert.match(
+  fitfolioCss,
+  /\.avatar\s+img\s*\{[^}]*width:\s*100%;[^}]*height:\s*100%;[^}]*object-fit:\s*cover;/s,
+  'shared avatar should crop uploaded profile photos inside the circular icon'
 );
 assert.match(
   fitfolioCss,
@@ -1721,8 +1939,8 @@ assert.match(
 );
 assert.match(
   contestHtml,
-  /id="keyword-search"/,
-  'contest page should include keyword search for activity recommendations'
+  /class="sort-controls"[\s\S]*data-sort="recommendation"[\s\S]*추천순 정렬[\s\S]*data-sort="deadline"[\s\S]*마감순 정렬/,
+  'contest page should provide recommendation and deadline sort options for activity recommendations'
 );
 assert.ok(
   !contestHtml.includes('class="stats-grid"'),
@@ -1730,13 +1948,17 @@ assert.ok(
 );
 assert.match(
   contestHtml,
-  /<h1>[\s\S]*<span class="recommend-count" id="recommendCount">추천 활동 0개<\/span>[\s\S]*<\/h1>/,
-  'contest page should show the dynamic recommendation count next to the title'
+  /<section class="page-title">[\s\S]*<h1>부족한 역량을 보완할 활동을 추천해드려요 <span class="recommend-count" id="recommendCount">추천 활동 0개<\/span><\/h1>[\s\S]*<p>저장된 프로필과 포트폴리오 경험을 기준으로 지금 필요한 활동을 선별했습니다\.<\/p>/,
+  'contest page should keep the recommendation count badge next to the page title'
+);
+assert.ok(
+  !contestHtml.includes('class="eyebrow"'),
+  'contest page should remove the eyebrow line from the page header'
 );
 assert.match(
   contestHtml,
-  /<div class="filter-controls">[\s\S]*<select id="industry-filter"[\s\S]*<select id="level-filter"[\s\S]*<label class="search-box" for="keyword-search">[\s\S]*<input id="keyword-search"/,
-  'contest keyword search should sit at the far right after the job and difficulty filters'
+  /<section class="filter-bar">[\s\S]*<div class="activity-filter-row">[\s\S]*<div class="tabs" id="tabs">[\s\S]*data-filter="교육"[\s\S]*<div class="sort-controls" aria-label="활동 정렬 기준">[\s\S]*<button class="sort-option active"[\s\S]*aria-pressed="true"[\s\S]*추천순 정렬[\s\S]*<button class="sort-option"[\s\S]*aria-pressed="false"[\s\S]*마감순 정렬/,
+  'contest sort controls should sit on the same row as the category tabs'
 );
 assert.match(
   contestHtml,
@@ -1873,6 +2095,21 @@ assert.match(
   contestJs,
   /function\s+getSortedRecommendedActivities/,
   'contest activity list should sort all activities by recommendation score'
+);
+assert.match(
+  contestJs,
+  /let\s+activeActivitySort\s*=\s*'recommendation'/,
+  'contest activity sort should default to recommendation order'
+);
+assert.match(
+  contestJs,
+  /function\s+sortRecommendedActivities\(items\)[\s\S]*activeActivitySort\s*===\s*'deadline'[\s\S]*sortActivitiesByDeadline\(items\)[\s\S]*sortActivitiesByRecommendation\(items\)/,
+  'contest activity list should switch between recommendation and deadline sorting'
+);
+assert.match(
+  contestJs,
+  /sortOptions\.forEach\(\(option\)[\s\S]*activeActivitySort\s*=\s*option\.dataset\.sort[\s\S]*aria-pressed[\s\S]*renderActivities\(\)/,
+  'contest sort buttons should update selected state and rerender the activity list'
 );
 assert.match(
   contestJs,
@@ -2112,6 +2349,11 @@ assert.match(
 );
 assert.match(
   contestJs,
+  /activitySchedulesEndpoint\s*=\s*'\/api\/activity-schedules'/,
+  'contest should define the Supabase-backed activity schedule API endpoint'
+);
+assert.match(
+  contestJs,
   /function\s+loadSavedSchedules\(\)[\s\S]*localStorage\.getItem\(savedScheduleStorageKey\)/,
   'contest should restore saved activity schedules from localStorage'
 );
@@ -2122,7 +2364,17 @@ assert.match(
 );
 assert.match(
   contestJs,
-  /persistSavedSchedules\(\);[\s\S]*renderSchedule\(\);/,
+  /async function\s+loadSavedSchedulesFromServer\(\)[\s\S]*fetch\(activitySchedulesEndpoint,[\s\S]*method:\s*'GET'[\s\S]*savedSchedules\s*=\s*normalizeSavedScheduleList\(payload\.schedules\)/,
+  'contest should restore saved activity schedules from Supabase after login'
+);
+assert.match(
+  contestJs,
+  /async function\s+persistSavedSchedulesToServer\(\)[\s\S]*fetch\(activitySchedulesEndpoint,[\s\S]*method:\s*'PUT'[\s\S]*JSON\.stringify\(\{\s*schedules:\s*savedSchedules\s*\}\)/,
+  'contest should persist saved activity schedules to Supabase'
+);
+assert.match(
+  contestJs,
+  /persistSavedSchedules\(\);[\s\S]*renderSchedule\(\);[\s\S]*persistSavedSchedulesToServer\(\)/,
   'contest should persist schedule changes before re-rendering the saved schedule list'
 );
 assert.match(
@@ -2139,6 +2391,36 @@ assert.match(
   contestJs,
   /getMatchScore\(item\)\s*>=\s*recommendationMatchThreshold/,
   'contest recommendation count should include only activities over the match threshold'
+);
+assert.match(
+  contestJs,
+  /return\s+sortRecommendedActivities\([\s\S]*activities\.filter\(\(item\)\s*=>\s*getMatchScore\(item\)\s*>=\s*recommendationMatchThreshold\)/,
+  'contest activity list should show only activities over the match threshold'
+);
+assert.match(
+  contestJs,
+  /const\s+profileStorageKeys\s*=\s*\[[\s\S]*'myfitfolioProfile'/,
+  'contest recommendations should read the cached mypage profile'
+);
+assert.match(
+  contestJs,
+  /function\s+readRecommendationProfile\(\)[\s\S]*educations[\s\S]*chips[\s\S]*interestFields[\s\S]*companies[\s\S]*industries[\s\S]*preferences\?\.detailJob[\s\S]*preferences\?\.workIndustry/,
+  'contest recommendations should use major, minor, desired job, and interest data from mypage'
+);
+assert.match(
+  contestJs,
+  /function\s+getProfileRecommendationScore\([\s\S]*profile\.major[\s\S]*profile\.minor[\s\S]*profile\.linkedMajor[\s\S]*profile\.desiredJobs[\s\S]*profile\.interestFields[\s\S]*profile\.interestedIndustries[\s\S]*profile\.interestedCompanies/,
+  'contest recommendations should calculate mock scores from profile preferences'
+);
+assert.match(
+  contestJs,
+  /departmentFit[\s\S]*targetJobs[\s\S]*targetCompanies[\s\S]*targetIndustries[\s\S]*interestFields[\s\S]*skills/,
+  'contest recommendations should combine department fit, job, company, industry, and interest activity data'
+);
+assert.match(
+  contestJs,
+  /companyPreferenceKeywordMap[\s\S]*industryPreferenceKeywordMap[\s\S]*function\s+getPreferenceKeywordScore\(/,
+  'contest recommendations should score interest company and industry keyword matches'
 );
 assert.match(
   contestJs,
@@ -2268,6 +2550,11 @@ assert.ok(
   !portfolioCreateHtml.includes('<h1 class="page-title">포트폴리오 생성</h1>') &&
     !portfolioCreateHtml.includes('활동 자료와 프로젝트 경험을 바탕으로 제출용 포트폴리오 초안을 생성합니다.'),
   'portfolio_create should remove the redundant page heading above the setup panel'
+);
+assert.match(
+  portfolioCreateHtml,
+  /<h1 class="page-title">포트폴리오 초안을 생성하세요<\/h1>[\s\S]*<p class="page-subtitle">경험 데이터와 목표에 맞는 형식을 선택해 제출용 포트폴리오 초안을 만듭니다\.<\/p>/,
+  'portfolio_create should use the unified two-line page header copy inside the setup panel'
 );
 assert.match(
   sharedNavJs,
@@ -2424,6 +2711,11 @@ assert.match(
 );
 assert.match(
   portfolioCreateHtml,
+  /const\s+KEYWORD_RECOMMEND_ENDPOINT\s*=\s*'\/api\/portfolio\/keywords'/,
+  'portfolio_create should define the contextual portfolio keyword recommendation API endpoint'
+);
+assert.match(
+  portfolioCreateHtml,
   /async function\s+loadProfileMajor\(\)[\s\S]*fetch\(PROFILE_ENDPOINT,[\s\S]*profileMajor\s*=\s*educations\.find\(\(education\)\s*=>\s*education\?\.major\)\?\.major/,
   'portfolio_create should load the displayed major from mypage education data'
 );
@@ -2434,8 +2726,13 @@ assert.match(
 );
 assert.match(
   portfolioCreateHtml,
-  /function\s+getExperienceKeywordRecommendations\(\)[\s\S]*experienceKeywordRules[\s\S]*getSelectedExperienceLabels\(\)/,
-  'portfolio_create should recommend keyword chips from selected experience files'
+  /function\s+getExperienceKeywordRecommendations\(selectedFiles\s*=\s*getSelectedExperienceFiles\(\)\)[\s\S]*experienceKeywordRules[\s\S]*analysis\?\.summaryMd/,
+  'portfolio_create should recommend keyword chips from selected experience files and analysis summaries'
+);
+assert.match(
+  portfolioCreateHtml,
+  /async function\s+requestKeywordRecommendations\(selectedFiles,\s*fallbackKeywords\)[\s\S]*fetch\(KEYWORD_RECOMMEND_ENDPOINT,[\s\S]*experiences:\s*selectedFiles\.map\(compactExperienceForKeywords\)/,
+  'portfolio_create should ask the server for major and experience-aware keyword recommendations'
 );
 assert.match(
   portfolioCreateHtml,
@@ -2489,6 +2786,8 @@ for (const fnName of [
   'buildSlides',
   'renderPortfolioPreview',
   'renderPptPreview',
+  'renderDraftPageViewer',
+  'moveDraftPage',
   'moveSlide',
   'handleMasterAction',
   'downloadPptPreview',
@@ -2505,13 +2804,28 @@ for (const fnName of [
 }
 assert.match(
   portfolioCreateHtml,
-  /let\s+currentPortfolio\s*=\s*null;[\s\S]*let\s+chatHistory\s*=\s*\[\];[\s\S]*let\s+currentSlideIndex\s*=\s*0;/,
-  'portfolio_create should track current portfolio, chat history, and PPT slide index'
+  /let\s+currentPortfolio\s*=\s*null;[\s\S]*let\s+chatHistory\s*=\s*\[\];[\s\S]*let\s+currentSlideIndex\s*=\s*0;[\s\S]*let\s+currentDraftPageIndex\s*=\s*0;/,
+  'portfolio_create should track current portfolio, chat history, PPT slide index, and draft page index'
 );
 assert.match(
   portfolioCreateHtml,
-  /const\s+commonKeywords[\s\S]*const\s+majorKeywordMap[\s\S]*const\s+experienceKeywordRules/,
-  'portfolio_create should generate keyword options from common, major, and selected-experience rules'
+  /function\s+chunkItems\(items,\s*size\)[\s\S]*renderDraftPageViewer\(pages\)[\s\S]*data-draft-page-direction="-1"[\s\S]*data-draft-page-direction="1"/,
+  'portfolio_create should split long drafts into pages with previous and next buttons'
+);
+assert.match(
+  portfolioCreateHtml,
+  /function\s+moveDraftPage\(direction\)[\s\S]*currentDraftPageIndex\s*\+=\s*direction;[\s\S]*renderPortfolioPreview\(\)/,
+  'portfolio_create should rerender the portfolio preview when draft pages move'
+);
+assert.match(
+  portfolioCreateHtml,
+  /function\s+renderDeckPortfolio\(raw\)[\s\S]*chunkItems\(slides,\s*4\)[\s\S]*renderDraftPageViewer\(pages\)/,
+  'portfolio_create should paginate PPT draft preview cards four slides at a time'
+);
+assert.match(
+  portfolioCreateHtml,
+  /const\s+commonKeywords[\s\S]*const\s+majorKeywordMap[\s\S]*const\s+experienceKeywordRules[\s\S]*buildLocalKeywordRecommendations/,
+  'portfolio_create should keep local keyword fallback options from common, major, and selected-experience rules'
 );
 assert.match(
   portfolioCreateHtml,
@@ -2526,20 +2840,52 @@ assert.match(
 
 const portfolioExportPptxRoutePath = path.join(appDir, 'api', 'portfolio', 'export-pptx', 'route.js');
 const portfolioGenerateRoutePath = path.join(appDir, 'api', 'portfolio', 'generate', 'route.js');
+const portfolioKeywordsRoutePath = path.join(appDir, 'api', 'portfolio', 'keywords', 'route.js');
+const portfolioReviseRoutePath = path.join(appDir, 'api', 'portfolio', 'revise', 'route.js');
 const portfolioGenerateRoute = fs.existsSync(portfolioGenerateRoutePath)
   ? fs.readFileSync(portfolioGenerateRoutePath, 'utf8')
+  : '';
+const portfolioKeywordsRoute = fs.existsSync(portfolioKeywordsRoutePath)
+  ? fs.readFileSync(portfolioKeywordsRoutePath, 'utf8')
+  : '';
+const portfolioReviseRoute = fs.existsSync(portfolioReviseRoutePath)
+  ? fs.readFileSync(portfolioReviseRoutePath, 'utf8')
   : '';
 const portfolioExportPptxRoute = fs.existsSync(portfolioExportPptxRoutePath)
   ? fs.readFileSync(portfolioExportPptxRoutePath, 'utf8')
   : '';
 assert.match(
   portfolioGenerateRoute,
-  /ANALYSIS_MOCK\s*===\s*'1'[\s\S]*buildMockPortfolioResponse/,
+  /isAnalysisMockEnabled\(\)[\s\S]*buildMockPortfolioResponse/,
   'portfolio generation API should return mock portfolio data when ANALYSIS_MOCK=1'
+);
+assert.match(
+  portfolioReviseRoute,
+  /isAnalysisMockEnabled\(\)[\s\S]*buildMockPortfolioRevision/,
+  'portfolio revision API should return mock revision data when ANALYSIS_MOCK=1'
 );
 assert.ok(
   fs.existsSync(portfolioExportPptxRoutePath),
   'portfolio PPTX export API should live in app/api/portfolio/export-pptx/route.js'
+);
+assert.ok(
+  fs.existsSync(portfolioKeywordsRoutePath),
+  'portfolio keyword recommendation API should live in app/api/portfolio/keywords/route.js'
+);
+assert.match(
+  portfolioKeywordsRoute,
+  /tools:\s*\[\{\s*type:\s*'web_search_preview'\s*\}\][\s\S]*tool_choice:\s*'required'/,
+  'portfolio keyword API should require OpenAI web search for certificate and experience context when available'
+);
+assert.match(
+  portfolioKeywordsRoute,
+  /EXPERIENCE_RULES[\s\S]*buildFallbackKeywords[\s\S]*자격증형 파일 감지 여부/,
+  'portfolio keyword API should combine certificate detection, major context, and local fallback rules'
+);
+assert.match(
+  portfolioKeywordsRoute,
+  /analysisSummary[\s\S]*analysisIndex[\s\S]*collectExperienceText/,
+  'portfolio keyword API should consider uploaded file analysis summaries and index drafts'
 );
 assert.match(
   portfolioExportPptxRoute,
@@ -2572,10 +2918,14 @@ for (const cssPattern of [
   /\.ppt-preview-wrap\s*\{/,
   /\.ppt-slide\s*\{/,
   /\.slide-arrow\s*\{/,
+  /\.draft-page-viewer\s*\{/,
+  /\.draft-page-arrow\s*\{/,
+  /\.draft-page-counter\s*\{/,
   /\.master-actions\s*\{/,
   /\.flat-action\.danger\s*\{/,
   /\.chat-input\s+textarea\s*\{/,
   /\.chat-send-button\s*\{/,
+  /\.tag\.ai-tag\s*\{/,
   /\.portfolio-canvas\s*\{/,
   /\.compact-case-canvas\s*\{/,
   /\.case-summary-strip\s*\{/,
@@ -2622,6 +2972,11 @@ assert.match(
 );
 assert.match(
   portfolioManageHtml,
+  /<h1 class="page-title">생성한 포트폴리오를 관리하세요<\/h1>[\s\S]*<p class="page-subtitle">저장된 포트폴리오를 확인하고 필요할 때 바로 열람·수정·다운로드하세요\.<\/p>/,
+  'portfolio_manage should use the unified two-line page header copy'
+);
+assert.match(
+  portfolioManageHtml,
   /class="portfolio-library-list" id="portfolioList"/,
   'portfolio_manage should render portfolios into the uploaded library list'
 );
@@ -2649,6 +3004,26 @@ assert.match(
   portfolioManageHtml,
   /data-action="like"/,
   'portfolio_manage should support liking saved portfolios'
+);
+assert.match(
+  portfolioManageHtml,
+  /<svg class="portfolio-heart" viewBox="0 0 24 24" aria-hidden="true">[\s\S]*<path d="M12 20\.3s-/,
+  'portfolio_manage like button should render a fixed-size heart icon'
+);
+assert.match(
+  portfolioManageCss,
+  /\.portfolio-library-actions\s+\.like-action\s*\{[^}]*width:\s*44px;[^}]*height:\s*44px;[^}]*display:\s*inline-flex;[^}]*align-items:\s*center;[^}]*justify-content:\s*center;[^}]*background:\s*#fff;/s,
+  'portfolio_manage like button should be a white centered square before click'
+);
+assert.match(
+  portfolioManageCss,
+  /\.portfolio-library-actions\s+\.portfolio-heart\s*\{[^}]*width:\s*22px;[^}]*height:\s*22px;[^}]*fill:\s*none;[^}]*stroke:\s*currentColor;/s,
+  'portfolio_manage empty heart should keep a fixed icon size'
+);
+assert.match(
+  portfolioManageCss,
+  /\.portfolio-library-actions\s+\.like-action\.liked\s+\.portfolio-heart\s*\{[^}]*fill:\s*currentColor;[^}]*stroke:\s*currentColor;/s,
+  'portfolio_manage liked heart should use the same fixed-size filled icon'
 );
 assert.match(
   portfolioManageHtml,
@@ -2780,6 +3155,10 @@ assert.match(
   sharedNavJs,
   /data-logout/,
   'shared navigation should expose logout in the profile menu'
+);
+assert.ok(
+  sharedNavJs.includes('data-profile-name-card') && !sharedNavJs.includes('profile-danger-link'),
+  'shared navigation should show the user name card and keep withdrawal out of the dropdown'
 );
 assert.match(
     mypageHtml,

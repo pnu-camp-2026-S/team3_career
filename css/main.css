@@ -800,6 +800,10 @@
   box-shadow: var(--shadow);
 }
 
+.keyword-overview[hidden] {
+  display: none;
+}
+
 .section-eyebrow {
   margin: 0 0 8px;
   color: var(--brand);
@@ -894,6 +898,10 @@
   font-weight: 850;
 }
 
+.analysis-empty-state[hidden] {
+  display: none;
+}
+
 .analysis-info-button {
   width: 28px;
   height: 28px;
@@ -913,16 +921,53 @@
   background: #f4f7ff;
 }
 
-.analysis-info-box {
-  margin: 12px 0;
-  padding: 10px 12px;
+.analysis-info-control {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.analysis-info-tooltip {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 20;
+  width: min(280px, 72vw);
+  padding: 11px 13px;
   border: 1px solid #dce5ff;
   border-radius: 8px;
-  background: #f6f8ff;
+  background: #fff;
   color: #526077;
   font-size: 13px;
   font-weight: 700;
   line-height: 1.45;
+  box-shadow: 0 14px 34px rgba(31, 36, 62, 0.14);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px);
+  transition: opacity 140ms ease, transform 140ms ease, visibility 140ms ease;
+  pointer-events: none;
+}
+
+.analysis-info-tooltip::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  right: 10px;
+  width: 10px;
+  height: 10px;
+  border-left: 1px solid #dce5ff;
+  border-top: 1px solid #dce5ff;
+  background: #fff;
+  transform: rotate(45deg);
+}
+
+.analysis-info-control:hover .analysis-info-tooltip,
+.analysis-info-control:focus-within .analysis-info-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
 }
 
 .analysis-card-note {
@@ -1031,6 +1076,10 @@
   gap: 24px;
   align-items: center;
   margin-top: 16px;
+}
+
+.classification-visual[hidden] {
+  display: none;
 }
 
 .classification-donut {
@@ -1225,5 +1274,326 @@
   .next-actions button {
     width: 100%;
     min-width: 0;
+  }
+}
+
+/* Main tutorial refresh */
+.layout-main {
+  display: block;
+}
+
+.main-dashboard {
+  width: min(1180px, 100%);
+  margin: 0 auto;
+}
+
+.tutorial-panel {
+  overflow: hidden;
+  margin-bottom: 24px;
+  border: 1px solid #dbe4f3;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: var(--shadow);
+}
+
+.tutorial-toggle {
+  width: 100%;
+  min-height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px 22px;
+  border: 0;
+  background: #fff;
+  color: #17203a;
+  text-align: left;
+  cursor: pointer;
+}
+
+.tutorial-toggle:hover {
+  background: #f8fafc;
+}
+
+.tutorial-toggle-text {
+  display: grid;
+  gap: 6px;
+}
+
+.tutorial-toggle strong {
+  font-size: 22px;
+  line-height: 1.25;
+}
+
+.tutorial-arrow {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border: 1px solid #d7def0;
+  border-radius: 50%;
+  background: #f6f8ff;
+}
+
+.tutorial-arrow::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-right: 3px solid #5965e8;
+  border-bottom: 3px solid #5965e8;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform 160ms ease;
+}
+
+.tutorial-collapsed .tutorial-arrow::before {
+  transform: translateX(-2px) rotate(-45deg);
+}
+
+.tutorial-body {
+  padding: 0 22px 22px;
+}
+
+.tutorial-body[hidden] {
+  display: none;
+}
+
+.tutorial-groups {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tutorial-group {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 128px minmax(0, 1fr) minmax(190px, 230px);
+  gap: 18px;
+  align-items: center;
+  padding: 18px;
+  border: 1px solid #e7eaf3;
+  border-radius: 8px;
+  background: #fbfcff;
+}
+
+.tutorial-group-nested {
+  align-items: start;
+}
+
+.tutorial-illustration {
+  width: 128px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.tutorial-group-content {
+  min-width: 0;
+}
+
+.tutorial-step-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.tutorial-step-number {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #5965e8;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.tutorial-group h2 {
+  margin: 0 0 8px;
+  color: #17203a;
+  font-size: 19px;
+  line-height: 1.35;
+}
+
+.tutorial-group p {
+  margin: 0;
+  color: #667085;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.55;
+}
+
+.tutorial-action {
+  width: 100%;
+  min-height: 56px;
+  justify-content: center;
+  padding-left: 18px;
+  padding-right: 18px;
+  font-size: 16px;
+}
+
+.tutorial-action-panel {
+  display: grid;
+  gap: 10px;
+  align-self: center;
+}
+
+.tutorial-nav-name {
+  min-height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #dce5ff;
+  border-radius: 999px;
+  padding: 0 10px;
+  background: #f6f8ff;
+  color: #3157c9;
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.tutorial-substeps {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 0;
+  list-style: none;
+}
+
+.tutorial-substep {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(150px, auto) minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  padding: 12px 14px;
+  border: 1px solid #dbe4f3;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.tutorial-substep strong {
+  color: #2f3a4c;
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.tutorial-substep span {
+  color: #667085;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.5;
+}
+
+.tutorial-image-slot {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  border: 1px dashed #cbd7f5;
+  border-radius: 8px;
+  background: #fbfcff;
+}
+
+.tutorial-substep .tutorial-image-slot {
+  grid-column: 1 / -1;
+  margin-top: 4px;
+}
+
+.tutorial-image-placeholder {
+  min-height: 132px;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  color: #7b86a0;
+  background: #f6f8ff;
+  font-size: 13px;
+  font-weight: 850;
+  text-align: center;
+}
+
+.tutorial-image-slot img {
+  width: 100%;
+  height: auto;
+  display: block;
+  background: #fff;
+}
+
+.tutorial-image-slot figcaption {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  border-top: 1px solid #eef1f7;
+  color: #344054;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.dashboard-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.dashboard-actions .dashboard-cta {
+  min-width: 132px;
+}
+
+@media (max-width: 1180px) {
+  .tutorial-group {
+    grid-template-columns: 112px minmax(0, 1fr);
+  }
+
+  .tutorial-action-panel {
+    grid-column: 2;
+  }
+}
+
+@media (max-width: 760px) {
+  .tutorial-toggle {
+    min-height: 68px;
+    padding: 16px;
+  }
+
+  .tutorial-toggle strong {
+    font-size: 19px;
+  }
+
+  .tutorial-body {
+    padding: 0 16px 16px;
+  }
+
+  .tutorial-group {
+    grid-template-columns: 1fr;
+    padding: 12px;
+  }
+
+  .tutorial-illustration {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+  }
+
+  .tutorial-action-panel {
+    grid-column: auto;
+  }
+
+  .tutorial-substeps {
+    grid-template-columns: 1fr;
+  }
+
+  .tutorial-substep {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-actions {
+    width: 100%;
+    justify-content: flex-start;
   }
 }

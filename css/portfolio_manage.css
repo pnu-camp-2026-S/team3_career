@@ -14,7 +14,7 @@
 }
 
 .portfolio-library-head .page-title {
-  font-size: 34px;
+  font-size: 28px;
 }
 
 .portfolio-library-create {
@@ -176,24 +176,25 @@
 .portfolio-library-actions .like-action {
   width: 44px;
   height: 44px;
-  display: inline-grid;
-  place-items: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid #c7d2fe;
   border-radius: 7px;
-  background: #f8faff;
+  background: #fff;
   color: var(--brand);
-  font-size: 0;
-  font-weight: 900;
   line-height: 1;
   cursor: pointer;
 }
 
-.portfolio-library-actions .like-action::before {
-  content: "♡";
+.portfolio-library-actions .portfolio-heart {
+  width: 22px;
+  height: 22px;
   display: block;
-  font-size: 23px;
-  line-height: 1;
-  transform: translateY(-1px);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linejoin: round;
 }
 
 .portfolio-library-actions .like-action.liked {
@@ -202,8 +203,9 @@
   color: #fff;
 }
 
-.portfolio-library-actions .like-action.liked::before {
-  content: "♥";
+.portfolio-library-actions .like-action.liked .portfolio-heart {
+  fill: currentColor;
+  stroke: currentColor;
 }
 
 .portfolio-library-actions .like-action:hover {

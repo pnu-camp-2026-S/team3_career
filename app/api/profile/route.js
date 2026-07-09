@@ -14,6 +14,13 @@ function normalizeString(value) {
   return typeof value === 'string' ? value.trim() : '';
 }
 
+function normalizePhoto(value) {
+  const normalized = normalizeString(value);
+  if (!normalized) return '';
+  if (normalized.startsWith('data:image/') || /^https?:\/\//.test(normalized)) return normalized;
+  return '';
+}
+
 function pickFirstString(...values) {
   return values.map(normalizeString).find(Boolean) || '';
 }
@@ -57,6 +64,7 @@ function getSocialProfileDefaults(user) {
     educations: [],
     preferences: {},
     chips: {},
+    photo: '',
     updatedAt: null,
   };
 }
@@ -74,6 +82,7 @@ function toClientProfile(row) {
     educations: normalizeArray(row.educations),
     preferences: normalizeObject(row.preferences),
     chips: normalizeObject(row.chips),
+    photo: normalizePhoto(normalizeObject(row.preferences).profilePhoto),
     updatedAt: row.updated_at || null,
   };
 }
@@ -92,6 +101,7 @@ function mergeProfileWithSocialDefaults(row, user) {
     email: savedProfile.email || socialProfile.email,
     phone: savedProfile.phone || socialProfile.phone,
     address: savedProfile.address || socialProfile.address,
+    photo: savedProfile.photo || socialProfile.photo,
   };
 }
 
@@ -143,6 +153,9 @@ export async function PUT(request) {
     }
 
     const payload = await request.json();
+    const preferences = normalizeObject(payload.preferences);
+    preferences.profilePhoto = normalizePhoto(payload.photo);
+
     const row = {
       user_id: user.id,
       name: normalizeString(payload.name),
@@ -152,7 +165,7 @@ export async function PUT(request) {
       phone: normalizeString(payload.phone),
       address: normalizeString(payload.address),
       educations: normalizeArray(payload.educations),
-      preferences: normalizeObject(payload.preferences),
+      preferences,
       chips: normalizeObject(payload.chips),
       updated_at: new Date().toISOString(),
     };

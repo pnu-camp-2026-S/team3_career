@@ -11,16 +11,12 @@
     const PROFILE_KEY = 'myfitfolioProfile';
     const PROFILE_ENDPOINT = '/api/profile';
     const ACTIVITY_FILES_ENDPOINT = '/api/activity-files';
-    const SIDEBAR_WIDTH_KEY = 'myfitfolioSidebarWidth';
-
-    const folderGroupContainers = {
-      completed: 'completedFolderList',
-      inProgress: 'inProgressFolderList',
-    };
-
-    const sidebarResizeHandle = document.getElementById('sidebarResizeHandle');
+    const TUTORIAL_SEEN_KEY = 'myfitfolioMainTutorialSeen';
 
     const mainLayout = document.getElementById('mainLayout');
+    const tutorialPanel = document.getElementById('mainTutorialPanel');
+    const tutorialToggle = document.getElementById('mainTutorialToggle');
+    const tutorialBody = document.getElementById('mainTutorialBody');
     const profileNeededPanel = document.getElementById('profileNeededPanel');
     const analysisDashboard = document.getElementById('analysisDashboard');
     const analysisOverview = document.getElementById('analysisOverview');
@@ -59,6 +55,25 @@
       return hasBasic || hasEducation || hasPreferences || hasChips;
     }
 
+    function setTutorialOpen(isOpen) {
+      if (!tutorialPanel || !tutorialToggle || !tutorialBody) return;
+      tutorialPanel.classList.toggle('tutorial-collapsed', !isOpen);
+      tutorialToggle.setAttribute('aria-expanded', String(isOpen));
+      tutorialBody.hidden = !isOpen;
+    }
+
+    function initializeTutorialPanel() {
+      if (!tutorialPanel || !tutorialToggle || !tutorialBody) return;
+      const shouldOpen = localStorage.getItem(TUTORIAL_SEEN_KEY) !== 'true';
+      setTutorialOpen(shouldOpen);
+      localStorage.setItem(TUTORIAL_SEEN_KEY, 'true');
+
+      tutorialToggle.addEventListener('click', () => {
+        const nextOpen = tutorialToggle.getAttribute('aria-expanded') !== 'true';
+        setTutorialOpen(nextOpen);
+      });
+    }
+
     function hasSavedProfile() {
       const savedProfile = localStorage.getItem(PROFILE_KEY);
       if (!savedProfile) return false;
@@ -91,18 +106,35 @@
 
     function getFolderFileTotal(groupKey) {
       return Object.values(folders).reduce((sum, folder) => (
-        folder.group === groupKey ? sum + FolderStore.getFolderFiles(folder).length : sum
+        folder.group === groupKey ? sum + getUserActivityFiles(folder).length : sum
       ), 0);
     }
 
     function getCompletedFileCount(folder) {
-      return FolderStore.getFolderFiles(folder).length;
+      return getUserActivityFiles(folder).length;
+    }
+
+    function getUserActivityFiles(folder) {
+      return FolderStore.getFolderFiles(folder).filter((file) => file.kind !== 'analysis-summary');
+    }
+
+    function isAnalyzedActivityFile(file) {
+      return file.status === '분석완료'
+        || file.analysisStatus === 'completed'
+        || file.analysis?.status === 'completed';
+    }
+
+    function hasAnalyzedActivityFiles() {
+      return Object.values(folders).some((folder) => getUserActivityFiles(folder).some(isAnalyzedActivityFile));
     }
 
     function mapApiFile(file) {
       return {
         id: file.id,
         name: file.name,
+        status: file.analysisStatus === 'completed' ? '분석완료' : '분석대기',
+        analysisStatus: file.analysisStatus || null,
+        analysis: file.analysis || null,
         mimeType: file.mimeType || '',
         size: file.size || 0,
         storagePath: file.storagePath || '',
@@ -231,6 +263,8 @@
     // 분석 전/후 화면 전환. 키워드 개요는 하나의 섹션이며 상태에 따라 내용이 바뀐다(#166-3).
     // 분석 전에는 각 카드가 "분석이 필요합니다" 상태를 보여준다.
     function applyAnalysisState() {
+      const hasAnalyzedFiles = hasAnalyzedActivityFiles();
+      const shouldShowAnalysisCards = hasAnalyzed || hasAnalyzedFiles;
       const overview = document.getElementById('keywordOverview');
       overview.classList.toggle('keyword-overview-empty', !hasAnalyzed);
       document.getElementById('keywordChipList').hidden = !hasAnalyzed;
@@ -240,12 +274,12 @@
       document.getElementById('keywordOverviewText').textContent = hasAnalyzed && aggregateResult
         ? aggregateResult.description || '분석된 자료를 기준으로 강점 키워드를 정리했습니다.'
         : '분석 시작을 누르면 완료된 활동 자료를 바탕으로 강점 키워드와 활동 개요를 정리해 드려요.';
-      document.getElementById('analyzedMaterialEmpty').hidden = hasAnalyzed;
-      document.getElementById('analyzedMaterialResult').hidden = !hasAnalyzed;
-      document.getElementById('classificationEmpty').hidden = hasAnalyzed;
-      document.getElementById('classificationResult').hidden = !hasAnalyzed;
-      document.getElementById('classificationBadge').textContent = hasAnalyzed ? '분석 완료' : '분석 전';
-      analysisOverview.hidden = !hasAnalyzed;
+      document.getElementById('analyzedMaterialEmpty').hidden = shouldShowAnalysisCards;
+      document.getElementById('analyzedMaterialResult').hidden = !shouldShowAnalysisCards;
+      document.getElementById('classificationEmpty').hidden = shouldShowAnalysisCards;
+      document.getElementById('classificationResult').hidden = !shouldShowAnalysisCards;
+      document.getElementById('classificationBadge').textContent = shouldShowAnalysisCards ? '분석 완료' : '분석 전';
+      analysisOverview.hidden = false;
     }
 
     function applyAggregateResult(result) {
@@ -317,95 +351,18 @@
       const isProfileSaved = await hasSavedDatabaseProfile();
       profileNeededPanel.hidden = isProfileSaved;
       analysisDashboard.hidden = !isProfileSaved;
+      updateAnalysisSummary();
       applyAnalysisState();
     }
 
     function renderFolders() {
-      FolderStore.FOLDER_GROUPS.forEach((group) => {
-        const container = document.getElementById(folderGroupContainers[group.key]);
-        const groupFolders = Object.values(folders).filter((folder) => folder.group === group.key);
-        container.innerHTML = groupFolders.map(renderFolder).join('');
-      });
-
       FolderStore.saveFolders(folders);
       renderDashboardState();
     }
 
-    function renderFolder(folder) {
-      return `
-        <article class="folder-item" data-folder-id="${escapeHtml(folder.id)}">
-          <a class="folder-row" href="create.html?folder=${escapeHtml(folder.id)}" aria-label="${escapeHtml(folder.label)} 폴더를 파일 관리에서 열기">
-            <span class="mini-folder ${folder.group}" aria-hidden="true"></span>
-            <span class="folder-label">${escapeHtml(folder.label)}</span>
-          </a>
-        </article>
-      `;
-    }
-
-    function clampSidebarWidth(width) {
-      const maxWidth = Math.min(460, Math.max(320, window.innerWidth - 520));
-      return Math.min(Math.max(width, 240), maxWidth);
-    }
-
-    function applySidebarWidth(width) {
-      const nextWidth = clampSidebarWidth(width);
-      mainLayout.style.setProperty('--sidebar-width', `${nextWidth}px`);
-      localStorage.setItem(SIDEBAR_WIDTH_KEY, String(nextWidth));
-    }
-
-    const savedSidebarWidth = Number(localStorage.getItem(SIDEBAR_WIDTH_KEY));
-    if (Number.isFinite(savedSidebarWidth) && savedSidebarWidth > 0) {
-      applySidebarWidth(savedSidebarWidth);
-    }
-
-    document.querySelectorAll('.folder-title').forEach((button) => {
-      button.addEventListener('click', () => {
-        const section = button.closest('.folder-section');
-        const isOpen = section?.classList.toggle('open') ?? false;
-        button.setAttribute('aria-expanded', String(isOpen));
-      });
-    });
-
-    let sidebarResizeStart = null;
-
-    sidebarResizeHandle.addEventListener('pointerdown', (event) => {
-      sidebarResizeStart = {
-        pointerId: event.pointerId,
-        x: event.clientX,
-        width: document.getElementById('activitySidebar').getBoundingClientRect().width,
-      };
-      sidebarResizeHandle.setPointerCapture(event.pointerId);
-      document.body.classList.add('sidebar-resizing');
-    });
-
-    sidebarResizeHandle.addEventListener('pointermove', (event) => {
-      if (!sidebarResizeStart) return;
-      applySidebarWidth(sidebarResizeStart.width + event.clientX - sidebarResizeStart.x);
-    });
-
-    function finishSidebarResize(event) {
-      if (!sidebarResizeStart || event.pointerId !== sidebarResizeStart.pointerId) return;
-      sidebarResizeStart = null;
-      document.body.classList.remove('sidebar-resizing');
-    }
-
-    sidebarResizeHandle.addEventListener('pointerup', finishSidebarResize);
-    sidebarResizeHandle.addEventListener('pointercancel', finishSidebarResize);
-
-    document.addEventListener('click', (event) => {
-      const infoButton = event.target.closest('.analysis-info-button');
-      if (infoButton) {
-        const infoBox = document.getElementById(infoButton.dataset.infoTarget);
-        if (infoBox) infoBox.hidden = !infoBox.hidden;
-      }
-    });
-
-    document.querySelector('[data-analysis-start]').addEventListener('click', async () => {
-      await runAnalysis();
-      analysisDashboard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
 
     async function initMainDashboard() {
+      initializeTutorialPanel();
       folders = await FolderStore.loadFoldersFromApi();
       await loadActivityFilesFromApi();
       renderFolders();

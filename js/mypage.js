@@ -63,6 +63,7 @@
       editing: false,
       saving: false,
       saveError: "",
+      validationErrors: new Set(),
       birthDate: "",
       datePickerOpen: false,
       periodPicker: null,
@@ -74,8 +75,7 @@
           periodStart: "",
           periodEnd: "",
           major: "",
-          minor: "",
-          gpa: ""
+          minor: ""
         }
       ],
       chips: {
@@ -91,6 +91,15 @@
         salary: "회사 내규에 따름"
       }
     };
+
+    const requiredFieldRules = [
+      { key: "name", sectionId: "basic", selector: "#profileName", getValue: () => document.querySelector("#profileName")?.value || "" },
+      { key: "gender", sectionId: "basic", selector: "#profileGender", getValue: () => document.querySelector("#profileGender")?.value || "" },
+      { key: "birthDate", sectionId: "basic", selector: "[data-toggle-date-picker]", getValue: () => profileState.birthDate || "" },
+      { key: "email", sectionId: "contact", selector: "#profileEmail", getValue: () => document.querySelector("#profileEmail")?.value || "" },
+      { key: "phone", sectionId: "contact", selector: "#profilePhone", getValue: () => document.querySelector("#profilePhone")?.value || "" },
+      { key: "address", sectionId: "contact", selector: "#profileAddress", getValue: () => document.querySelector("#profileAddress")?.value || "" }
+    ];
 
     const searchConfigs = {
       detailJob: {
@@ -125,7 +134,14 @@
       if (Object.hasOwn(profile, "email")) document.querySelector("#profileEmail").value = profile.email || "";
       if (Object.hasOwn(profile, "phone")) document.querySelector("#profilePhone").value = profile.phone || "";
       if (Object.hasOwn(profile, "address")) document.querySelector("#profileAddress").value = profile.address || "";
-      if (Array.isArray(profile.educations) && profile.educations.length) profileState.educations = profile.educations;
+      if (Object.hasOwn(profile, "photo")) {
+        profileState.photo = profile.photo || "";
+        if (profileState.photo) localStorage.setItem("myfitfolioPhoto", profileState.photo);
+        else localStorage.removeItem("myfitfolioPhoto");
+      }
+      if (Array.isArray(profile.educations) && profile.educations.length) {
+        profileState.educations = profile.educations.map(({ gpa, ...education }) => education);
+      }
       if (profile.preferences) profileState.preferences = { ...profileState.preferences, ...profile.preferences };
       if (profile.chips) {
         Object.entries(profile.chips).forEach(([key, values]) => {
@@ -267,10 +283,6 @@
             </div>
             ${renderMajorPicker(index, "major", "전공", education.major)}
             ${renderMajorPicker(index, "minor", "부전공/연계전공", education.minor)}
-            <div class="form-field">
-              <label>학점</label>
-              <input data-edu-field="gpa" data-edu-index="${index}" type="text" value="${escapeHtml(education.gpa)}" />
-            </div>
           </div>
         </div>
       `).join("");
@@ -358,10 +370,49 @@
       });
     }
 
+    function renderValidationState() {
+      requiredFieldRules.forEach((rule) => {
+        const control = document.querySelector(rule.selector);
+        const field = control?.closest(".form-field");
+        const hasError = profileState.validationErrors.has(rule.key);
+
+        field?.classList.toggle("has-error", hasError);
+        if (control) {
+          control.setAttribute("aria-invalid", String(hasError));
+        }
+      });
+    }
+
+    function clearResolvedValidationErrors() {
+      requiredFieldRules.forEach((rule) => {
+        if (profileState.validationErrors.has(rule.key) && String(rule.getValue()).trim()) {
+          profileState.validationErrors.delete(rule.key);
+        }
+      });
+      renderValidationState();
+    }
+
+    function validateRequiredProfileFields() {
+      const missingFields = requiredFieldRules.filter((rule) => !String(rule.getValue()).trim());
+      profileState.validationErrors = new Set(missingFields.map((rule) => rule.key));
+      renderValidationState();
+
+      if (!missingFields.length) return true;
+
+      const firstMissing = missingFields[0];
+      const section = document.querySelector(`#${firstMissing.sectionId}`);
+      const control = document.querySelector(firstMissing.selector);
+
+      section?.scrollIntoView({ behavior: "smooth", block: "start" });
+      window.setTimeout(() => control?.focus?.({ preventScroll: true }), 240);
+      profileState.saveError = "필수 정보를 모두 입력해주세요.";
+      return false;
+    }
+
     function renderPhoto() {
       const preview = document.querySelector("[data-photo-preview]");
       if (!preview) return;
-      preview.innerHTML = profileState.photo ? `<img src="${profileState.photo}" alt="프로필 사진" />` : "";
+      preview.innerHTML = profileState.photo ? `<img src="${escapeHtml(profileState.photo)}" alt="프로필 사진" />` : "";
       preview.classList.toggle("has-photo", Boolean(profileState.photo));
     }
 
@@ -432,7 +483,8 @@
         email: document.querySelector("#profileEmail")?.value || "",
         phone: document.querySelector("#profilePhone")?.value || "",
         address: document.querySelector("#profileAddress")?.value || "",
-        educations: profileState.educations,
+        photo: profileState.photo,
+        educations: profileState.educations.map(({ gpa, ...education }) => education),
         preferences: profileState.preferences,
         chips: Object.fromEntries(Object.entries(profileState.chips).map(([key, value]) => [key, [...value]]))
       };
@@ -451,7 +503,11 @@
         }
 
         const result = await response.json();
-        localStorage.setItem("myfitfolioProfile", JSON.stringify(result.profile || payload));
+        const savedProfile = result.profile || payload;
+        if (Object.hasOwn(savedProfile, "photo")) profileState.photo = savedProfile.photo || "";
+        if (profileState.photo) localStorage.setItem("myfitfolioPhoto", profileState.photo);
+        else localStorage.removeItem("myfitfolioPhoto");
+        localStorage.setItem("myfitfolioProfile", JSON.stringify(savedProfile));
         sessionStorage.setItem("myfitfolioProfileSaved", "true");
         return true;
       } catch (error) {
@@ -468,6 +524,7 @@
       renderChipRows();
       renderSalarySelect();
       renderPickedValues();
+      renderValidationState();
       renderFormActions();
       renderEditState();
     }
@@ -527,6 +584,8 @@
       const editButton = event.target.closest("[data-edit-profile]");
       if (editButton) {
         profileState.editing = true;
+        profileState.saveError = "";
+        profileState.validationErrors.clear();
         renderAllDynamicParts();
         return;
       }
@@ -550,6 +609,7 @@
         profileState.birthDate = `${year}-${String(month).padStart(2, "0")}-${String(nextDay).padStart(2, "0")}`;
         profileState.datePickerOpen = false;
         renderDatePicker();
+        clearResolvedValidationErrors();
       }
 
       const addEducation = event.target.closest("[data-add-education]");
@@ -557,7 +617,7 @@
       if (addEducation) {
         collectEducationValues();
         profileState.periodPicker = null;
-        profileState.educations.push({ schoolType: "대학교 4년", school: "", periodStart: "", periodEnd: "", major: "", minor: "", gpa: "" });
+        profileState.educations.push({ schoolType: "대학교 4년", school: "", periodStart: "", periodEnd: "", major: "", minor: "" });
         renderEducationList();
         renderEditState();
       }
@@ -661,8 +721,13 @@
       if (event.target.closest("[data-save-profile]")) {
         if (profileState.saving) return;
 
-        profileState.saving = true;
         profileState.saveError = "";
+        if (!validateRequiredProfileFields()) {
+          renderFormActions();
+          return;
+        }
+
+        profileState.saving = true;
         renderFormActions();
 
         const saved = await saveProfile();
@@ -672,6 +737,7 @@
           profileState.editing = false;
           profileState.datePickerOpen = false;
           profileState.periodPicker = null;
+          profileState.validationErrors.clear();
         } else {
           profileState.saveError = "DB 저장에 실패했습니다. 다시 저장해주세요.";
         }
@@ -691,7 +757,6 @@
         const reader = new FileReader();
         reader.addEventListener("load", () => {
           profileState.photo = String(reader.result || "");
-          localStorage.setItem("myfitfolioPhoto", profileState.photo);
           renderPhoto();
         });
         reader.readAsDataURL(file);
@@ -729,6 +794,8 @@
 
       const salarySelect = event.target.closest("[data-salary-select]");
       if (salarySelect) profileState.preferences.salary = salarySelect.value;
+
+      clearResolvedValidationErrors();
     });
 
     document.addEventListener("input", (event) => {
@@ -749,6 +816,8 @@
         const fieldName = eduInput.dataset.eduField;
         if (profileState.educations[index]) profileState.educations[index][fieldName] = eduInput.value;
       }
+
+      clearResolvedValidationErrors();
     });
 
     async function initProfilePage() {

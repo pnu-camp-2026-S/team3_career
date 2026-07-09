@@ -251,8 +251,10 @@
             <p class="portfolio-library-summary">${escapeHtml(portfolio.summary)}</p>
           </div>
           <div class="portfolio-library-actions">
-            <button class="like-action ${portfolio.liked ? 'liked' : ''}" type="button" data-action="like" data-id="${escapeHtml(portfolio.id)}" aria-label="좋아요">
-              ${portfolio.liked ? '♥' : '♡'}
+            <button class="like-action ${portfolio.liked ? 'liked' : ''}" type="button" data-action="like" data-id="${escapeHtml(portfolio.id)}" aria-label="${portfolio.liked ? '좋아요 취소' : '좋아요'}">
+              <svg class="portfolio-heart" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 20.3s-6.9-4.2-9.2-8.3C.7 8.2 2.8 4 6.8 4c2 0 3.6 1 4.5 2.4C12.2 5 13.8 4 15.8 4c4 0 6.1 4.2 4 8C17.5 16.1 12 20.3 12 20.3Z"></path>
+              </svg>
             </button>
             <a class="outline-button" href="portfolio_viewer.html?id=${encodeURIComponent(portfolio.id)}#viewerContent">열기</a>
             <a class="ghost-button" href="portfolio_create.html?edit=${encodeURIComponent(portfolio.id)}#pfWorkspaceScreen">수정</a>
@@ -280,7 +282,7 @@
         }).catch((error) => console.warn('Portfolio like API failed.', error));
         writePortfolios(portfolios);
         target.classList.toggle('liked', portfolio.liked);
-        target.textContent = portfolio.liked ? '♥' : '♡';
+        target.setAttribute('aria-label', portfolio.liked ? '좋아요 취소' : '좋아요');
         return;
       }
 

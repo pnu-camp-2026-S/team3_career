@@ -17,33 +17,14 @@
     <main class="page-shell file-manager-page">
       <section class="file-manager-hero">
         <div>
-          <p class="section-kicker">파일 관리</p>
-          <h1 class="page-title">프로젝트 폴더별 자료를 확인하고 수정하세요</h1>
-          <p class="page-subtitle">메인 사이드바에서 선택한 폴더가 이 화면의 수정 가능한 자료 관리 패널로 연결됩니다.</p>
+          <h1 class="page-title">프로젝트 자료를 한곳에서 정리하세요</h1>
+          <p class="page-subtitle">업로드한 활동 자료를 폴더별로 확인하고, AI 분석에 사용할 경험 데이터를 관리합니다.</p>
         </div>
         <div class="file-manager-actions">
-          <button class="outline-button" type="button" data-action="sync-github">GitHub 동기화</button>
           <button class="primary-button analyze-button" id="analyzeButton" type="button" data-action="analyze">
             <span aria-hidden="true">✦</span>
             선택한 폴더 분석하기
           </button>
-        </div>
-      </section>
-
-      <section class="panel ai-status-panel">
-        <div class="panel-head">
-          <div>
-            <h2 class="panel-title" id="analysisPanelTitle">AI 정리 상태</h2>
-            <p class="panel-note" id="analysisMessage">자료를 추가하고 분석하기를 누르면 AI 요약 폴더에 결과가 정리됩니다.</p>
-          </div>
-          <span class="status-pill" id="analysisStatus">미분석</span>
-        </div>
-        <div class="manager-progress"><span id="analysisProgress"></span></div>
-        <div class="file-artifact-grid">
-          <div><strong>summary.md</strong><span id="summaryState">생성 대기</span></div>
-          <div><strong>index.json</strong><span id="indexState">폴더 순서 반영 대기</span></div>
-          <div><strong>log.md</strong><span id="logState">변경 이력 없음</span></div>
-          <div><strong>우선순위</strong><span>목록 순서대로 분석</span></div>
         </div>
       </section>
 
@@ -69,7 +50,6 @@
               <p class="panel-note" id="editablePanelDesc">선택한 폴더의 자료를 확인하고 클릭 반응을 테스트합니다.</p>
             </div>
             <div class="project-actions">
-              <button class="outline-button compact-button" type="button" data-action="connect-repo" id="repoConnectButton">레포 연결</button>
               <button class="ghost-button compact-button" type="button" data-action="add-conversation">대화로 내용 추가하기</button>
               <button class="primary-button compact-button" type="button" data-action="toggle-group" id="moveGroupButton">완료로 이동</button>
               <button class="ghost-button compact-button danger-button" type="button" data-action="delete-project">프로젝트 삭제</button>
@@ -96,7 +76,7 @@
     <div class="analysis-loading hidden" id="analysisLoading" role="status" aria-live="polite" aria-hidden="true">
       <div class="analysis-loading-card">
         <div class="analysis-spinner" aria-hidden="true"></div>
-        <p class="section-kicker">AI 자료 분석</p>
+        <p class="analysis-loading-kicker">AI 자료 분석</p>
         <h2 id="analysisLoadingTitle">폴더 자료를 분석하고 있어요</h2>
         <p>업로드한 자료에서 근거를 찾고 활동 내용을 정리하고 있습니다.</p>
         <div class="analysis-loading-steps" aria-hidden="true">

@@ -23,6 +23,42 @@
     sessionStorage.clear();
   }
 
+  function getAccountDisplayName(account) {
+    const rawName = account?.name || account?.email || '';
+    const name = String(rawName).trim();
+    if (!name) return '사용자';
+    return name.includes('@') ? name.split('@')[0] : name;
+  }
+
+  function escapeAttribute(value) {
+    return String(value)
+      .replaceAll('&', '&amp;')
+      .replaceAll('"', '&quot;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;');
+  }
+
+  function renderProfileNameCards(account) {
+    document.querySelectorAll('[data-profile-name-card]').forEach((card) => {
+      if (!account) {
+        card.hidden = true;
+        card.textContent = '';
+        return;
+      }
+
+      card.textContent = `${getAccountDisplayName(account)} 님`;
+      card.hidden = false;
+    });
+  }
+
+  function renderProfileAvatars(account) {
+    document.querySelectorAll('[data-profile-avatar]').forEach((avatar) => {
+      const photo = account?.avatarUrl || '';
+      avatar.innerHTML = photo ? `<img src="${escapeAttribute(photo)}" alt="프로필 사진" />` : '';
+      avatar.classList.toggle('has-photo', Boolean(photo));
+    });
+  }
+
   function closeAllMenus(exceptMenu) {
     document.querySelectorAll('[data-profile-menu]').forEach((menu) => {
       if (menu !== exceptMenu) menu.classList.remove('open');
@@ -91,17 +127,19 @@
     `;
   }
 
-  async function renderAuthGuard() {
+  function renderAuthGuard(account) {
     if (!document.body.dataset.page || document.body.dataset.page !== 'main') return;
 
-    const account = await getCurrentAccount();
     if (!account) renderLoggedOutMain();
   }
 
   async function initAuthNav() {
     wireAuthLoginButtons();
     wireProfileMenus();
-    await renderAuthGuard();
+    const account = await getCurrentAccount();
+    renderProfileNameCards(account);
+    renderProfileAvatars(account);
+    renderAuthGuard(account);
   }
 
   if (document.readyState === 'loading') {

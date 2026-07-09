@@ -268,9 +268,7 @@ const activityPagination = document.getElementById('activityPagination');
 const detailPanel = document.getElementById('activity-detail');
 const scheduleList = document.getElementById('schedule-list');
 const tabs = Array.from(document.querySelectorAll('.tab'));
-const keywordInput = document.getElementById('keyword-search');
-const industryFilter = document.getElementById('industry-filter');
-const levelFilter = document.getElementById('level-filter');
+const sortOptions = Array.from(document.querySelectorAll('.sort-option'));
 const recommendCount = document.getElementById('recommendCount');
 const calendarMonthLabel = document.getElementById('calendarMonth');
 const calendarDays = document.getElementById('calendarDays');
@@ -278,6 +276,7 @@ const prevCalendarMonth = document.getElementById('prevCalendarMonth');
 const nextCalendarMonth = document.getElementById('nextCalendarMonth');
 
 let activeTab = 'all';
+let activeActivitySort = 'recommendation';
 let selectedActivityId = null;
 let activeDetailElement = null;
 let currentActivityPage = 1;
@@ -289,7 +288,228 @@ const activitiesPerPage = 20;
 const visibleScheduleLimit = 5;
 const recommendationMatchThreshold = 85;
 const savedScheduleStorageKey = 'myfitfolioSavedActivitySchedules';
+const activitySchedulesEndpoint = '/api/activity-schedules';
+const profileStorageKeys = ['myfitfolioProfile', 'careerfit_mypage', 'myfitfolio_mypage', 'mypage_profile', 'userProfile'];
 let savedSchedules = loadSavedSchedules();
+
+const departmentAliasMap = {
+  정보컴퓨터공학과: '컴퓨터공학과',
+  컴퓨터공학과: '컴퓨터공학과',
+  전기공학과: '전기공학과',
+  화공생명공학과: '화공생명공학과',
+  산업공학과: '산업공학과'
+};
+
+function getNoneMinorTextValues() {
+  return ['해당 없음', '없음', '선택 안 함', '부전공/연계전공을 선택하세요'];
+}
+
+function parseProfileCache(key) {
+  try {
+    const stored = localStorage.getItem(key);
+    return stored ? JSON.parse(stored) : null;
+  } catch {
+    return null;
+  }
+}
+
+function normalizePreferenceList(values) {
+  return (Array.isArray(values) ? values : [values])
+    .map((value) => String(value || '').trim())
+    .filter((value) => value && !['전체', 'all', '해당 없음', '없음', '선택 안 함'].includes(value));
+}
+
+function readRecommendationProfile() {
+  const profile = profileStorageKeys.map(parseProfileCache).find(Boolean) || {};
+  const educations = Array.isArray(profile.educations) ? profile.educations : [];
+  const primaryEducation = educations.find((education) => education?.major || education?.minor) || {};
+  const chips = profile.chips || {};
+  const selectedJobs = Array.isArray(chips.jobs) ? chips.jobs : [];
+  const selectedInterestFields = Array.isArray(chips.interestFields) ? chips.interestFields : [];
+  const selectedCompanies = Array.isArray(chips.companies) ? chips.companies : [];
+  const selectedIndustries = Array.isArray(chips.industries) ? chips.industries : [];
+
+  return {
+    major: profile.major || profile.education?.major || primaryEducation.major || '',
+    minor: profile.minor || profile.education?.minor || primaryEducation.minor || '',
+    linkedMajor:
+      profile.linkedMajor ||
+      profile.interdisciplinaryMajor ||
+      profile.doubleMajor ||
+      profile.education?.linkedMajor ||
+      profile.education?.interdisciplinaryMajor ||
+      '',
+    desiredJobs: [
+      profile.desiredJob,
+      profile.job,
+      profile.detailJob,
+      profile.preferences?.detailJob,
+      profile.preferences?.workIndustry,
+      ...selectedJobs
+    ].filter(Boolean),
+    interestFields: normalizePreferenceList(selectedInterestFields),
+    interestedCompanies: normalizePreferenceList(selectedCompanies),
+    interestedIndustries: normalizePreferenceList([
+      profile.preferences?.workIndustry,
+      ...selectedIndustries
+    ])
+  };
+}
+
+function normalizeDepartmentName(value) {
+  const text = String(value || '').trim();
+  if (!text || getNoneMinorTextValues().includes(text)) return '';
+  return departmentAliasMap[text] || text;
+}
+
+function resolveDepartmentFitKey(item, departmentName) {
+  const normalizedDepartment = normalizeDepartmentName(departmentName);
+  if (!normalizedDepartment || !item.departmentFit) return '';
+
+  const fitKeys = Object.keys(item.departmentFit);
+  return (
+    fitKeys.find((key) => key === normalizedDepartment) ||
+    fitKeys.find((key) => normalizeDepartmentName(key) === normalizedDepartment) ||
+    fitKeys.find((key) => key.includes(normalizedDepartment) || normalizedDepartment.includes(key)) ||
+    ''
+  );
+}
+
+function getDepartmentFitScore(item, departmentName) {
+  const fitKey = resolveDepartmentFitKey(item, departmentName);
+  return fitKey ? Number(item.departmentFit[fitKey]) || 0 : 0;
+}
+
+function getProfileJobScore(item, desiredJobs) {
+  const preferenceText = desiredJobs.join(' ').toLowerCase();
+  if (!preferenceText) return getRecommendationScore(item);
+
+  const activityText = [
+    item.title,
+    item.type,
+    item.industry,
+    item.reason,
+    item.connection,
+    ...(item.targetJobs || []),
+    ...(item.skills || [])
+  ].join(' ').toLowerCase();
+
+  const jobKeywordGroups = [
+    ['개발', '프론트엔드', '백엔드', '풀스택', 'devops', 'api', 'javascript', 'node'],
+    ['데이터', 'sql', '분석', 'bi', 'python', 'etl'],
+    ['ai', '머신러닝', 'mlops', '모델'],
+    ['보안', '네트워크', '클라우드', 'sre'],
+    ['전기', '전자', '회로', '전력', '반도체', '임베디드', 'iot'],
+    ['화공', '화학', '바이오', '공정', '품질', '환경', '소재'],
+    ['산업', '생산', '물류', 'scm', '품질', '최적화', '프로세스'],
+    ['기획', 'pm', 'po', '서비스', 'ux', 'ui'],
+    ['마케팅', '브랜드', '콘텐츠', '디자인']
+  ];
+
+  const matchedGroup = jobKeywordGroups.find((group) => group.some((keyword) => preferenceText.includes(keyword)));
+  if (!matchedGroup) return getRecommendationScore(item);
+
+  const matchedKeywordCount = matchedGroup.filter((keyword) => activityText.includes(keyword)).length;
+  if (matchedKeywordCount >= 2) return 96;
+  if (matchedKeywordCount === 1) return 88;
+  return Math.max(45, getRecommendationScore(item) - 12);
+}
+
+function normalizeMatchText(value) {
+  return String(value || '').toLowerCase().replace(/[\s/_·-]+/g, '');
+}
+
+function getActivityPreferenceText(item) {
+  return [
+    item.title,
+    item.type,
+    item.industry,
+    item.reason,
+    item.connection,
+    item.primaryDepartment,
+    ...(item.secondaryDepartments || []),
+    ...(item.targetJobs || []),
+    ...(item.targetCompanies || []),
+    ...(item.targetIndustries || []),
+    ...(item.interestFields || []),
+    ...(item.skills || [])
+  ].join(' ');
+}
+
+const companyPreferenceKeywordMap = {
+  삼성전자: ['반도체', '전기', '전자', '회로', '임베디드', 'AI'],
+  SK하이닉스: ['반도체', '공정', '품질', '전기', '전자'],
+  네이버: ['IT', 'SW', '개발', '데이터', 'AI', '클라우드', '서비스'],
+  카카오: ['IT', 'SW', '개발', '서비스', '콘텐츠', 'AI'],
+  'LG CNS': ['IT', 'SW', '클라우드', '개발', 'DX', '데이터'],
+  현대자동차: ['제조', '전기', '전자', '생산', '품질', '모빌리티'],
+  롯데: ['유통', '마케팅', '제조', '서비스', '물류'],
+  CJ: ['콘텐츠', '유통', '바이오', '물류', '마케팅']
+};
+
+const industryPreferenceKeywordMap = {
+  반도체: ['반도체', '공정', '전기', '전자', '품질'],
+  'IT/SW': ['IT', 'SW', '개발', '데이터', 'AI', '클라우드', '보안', '서비스'],
+  금융: ['금융', '데이터', '보안', '서비스'],
+  교육: ['교육', '콘텐츠', '서비스'],
+  콘텐츠: ['콘텐츠', '브랜드', '마케팅', '디자인'],
+  제조: ['제조', '생산', '품질', '공정', '물류'],
+  바이오: ['바이오', '화공', '공정', '품질', '연구'],
+  유통: ['유통', '물류', 'SCM', '마케팅', '서비스'],
+  공공: ['공공', '정책', '데이터', '서비스'],
+  게임: ['게임', '개발', '콘텐츠', '서비스']
+};
+
+function getPreferenceKeywordScore(item, preferences, fallbackScore, keywordMap = {}) {
+  const normalizedPreferences = normalizePreferenceList(preferences);
+  if (!normalizedPreferences.length) return fallbackScore;
+
+  const activityText = normalizeMatchText(getActivityPreferenceText(item));
+  const bestMatchCount = normalizedPreferences.reduce((bestCount, preference) => {
+    const keywords = [preference, ...(keywordMap[preference] || [])];
+    const matchCount = keywords.filter((keyword) => activityText.includes(normalizeMatchText(keyword))).length;
+    return Math.max(bestCount, matchCount);
+  }, 0);
+
+  if (bestMatchCount >= 2) return 96;
+  if (bestMatchCount === 1) return 90;
+  return Math.max(40, fallbackScore - 8);
+}
+
+function getProfileRecommendationScore(item, profile) {
+  const majorScore = getDepartmentFitScore(item, profile.major);
+  const minorScore = getDepartmentFitScore(item, profile.minor);
+  const linkedMajorScore = getDepartmentFitScore(item, profile.linkedMajor);
+  const jobScore = getProfileJobScore(item, profile.desiredJobs);
+  const baseScore = getRecommendationScore(item);
+  const interestFieldScore = getPreferenceKeywordScore(item, profile.interestFields, baseScore);
+  const industryScore = getPreferenceKeywordScore(
+    item,
+    profile.interestedIndustries,
+    baseScore,
+    industryPreferenceKeywordMap
+  );
+  const companyScore = getPreferenceKeywordScore(
+    item,
+    profile.interestedCompanies,
+    baseScore,
+    companyPreferenceKeywordMap
+  );
+
+  const weightedScore = Math.round(
+    (majorScore || baseScore) * 0.45 +
+      (minorScore || majorScore || baseScore) * 0.08 +
+      (linkedMajorScore || minorScore || majorScore || baseScore) * 0.05 +
+      jobScore * 0.17 +
+      interestFieldScore * 0.1 +
+      industryScore * 0.1 +
+      companyScore * 0.05
+  );
+
+  return Math.max(12, Math.min(96, weightedScore));
+}
+
+const recommendationProfile = readRecommendationProfile();
 
 function clearExpandedDetail() {
   if (activeDetailElement) {
@@ -309,20 +529,9 @@ function clearExpandedDetail() {
 }
 
 function getFilteredActivities() {
-  const keyword = keywordInput.value.trim().toLowerCase();
-  const industry = industryFilter.value;
-  const level = levelFilter.value;
-
   return getSortedRecommendedActivities().filter((item) => {
     const matchesTab = activeTab === 'all' || item.type === activeTab;
-    const matchesKeyword =
-      !keyword ||
-      item.title.toLowerCase().includes(keyword) ||
-      item.reason.toLowerCase().includes(keyword);
-    const matchesIndustry = industry === 'all' || item.industry === industry;
-    const matchesLevel = level === 'all' || item.level === level;
-
-    return matchesTab && matchesKeyword && matchesIndustry && matchesLevel;
+    return matchesTab;
   });
 }
 
@@ -333,7 +542,7 @@ function getMatchScore(item) {
 function renderRecommendationCount() {
   if (!recommendCount) return;
 
-  const count = activities.filter((item) => getMatchScore(item) >= recommendationMatchThreshold).length;
+  const count = getSortedRecommendedActivities().length;
   recommendCount.textContent = `추천 활동 ${count}개`;
 }
 
@@ -361,6 +570,68 @@ function loadSavedSchedules() {
 
 function persistSavedSchedules() {
   localStorage.setItem(savedScheduleStorageKey, JSON.stringify(savedSchedules));
+}
+
+function normalizeSavedSchedule(event) {
+  if (!event || !event.id || !event.title || !event.date) return null;
+
+  return {
+    id: Number(event.id),
+    title: String(event.title),
+    note: String(event.note || ''),
+    date: String(event.date)
+  };
+}
+
+function normalizeSavedScheduleList(events) {
+  return (Array.isArray(events) ? events : [])
+    .map(normalizeSavedSchedule)
+    .filter(Boolean);
+}
+
+async function loadSavedSchedulesFromServer() {
+  try {
+    const response = await fetch(activitySchedulesEndpoint, {
+      method: 'GET',
+      credentials: 'same-origin',
+      cache: 'no-store'
+    });
+
+    if (response.status === 401) return false;
+    if (!response.ok) throw new Error('Activity schedule load failed.');
+
+    const payload = await response.json();
+    savedSchedules = normalizeSavedScheduleList(payload.schedules);
+    persistSavedSchedules();
+    return true;
+  } catch (error) {
+    console.warn('Activity schedule API load failed.', error);
+    return false;
+  }
+}
+
+async function persistSavedSchedulesToServer() {
+  try {
+    const response = await fetch(activitySchedulesEndpoint, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ schedules: savedSchedules })
+    });
+
+    if (response.status === 401) return false;
+    if (!response.ok) throw new Error('Activity schedule save failed.');
+
+    const payload = await response.json().catch(() => ({}));
+    if (Array.isArray(payload.schedules)) {
+      savedSchedules = normalizeSavedScheduleList(payload.schedules);
+      persistSavedSchedules();
+    }
+    return true;
+  } catch (error) {
+    console.warn('Activity schedule API save failed.', error);
+    return false;
+  }
 }
 
 function renderActivities() {
@@ -421,14 +692,20 @@ const scheduleDates = {
   10: '2026-10-04'
 };
 function normalizeActivityDataset(dataset) {
-  const rankedItems = [...dataset].sort(
-    (a, b) =>
-      getRecommendationScore(b) - getRecommendationScore(a) ||
-      a.id - b.id
-  );
+  const rankedItems = [...dataset]
+    .map((item) => ({
+      ...item,
+      recommendationScore: getProfileRecommendationScore(item, recommendationProfile)
+    }))
+    .sort(
+      (a, b) =>
+        b.recommendationScore - a.recommendationScore ||
+        getRecommendationScore(b) - getRecommendationScore(a) ||
+        a.id - b.id
+    );
 
   return rankedItems.map((item, index) => {
-    const score = getDistributedMatchScore(index, rankedItems.length);
+    const score = item.recommendationScore || getDistributedMatchScore(index, rankedItems.length);
 
     if (!scheduleDates[item.id]) {
       scheduleDates[item.id] = formatDateFromDeadlineDays(item.deadlineDays);
@@ -449,12 +726,39 @@ const activities = Array.isArray(window.activityRecommendationDataset)
   ? normalizeActivityDataset(window.activityRecommendationDataset)
   : fallbackActivities;
 
-function getSortedRecommendedActivities() {
-  return [...activities].sort(
+function getActivityScheduleTime(item) {
+  const scheduleDate = scheduleDates[item.id] || formatDateFromDeadlineDays(item.deadlineDays);
+  const time = parseDateValue(scheduleDate).getTime();
+  return Number.isFinite(time) ? time : Number.MAX_SAFE_INTEGER;
+}
+
+function sortActivitiesByRecommendation(items) {
+  return [...items].sort(
     (a, b) =>
+      getMatchScore(b) - getMatchScore(a) ||
       getRecommendationScore(b) - getRecommendationScore(a) ||
+      a.id - b.id
+  );
+}
+
+function sortActivitiesByDeadline(items) {
+  return [...items].sort(
+    (a, b) =>
+      getActivityScheduleTime(a) - getActivityScheduleTime(b) ||
       getMatchScore(b) - getMatchScore(a) ||
       a.id - b.id
+  );
+}
+
+function sortRecommendedActivities(items) {
+  return activeActivitySort === 'deadline'
+    ? sortActivitiesByDeadline(items)
+    : sortActivitiesByRecommendation(items);
+}
+
+function getSortedRecommendedActivities() {
+  return sortRecommendedActivities(
+    activities.filter((item) => getMatchScore(item) >= recommendationMatchThreshold)
   );
 }
 
@@ -745,7 +1049,7 @@ function moveCalendarMonth(offset) {
   animateCalendarTurn(offset > 0 ? 'next' : 'prev');
 }
 
-function toggleSaveToCalendar(item) {
+async function toggleSaveToCalendar(item) {
   const existingIndex = savedSchedules.findIndex((event) => event.id === item.id);
   const itemDate = scheduleDates[item.id] || '2026-07-21';
 
@@ -766,13 +1070,17 @@ function toggleSaveToCalendar(item) {
   renderSchedule();
   renderCalendarHighlight();
   updateSaveButton(item);
+  await persistSavedSchedulesToServer();
+  renderSchedule();
+  renderCalendarHighlight();
+  updateSaveButton(item);
 }
 
-function toggleBookmarkSave(id) {
+async function toggleBookmarkSave(id) {
   const item = activities.find((activity) => activity.id === Number(id));
   if (!item) return;
 
-  toggleSaveToCalendar(item);
+  await toggleSaveToCalendar(item);
 }
 
 function renderSchedule() {
@@ -837,13 +1145,14 @@ tabs.forEach((tab) => {
   });
 });
 
-[keywordInput, industryFilter, levelFilter].forEach((control) => {
-  control.addEventListener('input', () => {
-    currentActivityPage = 1;
-    renderActivities();
-    updateSelectedCard();
-  });
-  control.addEventListener('change', () => {
+sortOptions.forEach((option) => {
+  option.addEventListener('click', () => {
+    activeActivitySort = option.dataset.sort || 'recommendation';
+    sortOptions.forEach((button) => {
+      const isActive = button === option;
+      button.classList.toggle('active', isActive);
+      button.setAttribute('aria-pressed', String(isActive));
+    });
     currentActivityPage = 1;
     renderActivities();
     updateSelectedCard();
@@ -881,7 +1190,17 @@ scheduleList.addEventListener('click', (event) => {
 prevCalendarMonth.addEventListener('click', () => moveCalendarMonth(-1));
 nextCalendarMonth.addEventListener('click', () => moveCalendarMonth(1));
 
+async function initSavedSchedules() {
+  const loadedFromServer = await loadSavedSchedulesFromServer();
+  if (!loadedFromServer) return;
+
+  renderSchedule();
+  renderCalendarHighlight();
+  renderActivities();
+}
+
 renderCalendarMonth();
 renderSchedule();
 renderRecommendationCount();
 renderActivities();
+initSavedSchedules();

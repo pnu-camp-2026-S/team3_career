@@ -6,6 +6,7 @@ import {
 const ACTIVITY_FILE_BUCKET = 'activity-files';
 
 const USER_ROW_TARGETS = [
+  { table: 'activity_schedules', column: 'user_id' },
   { table: 'activity_files', column: 'user_id' },
   { table: 'portfolios', column: 'user_id' },
   { table: 'user_profiles', column: 'user_id' },

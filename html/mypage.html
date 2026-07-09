@@ -15,15 +15,15 @@
 
     <main class="mypage" aria-busy="true">
       <div class="mypage-content">
-        <h1 class="page-title">마이페이지</h1>
-        <p class="page-subtitle">내 정보를 입력하고 취업 조건을 관리해보세요.</p>
+        <h1 class="page-title">내 정보를 관리하세요</h1>
+        <p class="page-subtitle">기본 정보와 목표 조건을 채워 맞춤 추천과 포트폴리오 생성에 활용하세요.</p>
 
         <div class="section-stack">
           <div class="profile-top-actions">
             <div class="form-actions" data-form-actions></div>
           </div>
           <section class="profile-section" id="basic">
-            <h2 class="section-heading">기본 정보</h2>
+            <h2 class="section-heading">기본 정보 <span class="required-marker" aria-label="필수 입력">*</span></h2>
             <div class="field-grid">
               <div class="profile-photo">
                 <span class="avatar-lg" data-photo-preview></span>
@@ -59,7 +59,7 @@
           </section>
 
           <section class="profile-section" id="contact">
-            <h2 class="section-heading">연락처 정보 <span style="color:#98a4b5;font-size:12px">ⓘ 소셜 계정에서 가져온 정보입니다.</span></h2>
+            <h2 class="section-heading">연락처 정보 <span class="required-marker" aria-label="필수 입력">*</span> <span style="color:#98a4b5;font-size:12px">ⓘ 소셜 계정에서 가져온 정보입니다.</span></h2>
             <div class="inline-fields">
               <div class="form-field">
                 <label for="profileEmail">이메일</label>
@@ -77,13 +77,13 @@
           </section>
 
           <section class="profile-section" id="school">
-            <h2 class="section-heading">학력</h2>
+            <h2 class="section-heading">학력 <span class="section-note"><span class="section-note-icon" aria-hidden="true">!</span> 입력하지 않으면 추후 기능 사용이 어려울 수 있습니다.</span></h2>
             <div class="education-list" data-education-list></div>
             <button class="ghost-button" type="button" data-add-education style="margin-top:16px">+ 항목 추가</button>
           </section>
 
           <section class="profile-section" id="condition">
-            <h2 class="section-heading">희망근무조건</h2>
+            <h2 class="section-heading">희망근무조건 <span class="section-note"><span class="section-note-icon" aria-hidden="true">!</span> 입력하지 않으면 추후 기능 사용이 어려울 수 있습니다.</span></h2>
             <div class="job-grid">
               <div class="form-field">
                 <label>희망 직무</label>
@@ -135,7 +135,7 @@
           </section>
 
           <section class="profile-section" id="interest">
-            <h2 class="section-heading">관심분야</h2>
+            <h2 class="section-heading">관심분야 <span class="section-note"><span class="section-note-icon" aria-hidden="true">!</span> 입력하지 않으면 추후 기능 사용이 어려울 수 있습니다.</span></h2>
             <div class="section-stack">
               <div class="form-field">
                 <label>관심 분야</label>

@@ -237,7 +237,6 @@ button {
   gap: 24px;
 }
 
-.eyebrow,
 .panel-label {
   margin: 0 0 6px;
   color: var(--accent);
@@ -274,30 +273,6 @@ button {
   line-height: 1.6;
 }
 
-.search-box {
-  flex: 0 1 240px;
-  width: 240px;
-  min-width: 200px;
-  min-height: 44px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: #fff;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 0 14px;
-  color: var(--soft-muted);
-}
-
-.search-box input {
-  width: 100%;
-  min-width: 0;
-  border: none;
-  outline: none;
-  background: transparent;
-  color: var(--text);
-}
-
 .panel {
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -307,11 +282,18 @@ button {
 .filter-bar {
   max-width: 1180px;
   margin: 0 auto 18px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 18px;
+}
+
+.activity-filter-row {
   display: flex;
+  grid-column: 1;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
+  gap: 32px;
+  min-width: 0;
 }
 
 .tabs {
@@ -322,7 +304,7 @@ button {
 }
 
 .tab,
-select {
+.sort-option {
   min-height: 38px;
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -342,25 +324,37 @@ select {
   color: #fff;
 }
 
-.filter-controls {
+.sort-controls {
   display: flex;
   flex: 0 0 auto;
   align-items: center;
   gap: 8px;
 }
 
-select {
-  min-width: 130px;
-  padding: 0 10px;
-  outline: none;
+.sort-option {
+  padding: 8px 14px;
+  cursor: pointer;
+}
+
+.sort-option.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+.sort-option:not(.active) {
+  color: var(--soft-muted);
 }
 
 .dashboard-grid {
   max-width: 1180px;
-  margin: 0 auto;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 360px;
   gap: 18px;
+}
+
+.dashboard-grid {
+  margin: 0 auto;
   align-items: start;
 }
 
@@ -906,12 +900,21 @@ select {
     align-items: stretch;
   }
 
-  .filter-controls {
+  .filter-bar {
+    display: flex;
+  }
+
+  .activity-filter-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .sort-controls {
     flex-direction: column;
   }
 
-  select,
-  .search-box {
+  .sort-option {
     width: 100%;
   }
 }
