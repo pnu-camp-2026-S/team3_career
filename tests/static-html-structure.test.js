@@ -1818,6 +1818,15 @@ assert.match(
 );
 assert.match(
   createHtml,
+  /data-action="rename-subfolder"[\s\S]*function\s+openRenameSubfolderModal\(subfolderId\)[\s\S]*function\s+saveSubfolderName\(subfolderId\)[\s\S]*AI 요약은 예약된 폴더 이름입니다[\s\S]*같은 이름의 세부 폴더가 이미 있습니다/,
+  'file management should let users rename a subfolder with a dedicated pencil button next to it'
+);
+assert.ok(
+  !createHtml.includes('메인 사이드바와 같은 폴더 형식입니다'),
+  'file management should remove the stale main-sidebar comparison note under the folder list'
+);
+assert.match(
+  createHtml,
   /data-shared-nav data-active="create"/,
   'file management should use the shared top navigation mount'
 );
