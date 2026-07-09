@@ -638,6 +638,10 @@
   background-color: #fbfcff;
 }
 
+.profile-readonly .form-field input:disabled {
+  background-color: #fff;
+}
+
 .profile-readonly .form-field select:disabled {
   color: #273244;
   padding-right: 14px;

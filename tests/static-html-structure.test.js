@@ -1326,6 +1326,11 @@ assert.match(
 );
 assert.match(
   mypageCss,
+  /\.profile-readonly\s+\.form-field\s+input:disabled\s*\{[^}]*background-color:\s*#fff;/s,
+  'mypage readonly text inputs should keep a white background after saving profile data'
+);
+assert.match(
+  mypageCss,
   /\.profile-readonly\s+\.date-trigger:disabled\s+\.calendar-icon,\s*\.profile-readonly\s+\.major-trigger:disabled\s+\.select-chevron,\s*\.profile-readonly\s+\.picker-trigger:disabled\s+span\[aria-hidden="true"\]\s*\{[^}]*display:\s*none;/s,
   'mypage readonly date, major, and search picker icons should be hidden until edit mode'
 );
