@@ -1943,8 +1943,8 @@ assert.ok(
 );
 assert.match(
   contestHtml,
-  /<section class="page-title">[\s\S]*<h1>부족한 역량을 보완할 활동을 추천해드려요<\/h1>[\s\S]*<p>저장된 프로필과 포트폴리오 경험을 기준으로 지금 필요한 활동을 선별했습니다\.<\/p>[\s\S]*<span class="recommend-count" id="recommendCount" hidden>추천 활동 0개<\/span>/,
-  'contest page should use the shared two-line page header while keeping a hidden count target'
+  /<section class="page-title">[\s\S]*<h1>부족한 역량을 보완할 활동을 추천해드려요 <span class="recommend-count" id="recommendCount">추천 활동 0개<\/span><\/h1>[\s\S]*<p>저장된 프로필과 포트폴리오 경험을 기준으로 지금 필요한 활동을 선별했습니다\.<\/p>/,
+  'contest page should keep the recommendation count badge next to the page title'
 );
 assert.ok(
   !contestHtml.includes('class="eyebrow"'),
