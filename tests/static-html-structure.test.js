@@ -2804,8 +2804,8 @@ assert.match(
 );
 assert.match(
   portfolioCreateHtml,
-  /function\s+chunkItems\(items,\s*size\)[\s\S]*renderDraftPageViewer\(pages\)[\s\S]*data-draft-page-direction="-1"[\s\S]*data-draft-page-direction="1"/,
-  'portfolio_create should split long drafts into pages with previous and next buttons'
+  /function\s+chunkItems\(items,\s*size\)[\s\S]*renderDraftPageViewer\(pages\)[\s\S]*isFirstPage[\s\S]*isLastPage[\s\S]*data-draft-page-direction="-1"[\s\S]*disabled[\s\S]*data-draft-page-direction="1"/,
+  'portfolio_create should split long drafts into pages with disabled previous and next buttons at page boundaries'
 );
 assert.match(
   portfolioCreateHtml,
@@ -2915,6 +2915,7 @@ for (const cssPattern of [
   /\.slide-arrow\s*\{/,
   /\.draft-page-viewer\s*\{/,
   /\.draft-page-arrow\s*\{/,
+  /\.draft-page-arrow:disabled\s*\{/,
   /\.draft-page-counter\s*\{/,
   /\.master-actions\s*\{/,
   /\.flat-action\.danger\s*\{/,

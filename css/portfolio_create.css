@@ -871,9 +871,18 @@
   cursor: pointer;
 }
 
-.draft-page-arrow:hover {
+.draft-page-arrow:hover:not(:disabled) {
   border-color: #9eb8ff;
   background: #f4f7ff;
+}
+
+.draft-page-arrow:disabled {
+  border-color: #edf1f7;
+  background: #f8fafc;
+  color: #c3ccd9;
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 0.62;
 }
 
 .draft-page-arrow.prev {
