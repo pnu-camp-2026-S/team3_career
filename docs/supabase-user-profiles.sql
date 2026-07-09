@@ -16,6 +16,9 @@ create table if not exists public.user_profiles (
   updated_at timestamptz not null default now()
 );
 
+comment on column public.user_profiles.preferences is
+  'Stores mypage work preferences and profilePhoto for the uploaded profile image.';
+
 alter table public.user_profiles enable row level security;
 
 drop policy if exists "Users can read own mypage profile" on public.user_profiles;

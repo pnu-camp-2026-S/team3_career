@@ -238,6 +238,17 @@ button {
   height: 36px;
 }
 
+.avatar img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.avatar.has-photo {
+  background: #eef4ff;
+}
+
 .avatar.online::after {
   content: "";
   position: absolute;

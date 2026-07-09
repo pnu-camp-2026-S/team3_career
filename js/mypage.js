@@ -124,6 +124,11 @@
       if (Object.hasOwn(profile, "email")) document.querySelector("#profileEmail").value = profile.email || "";
       if (Object.hasOwn(profile, "phone")) document.querySelector("#profilePhone").value = profile.phone || "";
       if (Object.hasOwn(profile, "address")) document.querySelector("#profileAddress").value = profile.address || "";
+      if (Object.hasOwn(profile, "photo")) {
+        profileState.photo = profile.photo || "";
+        if (profileState.photo) localStorage.setItem("myfitfolioPhoto", profileState.photo);
+        else localStorage.removeItem("myfitfolioPhoto");
+      }
       if (Array.isArray(profile.educations) && profile.educations.length) {
         profileState.educations = profile.educations.map(({ gpa, ...education }) => education);
       }
@@ -358,7 +363,7 @@
     function renderPhoto() {
       const preview = document.querySelector("[data-photo-preview]");
       if (!preview) return;
-      preview.innerHTML = profileState.photo ? `<img src="${profileState.photo}" alt="프로필 사진" />` : "";
+      preview.innerHTML = profileState.photo ? `<img src="${escapeHtml(profileState.photo)}" alt="프로필 사진" />` : "";
       preview.classList.toggle("has-photo", Boolean(profileState.photo));
     }
 
@@ -429,6 +434,7 @@
         email: document.querySelector("#profileEmail")?.value || "",
         phone: document.querySelector("#profilePhone")?.value || "",
         address: document.querySelector("#profileAddress")?.value || "",
+        photo: profileState.photo,
         educations: profileState.educations.map(({ gpa, ...education }) => education),
         preferences: profileState.preferences,
         chips: Object.fromEntries(Object.entries(profileState.chips).map(([key, value]) => [key, [...value]]))
@@ -448,7 +454,11 @@
         }
 
         const result = await response.json();
-        localStorage.setItem("myfitfolioProfile", JSON.stringify(result.profile || payload));
+        const savedProfile = result.profile || payload;
+        if (Object.hasOwn(savedProfile, "photo")) profileState.photo = savedProfile.photo || "";
+        if (profileState.photo) localStorage.setItem("myfitfolioPhoto", profileState.photo);
+        else localStorage.removeItem("myfitfolioPhoto");
+        localStorage.setItem("myfitfolioProfile", JSON.stringify(savedProfile));
         sessionStorage.setItem("myfitfolioProfileSaved", "true");
         return true;
       } catch (error) {
@@ -688,7 +698,6 @@
         const reader = new FileReader();
         reader.addEventListener("load", () => {
           profileState.photo = String(reader.result || "");
-          localStorage.setItem("myfitfolioPhoto", profileState.photo);
           renderPhoto();
         });
         reader.readAsDataURL(file);

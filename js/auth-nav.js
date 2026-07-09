@@ -30,6 +30,14 @@
     return name.includes('@') ? name.split('@')[0] : name;
   }
 
+  function escapeAttribute(value) {
+    return String(value)
+      .replaceAll('&', '&amp;')
+      .replaceAll('"', '&quot;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;');
+  }
+
   function renderProfileNameCards(account) {
     document.querySelectorAll('[data-profile-name-card]').forEach((card) => {
       if (!account) {
@@ -40,6 +48,14 @@
 
       card.textContent = `${getAccountDisplayName(account)} 님`;
       card.hidden = false;
+    });
+  }
+
+  function renderProfileAvatars(account) {
+    document.querySelectorAll('[data-profile-avatar]').forEach((avatar) => {
+      const photo = account?.avatarUrl || '';
+      avatar.innerHTML = photo ? `<img src="${escapeAttribute(photo)}" alt="프로필 사진" />` : '';
+      avatar.classList.toggle('has-photo', Boolean(photo));
     });
   }
 
@@ -122,6 +138,7 @@
     wireProfileMenus();
     const account = await getCurrentAccount();
     renderProfileNameCards(account);
+    renderProfileAvatars(account);
     renderAuthGuard(account);
   }
 
