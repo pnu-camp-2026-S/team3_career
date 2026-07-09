@@ -1789,8 +1789,13 @@ assert.match(
 );
 assert.match(
   createHtml,
-  /id="analyzeButton"[\s\S]*id="analysisLoading"[\s\S]*id="analysisLoadingPercent"[\s\S]*id="analysisLoadingCount"[\s\S]*function\s+setAnalysisLoading\(isLoading,\s*state\s*=\s*\{\}\)[\s\S]*percentNode\.textContent\s*=\s*`\$\{percent\}%`[\s\S]*countNode\.textContent\s*=\s*`\$\{completed\} \/ \$\{total\}개 프로젝트 완료`/,
+  /id="analyzeButton"[\s\S]*id="analysisLoading"[\s\S]*id="analysisLoadingPercent"[\s\S]*id="analysisLoadingCount"[\s\S]*function\s+setAnalysisLoading\(isLoading,\s*state\s*=\s*\{\}\)[\s\S]*percentNode\.textContent\s*=\s*`\$\{percent\}%`[\s\S]*countNode\.textContent\s*=\s*`\$\{completed\} \/ \$\{total\}단계 완료`/,
   'file management should show a dedicated loading progress modal while all-project analysis runs (#226)'
+);
+assert.match(
+  createHtml,
+  /const\s+progressState\s*=\s*\{[\s\S]*total:\s*targetFolders\.length\s*\+\s*1[\s\S]*runAggregateAnalysisForProjects\(successProjectIds\)[\s\S]*finally\s*\{[\s\S]*progressState\.completed\s*\+=\s*1[\s\S]*setAnalysisLoading\(true,\s*progressState\)[\s\S]*else\s*\{[\s\S]*progressState\.total\s*=\s*targetFolders\.length/,
+  'project analysis progress should include the final aggregate analysis as one additional step (#271)'
 );
 assert.match(
   createHtml,
