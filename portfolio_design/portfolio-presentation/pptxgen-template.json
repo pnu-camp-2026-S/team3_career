@@ -1,0 +1,418 @@
+{
+  "templateId": "ppt_presentation_spec",
+  "templateName": "PPT 발표 스펙",
+  "engine": "PptxGenJS",
+  "layout": "LAYOUT_WIDE",
+  "slideSize": {
+    "width": 13.333,
+    "height": 7.5,
+    "unit": "inch"
+  },
+  "theme": {
+    "fontFace": "Malgun Gothic",
+    "background": "FFFFFF",
+    "text": "111111",
+    "mutedText": "6B7280",
+    "accent": "66BDEB",
+    "accentSoft": "EAF7FD",
+    "line": "E5E7EB",
+    "keywordButton": "000000"
+  },
+  "rules": {
+    "description": "사용자가 제공한 PPT 레퍼런스를 PptxGenJS 좌표 기준으로 역산한 템플릿 JSON이다.",
+    "slideOrder": [
+      "cover",
+      "profile",
+      "experience_intro",
+      "result_kpi"
+    ],
+    "repeatRule": "경험이 여러 개면 experience_intro와 result_kpi 슬라이드 쌍을 경험 수만큼 반복한다.",
+    "chartRule": "실제 근거 수치가 있을 때만 chart를 사용하고, 없으면 qualitative_card를 사용한다.",
+    "imageRule": "프로필과 경험 소개 카드에는 이미지 슬롯을 유지한다.",
+    "textFitRule": "한 구획에 1~2문장만 넣고, 문장이 길면 중간에서 자르지 말고 의미 단위로 짧게 재작성한다."
+  },
+  "common": {
+    "topProjectLabel": {
+      "x": 0,
+      "y": 0.32,
+      "w": 13.333,
+      "h": 0.24,
+      "fontSize": 12,
+      "bold": true,
+      "color": "66BDEB",
+      "align": "center"
+    },
+    "centerTitle": {
+      "x": 0.7,
+      "y": 0.72,
+      "w": 11.93,
+      "h": 0.44,
+      "fontSize": 22,
+      "bold": true,
+      "color": "111111",
+      "align": "center"
+    },
+    "divider": {
+      "type": "line",
+      "x": 0.48,
+      "y": 1.48,
+      "w": 12.38,
+      "h": 0,
+      "color": "E5E7EB",
+      "width": 1
+    }
+  },
+  "slides": [
+    {
+      "type": "cover",
+      "name": "표지",
+      "background": "FFFFFF",
+      "decorations": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 5.74,
+          "w": 13.333,
+          "h": 1.76,
+          "fill": "EAF7FD",
+          "line": "EAF7FD"
+        }
+      ],
+      "fields": {
+        "label": {
+          "text": "Portfolio",
+          "x": 0,
+          "y": 1.1,
+          "w": 13.333,
+          "h": 0.32,
+          "fontSize": 20,
+          "color": "111111",
+          "align": "center"
+        },
+        "headline": {
+          "x": 2.2,
+          "y": 1.74,
+          "w": 8.95,
+          "h": 1.0,
+          "fontSize": 34,
+          "bold": true,
+          "color": "000000",
+          "align": "center",
+          "maxLines": 2,
+          "maxChars": 34,
+          "overflow": "rewrite_summary"
+        },
+        "description": {
+          "x": 2.6,
+          "y": 3.45,
+          "w": 8.14,
+          "h": 0.35,
+          "fontSize": 12,
+          "color": "6B7280",
+          "align": "center",
+          "maxLines": 1,
+          "maxChars": 46,
+          "overflow": "rewrite_summary"
+        },
+        "contactBar": {
+          "x": 0.5,
+          "y": 6.65,
+          "w": 12.33,
+          "h": 0.56,
+          "fill": "FFFFFF",
+          "line": "FFFFFF",
+          "radius": 0.08,
+          "items": [
+            "name",
+            "mobile",
+            "email",
+            "web"
+          ]
+        }
+      }
+    },
+    {
+      "type": "profile",
+      "name": "프로필",
+      "background": "FFFFFF",
+      "decorations": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 6.92,
+          "w": 13.333,
+          "h": 0.58,
+          "fill": "EAF7FD",
+          "line": "EAF7FD"
+        }
+      ],
+      "fields": {
+        "photo": {
+          "x": 0.82,
+          "y": 0.78,
+          "w": 2.7,
+          "h": 2.45,
+          "crop": "cover",
+          "radius": 0.08
+        },
+        "greeting": {
+          "x": 1.05,
+          "y": 3.75,
+          "w": 2.45,
+          "h": 0.6,
+          "fontSize": 21,
+          "bold": true,
+          "color": "111111",
+          "maxLines": 2,
+          "maxChars": 22,
+          "overflow": "rewrite_summary"
+        },
+        "about": {
+          "x": 1.08,
+          "y": 4.9,
+          "w": 2.4,
+          "h": 1.1,
+          "fontSize": 10.5,
+          "color": "111111",
+          "maxItems": 4,
+          "maxCharsPerItem": 24,
+          "overflow": "rewrite_summary"
+        },
+        "intro": {
+          "x": 4.7,
+          "y": 1.05,
+          "w": 6.9,
+          "h": 0.55,
+          "fontSize": 11,
+          "color": "6B7280",
+          "maxLines": 2,
+          "maxChars": 58,
+          "overflow": "rewrite_summary"
+        },
+        "sections": [
+          {
+            "key": "education",
+            "title": "Education",
+            "x": 4.7,
+            "y": 2.28,
+            "w": 3.3,
+            "h": 1.28
+          },
+          {
+            "key": "experience",
+            "title": "Experience",
+            "x": 8.45,
+            "y": 2.28,
+            "w": 3.5,
+            "h": 1.28
+          },
+          {
+            "key": "licenses",
+            "title": "Licenses",
+            "x": 4.7,
+            "y": 4.55,
+            "w": 3.3,
+            "h": 1.28
+          },
+          {
+            "key": "skills",
+            "title": "Skills",
+            "x": 8.45,
+            "y": 4.55,
+            "w": 3.5,
+            "h": 1.28
+          }
+        ]
+      }
+    },
+    {
+      "type": "experience_intro",
+      "name": "경험 소개",
+      "background": "FFFFFF",
+      "repeat": "per_experience",
+      "fields": {
+        "projectLabel": "{common.topProjectLabel}",
+        "title": "{common.centerTitle}",
+        "divider": "{common.divider}",
+        "cards": [
+          {
+            "key": "customerNeed",
+            "title": "고객 니즈",
+            "x": 0.78,
+            "y": 2.0,
+            "w": 3.72,
+            "h": 4.12
+          },
+          {
+            "key": "problemOpportunity",
+            "title": "문제 OR 기회상황",
+            "x": 4.82,
+            "y": 2.0,
+            "w": 3.72,
+            "h": 4.12
+          },
+          {
+            "key": "comparisonTarget",
+            "title": "비교 대상",
+            "x": 8.86,
+            "y": 2.0,
+            "w": 3.72,
+            "h": 4.12
+          }
+        ],
+        "cardStyle": {
+          "image": {
+            "yOffset": 0,
+            "h": 1.78,
+            "radius": 0.08,
+            "crop": "cover"
+          },
+          "title": {
+            "yOffset": 2.28,
+            "h": 0.34,
+            "fontSize": 16,
+            "bold": true,
+            "align": "center"
+          },
+          "description": {
+            "yOffset": 2.9,
+            "h": 0.5,
+            "fontSize": 9.5,
+            "align": "center",
+            "maxLines": 2,
+            "maxChars": 46,
+            "overflow": "rewrite_summary"
+          },
+          "keyword": {
+            "yOffset": 3.62,
+            "w": 2.35,
+            "h": 0.3,
+            "fontSize": 8.5,
+            "fill": "000000",
+            "color": "FFFFFF",
+            "align": "center",
+            "radius": 0.04,
+            "maxChars": 12,
+            "overflow": "rewrite_keyword"
+          }
+        }
+      }
+    },
+    {
+      "type": "result_kpi",
+      "name": "결과/KPI",
+      "background": "FFFFFF",
+      "repeat": "per_experience",
+      "fields": {
+        "projectLabel": "{common.topProjectLabel}",
+        "title": "{common.centerTitle}",
+        "divider": "{common.divider}",
+        "visual": {
+          "x": 1.0,
+          "y": 2.1,
+          "w": 5.55,
+          "h": 3.78,
+          "type": "chart_or_image_or_qualitative_card"
+        },
+        "arrow": {
+          "x": 7.15,
+          "y": 3.58,
+          "w": 0.36,
+          "h": 0.36,
+          "color": "66BDEB"
+        },
+        "actions": [
+          {
+            "key": "problemAction",
+            "title": "01. 문제 해결 액션",
+            "x": 8.05,
+            "y": 1.95,
+            "w": 3.8,
+            "h": 1.08
+          },
+          {
+            "key": "productivityAction",
+            "title": "02. 생산성 증가 액션",
+            "x": 8.05,
+            "y": 3.35,
+            "w": 3.8,
+            "h": 1.08
+          },
+          {
+            "key": "communicationAction",
+            "title": "03. 의사소통/협상 액션",
+            "x": 8.05,
+            "y": 4.75,
+            "w": 3.8,
+            "h": 1.08
+          }
+        ],
+        "actionStyle": {
+          "fill": "FFFFFF",
+          "shadow": true,
+          "titleFontSize": 11.5,
+          "bodyFontSize": 8.5,
+          "maxBullets": 2,
+          "maxCharsPerBullet": 34,
+          "overflow": "rewrite_summary"
+        }
+      }
+    }
+  ],
+  "dataShape": {
+    "format": "PPT 발표 스펙",
+    "cover": {
+      "headline": "성장하고 확장하는 김미리입니다.",
+      "description": "포트폴리오 전체를 설명하는 짧은 문장",
+      "name": "김미리",
+      "mobile": "000-0000-0000",
+      "email": "miri@example.com",
+      "web": "github.com/example"
+    },
+    "profile": {
+      "photo": "",
+      "greeting": "안녕하세요\n김미리입니다.",
+      "about": ["김미리", "1900.00.00", "miri@example.com", "000-0000-0000"],
+      "intro": "나를 소개하는 내용을 간략하게 입력합니다.",
+      "education": [],
+      "experience": [],
+      "licenses": [],
+      "skills": []
+    },
+    "experiences": [
+      {
+        "projectLabel": "Project 01",
+        "introTitle": "경험 1 : 자기소개서의 소제목 역할을 하는 결론 한 줄",
+        "cards": {
+          "customerNeed": {
+            "image": "",
+            "description": "고객 니즈를 1~2줄로 정리합니다.",
+            "keyword": "핵심 키워드"
+          },
+          "problemOpportunity": {
+            "image": "",
+            "description": "문제 또는 기회상황을 1~2줄로 정리합니다.",
+            "keyword": "핵심 키워드"
+          },
+          "comparisonTarget": {
+            "image": "",
+            "description": "비교 대상을 1~2줄로 정리합니다.",
+            "keyword": "핵심 키워드"
+          }
+        },
+        "resultTitle": "결과물 : 이 경험의 결과를 잘 보여주는 KPI",
+        "visual": {
+          "type": "qualitative_card",
+          "title": "프로젝트명 입력",
+          "items": []
+        },
+        "actions": {
+          "problemAction": [],
+          "productivityAction": [],
+          "communicationAction": []
+        }
+      }
+    ],
+    "missingFields": []
+  }
+}
