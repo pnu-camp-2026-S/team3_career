@@ -590,9 +590,19 @@ assert.match(
   'Next route handler should serve existing css assets'
 );
 assert.match(
+  nextCssRoute,
+  /'cache-control': 'no-cache, must-revalidate'/,
+  'Next css asset route should revalidate legacy styles after deployment'
+);
+assert.match(
   nextJsRoute,
   /const params = await context\.params;[\s\S]*path\.join\(process\.cwd\(\), 'js'/,
   'Next route handler should serve existing js assets'
+);
+assert.match(
+  nextJsRoute,
+  /'cache-control': 'no-cache, must-revalidate'/,
+  'Next js asset route should revalidate legacy scripts after deployment'
 );
 assert.match(
   nextSignupRoute,
@@ -2963,6 +2973,11 @@ assert.match(
   portfolioCreateHtml,
   /generatePortfolioBtn'\)\.addEventListener\('click',\s*triggerGeneratePortfolio\)/,
   'portfolio_create should attach the generate click handler in script'
+);
+assert.match(
+  portfolioCreateHtml,
+  /portfolio_create\.js\?v=onepage-summary-template/,
+  'portfolio_create should request the latest one-page summary script version'
 );
 assert.match(
   portfolioCreateHtml,
