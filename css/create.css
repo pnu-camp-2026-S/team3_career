@@ -208,17 +208,31 @@
 .manager-folder-item {
   width: 100%;
   display: grid;
-  grid-template-columns: 22px minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) 34px;
   align-items: center;
-  gap: 10px;
   min-height: 62px;
   border: 0;
   border-radius: 10px;
-  padding: 0 12px;
   background: #fff;
   color: #4e566a;
   font-weight: 850;
   text-align: left;
+  overflow: hidden;
+}
+
+.manager-folder-select {
+  min-height: 62px;
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  padding: 0 12px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
 }
 
 .large-folder-groups .manager-folder-item {
@@ -232,6 +246,27 @@
 .manager-folder-item.active {
   background: #eef2ff;
   color: var(--brand);
+}
+
+.folder-delete-button {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  justify-self: end;
+  margin-right: 6px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #9aa3b7;
+  cursor: pointer;
+}
+
+.folder-delete-button:hover,
+.folder-delete-button:focus-visible {
+  background: #fff1f1;
+  color: #d64545;
+  outline: none;
 }
 
 .manager-folder-copy {
