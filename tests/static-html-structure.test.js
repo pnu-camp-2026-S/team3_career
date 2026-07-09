@@ -1608,6 +1608,11 @@ assert.match(
   'file management repo modal should save the per-project connection (#132)'
 );
 assert.match(
+  createCss,
+  /\.project-actions \.compact-button,[\s\S]*\.manager-file-actions \.compact-button[\s\S]*min-height:\s*38px[\s\S]*@media \(max-width: 680px\)[\s\S]*\.project-actions[\s\S]*flex:\s*1 1 140px/,
+  'file management should use consistent button sizing and responsive alignment (#230)'
+);
+assert.match(
   createHtml,
   /FolderStore\.createFolder\(/,
   'file management should create real folders through the shared folder store (#132)'
