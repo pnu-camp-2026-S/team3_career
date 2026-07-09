@@ -108,6 +108,43 @@ const noiseActivities = [
 
 const departmentNames = Object.keys(departmentProfiles);
 
+const departmentPreferenceTargets = {
+  컴퓨터공학과: {
+    companies: ['네이버', '카카오', 'LG CNS', '삼성전자'],
+    industries: ['IT/SW', '게임', '콘텐츠']
+  },
+  정보컴퓨터공학과: {
+    companies: ['네이버', '카카오', 'LG CNS', '삼성전자'],
+    industries: ['IT/SW', '게임', '콘텐츠']
+  },
+  전기공학과: {
+    companies: ['삼성전자', 'SK하이닉스', '현대자동차', 'LG CNS'],
+    industries: ['반도체', '제조', 'IT/SW']
+  },
+  화공생명공학과: {
+    companies: ['롯데', 'CJ', '삼성전자', 'SK하이닉스'],
+    industries: ['바이오', '제조', '반도체']
+  },
+  산업공학과: {
+    companies: ['삼성전자', '현대자동차', 'CJ', '롯데'],
+    industries: ['제조', '유통', 'IT/SW']
+  }
+};
+
+function getDepartmentPreferenceTargets(department) {
+  return departmentPreferenceTargets[department] || {
+    companies: ['삼성전자', '네이버', '카카오'],
+    industries: ['IT/SW']
+  };
+}
+
+function getTemplateInterestField(type) {
+  if (String(type).includes('공모')) return '공모전';
+  if (String(type).includes('교육')) return '교육';
+  if (String(type).includes('자격')) return '교육';
+  return '대외활동';
+}
+
 function makeFitScores(primaryDepartment, secondaryDepartment, baseScore, penalty = 24) {
   return Object.fromEntries(
     departmentNames.map((department) => {
@@ -140,6 +177,7 @@ function makeRelevantActivities() {
         const score = template.baseScore - (topicIndex % 3) * 3 - templateIndex;
         const deadlineDays = 12 + ((id * 7) % 95);
         const job = departmentProfiles[department].jobs[(topicIndex + templateIndex) % departmentProfiles[department].jobs.length];
+        const preferenceTargets = getDepartmentPreferenceTargets(department);
 
         activities.push({
           id,
@@ -149,6 +187,9 @@ function makeRelevantActivities() {
           primaryDepartment: department,
           secondaryDepartments: [secondaryDepartment],
           targetJobs: [job],
+          targetCompanies: preferenceTargets.companies,
+          targetIndustries: preferenceTargets.industries,
+          interestFields: [getTemplateInterestField(template.type)],
           skills,
           difficulty: template.difficulty,
           deadlineDays,
@@ -184,6 +225,9 @@ function makeArtsActivities(startId) {
     primaryDepartment: '예체능',
     secondaryDepartments: ['산업공학과'],
     targetJobs: ['콘텐츠 기획자', '브랜드 마케터'],
+    targetCompanies: ['네이버', '카카오', 'CJ', '롯데'],
+    targetIndustries: ['콘텐츠', 'IT/SW'],
+    interestFields: [index % 2 === 0 ? '공모전' : '대외활동'],
     skills,
     difficulty: index < 2 ? '중' : '하',
     deadlineDays: 20 + index * 9,
@@ -217,6 +261,9 @@ function makeNoiseActivities(startId) {
     primaryDepartment: '무관',
     secondaryDepartments: [],
     targetJobs: [],
+    targetCompanies: [],
+    targetIndustries: ['기타'],
+    interestFields: [],
     skills,
     difficulty: '하',
     deadlineDays: 5 + index,
