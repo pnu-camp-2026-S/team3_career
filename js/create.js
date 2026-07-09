@@ -150,8 +150,13 @@
       updateMoveButton(selectedFolder);
       renderSubfolders(selectedFolder);
 
+      const isAnalysisFolder = isAnalysisSubfolder(selectedSubfolder);
+      document.querySelector('.manager-dropzone').hidden = isAnalysisFolder;
       const subfolderLabel = selectedSubfolder ? selectedSubfolder.label : '세부 폴더';
-      document.getElementById('managedFileList').innerHTML = selectedFiles.length
+      const analysisFolderNote = isAnalysisFolder
+        ? '<div class="manager-analysis-note">AI 요약 폴더는 프로젝트 분석 결과물 전용 공간이에요. 원본 자료는 다른 세부 폴더에 추가해 주세요.</div>'
+        : '';
+      const fileListHtml = selectedFiles.length
         ? selectedFiles.map((file, index) => {
           const isProjectArtifact = isProjectAnalysisArtifact(file);
           const hasFileSummary = Boolean(file.analysis?.summaryMd);
@@ -182,7 +187,10 @@
             </article>
           `;
         }).join('')
-        : '<div class="manager-empty"><strong>이 세부 폴더에는 아직 자료가 없습니다.</strong><span>자료 추가 버튼을 눌러 선택한 세부 폴더에 자료를 넣어보세요.</span></div>';
+        : isAnalysisFolder
+          ? '<div class="manager-empty"><strong>아직 분석 결과물이 없습니다.</strong><span>상단의 분석하기를 실행하면 summary.md, index.json, log.md가 이곳에 표시됩니다.</span></div>'
+          : '<div class="manager-empty"><strong>이 세부 폴더에는 아직 자료가 없습니다.</strong><span>자료 추가 버튼을 눌러 선택한 세부 폴더에 자료를 넣어보세요.</span></div>';
+      document.getElementById('managedFileList').innerHTML = `${analysisFolderNote}${fileListHtml}`;
     }
 
     function setFolderDependentActionsVisible(isVisible) {
@@ -190,6 +198,13 @@
       document.querySelector('.project-actions').hidden = !isVisible;
       document.querySelector('.subfolder-toolbar').hidden = !isVisible;
       document.querySelector('.manager-dropzone').hidden = !isVisible;
+    }
+
+    function isAnalysisSubfolder(subfolder = getSelectedSubfolder()) {
+      return Boolean(subfolder && (
+        String(subfolder.id || '').endsWith('::ai-summary')
+        || subfolder.label === FolderStore.ANALYSIS_SUBFOLDER_LABEL
+      ));
     }
 
     function renderSubfolders(folder) {
@@ -368,6 +383,10 @@
       const subfolder = getSelectedSubfolder();
       const files = Array.from(fileList);
       if (!folder || !subfolder || files.length === 0) return;
+      if (isAnalysisSubfolder(subfolder)) {
+        showToast('AI 요약 폴더에는 원본 자료를 추가할 수 없습니다.');
+        return;
+      }
 
       const formData = new FormData();
       formData.append('folderId', subfolder.id);
@@ -1004,7 +1023,7 @@
       const action = actionButton.dataset.action;
       const fileId = actionButton.dataset.fileId;
 
-      if (action === 'add-file') document.getElementById('managedFileInput').click();
+      if (action === 'add-file' && !isAnalysisSubfolder()) document.getElementById('managedFileInput').click();
       if (action === 'preview-file') previewFile(fileId);
       if (action === 'view-file-summary') openFileSummary(fileId);
       if (action === 'save-file-summary') saveFileSummary(fileId);
@@ -1032,12 +1051,14 @@
 
     const dropzone = document.querySelector('.manager-dropzone');
     dropzone.addEventListener('keydown', (event) => {
+      if (isAnalysisSubfolder()) return;
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
         document.getElementById('managedFileInput').click();
       }
     });
     dropzone.addEventListener('dragover', (event) => {
+      if (isAnalysisSubfolder()) return;
       event.preventDefault();
       dropzone.classList.add('drag-over');
     });
@@ -1045,6 +1066,7 @@
     dropzone.addEventListener('drop', (event) => {
       event.preventDefault();
       dropzone.classList.remove('drag-over');
+      if (isAnalysisSubfolder()) return;
       const dropped = Array.from(event.dataTransfer.files);
       if (dropped.length === 0) return;
       addFilesToSelectedFolder(dropped);

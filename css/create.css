@@ -466,6 +466,16 @@
   color: var(--ink);
 }
 
+.manager-analysis-note {
+  padding: 12px 14px;
+  border: 1px solid #dce3f8;
+  border-radius: 10px;
+  background: #f6f8ff;
+  color: #56627a;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
 .manager-onboarding-empty {
   display: grid;
   justify-items: start;
