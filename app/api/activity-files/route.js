@@ -6,6 +6,10 @@ import { deriveFolderTree } from '../../../lib/folder-tree';
 
 const ACTIVITY_FILE_BUCKET = 'activity-files';
 const ACTIVITY_FILE_COLUMNS = 'id, folder_id, folder_group, folder_type, folder_label, project_id, parent_folder_id, folder_path, folder_level, file_name, mime_type, size_bytes, storage_bucket, storage_path, created_at, file_analyses(status, summary_md, index_draft, log_md)';
+const TEXT_PREVIEW_EXTENSIONS = new Set(['txt', 'md', 'csv']);
+const TEXT_PREVIEW_MIME_TYPES = new Set(['text/plain', 'text/markdown', 'text/csv']);
+const SIGNED_URL_EXPIRES_IN_SECONDS = 60 * 10;
+const TEXT_PREVIEW_MAX_BYTES = 512 * 1024;
 
 function getStorageClient(supabase) {
   return createSupabaseAdminClient() || supabase;
@@ -63,6 +67,80 @@ function mapActivityFile(row) {
   };
 }
 
+function getFileExtension(fileName) {
+  return String(fileName || '').split('.').pop()?.toLowerCase() || '';
+}
+
+function getPreviewKind(fileName, mimeType) {
+  const extension = getFileExtension(fileName);
+  if (mimeType === 'application/pdf' || extension === 'pdf') return 'pdf';
+  if (String(mimeType || '').startsWith('image/') || ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(extension)) return 'image';
+  if (TEXT_PREVIEW_MIME_TYPES.has(mimeType) || TEXT_PREVIEW_EXTENSIONS.has(extension)) return 'text';
+  return 'unsupported';
+}
+
+async function createStorageSignedUrl(storage, bucket, path) {
+  const { data, error } = await storage
+    .from(bucket || ACTIVITY_FILE_BUCKET)
+    .createSignedUrl(path, SIGNED_URL_EXPIRES_IN_SECONDS);
+
+  if (error) throw error;
+  return data?.signedUrl || '';
+}
+
+async function buildActivityFilePreview({ storage, fileRow }) {
+  const kind = getPreviewKind(fileRow.file_name, fileRow.mime_type);
+  const bucket = fileRow.storage_bucket || ACTIVITY_FILE_BUCKET;
+  const path = fileRow.storage_path;
+  const basePreview = {
+    id: fileRow.id,
+    name: fileRow.file_name,
+    mimeType: fileRow.mime_type,
+    size: fileRow.size_bytes,
+    kind,
+  };
+
+  if (!path) {
+    return {
+      ...basePreview,
+      kind: 'unavailable',
+      message: '미리보기에 사용할 원본 파일 경로가 없습니다.',
+    };
+  }
+
+  if (kind === 'image' || kind === 'pdf') {
+    return {
+      ...basePreview,
+      signedUrl: await createStorageSignedUrl(storage, bucket, path),
+      expiresIn: SIGNED_URL_EXPIRES_IN_SECONDS,
+    };
+  }
+
+  if (kind === 'text') {
+    if (Number(fileRow.size_bytes || 0) > TEXT_PREVIEW_MAX_BYTES) {
+      return {
+        ...basePreview,
+        signedUrl: await createStorageSignedUrl(storage, bucket, path),
+        message: '파일이 커서 일부 내용을 바로 표시하지 않고 새 탭 열기로 안내합니다.',
+      };
+    }
+
+    const { data, error } = await storage.from(bucket).download(path);
+    if (error) throw error;
+
+    return {
+      ...basePreview,
+      text: await data.text(),
+    };
+  }
+
+  return {
+    ...basePreview,
+    signedUrl: await createStorageSignedUrl(storage, bucket, path),
+    message: '이 파일 형식은 아직 직접 미리보기를 지원하지 않습니다. 원본 파일을 새 탭에서 확인해 주세요.',
+  };
+}
+
 async function getCurrentUser(supabase) {
   const {
     data: { user },
@@ -80,7 +158,26 @@ export async function GET(request) {
 
     if (!user) return Response.json({ message: 'Authentication required' }, { status: 401 });
 
-    const projectId = new URL(request.url).searchParams.get('projectId');
+    const searchParams = new URL(request.url).searchParams;
+    const previewId = searchParams.get('previewId');
+    const projectId = searchParams.get('projectId');
+
+    if (previewId) {
+      const { data: fileRow, error: previewReadError } = await supabase
+        .from('activity_files')
+        .select('id, file_name, mime_type, size_bytes, storage_bucket, storage_path')
+        .eq('id', previewId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (previewReadError) return Response.json({ message: previewReadError.message }, { status: 500 });
+      if (!fileRow) return Response.json({ message: 'File not found' }, { status: 404 });
+
+      const storage = getStorageClient(supabase).storage;
+      const preview = await buildActivityFilePreview({ storage, fileRow });
+      return Response.json({ preview });
+    }
+
     let query = supabase
       .from('activity_files')
       .select(ACTIVITY_FILE_COLUMNS)

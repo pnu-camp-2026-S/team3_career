@@ -247,6 +247,10 @@
         mimeType: file.mimeType || '',
         size: file.size || 0,
         storagePath: file.storagePath || '',
+        signedUrl: file.signedUrl || '',
+        previewUrl: file.previewUrl || file.publicUrl || file.downloadUrl || file.url || '',
+        dataUrl: file.dataUrl || '',
+        previewText: file.previewText || file.text || file.content || '',
         createdAt: file.createdAt || new Date().toISOString(),
         analysis: file.analysis || null,
       };
@@ -454,7 +458,94 @@
       return null;
     }
 
-    function previewFile(fileId) {
+    function getPreviewKind(file) {
+      const extension = getFileType(file.name).toLowerCase();
+      const mimeType = String(file.mimeType || '').toLowerCase();
+      if (mimeType === 'application/pdf' || extension === 'pdf') return 'pdf';
+      if (mimeType.startsWith('image/') || ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(extension)) return 'image';
+      if (['txt', 'md', 'csv'].includes(extension) || ['text/plain', 'text/markdown', 'text/csv'].includes(mimeType)) return 'text';
+      return 'unsupported';
+    }
+
+    function getFilePreviewUrl(file, preview = {}) {
+      return preview.signedUrl
+        || preview.previewUrl
+        || preview.url
+        || file.signedUrl
+        || file.previewUrl
+        || file.dataUrl
+        || '';
+    }
+
+    function getFilePreviewText(file, preview = {}) {
+      return preview.text || preview.previewText || file.previewText || file.content || '';
+    }
+
+    function buildPreviewUnavailableHtml(file, preview = {}) {
+      const url = getFilePreviewUrl(file, preview);
+      const message = preview.message || '이 파일은 아직 바로 미리보기를 제공할 수 없습니다. 원본 파일이 저장되어 있다면 새 탭에서 확인해 주세요.';
+      return `
+        <div class="file-preview-empty">
+          <strong>미리보기를 준비할 수 없습니다.</strong>
+          <p>${escapeHtml(message)}</p>
+          ${url ? `<a class="primary-button compact-button" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">새 탭에서 원본 열기</a>` : '<span>사용 가능한 미리보기 URL이 없습니다.</span>'}
+        </div>
+      `;
+    }
+
+    function renderFilePreviewContent(file, preview = {}) {
+      const kind = preview.kind || getPreviewKind(file);
+      const url = getFilePreviewUrl(file, preview);
+      const text = getFilePreviewText(file, preview);
+
+      if (preview.isLoading) {
+        return '<div class="file-preview-empty"><strong>미리보기를 불러오고 있습니다.</strong><p>원본 파일 접근 권한과 파일 형식을 확인하는 중입니다.</p></div>';
+      }
+
+      if (kind === 'image' && url) {
+        return `<div class="file-preview-image"><img src="${escapeHtml(url)}" alt="${escapeHtml(file.name)} 미리보기" /></div>`;
+      }
+
+      if (kind === 'pdf' && url) {
+        return `
+          <div class="file-preview-pdf">
+            <iframe src="${escapeHtml(url)}" title="${escapeHtml(file.name)} PDF 미리보기"></iframe>
+            <a class="primary-button compact-button" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">새 탭에서 PDF 열기</a>
+          </div>
+        `;
+      }
+
+      if (kind === 'text' && text) {
+        return `<pre class="file-preview-text">${escapeHtml(text)}</pre>`;
+      }
+
+      return buildPreviewUnavailableHtml(file, preview);
+    }
+
+    function buildFilePreviewHtml(file, subfolder, preview = {}) {
+      return `
+        <div class="manager-preview file-preview-shell">
+          <div class="file-preview-head">
+            <strong>${escapeHtml(file.name)}</strong>
+            <span>${escapeHtml(file.type || getFileType(file.name))} · ${escapeHtml(file.status || '분석대기')}</span>
+          </div>
+          ${renderFilePreviewContent(file, preview)}
+          <p class="file-preview-meta">연결 폴더: ${escapeHtml(getSelectedFolder().label)} / ${escapeHtml(subfolder ? subfolder.label : '')}</p>
+        </div>
+      `;
+    }
+
+    async function loadFilePreview(file) {
+      const response = await fetch(`${ACTIVITY_FILES_ENDPOINT}?previewId=${encodeURIComponent(file.id)}`, {
+        credentials: 'same-origin',
+        cache: 'no-store',
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.message || '파일 미리보기를 불러오지 못했습니다.');
+      return payload.preview || {};
+    }
+
+    async function previewFile(fileId) {
       const file = getSelectedFile(fileId);
       if (!file) return;
       const subfolder = getSelectedSubfolder();
@@ -462,13 +553,21 @@
         openProjectArtifactModal(file.projectId, file.artifact);
         return;
       }
-      showModal('파일 미리보기', `
-        <div class="manager-preview">
-          <strong>${escapeHtml(file.name)}</strong>
-          <p>실제 파일을 읽지 않고, 미리보기 클릭이 가능한지 확인하는 화면입니다.</p>
-          <p>파일 유형: ${file.type}<br>현재 상태: ${file.status}<br>연결 폴더: ${escapeHtml(getSelectedFolder().label)} / ${escapeHtml(subfolder ? subfolder.label : '')}</p>
-        </div>
-      `);
+      showModal('파일 미리보기', buildFilePreviewHtml(file, subfolder, { isLoading: Boolean(file.storagePath) }));
+      if (!file.storagePath) {
+        showModal('파일 미리보기', buildFilePreviewHtml(file, subfolder));
+        return;
+      }
+      try {
+        const preview = await loadFilePreview(file);
+        showModal('파일 미리보기', buildFilePreviewHtml(file, subfolder, preview));
+      } catch (error) {
+        console.warn('File preview failed.', error);
+        showModal('파일 미리보기', buildFilePreviewHtml(file, subfolder, {
+          kind: 'unavailable',
+          message: error.message || '파일 미리보기를 불러오지 못했습니다.',
+        }));
+      }
     }
 
     function openFileSummary(fileId) {
