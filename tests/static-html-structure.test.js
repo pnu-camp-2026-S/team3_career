@@ -1709,7 +1709,7 @@ assert.match(
   /\{\s*key:\s*'create',\s*href:\s*'create\.html',\s*label:\s*'파일 관리'\s*\}/,
   'file management should keep the shared file management nav link'
 );
-for (const text of ['파일 관리', '폴더 목록', '자료 추가', '미리보기', '분석하기', '대화로 내용 추가하기', '세부 폴더', '이름 수정', '프로젝트 삭제']) {
+for (const text of ['파일 관리', '폴더 목록', '자료 추가', '미리보기', '분석하기', '대화로 내용 추가하기', '세부 폴더', '이름 수정']) {
   assert.ok(
     createHtml.includes(text),
     `file management page should include ${text}`
@@ -1772,16 +1772,30 @@ assert.match(
   /data-action="toggle-group"[\s\S]*function\s+toggleProjectGroup[\s\S]*folder\.group\s*===\s*'completed'\s*\?\s*'inProgress'\s*:\s*'completed'/,
   'file management should toggle a project between completed and in-progress (#166-1)'
 );
-// 사용자 요청: 프로젝트 이름 수정 / 삭제
+// 사용자 요청: 프로젝트 이름 수정 / 좌측 폴더 목록 삭제
 assert.match(
   createHtml,
   /data-action="rename-project"[\s\S]*function\s+saveProjectName[\s\S]*folder\.label\s*=\s*name/,
   'file management should let a project be renamed'
 );
+assert.ok(
+  !createHtml.includes('data-action="delete-project"') && !createHtml.includes('프로젝트 삭제'),
+  'file management should remove the project delete button from the right panel'
+);
 assert.match(
   createHtml,
-  /data-action="delete-project"[\s\S]*function\s+deleteProject[\s\S]*FolderStore\.deleteFolder\(/,
-  'file management should let a project be deleted'
+  /class="folder-delete-button"[\s\S]*data-action="delete-folder"[\s\S]*data-folder-delete-id="\$\{escapeHtml\(folder\.id\)\}"[\s\S]*aria-label="\$\{escapeHtml\(folder\.label\)\} 폴더 삭제"/,
+  'file management should expose folder deletion as a trash icon in the left folder list'
+);
+assert.match(
+  createHtml,
+  /async function\s+deleteProject\(folderId\s*=\s*selectedFolderId\)[\s\S]*folders\[folderId\][\s\S]*window\.confirm[\s\S]*FolderStore\.deleteFolder\(folders,\s*folder\.id\)/,
+  'file management should delete the target folder after confirmation'
+);
+assert.match(
+  createHtml,
+  /if\s*\(action\s*===\s*'delete-folder'\)\s*deleteProject\(actionButton\.dataset\.folderDeleteId\)/,
+  'file management should connect the left folder trash action to deletion'
 );
 // folder-store: 프로젝트 삭제 헬퍼(tombstone로 삭제 유지)
 assert.match(
