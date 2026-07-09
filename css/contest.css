@@ -555,6 +555,21 @@ button {
   color: #475569;
 }
 
+.recommendation-grade.strong {
+  background: #edf4ff;
+  color: #2457d6;
+}
+
+.recommendation-grade.standard {
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+.recommendation-grade.exploratory {
+  background: #fff7ed;
+  color: #c05621;
+}
+
 .calendar-header {
   display: flex;
   justify-content: space-between;

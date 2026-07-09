@@ -286,6 +286,9 @@ let focusedScheduleDate = null;
 let isScheduleExpanded = false;
 const activitiesPerPage = 20;
 const recommendedActivityLimit = 24;
+const strongRecommendationThreshold = 90;
+const standardRecommendationThreshold = 80;
+const exploratoryRecommendationThreshold = 70;
 const visibleScheduleLimit = 5;
 const savedScheduleStorageKey = 'myfitfolioSavedActivitySchedules';
 const activitySchedulesEndpoint = '/api/activity-schedules';
@@ -596,6 +599,18 @@ function getMatchScore(item) {
   return Number.parseInt(item.match, 10) || 0;
 }
 
+function getRecommendationGrade(score) {
+  if (score >= strongRecommendationThreshold) {
+    return { label: '강력 추천', className: 'strong' };
+  }
+
+  if (score >= standardRecommendationThreshold) {
+    return { label: '추천', className: 'standard' };
+  }
+
+  return { label: '탐색 추천', className: 'exploratory' };
+}
+
 function renderRecommendationCount() {
   if (!recommendCount) return;
 
@@ -725,6 +740,7 @@ function renderActivities() {
           <div class="metric-row">
             <span class="metric">일치도 ${item.match}</span>
             <span class="metric">난이도 ${item.difficulty}</span>
+            <span class="metric recommendation-grade ${item.recommendationGradeClass}">${item.recommendationGradeLabel}</span>
             <span class="metric">${item.topFitLabel} ${item.topFitScore}%</span>
           </div>
         </article>
@@ -781,6 +797,8 @@ function normalizeActivityDataset(dataset, profile = recommendationProfile) {
       topFitLabel: item.fitBreakdown?.topSignal?.label || '추천 적합',
       topFitScore: item.fitBreakdown?.topSignal?.score || score,
       fitSignals: item.fitBreakdown?.signals || [],
+      recommendationGradeLabel: getRecommendationGrade(score).label,
+      recommendationGradeClass: getRecommendationGrade(score).className,
       difficulty: item.difficulty === '상' ? '어려움' : item.difficulty === '하' ? '쉬움' : '중간'
     };
   });
@@ -862,8 +880,25 @@ function sortRecommendedActivities(items) {
     : sortActivitiesByRecommendation(items);
 }
 
+function getRecommendationQualityPool() {
+  const rankedItems = sortActivitiesByRecommendation(activities);
+  const strongItems = rankedItems.filter((item) => getMatchScore(item) >= strongRecommendationThreshold);
+  const standardItems = rankedItems.filter(
+    (item) =>
+      getMatchScore(item) >= standardRecommendationThreshold &&
+      getMatchScore(item) < strongRecommendationThreshold
+  );
+  const exploratoryItems = rankedItems.filter(
+    (item) =>
+      getMatchScore(item) >= exploratoryRecommendationThreshold &&
+      getMatchScore(item) < standardRecommendationThreshold
+  );
+
+  return [...strongItems, ...standardItems, ...exploratoryItems].slice(0, recommendedActivityLimit);
+}
+
 function getSortedRecommendedActivities() {
-  return sortRecommendedActivities(activities).slice(0, recommendedActivityLimit);
+  return sortRecommendedActivities(getRecommendationQualityPool());
 }
 
 function getActivityPageCount(items) {

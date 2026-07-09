@@ -2506,12 +2506,22 @@ assert.match(
 assert.match(
   contestJs,
   /const\s+recommendedActivityLimit\s*=\s*24/,
-  'contest recommendation count should keep a stable top 24 recommendation pool'
+  'contest recommendation count should keep a stable maximum 24 recommendation pool'
 );
 assert.match(
   contestJs,
-  /return\s+sortRecommendedActivities\(activities\)\.slice\(0,\s*recommendedActivityLimit\)/,
-  'contest activity list should show the top profile-fit recommendations instead of threshold-filtering the count'
+  /const\s+strongRecommendationThreshold\s*=\s*90[\s\S]*const\s+standardRecommendationThreshold\s*=\s*80[\s\S]*const\s+exploratoryRecommendationThreshold\s*=\s*70/,
+  'contest recommendations should use strong, standard, and exploratory quality bands'
+);
+assert.match(
+  contestJs,
+  /function\s+getRecommendationQualityPool\(\)[\s\S]*strongItems[\s\S]*standardItems[\s\S]*exploratoryItems[\s\S]*slice\(0,\s*recommendedActivityLimit\)/,
+  'contest activity list should fill recommendations from quality bands while hiding low-score activities'
+);
+assert.match(
+  contestJs,
+  /function\s+getSortedRecommendedActivities\(\)[\s\S]*sortRecommendedActivities\(getRecommendationQualityPool\(\)\)/,
+  'contest activity list should sort the quality recommendation pool by the selected sort option'
 );
 assert.match(
   contestJs,
@@ -2550,13 +2560,18 @@ assert.match(
 );
 assert.match(
   contestJs,
-  /topFitLabel[\s\S]*topFitScore[\s\S]*function\s+renderFitSignalSummary/,
-  'contest cards and detail panels should show the strongest profile-fit reason'
+  /topFitLabel[\s\S]*topFitScore[\s\S]*recommendationGradeLabel[\s\S]*recommendationGradeClass[\s\S]*function\s+renderFitSignalSummary/,
+  'contest cards and detail panels should show recommendation grade and the strongest profile-fit reason'
 );
 assert.match(
   contestCss,
   /\.fit-signal-list[\s\S]*\.fit-signal-pill/,
   'contest stylesheet should style detailed profile-fit score chips'
+);
+assert.match(
+  contestCss,
+  /\.recommendation-grade\.strong[\s\S]*\.recommendation-grade\.standard[\s\S]*\.recommendation-grade\.exploratory/,
+  'contest stylesheet should distinguish strong, standard, and exploratory recommendation grades'
 );
 assert.match(
   contestJs,
