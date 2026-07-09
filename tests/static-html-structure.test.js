@@ -1799,6 +1799,26 @@ assert.match(
 );
 assert.match(
   createHtml,
+  /function\s+isAnalysisSubfolder\(subfolder\s*=\s*getSelectedSubfolder\(\)\)[\s\S]*endsWith\('::ai-summary'\)[\s\S]*ANALYSIS_SUBFOLDER_LABEL/,
+  'AI 요약 세부 폴더를 id와 표시 이름으로 판별해야 한다 (#266)'
+);
+assert.match(
+  createHtml,
+  /const\s+isAnalysisFolder\s*=\s*isAnalysisSubfolder\(selectedSubfolder\);[\s\S]*manager-dropzone'\)\.hidden\s*=\s*isAnalysisFolder/,
+  'AI 요약 세부 폴더를 선택하면 원본 자료 추가 드롭존을 숨겨야 한다 (#266)'
+);
+assert.match(
+  createHtml,
+  /AI 요약 폴더는 프로젝트 분석 결과물 전용 공간이에요\.[\s\S]*아직 분석 결과물이 없습니다\.[\s\S]*summary\.md, index\.json, log\.md/,
+  'AI 요약 세부 폴더는 업로드 대신 분석 산출물 전용 안내를 보여줘야 한다 (#266)'
+);
+assert.match(
+  createHtml,
+  /async function\s+addFilesToSelectedFolder\(fileList\)[\s\S]*isAnalysisSubfolder\(subfolder\)[\s\S]*AI 요약 폴더에는 원본 자료를 추가할 수 없습니다\.[\s\S]*dropzone\.addEventListener\('keydown'[\s\S]*isAnalysisSubfolder\(\)[\s\S]*dropzone\.addEventListener\('dragover'[\s\S]*isAnalysisSubfolder\(\)[\s\S]*dropzone\.addEventListener\('drop'[\s\S]*isAnalysisSubfolder\(\)/,
+  'AI 요약 세부 폴더에서는 클릭, 키보드, 드래그 앤 드롭 업로드를 모두 차단해야 한다 (#266)'
+);
+assert.match(
+  createHtml,
   /formData\.append\('projectId',\s*folder\.id\)/,
   'file uploads should send the owning project id for the folder tree columns (#167)'
 );
