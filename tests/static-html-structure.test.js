@@ -3258,6 +3258,7 @@ const portfolioGenerateRoutePath = path.join(appDir, 'api', 'portfolio', 'genera
 const portfolioKeywordsRoutePath = path.join(appDir, 'api', 'portfolio', 'keywords', 'route.js');
 const portfolioSourceDataRoutePath = path.join(appDir, 'api', 'portfolio', 'source-data', 'route.js');
 const portfolioReviseRoutePath = path.join(appDir, 'api', 'portfolio', 'revise', 'route.js');
+const portfolioOnePageLibPath = path.join(libDir, 'portfolio-onepage.js');
 const portfolioGenerateRoute = fs.existsSync(portfolioGenerateRoutePath)
   ? fs.readFileSync(portfolioGenerateRoutePath, 'utf8')
   : '';
@@ -3273,10 +3274,37 @@ const portfolioReviseRoute = fs.existsSync(portfolioReviseRoutePath)
 const portfolioExportPptxRoute = fs.existsSync(portfolioExportPptxRoutePath)
   ? fs.readFileSync(portfolioExportPptxRoutePath, 'utf8')
   : '';
+const portfolioOnePageLib = fs.existsSync(portfolioOnePageLibPath)
+  ? fs.readFileSync(portfolioOnePageLibPath, 'utf8')
+  : '';
 assert.match(
   portfolioGenerateRoute,
   /isAnalysisMockEnabled\(\)[\s\S]*buildMockPortfolioResponse/,
   'portfolio generation API should return mock portfolio data when ANALYSIS_MOCK=1'
+);
+assert.ok(
+  fs.existsSync(portfolioOnePageLibPath),
+  'portfolio one-page summary helper should live in lib/portfolio-onepage.js'
+);
+assert.match(
+  portfolioOnePageLib,
+  /portfolioOnePageSchema[\s\S]*template_version[\s\S]*profile[\s\S]*target_fit[\s\S]*representative_experiences[\s\S]*differentiator/,
+  'one-page summary helper should define the vertical summary schema from the starter kit'
+);
+assert.match(
+  portfolioOnePageLib,
+  /const INFO_MISSING = '제공된 정보 부족'[\s\S]*buildPortfolioOnePageUserPrompt[\s\S]*마이페이지 기본 정보[\s\S]*사용자가 승인한 활동 요약[\s\S]*정보가 없으면 '\$\{INFO_MISSING\}'/,
+  'one-page summary prompt should send mypage data and approved evidence with missing-info rules'
+);
+assert.match(
+  portfolioCreateHtml,
+  /function\s+renderOnePagePortfolio\(raw\)[\s\S]*onepage-summary-canvas[\s\S]*ABOUT ME[\s\S]*TARGET FIT[\s\S]*REPRESENTATIVE EXPERIENCES[\s\S]*DIFFERENTIATOR/,
+  'portfolio_create should render the one-page summary as the vertical starter-kit layout'
+);
+assert.match(
+  portfolioCreateHtml,
+  /let\s+profileData\s*=\s*\{\};[\s\S]*profileData\s*=\s*result\.profile\s*\|\|\s*\{\}[\s\S]*function\s+readMyPageInfo\(\)[\s\S]*Object\.keys\(profileData\)\.length/,
+  'portfolio_create should send server-loaded mypage profile data to portfolio generation'
 );
 assert.match(
   portfolioGenerateRoute,
@@ -3305,6 +3333,11 @@ assert.match(
 assert.ok(
   fs.existsSync(portfolioExportPptxRoutePath),
   'portfolio PPTX export API should live in app/api/portfolio/export-pptx/route.js'
+);
+assert.match(
+  portfolioExportPptxRoute,
+  /isOnePageSummary[\s\S]*MYFIT_A4_PORTRAIT_SAFE[\s\S]*addOnePageSummarySlide\(pptx,\s*portfolio\)/,
+  'portfolio PPTX export should render 1페이지 요약본 with the vertical one-page summary template'
 );
 assert.ok(
   fs.existsSync(portfolioKeywordsRoutePath),

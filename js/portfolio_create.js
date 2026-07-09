@@ -43,6 +43,7 @@
     let currentSlideIndex = 0;
     let currentDraftPageIndex = 0;
     let profileMajor = '';
+    let profileData = {};
     let portfolioSourceFolders = [];
     let isPortfolioRevising = false;
 
@@ -271,10 +272,12 @@
         if (!response.ok) throw new Error('Profile load failed.');
 
         const result = await response.json();
+        profileData = result.profile || {};
         const educations = Array.isArray(result.profile?.educations) ? result.profile.educations : [];
         profileMajor = educations.find((education) => education?.major)?.major || '';
       } catch (error) {
         console.warn('Profile major load failed.', error);
+        profileData = {};
         profileMajor = '';
       }
 
@@ -414,6 +417,8 @@
     }
 
     function readMyPageInfo() {
+      if (profileData && Object.keys(profileData).length) return profileData;
+
       const storageKeys = ['careerfit_mypage', 'myfitfolio_mypage', 'mypage_profile', 'userProfile'];
       for (const key of storageKeys) {
         try {
@@ -759,45 +764,100 @@
     }
 
     function renderOnePagePortfolio(raw) {
-      const info = raw.basic_info || {};
+      const info = raw.profile || raw.basic_info || {};
+      const headline = raw.headline || {};
+      const targetFit = raw.target_fit || {};
       const competencies = raw.core_competencies || [];
-      const experiences = raw.experiences || [];
+      const experiences = raw.representative_experiences || raw.experiences || [];
+      const skillKeywords = raw.skill_keywords || raw.skills || currentPortfolio.keywords || [];
+      const educationItems = raw.license_awards_education || raw.licenses_and_awards || [];
+      const differentiator = raw.differentiator || {};
+      const title = headline.title || raw.headline || currentPortfolio.title || '1페이지 요약본';
+      const intro = headline.one_line_intro || currentPortfolio.summary || '승인된 근거를 바탕으로 구성한 1페이지 요약본입니다.';
+      const selfIntro = headline.self_intro || headline.fit_label || '';
+      const profileRows = [
+        ['이름', info.name],
+        ['성별', info.gender],
+        ['생년월일', info.birth || info.birth_date],
+        ['이메일', info.email],
+        ['휴대폰', info.phone],
+        ['주소', info.address],
+        ['학교', [info.school_name || info.school, info.school_type].filter(Boolean).join(' / ')],
+        ['전공', info.major || currentPortfolio.major],
+        ['부전공', info.minor],
+      ];
+      const targetRows = [
+        ['ROLE', targetFit.role?.value],
+        ['INDUSTRY', targetFit.industry?.value],
+        ['COMPANY', targetFit.company?.value],
+      ];
+      const skillTexts = skillKeywords.map((item) => typeof item === 'string' ? item : item.text).filter(Boolean);
+      const educationTexts = educationItems.map((item) => {
+        if (typeof item === 'string') return item;
+        return item.text || [item.year, item.title].filter(Boolean).join(' ');
+      }).filter(Boolean);
+      const experienceCards = experiences.slice(0, 3);
       document.getElementById('workspaceContent').innerHTML = renderDraftPageViewer([`
-        <article class="portfolio-canvas">
-          <header class="canvas-hero">
-            <span class="canvas-kicker">One Page Portfolio</span>
-            <h3>${escapeHtml(raw.headline || currentPortfolio.title || '1페이지 요약본')}</h3>
-            <p>${escapeHtml(currentPortfolio.summary || '핵심 경험과 역량을 한 장으로 압축했습니다.')}</p>
-          </header>
-          <div class="resume-grid">
-            <section class="resume-profile-panel">
-              <div class="profile-avatar">${escapeHtml((info.name || 'MY').slice(0, 2))}</div>
-              ${renderInfoRows([
-                ['이름', info.name],
-                ['학교', info.school],
-                ['전공', info.major || currentPortfolio.major],
-                ['연계전공', info.minor],
-                ['이메일', info.email],
-                ['전화번호', info.phone],
-              ])}
+        <article class="portfolio-canvas onepage-summary-canvas">
+          <div class="onepage-top">
+            <section class="onepage-profile-visual">
+              ${info.profile_image_path
+                ? `<img src="${escapeHtml(info.profile_image_path)}" alt="" />`
+                : '<span class="onepage-human-icon" aria-hidden="true"></span>'}
             </section>
-            <section class="mini-section">
-              <h4>핵심 역량</h4>
-              ${renderBulletList(competencies.map((item) => `${item.title || ''} ${item.description || ''}`.trim()))}
+            <section class="onepage-headline">
+              <span class="canvas-kicker">PORTFOLIO SUMMARY</span>
+              <h3>${escapeHtml(compactText(title, 42))}</h3>
+              <p>${escapeHtml(compactText(intro, 70))}</p>
+              ${selfIntro ? `<p class="onepage-self-intro">${escapeHtml(compactText(selfIntro, 110))}</p>` : ''}
+              <strong>${escapeHtml(compactText(headline.fit_label || '근거 기반 초안', 34))}</strong>
             </section>
-            <section class="mini-section">
-              <h4>핵심 활동</h4>
-              ${renderBulletList(experiences.map((item) => `${item.project || ''} / ${item.role || ''} / ${item.highlight || ''}`.trim()))}
-            </section>
-            <section class="mini-section">
-              <h4>Skills</h4>
-              ${renderChipSection(raw.skills || currentPortfolio.keywords)}
-            </section>
-            <section class="mini-section">
-              <h4>Awards</h4>
-              ${renderBulletList((raw.licenses_and_awards || []).map((item) => `${item.year || ''} ${item.title || ''}`.trim()))}
+            <section class="onepage-about-card">
+              <h4>ABOUT ME</h4>
+              ${renderInfoRows(profileRows)}
             </section>
           </div>
+          <div class="onepage-mid-grid">
+            <section class="onepage-card target-card">
+              <h4>TARGET FIT</h4>
+              ${renderInfoRows(targetRows)}
+            </section>
+            <section class="onepage-card">
+              <h4>CORE COMPETENCIES</h4>
+              ${renderBulletList(competencies.map((item) => item.text || `${item.title || ''} ${item.description || ''}`.trim()).slice(0, 3))}
+            </section>
+          </div>
+          <section class="onepage-experience-section">
+            <h4>REPRESENTATIVE EXPERIENCES</h4>
+            <div class="onepage-experience-grid">
+              ${experienceCards.length ? experienceCards.map((item, index) => `
+                <section class="onepage-experience-card">
+                  <span>${escapeHtml((item.evidence_ids || [])[0] || `EXP-${index + 1}`)}</span>
+                  <h5>${escapeHtml(compactText(item.title || item.project || `대표 경험 ${index + 1}`, 24))}</h5>
+                  <p>${escapeHtml(compactText(item.summary || item.highlight || item.role || '제공된 정보 부족', 70))}</p>
+                  <strong>${escapeHtml(compactText(item.fit_point || item.role || '직무 연결 근거 보완 필요', 32))}</strong>
+                </section>
+              `).join('') : `
+                <section class="onepage-experience-card onepage-missing-card">
+                  <span>MISSING</span>
+                  <h5>대표 활동 자료 부족</h5>
+                  <p>승인된 활동 요약을 추가하면 직무 맞춤 경험으로 교체됩니다.</p>
+                  <strong>자료 업로드 필요</strong>
+                </section>
+              `}
+            </div>
+          </section>
+          <div class="onepage-bottom-grid">
+            <section class="onepage-card">
+              <h4>SKILL KEYWORDS</h4>
+              ${renderChipSection(skillTexts)}
+            </section>
+            <section class="onepage-card">
+              <h4>LICENSE · AWARDS · EDUCATION</h4>
+              ${renderBulletList(educationTexts.slice(0, 4))}
+            </section>
+          </div>
+          <p class="onepage-differentiator"><b>DIFFERENTIATOR</b> ${escapeHtml(compactText(differentiator.text || '직무·산업·승인 활동 입력 시 완성도가 높아집니다.', 78))}</p>
         </article>
       `]);
     }
