@@ -1510,9 +1510,6 @@
     async function downloadPptPreview() {
       if (!currentPortfolio) return;
 
-      const savedPortfolio = await saveGeneratedPortfolio({ requireRemote: true });
-      currentPortfolio.id = savedPortfolio?.id || currentPortfolio.id;
-
       const response = await fetch('/api/portfolio/export-pptx', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

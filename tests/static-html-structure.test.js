@@ -3323,8 +3323,8 @@ assert.match(
 );
 assert.match(
   portfolioCreateHtml,
-  /async function\s+downloadPptPreview\(\)[\s\S]*saveGeneratedPortfolio\(\{\s*requireRemote:\s*true\s*\}\)[\s\S]*fetch\('\/api\/portfolio\/export-pptx'[\s\S]*JSON\.stringify\(currentPortfolio\)[\s\S]*response\.blob\(\)/,
-  'portfolio_create should save to the portfolio DB before downloading editable PowerPoint files'
+  /async function\s+downloadPptPreview\(\)[\s\S]*fetch\('\/api\/portfolio\/export-pptx'[\s\S]*JSON\.stringify\(currentPortfolio\)[\s\S]*response\.blob\(\)/,
+  'portfolio_create should download editable PowerPoint files from the current draft'
 );
 
 const portfolioExportPptxRoutePath = path.join(appDir, 'api', 'portfolio', 'export-pptx', 'route.js');
