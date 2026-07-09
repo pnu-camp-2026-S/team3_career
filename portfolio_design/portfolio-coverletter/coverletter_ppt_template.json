@@ -1,0 +1,600 @@
+{
+  "templateId": "coverletter_ppt_v1",
+  "templateName": "자기소개서형 포트폴리오 PPT",
+  "engine": "PptxGenJS",
+  "version": "1.0.0",
+  "pptx": {
+    "layout": "LAYOUT_WIDE",
+    "width": 13.333,
+    "height": 7.5,
+    "unit": "inch",
+    "author": "Myfitfolio",
+    "company": "Myfitfolio",
+    "language": "ko-KR"
+  },
+  "theme": {
+    "fontFace": "Malgun Gothic",
+    "colors": {
+      "background": "F6F8FC",
+      "surface": "FFFFFF",
+      "surfaceAlt": "F0F4FF",
+      "primary": "5965E8",
+      "primaryDark": "3442C8",
+      "ink": "101828",
+      "muted": "667085",
+      "line": "D8E2F5",
+      "softLine": "E7ECF6"
+    }
+  },
+  "generationContract": {
+    "description": "OpenAI는 slide bindings에 들어갈 텍스트만 생성하고, 렌더러는 이 JSON의 좌표와 스타일을 그대로 사용한다.",
+    "requiredContentKeys": [
+      "title",
+      "headline",
+      "applicant",
+      "motivation",
+      "competencies",
+      "representativeExperience",
+      "workStyle",
+      "contributionPlan",
+      "questionMap",
+      "missingFields"
+    ],
+    "maxTextRules": {
+      "headline": 70,
+      "paragraph": 260,
+      "cardBody": 95,
+      "chip": 14
+    },
+    "hallucinationPolicy": [
+      "사용자가 제공하지 않은 회사명, 성과 수치, 수상, 자격 취득 여부는 생성하지 않는다.",
+      "확인되지 않은 내용은 보완 필요 정보로 남긴다.",
+      "선택 경험과 마이페이지 전공을 최우선 근거로 사용한다."
+    ]
+  },
+  "masters": {
+    "default": {
+      "background": {
+        "type": "shape",
+        "shape": "rect",
+        "x": 0,
+        "y": 0,
+        "w": 13.333,
+        "h": 7.5,
+        "style": {
+          "fill": "F6F8FC",
+          "line": "F6F8FC"
+        }
+      },
+      "topRule": {
+        "type": "shape",
+        "shape": "rect",
+        "x": 0,
+        "y": 0,
+        "w": 13.333,
+        "h": 0.16,
+        "style": {
+          "fill": "5965E8",
+          "line": "5965E8"
+        }
+      },
+      "footer": {
+        "type": "text",
+        "text": "Myfitfolio | Cover Letter Portfolio",
+        "x": 0.62,
+        "y": 7.16,
+        "w": 4.8,
+        "h": 0.18,
+        "style": {
+          "fontSize": 7.5,
+          "color": "98A2B3",
+          "margin": 0
+        }
+      }
+    }
+  },
+  "componentStyles": {
+    "title": {
+      "fontFace": "Malgun Gothic",
+      "fontSize": 26,
+      "bold": true,
+      "color": "101828",
+      "margin": 0,
+      "fit": "shrink"
+    },
+    "subtitle": {
+      "fontFace": "Malgun Gothic",
+      "fontSize": 11.5,
+      "color": "667085",
+      "margin": 0,
+      "fit": "shrink"
+    },
+    "sectionLabel": {
+      "fontFace": "Malgun Gothic",
+      "fontSize": 8.5,
+      "bold": true,
+      "color": "5965E8",
+      "margin": 0,
+      "fit": "shrink"
+    },
+    "body": {
+      "fontFace": "Malgun Gothic",
+      "fontSize": 12,
+      "color": "344054",
+      "margin": 0,
+      "fit": "shrink",
+      "breakLine": false,
+      "paraSpaceAfterPt": 5
+    },
+    "cardTitle": {
+      "fontFace": "Malgun Gothic",
+      "fontSize": 13,
+      "bold": true,
+      "color": "101828",
+      "margin": 0,
+      "fit": "shrink"
+    },
+    "chip": {
+      "fontFace": "Malgun Gothic",
+      "fontSize": 8.5,
+      "bold": true,
+      "color": "3442C8",
+      "margin": 0,
+      "fit": "shrink"
+    }
+  },
+  "slides": [
+    {
+      "id": "cover",
+      "name": "표지",
+      "page": 1,
+      "elements": [
+        {
+          "type": "text",
+          "binding": "title",
+          "x": 0.72,
+          "y": 0.86,
+          "w": 7.4,
+          "h": 0.62,
+          "styleRef": "title"
+        },
+        {
+          "type": "text",
+          "binding": "headline",
+          "x": 0.76,
+          "y": 1.58,
+          "w": 7.7,
+          "h": 0.5,
+          "style": {
+            "fontSize": 14,
+            "bold": true,
+            "color": "3442C8",
+            "margin": 0,
+            "fit": "shrink"
+          }
+        },
+        {
+          "type": "shape",
+          "name": "profilePanel",
+          "shape": "roundRect",
+          "x": 9.25,
+          "y": 0.7,
+          "w": 3.25,
+          "h": 5.9,
+          "style": {
+            "fill": "FFFFFF",
+            "line": "D8E2F5",
+            "rectRadius": 0.12
+          }
+        },
+        {
+          "type": "shape",
+          "name": "avatar",
+          "shape": "ellipse",
+          "x": 10.12,
+          "y": 1.28,
+          "w": 1.5,
+          "h": 1.5,
+          "style": {
+            "fill": "EEF4FF",
+            "line": "D6E4FF"
+          }
+        },
+        {
+          "type": "text",
+          "binding": "applicant.initials",
+          "x": 10.12,
+          "y": 1.75,
+          "w": 1.5,
+          "h": 0.34,
+          "style": {
+            "fontSize": 18,
+            "bold": true,
+            "color": "5965E8",
+            "align": "center",
+            "margin": 0
+          }
+        },
+        {
+          "type": "text",
+          "binding": "applicant.name",
+          "x": 9.62,
+          "y": 3.02,
+          "w": 2.5,
+          "h": 0.3,
+          "style": {
+            "fontSize": 14,
+            "bold": true,
+            "color": "101828",
+            "align": "center",
+            "margin": 0
+          }
+        },
+        {
+          "type": "text",
+          "binding": "applicant.targetRole",
+          "x": 9.62,
+          "y": 3.4,
+          "w": 2.5,
+          "h": 0.24,
+          "styleRef": "subtitle"
+        },
+        {
+          "type": "chipGroup",
+          "binding": "coverChips",
+          "x": 0.78,
+          "y": 2.44,
+          "w": 7.7,
+          "h": 0.42,
+          "gap": 0.12,
+          "itemWidth": 1.55,
+          "style": {
+            "fill": "FFFFFF",
+            "line": "D8E2F5",
+            "textColor": "3442C8"
+          }
+        },
+        {
+          "type": "text",
+          "binding": "coverSummary",
+          "x": 0.78,
+          "y": 3.35,
+          "w": 7.15,
+          "h": 1.5,
+          "style": {
+            "fontSize": 19,
+            "bold": true,
+            "color": "101828",
+            "margin": 0,
+            "fit": "shrink"
+          }
+        },
+        {
+          "type": "text",
+          "binding": "applicant.contactLine",
+          "x": 9.62,
+          "y": 4.08,
+          "w": 2.5,
+          "h": 0.56,
+          "style": {
+            "fontSize": 9.5,
+            "color": "667085",
+            "align": "center",
+            "margin": 0,
+            "fit": "shrink"
+          }
+        }
+      ]
+    },
+    {
+      "id": "motivation",
+      "name": "지원 동기",
+      "page": 2,
+      "elements": [
+        {
+          "type": "text",
+          "text": "01",
+          "x": 0.7,
+          "y": 0.64,
+          "w": 0.48,
+          "h": 0.22,
+          "styleRef": "sectionLabel"
+        },
+        {
+          "type": "text",
+          "text": "지원 동기",
+          "x": 0.7,
+          "y": 0.96,
+          "w": 3.2,
+          "h": 0.5,
+          "styleRef": "title"
+        },
+        {
+          "type": "text",
+          "binding": "motivation.subtitle",
+          "x": 0.72,
+          "y": 1.58,
+          "w": 3.8,
+          "h": 0.42,
+          "styleRef": "subtitle"
+        },
+        {
+          "type": "shape",
+          "name": "mainTextCard",
+          "shape": "roundRect",
+          "x": 0.72,
+          "y": 2.34,
+          "w": 5.55,
+          "h": 3.9,
+          "style": {
+            "fill": "FFFFFF",
+            "line": "D8E2F5",
+            "rectRadius": 0.08
+          }
+        },
+        {
+          "type": "text",
+          "binding": "motivation.narrative",
+          "x": 1.02,
+          "y": 2.72,
+          "w": 4.95,
+          "h": 3.05,
+          "styleRef": "body"
+        },
+        {
+          "type": "repeatCard",
+          "binding": "motivation.evidence",
+          "x": 6.72,
+          "y": 2.0,
+          "w": 5.7,
+          "h": 1.22,
+          "gapY": 0.22,
+          "maxItems": 3,
+          "titleKey": "label",
+          "bodyKey": "text"
+        }
+      ]
+    },
+    {
+      "id": "competencies",
+      "name": "직무 적합 역량",
+      "page": 3,
+      "elements": [
+        {
+          "type": "text",
+          "text": "02",
+          "x": 0.7,
+          "y": 0.64,
+          "w": 0.48,
+          "h": 0.22,
+          "styleRef": "sectionLabel"
+        },
+        {
+          "type": "text",
+          "text": "직무 적합 역량",
+          "x": 0.7,
+          "y": 0.96,
+          "w": 4.5,
+          "h": 0.5,
+          "styleRef": "title"
+        },
+        {
+          "type": "repeatCard",
+          "binding": "competencies",
+          "x": 0.78,
+          "y": 2.0,
+          "w": 3.85,
+          "h": 3.85,
+          "gapX": 0.42,
+          "maxItems": 3,
+          "titleKey": "name",
+          "bodyKey": "evidence",
+          "footerKey": "lesson"
+        }
+      ]
+    },
+    {
+      "id": "representative_experience",
+      "name": "대표 경험 서술",
+      "page": 4,
+      "elements": [
+        {
+          "type": "text",
+          "text": "03",
+          "x": 0.7,
+          "y": 0.64,
+          "w": 0.48,
+          "h": 0.22,
+          "styleRef": "sectionLabel"
+        },
+        {
+          "type": "text",
+          "binding": "representativeExperience.title",
+          "x": 0.7,
+          "y": 0.96,
+          "w": 8.2,
+          "h": 0.5,
+          "styleRef": "title"
+        },
+        {
+          "type": "shape",
+          "name": "storyCard",
+          "shape": "roundRect",
+          "x": 0.72,
+          "y": 1.84,
+          "w": 7.25,
+          "h": 4.75,
+          "style": {
+            "fill": "FFFFFF",
+            "line": "D8E2F5",
+            "rectRadius": 0.08
+          }
+        },
+        {
+          "type": "text",
+          "binding": "representativeExperience.narrative",
+          "x": 1.05,
+          "y": 2.2,
+          "w": 6.58,
+          "h": 4.02,
+          "styleRef": "body"
+        },
+        {
+          "type": "repeatCard",
+          "binding": "representativeExperience.star",
+          "x": 8.35,
+          "y": 1.92,
+          "w": 3.95,
+          "h": 1.16,
+          "gapY": 0.18,
+          "maxItems": 3,
+          "titleKey": "label",
+          "bodyKey": "text"
+        }
+      ]
+    },
+    {
+      "id": "work_style",
+      "name": "문제 해결 및 협업 방식",
+      "page": 5,
+      "elements": [
+        {
+          "type": "text",
+          "text": "04",
+          "x": 0.7,
+          "y": 0.64,
+          "w": 0.48,
+          "h": 0.22,
+          "styleRef": "sectionLabel"
+        },
+        {
+          "type": "text",
+          "text": "문제 해결 및 협업 방식",
+          "x": 0.7,
+          "y": 0.96,
+          "w": 5.6,
+          "h": 0.5,
+          "styleRef": "title"
+        },
+        {
+          "type": "timeline",
+          "binding": "workStyle.process",
+          "x": 0.86,
+          "y": 2.05,
+          "w": 6.15,
+          "h": 3.55,
+          "maxItems": 4
+        },
+        {
+          "type": "repeatCard",
+          "binding": "workStyle.collaboration",
+          "x": 7.52,
+          "y": 1.95,
+          "w": 4.8,
+          "h": 1.18,
+          "gapY": 0.22,
+          "maxItems": 3,
+          "titleKey": "label",
+          "bodyKey": "text"
+        }
+      ]
+    },
+    {
+      "id": "contribution_plan",
+      "name": "입사 후 기여 계획",
+      "page": 6,
+      "elements": [
+        {
+          "type": "text",
+          "text": "05",
+          "x": 0.7,
+          "y": 0.64,
+          "w": 0.48,
+          "h": 0.22,
+          "styleRef": "sectionLabel"
+        },
+        {
+          "type": "text",
+          "text": "입사 후 기여 계획",
+          "x": 0.7,
+          "y": 0.96,
+          "w": 4.7,
+          "h": 0.5,
+          "styleRef": "title"
+        },
+        {
+          "type": "repeatCard",
+          "binding": "contributionPlan",
+          "x": 0.78,
+          "y": 2.02,
+          "w": 3.85,
+          "h": 3.7,
+          "gapX": 0.42,
+          "maxItems": 3,
+          "titleKey": "period",
+          "bodyKey": "plan",
+          "footerKey": "evidence"
+        }
+      ]
+    },
+    {
+      "id": "question_map",
+      "name": "자기소개서 문항 연결",
+      "page": 7,
+      "elements": [
+        {
+          "type": "text",
+          "text": "06",
+          "x": 0.7,
+          "y": 0.64,
+          "w": 0.48,
+          "h": 0.22,
+          "styleRef": "sectionLabel"
+        },
+        {
+          "type": "text",
+          "text": "자기소개서 문항 연결",
+          "x": 0.7,
+          "y": 0.96,
+          "w": 5.2,
+          "h": 0.5,
+          "styleRef": "title"
+        },
+        {
+          "type": "table",
+          "binding": "questionMap",
+          "x": 0.78,
+          "y": 1.86,
+          "w": 7.4,
+          "h": 4.62,
+          "columns": [
+            { "key": "question", "label": "문항", "w": 2.7 },
+            { "key": "experience", "label": "연결 경험", "w": 2.1 },
+            { "key": "answerPoint", "label": "답변 포인트", "w": 2.6 }
+          ],
+          "maxRows": 4
+        },
+        {
+          "type": "listCard",
+          "binding": "missingFields",
+          "title": "보완 필요 정보",
+          "x": 8.55,
+          "y": 1.86,
+          "w": 3.7,
+          "h": 4.62,
+          "emptyText": "추가 보완 정보 없음"
+        }
+      ]
+    }
+  ],
+  "pptxGenJsImplementationHints": {
+    "shapeMapping": {
+      "rect": "slide.addShape(pptx.ShapeType.rect, options)",
+      "roundRect": "slide.addShape(pptx.ShapeType.roundRect, options)",
+      "ellipse": "slide.addShape(pptx.ShapeType.ellipse, options)"
+    },
+    "textMapping": "slide.addText(text, { x, y, w, h, fontFace, fontSize, color, bold, margin, fit })",
+    "repeatCardRule": "binding 배열을 maxItems만큼 자르고, x/y와 gapX/gapY를 기준으로 카드를 반복 배치한다.",
+    "tableRule": "header row는 primary 배경, body row는 white 배경과 softLine 구분선을 사용한다."
+  }
+}

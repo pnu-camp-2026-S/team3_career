@@ -8,6 +8,12 @@ const cssDir = path.join(rootDir, 'css');
 const jsDir = path.join(rootDir, 'js');
 const appDir = path.join(rootDir, 'app');
 const libDir = path.join(rootDir, 'lib');
+const portfolioDesignDir = path.join(rootDir, 'portfolio_design');
+const promptsDir = path.join(rootDir, 'prompts');
+const coverletterDesignDir = path.join(portfolioDesignDir, 'portfolio-coverletter');
+const coverletterPptTemplatePath = path.join(coverletterDesignDir, 'coverletter_ppt_template.json');
+const coverletterPptPromptPath = path.join(promptsDir, 'portfolio-coverletter-ppt-prompt.md');
+const coverletterPptTemplate = JSON.parse(fs.readFileSync(coverletterPptTemplatePath, 'utf8'));
 
 function readHtml(fileName) {
   return fs.readFileSync(path.join(htmlDir, fileName), 'utf8');
@@ -74,6 +80,35 @@ assert.ok(
 assert.ok(
   fs.existsSync(path.join(jsDir, 'activity-recommendation-dataset.js')),
   'activity recommendation dummy dataset should live in the js directory'
+);
+assert.ok(
+  fs.existsSync(coverletterPptTemplatePath),
+  'coverletter portfolio should provide a PptxGenJS JSON layout template'
+);
+assert.equal(
+  coverletterPptTemplate.engine,
+  'PptxGenJS',
+  'coverletter PPT template should target PptxGenJS'
+);
+assert.equal(
+  coverletterPptTemplate.pptx.layout,
+  'LAYOUT_WIDE',
+  'coverletter PPT template should use the 16:9 wide PowerPoint layout'
+);
+assert.deepEqual(
+  coverletterPptTemplate.slides.map((slide) => slide.id),
+  ['cover', 'motivation', 'competencies', 'representative_experience', 'work_style', 'contribution_plan', 'question_map'],
+  'coverletter PPT template should define the fixed self-introduction portfolio slide order'
+);
+assert.match(
+  fs.readFileSync(path.join(coverletterDesignDir, 'design.md'), 'utf8'),
+  /PptxGenJS[\s\S]*coverletter_ppt_template\.json[\s\S]*지원 동기[\s\S]*직무 적합 역량[\s\S]*입사 후 기여 계획/,
+  'coverletter design guide should document the PptxGenJS template and self-introduction slide flow'
+);
+assert.match(
+  fs.readFileSync(coverletterPptPromptPath, 'utf8'),
+  /coverletter_ppt_v1[\s\S]*출력 JSON[\s\S]*missingFields/,
+  'coverletter PPT OpenAI prompt should describe the fixed JSON output contract'
 );
 
 for (const [htmlFile, cssFile] of Object.entries(pageCssFiles)) {
