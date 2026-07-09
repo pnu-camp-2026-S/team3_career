@@ -464,7 +464,14 @@
       if (mimeType === 'application/pdf' || extension === 'pdf') return 'pdf';
       if (mimeType.startsWith('image/') || ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(extension)) return 'image';
       if (['txt', 'md', 'csv'].includes(extension) || ['text/plain', 'text/markdown', 'text/csv'].includes(mimeType)) return 'text';
-      if (['docx', 'pptx', 'xlsx'].includes(extension)) return 'office';
+      if (
+        ['docx', 'pptx', 'xlsx'].includes(extension)
+        || [
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ].includes(mimeType)
+      ) return 'office';
       return 'unsupported';
     }
 

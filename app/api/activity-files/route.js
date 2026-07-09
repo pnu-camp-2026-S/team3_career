@@ -9,6 +9,12 @@ const ACTIVITY_FILE_BUCKET = 'activity-files';
 const ACTIVITY_FILE_COLUMNS = 'id, folder_id, folder_group, folder_type, folder_label, project_id, parent_folder_id, folder_path, folder_level, file_name, mime_type, size_bytes, storage_bucket, storage_path, created_at, file_analyses(status, summary_md, index_draft, log_md)';
 const TEXT_PREVIEW_EXTENSIONS = new Set(['txt', 'md', 'csv']);
 const TEXT_PREVIEW_MIME_TYPES = new Set(['text/plain', 'text/markdown', 'text/csv']);
+const OFFICE_PREVIEW_EXTENSIONS = new Set(['docx', 'pptx', 'xlsx']);
+const OFFICE_PREVIEW_MIME_TYPES = new Set([
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+]);
 const SIGNED_URL_EXPIRES_IN_SECONDS = 60 * 10;
 const TEXT_PREVIEW_MAX_BYTES = 512 * 1024;
 const OFFICE_PREVIEW_MAX_BYTES = 10 * 1024 * 1024;
@@ -76,10 +82,11 @@ function getFileExtension(fileName) {
 
 function getPreviewKind(fileName, mimeType) {
   const extension = getFileExtension(fileName);
-  if (mimeType === 'application/pdf' || extension === 'pdf') return 'pdf';
-  if (String(mimeType || '').startsWith('image/') || ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(extension)) return 'image';
-  if (TEXT_PREVIEW_MIME_TYPES.has(mimeType) || TEXT_PREVIEW_EXTENSIONS.has(extension)) return 'text';
-  if (['docx', 'pptx', 'xlsx'].includes(extension)) return 'office';
+  const normalizedMimeType = String(mimeType || '').toLowerCase();
+  if (normalizedMimeType === 'application/pdf' || extension === 'pdf') return 'pdf';
+  if (normalizedMimeType.startsWith('image/') || ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(extension)) return 'image';
+  if (TEXT_PREVIEW_MIME_TYPES.has(normalizedMimeType) || TEXT_PREVIEW_EXTENSIONS.has(extension)) return 'text';
+  if (OFFICE_PREVIEW_MIME_TYPES.has(normalizedMimeType) || OFFICE_PREVIEW_EXTENSIONS.has(extension)) return 'office';
   return 'unsupported';
 }
 

@@ -711,6 +711,11 @@ assert.match(
 );
 assert.match(
   activityFilesRoute,
+  /OFFICE_PREVIEW_MIME_TYPES[\s\S]*presentationml\.presentation[\s\S]*OFFICE_PREVIEW_MIME_TYPES\.has\(normalizedMimeType\)/,
+  'activity file API should detect Office previews by MIME type as well as extension (#286)'
+);
+assert.match(
+  activityFilesRoute,
   /file_analyses\(status, summary_md, index_draft, log_md\)[\s\S]*summaryMd[\s\S]*indexDraft[\s\S]*logMd/,
   'activity file API should return saved AI summary artifacts for file-management display'
 );
@@ -1751,6 +1756,7 @@ assert.ok(
     && createHtml.includes('function renderOfficePreview(preview = {})')
     && createHtml.includes('file-preview-office-section')
     && createHtml.includes('file-preview-table')
+    && createHtml.includes('application/vnd.openxmlformats-officedocument.presentationml.presentation')
     && createHtml.includes("if (kind === 'office' && preview.sections)"),
   'file management should render structured office document previews for DOCX, PPTX, and XLSX (#286)'
 );
