@@ -817,6 +817,22 @@ button {
   line-height: 1.6;
 }
 
+.fit-signal-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.fit-signal-pill {
+  border: 1px solid #dbe6ff;
+  border-radius: 999px;
+  background: #f5f8ff;
+  color: var(--accent);
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: 850;
+}
+
 .detail-actions {
   display: flex;
   gap: 10px;

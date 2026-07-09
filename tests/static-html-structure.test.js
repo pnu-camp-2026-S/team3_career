@@ -2505,18 +2505,18 @@ assert.match(
 );
 assert.match(
   contestJs,
-  /const\s+recommendationMatchThreshold\s*=\s*85/,
-  'contest recommendation count should use an 85 percent match threshold'
+  /const\s+recommendedActivityLimit\s*=\s*24/,
+  'contest recommendation count should keep a stable top 24 recommendation pool'
 );
 assert.match(
   contestJs,
-  /getMatchScore\(item\)\s*>=\s*recommendationMatchThreshold/,
-  'contest recommendation count should include only activities over the match threshold'
+  /return\s+sortRecommendedActivities\(activities\)\.slice\(0,\s*recommendedActivityLimit\)/,
+  'contest activity list should show the top profile-fit recommendations instead of threshold-filtering the count'
 );
 assert.match(
   contestJs,
-  /return\s+sortRecommendedActivities\([\s\S]*activities\.filter\(\(item\)\s*=>\s*getMatchScore\(item\)\s*>=\s*recommendationMatchThreshold\)/,
-  'contest activity list should show only activities over the match threshold'
+  /function\s+rebuildActivitiesForProfile\(profile\)[\s\S]*activities\s*=\s*normalizeActivityDataset\(baseActivities,\s*recommendationProfile\)[\s\S]*function\s+refreshRecommendationsFromProfile\([\s\S]*renderRecommendationCount\(\)[\s\S]*renderActivities\(\)/,
+  'contest activity list should recalculate recommendations when mypage profile data changes'
 );
 assert.match(
   contestJs,
@@ -2525,13 +2525,13 @@ assert.match(
 );
 assert.match(
   contestJs,
-  /function\s+readRecommendationProfile\(\)[\s\S]*educations[\s\S]*chips[\s\S]*interestFields[\s\S]*companies[\s\S]*industries[\s\S]*preferences\?\.detailJob[\s\S]*preferences\?\.workIndustry/,
+  /function\s+normalizeRecommendationProfile\(profile\s*=\s*\{\}\)[\s\S]*educations[\s\S]*chips[\s\S]*interestFields[\s\S]*companies[\s\S]*industries[\s\S]*preferences\?\.detailJob[\s\S]*preferences\?\.workIndustry/,
   'contest recommendations should use major, minor, desired job, and interest data from mypage'
 );
 assert.match(
   contestJs,
-  /function\s+getProfileRecommendationScore\([\s\S]*profile\.major[\s\S]*profile\.minor[\s\S]*profile\.linkedMajor[\s\S]*profile\.desiredJobs[\s\S]*profile\.interestFields[\s\S]*profile\.interestedIndustries[\s\S]*profile\.interestedCompanies/,
-  'contest recommendations should calculate mock scores from profile preferences'
+  /function\s+getProfileFitBreakdown\([\s\S]*profile\.major[\s\S]*profile\.minor[\s\S]*profile\.linkedMajor[\s\S]*profile\.desiredJobs[\s\S]*profile\.interestFields[\s\S]*profile\.interestedIndustries[\s\S]*profile\.interestedCompanies/,
+  'contest recommendations should calculate profile-fit breakdown scores from mypage preferences'
 );
 assert.match(
   contestJs,
@@ -2546,7 +2546,22 @@ assert.match(
 assert.match(
   contestJs,
   /function\s+renderRecommendationCount/,
-  'contest should render the threshold-based recommendation count'
+  'contest should render the profile-fit recommendation count'
+);
+assert.match(
+  contestJs,
+  /topFitLabel[\s\S]*topFitScore[\s\S]*function\s+renderFitSignalSummary/,
+  'contest cards and detail panels should show the strongest profile-fit reason'
+);
+assert.match(
+  contestCss,
+  /\.fit-signal-list[\s\S]*\.fit-signal-pill/,
+  'contest stylesheet should style detailed profile-fit score chips'
+);
+assert.match(
+  contestJs,
+  /async function\s+loadRecommendationProfileFromServer\(\)[\s\S]*fetch\('\/api\/profile'[\s\S]*localStorage\.setItem\('myfitfolioProfile'/,
+  'contest should refresh recommendations from the latest saved mypage profile API'
 );
 assert.match(
   contestJs,

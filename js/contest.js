@@ -285,8 +285,8 @@ let visibleCalendarMonth = 6;
 let focusedScheduleDate = null;
 let isScheduleExpanded = false;
 const activitiesPerPage = 20;
+const recommendedActivityLimit = 24;
 const visibleScheduleLimit = 5;
-const recommendationMatchThreshold = 85;
 const savedScheduleStorageKey = 'myfitfolioSavedActivitySchedules';
 const activitySchedulesEndpoint = '/api/activity-schedules';
 const profileStorageKeys = ['myfitfolioProfile', 'careerfit_mypage', 'myfitfolio_mypage', 'mypage_profile', 'userProfile'];
@@ -319,8 +319,7 @@ function normalizePreferenceList(values) {
     .filter((value) => value && !['전체', 'all', '해당 없음', '없음', '선택 안 함'].includes(value));
 }
 
-function readRecommendationProfile() {
-  const profile = profileStorageKeys.map(parseProfileCache).find(Boolean) || {};
+function normalizeRecommendationProfile(profile = {}) {
   const educations = Array.isArray(profile.educations) ? profile.educations : [];
   const primaryEducation = educations.find((education) => education?.major || education?.minor) || {};
   const chips = profile.chips || {};
@@ -354,6 +353,15 @@ function readRecommendationProfile() {
       ...selectedIndustries
     ])
   };
+}
+
+function readRecommendationProfile() {
+  const profile = profileStorageKeys.map(parseProfileCache).find(Boolean) || {};
+  return normalizeRecommendationProfile(profile);
+}
+
+function getRecommendationProfileSignature(profile) {
+  return JSON.stringify(profile || {});
 }
 
 function normalizeDepartmentName(value) {
@@ -476,7 +484,22 @@ function getPreferenceKeywordScore(item, preferences, fallbackScore, keywordMap 
   return Math.max(40, fallbackScore - 8);
 }
 
-function getProfileRecommendationScore(item, profile) {
+function getStrongestEducationFit(majorScore, minorScore, linkedMajorScore) {
+  const educationSignals = [
+    { label: '전공 연결', score: majorScore },
+    { label: '부전공 연결', score: minorScore },
+    { label: '연계전공 연결', score: linkedMajorScore }
+  ].filter((signal) => signal.score > 0);
+
+  return educationSignals.sort((a, b) => b.score - a.score)[0] || null;
+}
+
+function getTopFitSignal(signals) {
+  const visibleSignals = signals.filter((signal) => signal && signal.visible && Number.isFinite(signal.score));
+  return visibleSignals.sort((a, b) => b.score - a.score)[0] || signals.find((signal) => signal?.visible);
+}
+
+function getProfileFitBreakdown(item, profile) {
   const majorScore = getDepartmentFitScore(item, profile.major);
   const minorScore = getDepartmentFitScore(item, profile.minor);
   const linkedMajorScore = getDepartmentFitScore(item, profile.linkedMajor);
@@ -495,21 +518,55 @@ function getProfileRecommendationScore(item, profile) {
     baseScore,
     companyPreferenceKeywordMap
   );
+  const educationSignal = getStrongestEducationFit(majorScore, minorScore, linkedMajorScore);
+  const educationScore = educationSignal?.score || baseScore;
+  const hasGoalSignals = [
+    profile.desiredJobs,
+    profile.interestFields,
+    profile.interestedIndustries,
+    profile.interestedCompanies
+  ].some((values) => normalizePreferenceList(values).length > 0);
 
-  const weightedScore = Math.round(
-    (majorScore || baseScore) * 0.45 +
-      (minorScore || majorScore || baseScore) * 0.08 +
-      (linkedMajorScore || minorScore || majorScore || baseScore) * 0.05 +
-      jobScore * 0.17 +
-      interestFieldScore * 0.1 +
-      industryScore * 0.1 +
-      companyScore * 0.05
-  );
+  const weightedScore = hasGoalSignals
+    ? Math.round(
+        educationScore * 0.25 +
+          jobScore * 0.35 +
+          interestFieldScore * 0.1 +
+          industryScore * 0.2 +
+          companyScore * 0.1
+      )
+    : Math.round(
+        (majorScore || baseScore) * 0.45 +
+          (minorScore || majorScore || baseScore) * 0.08 +
+          (linkedMajorScore || minorScore || majorScore || baseScore) * 0.05 +
+          jobScore * 0.17 +
+          interestFieldScore * 0.1 +
+          industryScore * 0.1 +
+          companyScore * 0.05
+      );
+  const score = Math.max(12, Math.min(96, weightedScore));
+  const fitSignals = [
+    { label: '직무 적합', score: jobScore, visible: normalizePreferenceList(profile.desiredJobs).length > 0 },
+    { label: educationSignal?.label || '전공 연결', score: educationScore, visible: Boolean(educationSignal) },
+    { label: '관심 분야', score: interestFieldScore, visible: normalizePreferenceList(profile.interestFields).length > 0 },
+    { label: '관심 산업', score: industryScore, visible: normalizePreferenceList(profile.interestedIndustries).length > 0 },
+    { label: '관심 기업', score: companyScore, visible: normalizePreferenceList(profile.interestedCompanies).length > 0 }
+  ];
+  const topSignal = getTopFitSignal(fitSignals) || { label: '추천 적합', score };
 
-  return Math.max(12, Math.min(96, weightedScore));
+  return {
+    score,
+    topSignal,
+    signals: fitSignals.filter((signal) => signal.visible)
+  };
 }
 
-const recommendationProfile = readRecommendationProfile();
+function getProfileRecommendationScore(item, profile) {
+  return getProfileFitBreakdown(item, profile).score;
+}
+
+let recommendationProfile = readRecommendationProfile();
+let recommendationProfileSignature = getRecommendationProfileSignature(recommendationProfile);
 
 function clearExpandedDetail() {
   if (activeDetailElement) {
@@ -668,7 +725,7 @@ function renderActivities() {
           <div class="metric-row">
             <span class="metric">일치도 ${item.match}</span>
             <span class="metric">난이도 ${item.difficulty}</span>
-            <span class="metric">추천 포인트 ${item.match}</span>
+            <span class="metric">${item.topFitLabel} ${item.topFitScore}%</span>
           </div>
         </article>
       `
@@ -691,12 +748,16 @@ const scheduleDates = {
   9: '2026-10-04',
   10: '2026-10-04'
 };
-function normalizeActivityDataset(dataset) {
+function normalizeActivityDataset(dataset, profile = recommendationProfile) {
   const rankedItems = [...dataset]
-    .map((item) => ({
-      ...item,
-      recommendationScore: getProfileRecommendationScore(item, recommendationProfile)
-    }))
+    .map((item) => {
+      const fitBreakdown = getProfileFitBreakdown(item, profile);
+      return {
+        ...item,
+        recommendationScore: fitBreakdown.score,
+        fitBreakdown
+      };
+    })
     .sort(
       (a, b) =>
         b.recommendationScore - a.recommendationScore ||
@@ -717,14 +778,59 @@ function normalizeActivityDataset(dataset) {
       industry: getActivityIndustry(item),
       level: item.difficulty,
       match: `${score}%`,
+      topFitLabel: item.fitBreakdown?.topSignal?.label || '추천 적합',
+      topFitScore: item.fitBreakdown?.topSignal?.score || score,
+      fitSignals: item.fitBreakdown?.signals || [],
       difficulty: item.difficulty === '상' ? '어려움' : item.difficulty === '하' ? '쉬움' : '중간'
     };
   });
 }
 
-const activities = Array.isArray(window.activityRecommendationDataset)
-  ? normalizeActivityDataset(window.activityRecommendationDataset)
+const baseActivities = Array.isArray(window.activityRecommendationDataset)
+  ? window.activityRecommendationDataset
   : fallbackActivities;
+let activities = normalizeActivityDataset(baseActivities);
+
+function rebuildActivitiesForProfile(profile) {
+  recommendationProfile = profile;
+  recommendationProfileSignature = getRecommendationProfileSignature(profile);
+  activities = normalizeActivityDataset(baseActivities, recommendationProfile);
+}
+
+function refreshRecommendationsFromProfile(profile = readRecommendationProfile(), options = {}) {
+  const nextSignature = getRecommendationProfileSignature(profile);
+  if (!options.force && nextSignature === recommendationProfileSignature) return false;
+
+  rebuildActivitiesForProfile(profile);
+  clearExpandedDetail();
+  selectedActivityId = null;
+  currentActivityPage = 1;
+  renderRecommendationCount();
+  renderActivities();
+  return true;
+}
+
+async function loadRecommendationProfileFromServer() {
+  try {
+    const response = await fetch('/api/profile', {
+      method: 'GET',
+      credentials: 'same-origin',
+      cache: 'no-store'
+    });
+
+    if (response.status === 401) return false;
+    if (!response.ok) throw new Error('Profile load failed.');
+
+    const payload = await response.json();
+    if (!payload.profile) return false;
+
+    localStorage.setItem('myfitfolioProfile', JSON.stringify(payload.profile));
+    return refreshRecommendationsFromProfile(normalizeRecommendationProfile(payload.profile), { force: true });
+  } catch (error) {
+    console.warn('Recommendation profile refresh failed.', error);
+    return false;
+  }
+}
 
 function getActivityScheduleTime(item) {
   const scheduleDate = scheduleDates[item.id] || formatDateFromDeadlineDays(item.deadlineDays);
@@ -757,9 +863,7 @@ function sortRecommendedActivities(items) {
 }
 
 function getSortedRecommendedActivities() {
-  return sortRecommendedActivities(
-    activities.filter((item) => getMatchScore(item) >= recommendationMatchThreshold)
-  );
+  return sortRecommendedActivities(activities).slice(0, recommendedActivityLimit);
 }
 
 function getActivityPageCount(items) {
@@ -870,6 +974,21 @@ function updateSaveButton(item) {
 
 }
 
+function renderFitSignalSummary(item) {
+  const signals = Array.isArray(item.fitSignals) ? item.fitSignals : [];
+  if (!signals.length) {
+    return '<p>마이페이지에 저장된 전공과 희망 방향을 기준으로 추천 적합도를 계산했습니다.</p>';
+  }
+
+  return `
+    <div class="fit-signal-list">
+      ${signals.map((signal) => `
+        <span class="fit-signal-pill">${signal.label} ${signal.score}%</span>
+      `).join('')}
+    </div>
+  `;
+}
+
 function animateCalendarTurn(direction) {
   if (!calendarDays || !direction) return;
 
@@ -935,6 +1054,10 @@ function openDetail(id, cardElement) {
     <section>
       <h4>추천 이유</h4>
       <p>${item.reason}</p>
+    </section>
+    <section>
+      <h4>세부 일치 근거</h4>
+      ${renderFitSignalSummary(item)}
     </section>
     <section>
       <h4>내 경험과 연결</h4>
@@ -1190,6 +1313,20 @@ scheduleList.addEventListener('click', (event) => {
 prevCalendarMonth.addEventListener('click', () => moveCalendarMonth(-1));
 nextCalendarMonth.addEventListener('click', () => moveCalendarMonth(1));
 
+window.addEventListener('pageshow', () => {
+  refreshRecommendationsFromProfile();
+});
+
+window.addEventListener('focus', () => {
+  refreshRecommendationsFromProfile();
+});
+
+window.addEventListener('storage', (event) => {
+  if (profileStorageKeys.includes(event.key)) {
+    refreshRecommendationsFromProfile();
+  }
+});
+
 async function initSavedSchedules() {
   const loadedFromServer = await loadSavedSchedulesFromServer();
   if (!loadedFromServer) return;
@@ -1203,4 +1340,5 @@ renderCalendarMonth();
 renderSchedule();
 renderRecommendationCount();
 renderActivities();
+loadRecommendationProfileFromServer();
 initSavedSchedules();
