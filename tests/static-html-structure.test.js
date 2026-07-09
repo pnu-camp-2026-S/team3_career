@@ -590,9 +590,19 @@ assert.match(
   'Next route handler should serve existing css assets'
 );
 assert.match(
+  nextCssRoute,
+  /'cache-control': 'no-cache, must-revalidate'/,
+  'Next css asset route should revalidate legacy styles after deployment'
+);
+assert.match(
   nextJsRoute,
   /const params = await context\.params;[\s\S]*path\.join\(process\.cwd\(\), 'js'/,
   'Next route handler should serve existing js assets'
+);
+assert.match(
+  nextJsRoute,
+  /'cache-control': 'no-cache, must-revalidate'/,
+  'Next js asset route should revalidate legacy scripts after deployment'
 );
 assert.match(
   nextSignupRoute,
@@ -608,6 +618,11 @@ assert.match(
   userProfileRoute,
   /export async function GET\(\)[\s\S]*\.from\('user_profiles'\)[\s\S]*\.maybeSingle\(\)/,
   'profile API should load the current user mypage profile from Supabase'
+);
+assert.match(
+  userProfileRoute,
+  /isAnalysisMockEnabled\(\)[\s\S]*buildMockProfile/,
+  'profile API should return mock profile data when ANALYSIS_MOCK=1 for local portfolio preview'
 );
 assert.match(
   authMeRoute,
@@ -2970,6 +2985,11 @@ assert.match(
 );
 assert.match(
   portfolioCreateHtml,
+  /portfolio_create\.js\?v=onepage-summary-template/,
+  'portfolio_create should request the latest one-page summary script version'
+);
+assert.match(
+  portfolioCreateHtml,
   /id="pfLoadingScreen"/,
   'portfolio_create should keep the loading screen after clicking generate'
 );
@@ -3253,8 +3273,13 @@ assert.match(
 );
 assert.match(
   portfolioCreateHtml,
-  /async function\s+downloadPptPreview\(\)[\s\S]*saveGeneratedPortfolio\(\{\s*requireRemote:\s*true\s*\}\)[\s\S]*fetch\('\/api\/portfolio\/export-pptx'[\s\S]*JSON\.stringify\(currentPortfolio\)[\s\S]*response\.blob\(\)/,
-  'portfolio_create should save to the portfolio DB before downloading editable PowerPoint files'
+  /async function\s+downloadPptPreview\(\)[\s\S]*saveGeneratedPortfolio\(\{\s*requireRemote:\s*true\s*\}\)[\s\S]*Portfolio remote save failed before PPT download[\s\S]*fetch\('\/api\/portfolio\/export-pptx'[\s\S]*JSON\.stringify\(currentPortfolio\)[\s\S]*response\.blob\(\)/,
+  'portfolio_create should try DB save but continue downloading editable PowerPoint files when remote save fails'
+);
+assert.match(
+  portfolioCreateHtml,
+  /document\.body\.appendChild\(link\)[\s\S]*link\.click\(\)[\s\S]*link\.remove\(\)/,
+  'portfolio_create should attach the PPTX download link before clicking it'
 );
 
 const portfolioExportPptxRoutePath = path.join(appDir, 'api', 'portfolio', 'export-pptx', 'route.js');
@@ -3328,6 +3353,11 @@ assert.match(
   portfolioSourceDataRoute,
   /\.from\('activity_folders'\)[\s\S]*\.from\('activity_files'\)[\s\S]*\.from\('project_analyses'\)[\s\S]*\.eq\('scope',\s*'project'\)/,
   'portfolio source data API should combine folders, file counts, and project-scoped analyses'
+);
+assert.match(
+  portfolioSourceDataRoute,
+  /isAnalysisMockEnabled\(\)[\s\S]*buildMockPortfolioSourceFolders/,
+  'portfolio source data API should return mock folders when ANALYSIS_MOCK=1 for local portfolio preview'
 );
 assert.match(
   portfolioSourceDataRoute,

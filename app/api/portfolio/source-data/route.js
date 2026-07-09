@@ -1,4 +1,5 @@
 import { createSupabaseServerClient } from '../../../../lib/supabase-server';
+import { isAnalysisMockEnabled } from '../../../../lib/openai-portfolio';
 
 const FOLDER_COLUMNS = 'id, group_key, type_key, label, created_at';
 const PROJECT_ANALYSIS_COLUMNS = 'project_id, result, provider, based_on_count, updated_at';
@@ -181,8 +182,46 @@ function mapFolder(row, fileCounts, analysisByProjectId) {
   };
 }
 
+function buildMockPortfolioSourceFolders() {
+  return [
+    {
+      id: 'mock-electric-portfolio',
+      label: '전기기사 자격 자료 정리',
+      group: 'completed',
+      type: '공모전',
+      fileCount: 3,
+      analysisStatus: 'completed',
+      projectAnalysis: {
+        projectId: 'mock-electric-portfolio',
+        projectName: '전기기사 자격 자료 정리',
+        headline: '전기공학 기반 학업 성취와 자격 자료를 공모전 제출용으로 정리',
+        description: '학업 성취 지표, 전기기사 자격 관련 자료, 개인 역량 자료를 1페이지 요약 포트폴리오 근거로 정리했습니다.',
+        summaryMd: [
+          '## 포트폴리오 키워드',
+          '- 전기공학',
+          '- 머신러닝',
+          '- 반도체',
+          '- 자격 자료 정리',
+          '- 공모전 제출',
+        ].join('\n'),
+        summaryKeywords: ['전기공학', '머신러닝', '반도체', '자격 자료 정리', '공모전 제출'],
+        summaryKeywordSource: 'mock',
+        activityKeywords: ['학업 성취', '자격증', '자료 정리'],
+        portfolioKeywords: ['전기공학', '머신러닝', '반도체', '공모전'],
+        basedOnCount: 3,
+        provider: 'mock',
+        updatedAt: new Date().toISOString(),
+      },
+    },
+  ];
+}
+
 export async function GET() {
   try {
+    if (isAnalysisMockEnabled()) {
+      return Response.json({ folders: buildMockPortfolioSourceFolders(), provider: 'mock' });
+    }
+
     const supabase = await createSupabaseServerClient();
     const user = await getCurrentUser(supabase);
 

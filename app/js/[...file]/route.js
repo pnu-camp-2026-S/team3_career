@@ -25,6 +25,7 @@ export async function GET(_request, context) {
     return new Response(body, {
       headers: {
         'content-type': contentTypes[extension] || 'text/plain; charset=utf-8',
+        'cache-control': 'no-cache, must-revalidate',
       },
     });
   } catch {
