@@ -464,6 +464,7 @@
       if (mimeType === 'application/pdf' || extension === 'pdf') return 'pdf';
       if (mimeType.startsWith('image/') || ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(extension)) return 'image';
       if (['txt', 'md', 'csv'].includes(extension) || ['text/plain', 'text/markdown', 'text/csv'].includes(mimeType)) return 'text';
+      if (['docx', 'pptx', 'xlsx'].includes(extension)) return 'office';
       return 'unsupported';
     }
 
@@ -479,6 +480,40 @@
 
     function getFilePreviewText(file, preview = {}) {
       return preview.text || preview.previewText || file.previewText || file.content || '';
+    }
+
+    function renderOfficePreview(preview = {}) {
+      const sections = Array.isArray(preview.sections) ? preview.sections : [];
+      const notice = preview.notice ? `<p class="file-preview-office-notice">${escapeHtml(preview.notice)}</p>` : '';
+      const content = sections.length
+        ? sections.map((section) => {
+          const rows = Array.isArray(section.rows) ? section.rows : [];
+          const rowsHtml = rows.length
+            ? `
+              <div class="file-preview-table-wrap">
+                <table class="file-preview-table">
+                  <tbody>
+                    ${rows.map((row) => `<tr>${(row || []).map((cell) => `<td>${escapeHtml(cell || '')}</td>`).join('')}</tr>`).join('')}
+                  </tbody>
+                </table>
+              </div>
+            `
+            : `<pre class="file-preview-text">${escapeHtml(section.text || '추출 가능한 내용이 없습니다.')}</pre>`;
+          return `
+            <section class="file-preview-office-section">
+              <h3>${escapeHtml(section.title || '문서 내용')}</h3>
+              ${rowsHtml}
+            </section>
+          `;
+        }).join('')
+        : '<div class="file-preview-empty"><strong>추출 가능한 내용이 없습니다.</strong><p>원본 파일을 새 탭에서 확인해 주세요.</p></div>';
+
+      return `
+        <div class="file-preview-office">
+          ${notice}
+          ${content}
+        </div>
+      `;
     }
 
     function buildPreviewUnavailableHtml(file, preview = {}) {
@@ -517,6 +552,10 @@
 
       if (kind === 'text' && text) {
         return `<pre class="file-preview-text">${escapeHtml(text)}</pre>`;
+      }
+
+      if (kind === 'office' && preview.sections) {
+        return renderOfficePreview(preview);
       }
 
       return buildPreviewUnavailableHtml(file, preview);
