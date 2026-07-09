@@ -555,6 +555,21 @@ button {
   color: #475569;
 }
 
+.recommendation-grade.strong {
+  background: #edf4ff;
+  color: #2457d6;
+}
+
+.recommendation-grade.standard {
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+.recommendation-grade.exploratory {
+  background: #fff7ed;
+  color: #c05621;
+}
+
 .calendar-header {
   display: flex;
   justify-content: space-between;
@@ -815,6 +830,22 @@ button {
   color: var(--muted);
   font-size: 14px;
   line-height: 1.6;
+}
+
+.fit-signal-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.fit-signal-pill {
+  border: 1px solid #dbe6ff;
+  border-radius: 999px;
+  background: #f5f8ff;
+  color: var(--accent);
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: 850;
 }
 
 .detail-actions {
