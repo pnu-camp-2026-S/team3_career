@@ -282,11 +282,18 @@ button {
 .filter-bar {
   max-width: 1180px;
   margin: 0 auto 18px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 18px;
+}
+
+.activity-filter-row {
   display: flex;
+  grid-column: 1;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
+  gap: 32px;
+  min-width: 0;
 }
 
 .tabs {
@@ -341,10 +348,13 @@ button {
 
 .dashboard-grid {
   max-width: 1180px;
-  margin: 0 auto;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 360px;
   gap: 18px;
+}
+
+.dashboard-grid {
+  margin: 0 auto;
   align-items: start;
 }
 
@@ -364,13 +374,6 @@ button {
   justify-content: space-between;
   gap: 18px;
   margin-bottom: 16px;
-}
-
-.activity-header-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 12px;
 }
 
 .panel h2 {
@@ -897,8 +900,14 @@ button {
     align-items: stretch;
   }
 
-  .activity-header-actions {
+  .filter-bar {
+    display: flex;
+  }
+
+  .activity-filter-row {
+    flex-direction: column;
     align-items: stretch;
+    gap: 12px;
   }
 
   .sort-controls {
