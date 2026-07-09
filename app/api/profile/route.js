@@ -1,4 +1,5 @@
 import { createSupabaseServerClient } from '../../../lib/supabase-server';
+import { isAnalysisMockEnabled } from '../../../lib/openai-portfolio';
 
 const PROFILE_COLUMNS = 'user_id, name, gender, birth_date, email, phone, address, educations, preferences, chips, updated_at';
 
@@ -105,6 +106,41 @@ function mergeProfileWithSocialDefaults(row, user) {
   };
 }
 
+function buildMockProfile() {
+  return {
+    name: 'AI스프린트3팀',
+    gender: '남성',
+    birthDate: '2001-01-03',
+    email: 'aisprint333@gmail.com',
+    phone: '010-0000-0000',
+    address: '서울',
+    educations: [
+      {
+        schoolType: '대학교 2,3년',
+        schoolName: 'dd',
+        periodStart: '2026.03',
+        periodEnd: '2026.03',
+        major: '전기공학과',
+        minor: '산업공학과',
+      },
+    ],
+    preferences: {
+      detailJob: '머신러닝 엔지니어',
+      workIndustry: '반도체',
+      workRegion: '서울',
+      salary: '3,000만원 이상',
+    },
+    chips: {
+      jobs: ['데이터', 'AI/머신러닝'],
+      fields: ['대외활동', '공모전'],
+      industries: ['반도체', 'IT/SW'],
+      companies: ['삼성전자', 'SK하이닉스'],
+    },
+    photo: '',
+    updatedAt: new Date().toISOString(),
+  };
+}
+
 async function getCurrentUser(supabase) {
   const {
     data: { user },
@@ -117,6 +153,10 @@ async function getCurrentUser(supabase) {
 
 export async function GET() {
   try {
+    if (isAnalysisMockEnabled()) {
+      return Response.json({ profile: buildMockProfile(), provider: 'mock' });
+    }
+
     const supabase = await createSupabaseServerClient();
     const user = await getCurrentUser(supabase);
 

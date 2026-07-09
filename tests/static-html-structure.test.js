@@ -620,6 +620,11 @@ assert.match(
   'profile API should load the current user mypage profile from Supabase'
 );
 assert.match(
+  userProfileRoute,
+  /isAnalysisMockEnabled\(\)[\s\S]*buildMockProfile/,
+  'profile API should return mock profile data when ANALYSIS_MOCK=1 for local portfolio preview'
+);
+assert.match(
   authMeRoute,
   /\.from\('user_profiles'\)[\s\S]*\.select\('preferences'\)[\s\S]*uploadedPhoto[\s\S]*avatarUrl:\s*uploadedPhoto\s*\|\|\s*profile\?\.avatar_url/,
   'auth me API should prefer the persisted mypage photo for the shared avatar'
@@ -3339,6 +3344,11 @@ assert.match(
   portfolioSourceDataRoute,
   /\.from\('activity_folders'\)[\s\S]*\.from\('activity_files'\)[\s\S]*\.from\('project_analyses'\)[\s\S]*\.eq\('scope',\s*'project'\)/,
   'portfolio source data API should combine folders, file counts, and project-scoped analyses'
+);
+assert.match(
+  portfolioSourceDataRoute,
+  /isAnalysisMockEnabled\(\)[\s\S]*buildMockPortfolioSourceFolders/,
+  'portfolio source data API should return mock folders when ANALYSIS_MOCK=1 for local portfolio preview'
 );
 assert.match(
   portfolioSourceDataRoute,
