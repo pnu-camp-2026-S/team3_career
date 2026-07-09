@@ -11,9 +11,7 @@
     const PORTFOLIO_STORAGE_KEY = 'careerfit_portfolios';
     const PORTFOLIO_ENDPOINT = '/api/portfolios';
     const PROFILE_ENDPOINT = '/api/profile';
-    const ACTIVITY_FILES_ENDPOINT = '/api/activity-files';
-    const KEYWORD_RECOMMEND_ENDPOINT = '/api/portfolio/keywords';
-    const commonKeywords = ['문제 해결', '협업', '학습 민첩성'];
+    const PORTFOLIO_SOURCE_ENDPOINT = '/api/portfolio/source-data';
     const majorKeywordMap = {
       industrial: {
         label: '산업공학과',
@@ -40,24 +38,13 @@
       정보컴퓨터공학과: 'computer',
       컴퓨터공학과: 'computer'
     };
-    const experienceKeywordRules = [
-      { pattern: /공모|대회|경진|contest|award|수상/i, keywords: ['문제 정의', '기획', '성과 정리'] },
-      { pattern: /봉사|멘토|서포터|대외|volunteer|supporter/i, keywords: ['사용자 이해', '책임감', '커뮤니케이션'] },
-      { pattern: /팀|협업|회의|발표|presentation|team/i, keywords: ['협업 조율', '발표', '문서화'] },
-      { pattern: /개발|코드|github|프로그래밍|테스트|app|web|api/i, keywords: ['서비스 구현', '테스트 개선', '시스템 설계'] },
-      { pattern: /데이터|분석|ai|인공지능|모델|추천/i, keywords: ['데이터 분석', 'AI 활용', '추천 시스템'] },
-      { pattern: /실험|공정|화학|바이오|품질|안전/i, keywords: ['실험 설계', '공정 이해', '품질 안전'] },
-      { pattern: /전기|회로|전력|임베디드|제어|센서/i, keywords: ['회로 이해', '제어 설계', '문제 진단'] }
-    ];
-
     let currentPortfolio = null;
     let chatHistory = [];
     let currentSlideIndex = 0;
     let currentDraftPageIndex = 0;
     let profileMajor = '';
-    let activityFiles = [];
+    let portfolioSourceFolders = [];
     let isPortfolioRevising = false;
-    let keywordRequestId = 0;
 
     const formatSelect = document.getElementById('pfFormatSelect');
     const purposeSelect = document.getElementById('pfPurposeSelect');
@@ -124,32 +111,6 @@
       };
     }
 
-    function getExperienceKeywordRecommendations(selectedFiles = getSelectedExperienceFiles()) {
-      const selectedTexts = selectedFiles.length
-        ? selectedFiles.map((file) => [
-          getExperienceLabel(file),
-          file.folderGroup,
-          file.folderType,
-          file.analysis?.summaryMd
-        ].filter(Boolean).join(' '))
-        : getSelectedExperienceLabels();
-      if (!selectedTexts.length) return [];
-
-      const joinedText = selectedTexts.join(' ');
-      return experienceKeywordRules
-        .filter((rule) => rule.pattern.test(joinedText))
-        .flatMap((rule) => rule.keywords);
-    }
-
-    function buildLocalKeywordRecommendations(selectedFiles = getSelectedExperienceFiles()) {
-      const selectedMajor = getCurrentMajor();
-      return [
-        ...commonKeywords,
-        ...selectedMajor.keywords.slice(0, 4),
-        ...getExperienceKeywordRecommendations(selectedFiles)
-      ];
-    }
-
     function renderKeywordTags(keywords, { source = 'local' } = {}) {
       const uniqueKeywords = [...new Set(keywords.filter(Boolean))].slice(0, 12);
 
@@ -166,93 +127,81 @@
       });
     }
 
-    function compactExperienceForKeywords(file) {
-      return {
-        id: file.id,
-        name: file.name,
-        folderGroup: file.folderGroup,
-        folderType: file.folderType,
-        folderLabel: file.folderLabel,
-        analysisStatus: file.analysisStatus,
-        analysisSummary: file.analysis?.summaryMd || '',
-      };
+    function getFolderSummaryKeywords(folder) {
+      return Array.isArray(folder?.projectAnalysis?.summaryKeywords)
+        ? folder.projectAnalysis.summaryKeywords
+        : [];
     }
 
-    async function requestKeywordRecommendations(selectedFiles, fallbackKeywords) {
-      const response = await fetch(KEYWORD_RECOMMEND_ENDPOINT, {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify({
-          major: getCurrentMajor().label,
-          experiences: selectedFiles.map(compactExperienceForKeywords),
-          fallbackKeywords,
-        }),
-      });
-
-      if (!response.ok) throw new Error('Keyword recommendation failed.');
-
-      const result = await response.json();
-      return Array.isArray(result.keywords) ? result.keywords : [];
-    }
-
-    async function renderKeywordPool() {
-      const selectedFiles = getSelectedExperienceFiles();
-      const currentRequestId = ++keywordRequestId;
-
-      if (!selectedFiles.length && activityFiles.length) {
-        keywordPool.innerHTML = '<p class="keyword-empty">경험 데이터를 선택하면 추천 키워드가 표시됩니다.</p>';
-        return;
-      }
-
-      const fallbackKeywords = buildLocalKeywordRecommendations(selectedFiles);
-      renderKeywordTags(fallbackKeywords);
-
-      if (!selectedFiles.length) return;
-
-      try {
-        const aiKeywords = await requestKeywordRecommendations(selectedFiles, fallbackKeywords);
-        if (currentRequestId !== keywordRequestId || !aiKeywords.length) return;
-        renderKeywordTags(aiKeywords, { source: 'ai' });
-      } catch (error) {
-        console.warn('Contextual keyword recommendation failed.', error);
-      }
+    function getSelectedProjectFolders() {
+      const selectedIds = new Set(
+        Array.from(document.querySelectorAll('.experience-option input:checked'))
+          .map((input) => input.dataset.projectId)
+      );
+      return portfolioSourceFolders.filter((folder) => selectedIds.has(String(folder.id)));
     }
 
     function getSelectedExperienceLabels() {
-      return Array.from(document.querySelectorAll('.experience-option input:checked'))
-        .map((input) => input.value);
+      return getSelectedProjectFolders().map((folder) => folder.label);
     }
 
-    function getSelectedExperienceFiles() {
-      const selectedIds = new Set(
-        Array.from(document.querySelectorAll('.experience-option input:checked'))
-          .map((input) => input.dataset.experienceId)
-      );
-      return activityFiles.filter((file) => selectedIds.has(String(file.id)));
+    function getSelectedExperienceProjects() {
+      return getSelectedProjectFolders()
+        .filter((folder) => folder.projectAnalysis)
+        .map((folder) => ({
+          projectId: folder.id,
+          projectName: folder.projectAnalysis.projectName || folder.label,
+          headline: folder.projectAnalysis.headline || '',
+          description: folder.projectAnalysis.description || '',
+          summaryMd: folder.projectAnalysis.summaryMd || '',
+          summaryKeywords: getFolderSummaryKeywords(folder),
+          fileCount: folder.fileCount || 0,
+        }));
     }
 
-    function getExperienceLabel(file) {
-      const folder = file.folderLabel ? `${file.folderLabel} - ` : '';
-      return `${folder}${file.name || '이름 없는 경험'}`;
+    function renderKeywordPool() {
+      const selectedFolders = getSelectedProjectFolders();
+
+      if (!selectedFolders.length && portfolioSourceFolders.length) {
+        keywordPool.innerHTML = '<p class="keyword-empty">프로젝트 폴더를 선택하면 summary.md 기반 역량 키워드가 표시됩니다.</p>';
+        return;
+      }
+
+      if (!selectedFolders.length) {
+        keywordPool.innerHTML = '<p class="keyword-empty">파일 관리에서 프로젝트 폴더를 만든 뒤 AI 분석을 실행해 주세요.</p>';
+        return;
+      }
+
+      const summaryKeywords = selectedFolders.flatMap(getFolderSummaryKeywords);
+      if (!summaryKeywords.length) {
+        keywordPool.innerHTML = '<p class="keyword-empty">선택한 폴더에 사용할 키워드가 없습니다. 파일 관리에서 AI 분석을 먼저 실행해 주세요.</p>';
+        return;
+      }
+
+      renderKeywordTags(summaryKeywords, { source: 'ai' });
+    }
+
+    function getFolderMeta(folder) {
+      const groupLabel = folder.group === 'completed' ? '완료' : folder.group === 'inProgress' ? '진행중' : folder.group;
+      const typeLabel = folder.type || '기타';
+      const fileCountText = `${folder.fileCount || 0}개 파일`;
+      const analysisText = folder.projectAnalysis ? '분석 완료' : '분석 필요';
+      return [groupLabel, typeLabel, fileCountText, analysisText].filter(Boolean).join(' · ');
     }
 
     function renderExperienceOptions() {
-      if (!activityFiles.length) {
-        experienceDataList.innerHTML = '<p class="experience-empty">파일 관리에서 경험 데이터를 업로드하면 이곳에서 선택할 수 있습니다.</p>';
+      if (!portfolioSourceFolders.length) {
+        experienceDataList.innerHTML = '<p class="experience-empty">파일 관리에서 프로젝트 폴더를 만들고 자료를 업로드하면 이곳에서 선택할 수 있습니다.</p>';
         renderKeywordPool();
         return;
       }
 
-      experienceDataList.innerHTML = activityFiles.map((file) => {
-        const label = getExperienceLabel(file);
-        const meta = [file.folderGroup, file.folderType].filter(Boolean).join(' · ');
+      experienceDataList.innerHTML = portfolioSourceFolders.map((folder) => {
+        const label = folder.label || '이름 없는 프로젝트 폴더';
+        const meta = getFolderMeta(folder);
         return `
           <label class="experience-option">
-            <input type="checkbox" value="${escapeHtml(label)}" data-experience-id="${escapeHtml(file.id)}" />
+            <input type="checkbox" value="${escapeHtml(label)}" data-project-id="${escapeHtml(folder.id)}" />
             <span>
               <strong>${escapeHtml(label)}</strong>
               ${meta ? `<small>${escapeHtml(meta)}</small>` : ''}
@@ -289,18 +238,18 @@
 
     async function loadExperienceData() {
       try {
-        const response = await fetch(ACTIVITY_FILES_ENDPOINT, {
+        const response = await fetch(PORTFOLIO_SOURCE_ENDPOINT, {
           method: 'GET',
           credentials: 'same-origin',
           cache: 'no-store'
         });
-        if (!response.ok) throw new Error('Activity file load failed.');
+        if (!response.ok) throw new Error('Portfolio source data load failed.');
 
         const result = await response.json();
-        activityFiles = Array.isArray(result.files) ? result.files : [];
+        portfolioSourceFolders = Array.isArray(result.folders) ? result.folders : [];
       } catch (error) {
-        console.warn('Activity file API load failed.', error);
-        activityFiles = [];
+        console.warn('Portfolio source data API load failed.', error);
+        portfolioSourceFolders = [];
       }
 
       renderExperienceOptions();
@@ -321,6 +270,8 @@
       const purpose = purposeSelect.value;
       const major = getCurrentMajor();
       const experiences = getSelectedExperienceLabels();
+      const experienceProjects = getSelectedExperienceProjects();
+      const projectIds = getSelectedProjectFolders().map((folder) => String(folder.id));
       const keywords = getSelectedKeywords();
 
       if (!keywords.length) {
@@ -330,7 +281,7 @@
         return;
       }
 
-      const portfolioShell = buildPortfolioShell({ format, purpose, major, experiences, keywords });
+      const portfolioShell = buildPortfolioShell({ format, purpose, major, experiences, experienceProjects, keywords });
 
       currentPortfolio = null;
       currentSlideIndex = 0;
@@ -343,7 +294,7 @@
       document.getElementById('workspaceTitle').textContent = `${format} 초안`;
       await startLoadingProgress(async () => {
         try {
-          const aiDraft = await requestPortfolioGeneration({ format, purpose, major: major.label, experiences, keywords });
+          const aiDraft = await requestPortfolioGeneration({ format, purpose, major: major.label, experiences, experienceProjects, projectIds, keywords });
           currentPortfolio = normalizeGeneratedPortfolio(aiDraft, portfolioShell);
           currentDraftPageIndex = 0;
           showToast(currentPortfolio.sourceLabel === '목데이터 생성'
@@ -399,13 +350,14 @@
       }
     }
 
-    function buildPortfolioShell({ format, purpose, major, experiences, keywords }) {
+    function buildPortfolioShell({ format, purpose, major, experiences, experienceProjects = [], keywords }) {
       return {
         id: `portfolio-${Date.now()}`,
         format,
         purpose,
         major: major.label || major,
         experiences,
+        experienceProjects,
         keywords,
         sourceLabel: 'ChatGPT 생성',
         updatedAt: new Date().toISOString(),
@@ -425,7 +377,7 @@
       return {};
     }
 
-    async function requestPortfolioGeneration({ format, purpose, major, experiences, keywords }) {
+    async function requestPortfolioGeneration({ format, purpose, major, experiences, experienceProjects, projectIds, keywords }) {
       const response = await fetch('/api/portfolio/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -435,6 +387,8 @@
           purpose,
           major,
           experiences,
+          experienceProjects,
+          projectIds,
           keywords,
           myPageInfo: readMyPageInfo(),
         }),
