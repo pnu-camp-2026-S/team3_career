@@ -1891,8 +1891,8 @@ assert.match(
 );
 assert.match(
   contestHtml,
-  /<div class="sort-controls" aria-label="활동 정렬 기준">[\s\S]*<button class="sort-option active"[\s\S]*aria-pressed="true"[\s\S]*추천순 정렬[\s\S]*<button class="sort-option"[\s\S]*aria-pressed="false"[\s\S]*마감순 정렬/,
-  'contest sort controls should default to recommendation order and expose deadline order'
+  /<div class="panel activity-panel">[\s\S]*<div class="panel-header">[\s\S]*<div class="activity-header-actions">[\s\S]*<div class="sort-controls" aria-label="활동 정렬 기준">[\s\S]*<button class="sort-option active"[\s\S]*aria-pressed="true"[\s\S]*추천순 정렬[\s\S]*<button class="sort-option"[\s\S]*aria-pressed="false"[\s\S]*마감순 정렬/,
+  'contest sort controls should sit in the activity recommendation panel header'
 );
 assert.match(
   contestHtml,
