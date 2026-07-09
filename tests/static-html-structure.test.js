@@ -894,6 +894,11 @@ assert.match(
   'project analysis API should refresh the project-level L2 aggregate after analyzing files'
 );
 assert.match(
+  projectAnalysisRoute,
+  /pendingFiles\.length === 0[\s\S]*from\('project_analyses'\)[\s\S]*latestFileAnalysisAt[\s\S]*aggregateUpdatedAt >= latestFileAnalysisAt[\s\S]*unchanged: true/,
+  'project analysis API should skip L2 re-analysis when no file summary changed since the last aggregate (#268)'
+);
+assert.match(
   aggregateAnalysisRoute,
   /projectId: null[\s\S]*aggregateMainOverview\(\{ repository, projectIds \}\)/,
   'aggregate analysis API should aggregate saved project analyses into the user-level L3 overview'
@@ -1886,6 +1891,12 @@ assert.match(
   createHtml,
   /async function\s+runAggregateAnalysisForProjects\(projectIds\)[\s\S]*fetch\(AGGREGATE_ANALYSIS_ENDPOINT[\s\S]*JSON\.stringify\(\{ projectIds \}\)/,
   'project analysis should call the aggregate API after successful project analyses'
+);
+// 변경 없는 프로젝트는 기존 L2 산출물을 유지하고 결과 안내에 구분해 보여준다(#268).
+assert.match(
+  createHtml,
+  /if \(payload\.unchanged\) unchangedCount \+= 1;[\s\S]*else refreshedCount \+= 1;[\s\S]*변경이 없는 \$\{unchangedCount\}개 프로젝트는 기존 산출물을 유지했습니다/,
+  'all-project analysis should report unchanged projects that kept their existing L2 outputs (#268)'
 );
 assert.match(
   createHtml,
