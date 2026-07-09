@@ -1439,7 +1439,7 @@ assert.match(
   /\{\s*key:\s*'create',\s*href:\s*'create\.html',\s*label:\s*'파일 관리'\s*\}/,
   'file management should keep the shared file management nav link'
 );
-for (const text of ['파일 관리', '폴더 목록', '자료 추가', '미리보기', '분석하기', 'GitHub 동기화', '대화로 내용 추가하기', '세부 폴더', '이름 수정', '프로젝트 삭제']) {
+for (const text of ['파일 관리', '폴더 목록', '자료 추가', '미리보기', '분석하기', '대화로 내용 추가하기', '세부 폴더', '이름 수정', '폴더 삭제']) {
   assert.ok(
     createHtml.includes(text),
     `file management page should include ${text}`
@@ -1497,7 +1497,7 @@ assert.match(
   /data-action="toggle-group"[\s\S]*function\s+toggleProjectGroup[\s\S]*folder\.group\s*===\s*'completed'\s*\?\s*'inProgress'\s*:\s*'completed'/,
   'file management should toggle a project between completed and in-progress (#166-1)'
 );
-// 사용자 요청: 프로젝트 이름 수정 / 삭제
+// 사용자 요청: 프로젝트 이름 수정 / 왼쪽 폴더 목록에서 삭제
 assert.match(
   createHtml,
   /data-action="rename-project"[\s\S]*function\s+saveProjectName[\s\S]*folder\.label\s*=\s*name/,
@@ -1505,8 +1505,8 @@ assert.match(
 );
 assert.match(
   createHtml,
-  /data-action="delete-project"[\s\S]*function\s+deleteProject[\s\S]*FolderStore\.deleteFolder\(/,
-  'file management should let a project be deleted'
+  /data-delete-folder-id=.+[\s\S]*function\s+deleteFolder\(folderId\)[\s\S]*FolderStore\.deleteFolder\(/,
+  'file management should let a folder be deleted from the left folder list'
 );
 // folder-store: 프로젝트 삭제 헬퍼(tombstone로 삭제 유지)
 assert.match(
@@ -1587,25 +1587,26 @@ assert.ok(
   !createHtml.includes('class="ai-status-summary"'),
   'file management should not keep the 전체 자료 중 분석 완료 summary box (#132)'
 );
-assert.match(
-  createHtml,
-  /id="analysisPanelTitle"/,
-  'file management should give the AI status panel a dynamic, per-project title (#132)'
+assert.ok(
+  !createHtml.includes('AI 정리 상태')
+    && !createHtml.includes('GitHub 동기화')
+    && !createHtml.includes('data-action="connect-repo"'),
+  'file management should remove the unused AI status and GitHub connection UI (#217)'
 );
 assert.match(
   createHtml,
-  /\$\{selectedFolder\.label\} AI 정리 상태/,
-  'file management AI status title should follow the [프로젝트 이름] AI 정리 상태 format (#132)'
+  /id="analyzeButton"[\s\S]*id="analysisLoading"[\s\S]*function\s+setAnalysisLoading\(isLoading,\s*folder\)/,
+  'file management should show a dedicated loading state while analysis runs (#218)'
 );
 assert.match(
   createHtml,
-  /data-action="connect-repo"[^>]*id="repoConnectButton"/,
-  'file management should expose a per-project repo connect button (#132)'
+  /FolderStore\.FOLDER_TYPES\.map[\s\S]*folder\.type\s*===\s*type\.key[\s\S]*manager-folder-section-head/,
+  'file management should group the left folder list by activity type (#219)'
 );
 assert.match(
   createHtml,
-  /data-action="connect-repo-save"/,
-  'file management repo modal should save the per-project connection (#132)'
+  /data-delete-folder-id="\$\{escapeHtml\(folder\.id\)\}"[\s\S]*폴더 삭제/,
+  'file management should expose folder deletion beside each left-list folder (#221)'
 );
 assert.match(
   createHtml,

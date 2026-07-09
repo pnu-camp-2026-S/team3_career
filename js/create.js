@@ -53,28 +53,40 @@
       ensureSelectedSubfolder();
       renderFolderGroups();
       renderFilePanel();
-      updateDashboard();
     }
 
     function renderFolderGroups() {
       const container = document.getElementById('fileManagerFolderGroups');
-      container.innerHTML = FolderStore.FOLDER_GROUPS.map((group) => {
-        const groupFolders = Object.values(folders).filter((folder) => folder.group === group.key);
+      const folderList = Object.values(folders);
+      container.innerHTML = FolderStore.FOLDER_TYPES.map((type) => {
+        const typeFolders = folderList.filter((folder) => folder.type === type.key);
+        if (typeFolders.length === 0) return '';
         return `
           <section class="manager-folder-section">
-            <h3>${group.label}</h3>
+            <div class="manager-folder-section-head">
+              <h3>${escapeHtml(type.label)}</h3>
+              <span>${typeFolders.length}개</span>
+            </div>
             <div class="manager-folder-list">
-              ${groupFolders.map((folder) => `
-                <button class="manager-folder-item ${folder.id === selectedFolderId ? 'active' : ''}" type="button" data-folder-id="${escapeHtml(folder.id)}">
-                  <span class="mini-folder" aria-hidden="true"></span>
-                  <span>${escapeHtml(folder.label)}</span>
-                  <strong>${FolderStore.getFolderFiles(folder).length}</strong>
-                </button>
+              ${typeFolders.map((folder) => `
+                <div class="manager-folder-row ${folder.id === selectedFolderId ? 'active' : ''}">
+                  <button class="manager-folder-item" type="button" data-folder-id="${escapeHtml(folder.id)}">
+                    <span class="mini-folder" aria-hidden="true"></span>
+                    <span class="manager-folder-copy">
+                      <strong>${escapeHtml(folder.label)}</strong>
+                      <small>${escapeHtml(getGroupLabel(folder.group))} · ${FolderStore.getFolderFiles(folder).length}개 자료</small>
+                    </span>
+                  </button>
+                  <button class="folder-delete-button" type="button" data-delete-folder-id="${escapeHtml(folder.id)}" aria-label="${escapeHtml(folder.label)} 폴더 삭제">삭제</button>
+                </div>
               `).join('')}
             </div>
           </section>
         `;
       }).join('');
+      if (!container.innerHTML.trim()) {
+        container.innerHTML = '<div class="manager-empty compact-empty"><strong>아직 폴더가 없습니다.</strong><span>폴더 추가 버튼으로 첫 활동을 등록해보세요.</span></div>';
+      }
     }
 
     function renderFilePanel() {
@@ -88,10 +100,8 @@
       }
       const selectedSubfolder = getSelectedSubfolder();
       const selectedFiles = selectedSubfolder ? selectedSubfolder.files : [];
-      document.getElementById('analysisPanelTitle').textContent = `${selectedFolder.label} AI 정리 상태`;
       document.getElementById('editablePanelTitle').textContent = `${selectedFolder.label} 자료`;
       document.getElementById('editablePanelDesc').textContent = `${getGroupLabel(selectedFolder.group)}의 ${selectedFolder.label} 프로젝트입니다. 세부 폴더를 골라 자료를 관리하세요.`;
-      updateRepoButton(selectedFolder);
       updateMoveButton(selectedFolder);
       renderSubfolders(selectedFolder);
 
@@ -135,21 +145,6 @@
     function updateMoveButton(folder) {
       const button = document.getElementById('moveGroupButton');
       button.textContent = folder.group === 'completed' ? '진행중으로 이동' : '완료로 이동';
-    }
-
-    function updateDashboard() {
-      const allFiles = Object.values(folders).flatMap((folder) => FolderStore.getFolderFiles(folder));
-      const completedFiles = allFiles.filter((file) => file.status === '분석완료' || file.status === '작성완료');
-      document.getElementById('summaryState').textContent = completedFiles.length ? '요약 초안 생성됨' : '생성 대기';
-      document.getElementById('indexState').textContent = allFiles.length ? '폴더 목록과 파일 순서 반영됨' : '폴더 순서 반영 대기';
-      document.getElementById('logState').textContent = allFiles.length ? '최근 변경 기록 있음' : '변경 이력 없음';
-    }
-
-    function updateRepoButton(folder) {
-      const button = document.getElementById('repoConnectButton');
-      const connected = Boolean(folder.github && folder.github.connected);
-      button.textContent = connected ? '연결됨' : '레포 연결';
-      button.classList.toggle('is-connected', connected);
     }
 
     function getFileType(fileName) {
@@ -277,12 +272,7 @@
         const guideMessage = error.status === 401
           ? '로그인 세션이 만료되었거나 서버에서 사용자를 확인하지 못했습니다. 다시 로그인한 뒤 업로드해주세요.'
           : `서버 업로드에 실패했습니다. 원인: ${error.message || '알 수 없는 오류'}`;
-        setAnalysisPanel(
-          '업로드 실패',
-          'fail',
-          guideMessage,
-          '0%'
-        );
+        console.warn(guideMessage);
         showToast(error.status === 401
           ? '로그인이 필요합니다. 다시 로그인해주세요.'
           : '서버 업로드에 실패했습니다. 상세 원인을 확인해주세요.');
@@ -372,30 +362,19 @@
 
     let analysisInFlight = false;
 
-    // 저장된 프로젝트 종합 결과가 있으면 AI 정리 상태 패널을 복원한다.
-    async function restoreAnalysisPanelState() {
-      const folder = getSelectedFolder();
-      if (!folder) return;
-      try {
-        const response = await fetch(`/api/analysis/project?projectId=${encodeURIComponent(folder.id)}`, {
-          credentials: 'same-origin',
-          cache: 'no-store',
-        });
-        if (!response.ok) return;
-        const payload = await response.json();
-        if (payload.aggregate && getSelectedFolder()?.id === folder.id && !analysisInFlight) {
-          setAnalysisPanel('분석완료', 'done', `이전 분석 결과: ${payload.aggregate.headline || '프로젝트 종합 요약이 저장되어 있습니다.'}`, '100%');
-        }
-      } catch (error) {
-        console.warn('Analysis state could not be restored.', error);
+    function setAnalysisLoading(isLoading, folder) {
+      const overlay = document.getElementById('analysisLoading');
+      const button = document.getElementById('analyzeButton');
+      overlay.classList.toggle('hidden', !isLoading);
+      overlay.setAttribute('aria-hidden', String(!isLoading));
+      button.disabled = isLoading;
+      button.classList.toggle('is-loading', isLoading);
+      button.innerHTML = isLoading
+        ? '<span class="button-spinner" aria-hidden="true"></span> 분석 중'
+        : '<span aria-hidden="true">✦</span> 선택한 폴더 분석하기';
+      if (isLoading && folder) {
+        document.getElementById('analysisLoadingTitle').textContent = `${folder.label} 자료를 분석하고 있어요`;
       }
-    }
-
-    function setAnalysisPanel(statusText, statusClass, message, progress) {
-      document.getElementById('analysisStatus').textContent = statusText;
-      document.getElementById('analysisStatus').className = `status-pill ${statusClass}`;
-      document.getElementById('analysisMessage').textContent = message;
-      document.getElementById('analysisProgress').style.width = progress;
     }
 
     // 프로젝트 단위 AI 분석(#166-4). 서버(/api/analysis/project)가 이 프로젝트의
@@ -404,13 +383,13 @@
       const folder = getSelectedFolder();
       if (!folder || analysisInFlight) return;
 
-      await loadActivityFilesFromApi();
-      render();
-
       analysisInFlight = true;
-      setAnalysisPanel('분석중', 'ready', `${folder.label} 프로젝트의 자료를 AI로 분석하고 있습니다. 잠시만 기다려주세요.`, '35%');
+      setAnalysisLoading(true, folder);
 
       try {
+        await loadActivityFilesFromApi();
+        render();
+
         const response = await fetch('/api/analysis/project', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -419,7 +398,7 @@
         });
 
         if (response.status === 401) {
-          setAnalysisPanel('분석실패', 'fail', '로그인이 필요합니다. 로그인 후 다시 시도해주세요.', '0%');
+          showToast('로그인이 필요합니다. 로그인 후 다시 시도해주세요.');
           return;
         }
 
@@ -430,16 +409,17 @@
         }
 
         if (payload.ok === false && payload.reason === 'no_data') {
-          setAnalysisPanel('분석대기', 'ready', '서버에서 이 프로젝트에 연결된 파일을 찾지 못했습니다. 파일을 현재 선택한 프로젝트 폴더에 다시 업로드한 뒤 분석해주세요.', '0%');
+          showToast('분석할 자료가 없습니다. 선택한 폴더에 자료를 먼저 추가해주세요.');
           return;
         }
 
         await applyProjectAnalysisResult(folder, payload);
       } catch (error) {
         console.warn('Project analysis failed.', error);
-        setAnalysisPanel('분석실패', 'fail', '프로젝트 분석에 실패했습니다. 잠시 후 다시 시도해주세요.', '0%');
+        showToast('자료 분석에 실패했습니다. 잠시 후 다시 시도해주세요.');
       } finally {
         analysisInFlight = false;
+        setAnalysisLoading(false);
       }
     }
 
@@ -455,14 +435,6 @@
       render();
 
       const doneCount = (payload.analyzedCount || 0) + (payload.skippedCount || 0);
-      const failedNote = payload.failedCount ? ` (실패 ${payload.failedCount}건)` : '';
-      setAnalysisPanel(
-        payload.failedCount && !payload.analyzedCount && !payload.skippedCount ? '분석실패' : '분석완료',
-        payload.failedCount && !payload.analyzedCount && !payload.skippedCount ? 'fail' : 'done',
-        `새로 분석 ${payload.analyzedCount || 0}건, 기존 결과 ${payload.skippedCount || 0}건을 묶어 종합했습니다.${failedNote}`,
-        '100%'
-      );
-
       const aggregate = payload.aggregate;
       const fileListHtml = (payload.files || []).map((file) => `
         <li>${escapeHtml(file.name)} — ${file.ok ? '분석 성공' : `분석 실패${file.errors?.length ? ` (${escapeHtml(file.errors.join(' / '))})` : ''}`}</li>
@@ -478,10 +450,6 @@
           ${fileListHtml ? `<ul>${fileListHtml}</ul>` : ''}
         </div>
       `);
-    }
-
-    function syncGithub() {
-      showToast('GitHub 동기화 버튼 클릭을 확인했습니다.');
     }
 
     // 완료 ↔ 진행중 양방향 이동(#166-1).
@@ -542,11 +510,11 @@
       showToast('프로젝트 이름을 변경했습니다.');
     }
 
-    // 프로젝트 삭제(사용자 요청). 폴더와 그 안의 자료가 함께 사라진다.
-    async function deleteProject() {
-      const folder = getSelectedFolder();
+    // 왼쪽 목록에서 선택한 폴더와 그 안의 자료를 함께 삭제한다.
+    async function deleteFolder(folderId) {
+      const folder = folders[folderId];
       if (!folder) return;
-      if (!window.confirm(`'${folder.label}' 프로젝트를 삭제할까요? 안의 세부 폴더와 자료도 함께 사라집니다.`)) return;
+      if (!window.confirm(`'${folder.label}' 폴더를 삭제할까요? 안의 세부 폴더와 자료도 함께 사라집니다.`)) return;
 
       const removedLabel = folder.label;
       try {
@@ -557,11 +525,13 @@
         return;
       }
       FolderStore.deleteFolder(folders, folder.id);
-      selectedFolderId = Object.keys(folders)[0] || null;
-      selectedSubfolderId = firstSubfolderId(folders[selectedFolderId]);
+      if (folder.id === selectedFolderId) {
+        selectedFolderId = Object.keys(folders)[0] || null;
+        selectedSubfolderId = firstSubfolderId(folders[selectedFolderId]);
+      }
       persistFolders();
       render();
-      showToast(`'${removedLabel}' 프로젝트를 삭제했습니다.`);
+      showToast(`'${removedLabel}' 폴더를 삭제했습니다.`);
     }
 
     // 프로젝트별 '대화로 내용 추가하기'(#137-5). 현재 선택한 세부 폴더에 md 자료를 추가한다.
@@ -644,52 +614,6 @@
       showToast(`'${name}' 프로젝트를 세부 폴더와 함께 추가했습니다.`);
     }
 
-    function openRepoModal() {
-      const folder = folders[selectedFolderId];
-      const gh = folder.github || {};
-      showModal(`${folder.label} 레포 연결`, `
-        <p class="panel-note">현재 프로토타입에서는 실제 GitHub 연동 없이 프로젝트별 임시 연결 정보만 저장합니다.</p>
-        <div class="repo-form">
-          <label class="repo-field"><span>GitHub 아이디</span><input id="repoUser" type="text" value="${escapeHtml(gh.username || '')}" placeholder="예: bjun02" /></label>
-          <label class="repo-field"><span>저장소 소유자</span><input id="repoOwner" type="text" value="${escapeHtml(gh.owner || '')}" placeholder="예: pnu-camp-2026-S" /></label>
-          <label class="repo-field"><span>저장소 이름</span><input id="repoName" type="text" value="${escapeHtml(gh.repo || '')}" placeholder="예: team3_career" /></label>
-          <label class="repo-field"><span>브랜치</span><input id="repoBranch" type="text" value="${escapeHtml(gh.branch || 'main')}" placeholder="예: main" /></label>
-          <label class="repo-field"><span>기준 경로</span><input id="repoBasePath" type="text" value="${escapeHtml(gh.basePath || '')}" placeholder="예: docs/" /></label>
-          <label class="repo-check"><input id="repoSyncEnabled" type="checkbox" ${gh.syncEnabled ? 'checked' : ''} /><span>동기화 사용</span></label>
-          <div class="form-actions">
-            <button class="primary-button" type="button" data-action="connect-repo-save">연결 저장</button>
-          </div>
-        </div>
-      `);
-    }
-
-    async function saveRepo() {
-      const folder = folders[selectedFolderId];
-      const previousGithub = folder.github;
-      folder.github = {
-        connected: true,
-        username: document.getElementById('repoUser').value.trim(),
-        owner: document.getElementById('repoOwner').value.trim(),
-        repo: document.getElementById('repoName').value.trim(),
-        branch: document.getElementById('repoBranch').value.trim() || 'main',
-        basePath: document.getElementById('repoBasePath').value.trim(),
-        syncEnabled: document.getElementById('repoSyncEnabled').checked,
-        lastSyncedAt: null,
-      };
-      try {
-        await FolderStore.updateFolderRemote(folder);
-      } catch (error) {
-        console.warn('Repo connection could not be saved.', error);
-        folder.github = previousGithub;
-        showToast('레포 연결 정보를 저장하지 못했습니다. 잠시 후 다시 시도해주세요.');
-        return;
-      }
-      persistFolders();
-      hideModal();
-      render();
-      showToast(`${folder.label} 프로젝트에 GitHub 레포 임시 연결 정보를 저장했습니다.`);
-    }
-
     function showModal(title, body) {
       document.getElementById('modalTitle').textContent = title;
       document.getElementById('modalBody').innerHTML = body;
@@ -729,6 +653,12 @@
     }
 
     document.addEventListener('click', (event) => {
+      const deleteFolderButton = event.target.closest('[data-delete-folder-id]');
+      if (deleteFolderButton) {
+        deleteFolder(deleteFolderButton.dataset.deleteFolderId);
+        return;
+      }
+
       const folderButton = event.target.closest('[data-folder-id]');
       if (folderButton) {
         selectedFolderId = folderButton.dataset.folderId;
@@ -757,17 +687,13 @@
       if (action === 'preview-file') previewFile(fileId);
       if (action === 'delete-file') deleteFile(fileId);
       if (action === 'analyze') organizeProject();
-      if (action === 'sync-github') syncGithub();
       if (action === 'toggle-group') toggleProjectGroup();
       if (action === 'rename-project') openRenameModal();
       if (action === 'save-project-name') saveProjectName();
-      if (action === 'delete-project') deleteProject();
       if (action === 'add-conversation') openConversationModal();
       if (action === 'add-conversation-save') saveConversationContent();
       if (action === 'create-folder') createFolder();
       if (action === 'create-folder-confirm') confirmCreateFolder();
-      if (action === 'connect-repo') openRepoModal();
-      if (action === 'connect-repo-save') saveRepo();
       if (action === 'close-modal') hideModal();
     });
 
@@ -807,7 +733,6 @@
       ensureSelectedFolder();
       await loadActivityFilesFromApi();
       render();
-      restoreAnalysisPanelState();
     }
 
     initFileManager();
