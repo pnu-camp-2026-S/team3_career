@@ -1764,6 +1764,11 @@ assert.match(
   /FolderStore\.FOLDER_GROUPS/,
   'file management should render folder groups from the shared folder store'
 );
+assert.match(
+  createHtml,
+  /FolderStore\.FOLDER_TYPES\.map[\s\S]*folder\.type\s*===\s*type\.key[\s\S]*manager-folder-section-head/,
+  'file management should group the left folder list by activity type (#227)'
+);
 assert.ok(
   !createHtml.includes("key: 'ready'") && !createHtml.includes('준비된 활동 폴더'),
   'file management should use the unified in-progress folder group instead of the old ready group'
