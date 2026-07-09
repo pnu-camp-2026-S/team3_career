@@ -1,4 +1,5 @@
 import {
+  buildMockPortfolioResponse,
   buildPortfolioPrompt,
   generateOpenAiJson,
   getPortfolioSchema,
@@ -24,6 +25,14 @@ export async function POST(request) {
     }
 
     const context = { format, purpose, major, experiences, keywords, myPageInfo };
+    if (process.env.ANALYSIS_MOCK === '1') {
+      return Response.json({
+        success: true,
+        data: buildMockPortfolioResponse(format, context),
+        provider: 'mock',
+      });
+    }
+
     const prompt = buildPortfolioPrompt(context);
     const rawData = await generateOpenAiJson(prompt, getPortfolioSchema(format));
     const data = normalizePortfolioResponse(format, rawData, context);

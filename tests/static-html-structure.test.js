@@ -2487,9 +2487,18 @@ assert.match(
 );
 
 const portfolioExportPptxRoutePath = path.join(appDir, 'api', 'portfolio', 'export-pptx', 'route.js');
+const portfolioGenerateRoutePath = path.join(appDir, 'api', 'portfolio', 'generate', 'route.js');
+const portfolioGenerateRoute = fs.existsSync(portfolioGenerateRoutePath)
+  ? fs.readFileSync(portfolioGenerateRoutePath, 'utf8')
+  : '';
 const portfolioExportPptxRoute = fs.existsSync(portfolioExportPptxRoutePath)
   ? fs.readFileSync(portfolioExportPptxRoutePath, 'utf8')
   : '';
+assert.match(
+  portfolioGenerateRoute,
+  /ANALYSIS_MOCK\s*===\s*'1'[\s\S]*buildMockPortfolioResponse/,
+  'portfolio generation API should return mock portfolio data when ANALYSIS_MOCK=1'
+);
 assert.ok(
   fs.existsSync(portfolioExportPptxRoutePath),
   'portfolio PPTX export API should live in app/api/portfolio/export-pptx/route.js'
