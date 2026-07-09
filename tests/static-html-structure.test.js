@@ -1847,6 +1847,21 @@ assert.match(
 );
 assert.match(
   createHtml,
+  /class="panel-heading-block"[\s\S]*class="panel-title-row"[\s\S]*<h2 class="panel-title">폴더 목록<\/h2>[\s\S]*data-action="create-folder"/,
+  'file management folder list title and add button should share one aligned title row'
+);
+assert.match(
+  createHtml,
+  /class="editable-title-row"[\s\S]*id="editablePanelTitle"[\s\S]*data-action="rename-project"/,
+  'file management editable title and rename button should share one aligned title row'
+);
+assert.match(
+  createCss,
+  /\.panel-title-row,[\s\S]*\.editable-title-row\s*\{[\s\S]*align-items:\s*center;[\s\S]*\.panel-title-row \.panel-title,[\s\S]*\.editable-title-row \.panel-title\s*\{[\s\S]*line-height:\s*34px;/,
+  'file management header rows should vertically center titles and compact buttons'
+);
+assert.match(
+  createHtml,
   /FolderStore\.loadFolders\(\)/,
   'file management should load folder state through the shared folder store'
 );
