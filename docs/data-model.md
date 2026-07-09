@@ -37,7 +37,7 @@
 
 고정 분류 값:
 
-- `FOLDER_GROUPS` (2): `completed`(완료된 활동 폴더), `inProgress`(진행중인 활동 폴더)
+- `FOLDER_GROUPS` (2): `completed`(파일관리 화면 표시: 완료된 프로젝트), `inProgress`(파일관리 화면 표시: 진행 중인 프로젝트)
 - `FOLDER_TYPES` (7): `personal`(개인 프로젝트), `team`(팀 프로젝트), `contest`(공모전), `certificate`(자격증), `education`(교육), `volunteer`(봉사), `other`(기타). 각 타입은 도넛 차트용 `color`를 가진다.
 
 폴더 객체 구조(프로젝트 폴더 → 하위 폴더 → 파일):
