@@ -1491,6 +1491,11 @@ assert.match(
   /file\.analysisStatus\s*===\s*'completed'\s*\?\s*'분석완료'\s*:\s*'분석대기'/,
   'file status pills should restore the saved analysis state after reload'
 );
+assert.match(
+  createCss,
+  /\.manager-file-card\s*>\s*div:nth-child\(2\)[\s\S]*\.status-pill[\s\S]*overflow:\s*visible[\s\S]*text-overflow:\s*clip/,
+  'file status pills should remain fully visible without inheriting file text ellipsis (#228)'
+);
 // #166-1: 완료 ↔ 진행중 양방향 이동
 assert.match(
   createHtml,

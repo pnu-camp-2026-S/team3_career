@@ -204,8 +204,8 @@
   background: #fff;
 }
 
-.manager-file-card strong,
-.manager-file-card span {
+.manager-file-card > div:nth-child(2) strong,
+.manager-file-card > div:nth-child(2) span {
   display: block;
   min-width: 0;
   overflow: hidden;
@@ -213,7 +213,7 @@
   white-space: nowrap;
 }
 
-.manager-file-card span {
+.manager-file-card > div:nth-child(2) span {
   margin-top: 4px;
   color: var(--muted);
   font-size: 12px;
@@ -256,6 +256,9 @@
   font-size: 12px;
   font-weight: 900;
   white-space: nowrap;
+  flex: 0 0 auto;
+  overflow: visible;
+  text-overflow: clip;
 }
 
 .status-pill.done {
