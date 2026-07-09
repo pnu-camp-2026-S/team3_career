@@ -611,15 +611,22 @@ html.portfolio-edit-entry #pfLoadingScreen.hidden {
 }
 
 .tag.selected {
-  border-color: #9eb8ff;
-  color: var(--brand);
-  background: #eef4ff;
+  border-color: var(--brand);
+  color: #fff;
+  background: var(--brand);
+  box-shadow: 0 8px 16px rgba(89, 101, 232, 0.18);
 }
 
 .tag.ai-tag {
   border-color: #b9c9ff;
-  background: #f7f9ff;
+  background: #fff;
   color: #3347b8;
+}
+
+.tag.ai-tag.selected {
+  border-color: var(--brand);
+  color: #fff;
+  background: var(--brand);
 }
 
 .portfolio-loading {
