@@ -1529,6 +1529,11 @@ assert.match(
 );
 assert.match(
   mypageCss,
+  /\.form-field\s+input:-webkit-autofill,[\s\S]*\.form-field\s+input:-webkit-autofill:disabled\s*\{[^}]*box-shadow:\s*0 0 0 1000px #fff inset;/s,
+  'mypage browser-autofilled text inputs should keep a white background after validation and saving'
+);
+assert.match(
+  mypageCss,
   /\.profile-readonly\s+\.date-trigger:disabled\s+\.calendar-icon,\s*\.profile-readonly\s+\.major-trigger:disabled\s+\.select-chevron,\s*\.profile-readonly\s+\.picker-trigger:disabled\s+span\[aria-hidden="true"\]\s*\{[^}]*display:\s*none;/s,
   'mypage readonly date, major, and search picker icons should be hidden until edit mode'
 );

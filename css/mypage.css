@@ -184,6 +184,15 @@
   background: #fff;
 }
 
+.form-field input:-webkit-autofill,
+.form-field input:-webkit-autofill:hover,
+.form-field input:-webkit-autofill:focus,
+.form-field input:-webkit-autofill:disabled {
+  -webkit-text-fill-color: #273244;
+  box-shadow: 0 0 0 1000px #fff inset;
+  caret-color: #273244;
+}
+
 .form-field.has-error input,
 .form-field.has-error select,
 .form-field.has-error .date-trigger {
