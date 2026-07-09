@@ -3326,8 +3326,13 @@ assert.match(
 );
 assert.match(
   portfolioExportPptxRoute,
-  /function\s+renderCoverLetterTemplatePptx[\s\S]*coverletterTemplate\.slides\.forEach[\s\S]*addTemplateElement/,
-  'portfolio PPTX export should render coverletter slides from the JSON template elements'
+  /function\s+renderCoverLetterCoverSlide[\s\S]*function\s+renderCoverLetterMotivationSlide[\s\S]*function\s+renderCoverLetterQuestionMapSlide[\s\S]*function\s+renderCoverLetterTemplatePptx[\s\S]*renderCoverLetterCoverSlide[\s\S]*renderCoverLetterQuestionMapSlide/,
+  'portfolio PPTX export should render coverletter slides with a dedicated stable layout renderer'
+);
+assert.match(
+  portfolioExportPptxRoute,
+  /function\s+clipText[\s\S]*function\s+multilineText[\s\S]*function\s+addCoverletterBase[\s\S]*function\s+addCoverletterTextCard/,
+  'portfolio PPTX export should clamp text and reuse stable coverletter slide primitives'
 );
 assert.match(
   portfolioExportPptxRoute,

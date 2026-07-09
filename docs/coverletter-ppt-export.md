@@ -5,15 +5,14 @@
 ## 1. 전체 흐름
 
 ```text
-사용자
-→ 포트폴리오 생성 화면에서 자기소개서 연결형 선택
+사용자가 포트폴리오 생성 화면에서 자기소개서 연결형 선택
 → 사용할 경험 데이터와 AI 역량 키워드 선택
 → /api/portfolio/generate 호출
 → OpenAI가 자기소개서형 PPT 내용 JSON 생성
 → 화면에서 초안 확인
 → 다운로드 버튼 클릭
 → /api/portfolio/export-pptx 호출
-→ PptxGenJS가 coverletter_ppt_template.json 좌표대로 PPTX 생성
+→ PptxGenJS 전용 렌더러가 PPTX 생성
 → 브라우저가 .pptx 파일 다운로드
 ```
 
@@ -31,7 +30,7 @@ portfolio_design/portfolio-coverletter/
 
 - `coverletter_ppt_design.md`: 디자인 원칙과 슬라이드 구성 기준
 - `coverletter_ppt_template.md`: 사람이 읽는 슬라이드 출력 골격
-- `coverletter_ppt_template.json`: PptxGenJS 렌더링 좌표와 binding 기준
+- `coverletter_ppt_template.json`: 템플릿 ID, 16:9 레이아웃, 폰트, binding 기준
 - `coverletter_ppt_prompt.md`: OpenAI가 생성해야 하는 JSON 형식
 
 ## 3. OpenAI가 하는 일
@@ -45,7 +44,7 @@ OpenAI는 `coverletter_ppt_template.json`의 binding에 들어갈 텍스트 JSON
 {
   "templateId": "coverletter_ppt_v1",
   "title": "지원자 | 지원 직무",
-  "headline": "경험 기반 핵심 한 줄 소개",
+  "headline": "경험 기반 핵심 소개",
   "motivation": {
     "subtitle": "지원 방향",
     "narrative": "지원 동기 본문",
@@ -64,9 +63,10 @@ OpenAI는 `coverletter_ppt_template.json`의 binding에 들어갈 텍스트 JSON
 
 1. 전달받은 포트폴리오가 `자기소개서 연결형`인지 확인한다.
 2. `portfolio.raw.templateId`가 `coverletter_ppt_v1`이거나 새 구조 데이터가 있으면 자기소개서형 렌더러를 사용한다.
-3. `coverletter_ppt_template.json`을 읽는다.
-4. 각 슬라이드의 `elements`를 순회하며 텍스트, 도형, chip, 반복 카드, 타임라인, 표, 리스트 카드를 PPT에 그린다.
-5. 완성된 PPTX를 브라우저에 다운로드 응답으로 반환한다.
+3. `coverletter_ppt_template.json`은 템플릿 ID, 16:9 레이아웃, 폰트 기준을 확인하는 기준 파일로 읽는다.
+4. 실제 PPTX는 전용 렌더러가 표지, 지원 동기, 직무 역량, 대표 경험, 협업 방식, 기여 계획, 문항 연결 슬라이드를 고정 레이아웃으로 그린다.
+5. 텍스트는 줄 수와 길이를 제한한 뒤 카드 안에 배치해 PDF 변환 시 깨짐을 줄인다.
+6. 완성된 PPTX를 브라우저의 다운로드 응답으로 반환한다.
 
 ## 5. 로컬 실행 방법
 
@@ -92,55 +92,32 @@ http://localhost:3000/portfolio_create.html
 5. 포트폴리오를 생성한다.
 6. 다운로드 버튼으로 `.pptx`가 받아지는지 확인한다.
 
-## 6. Vercel 배포 환경 변수
+## 6. 배포 시 필요한 환경 변수
 
-Vercel Project Settings의 Environment Variables에 다음 값을 설정해야 한다.
+Vercel에는 다음 환경 변수가 필요하다.
 
 ```text
-OPENAI_API_KEY=sk-...
-OPENAI_MODEL=...
-NEXT_PUBLIC_SUPABASE_URL=...
-NEXT_PUBLIC_SUPABASE_ANON_KEY=...
-SUPABASE_SERVICE_ROLE_KEY=...
+OPENAI_API_KEY
+NEXT_PUBLIC_SUPABASE_URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY
+SUPABASE_SERVICE_ROLE_KEY
 ```
 
-`OPENAI_API_KEY`는 서버에서만 사용해야 하므로 `NEXT_PUBLIC_`을 붙이지 않는다.
+`OPENAI_API_KEY`가 없으면 `/api/portfolio/generate`에서 실제 AI 생성이 실패한다.
+Supabase 키가 없으면 로그인 사용자 데이터와 파일 분석 데이터 연결이 실패한다.
+Vercel에서 환경 변수를 변경한 뒤에는 다시 배포해야 최신 값이 적용된다.
 
-## 7. 배포 후 확인 방법
+## 7. 검증 명령
 
-배포 링크에서 다음을 확인한다.
+```bash
+npm test
+npm run build
+```
 
-1. 구글 로그인 가능 여부
-2. 마이페이지 전공 정보 로드 여부
-3. 파일 관리에서 경험 데이터 조회 여부
-4. 자기소개서 연결형 생성 성공 여부
-5. 다운로드 버튼 클릭 시 `.pptx` 파일 생성 여부
+PPTX API만 빠르게 확인할 때는 `/api/portfolio/export-pptx` 응답 상태와 다운로드 파일 확장자를 확인한다.
 
-## 8. 자주 나는 문제
+## 8. 수정 기준
 
-### OpenAI API 오류
-
-- Vercel에 `OPENAI_API_KEY`가 없거나 잘못된 경우 발생한다.
-- 배포 후 환경 변수를 바꿨다면 반드시 redeploy가 필요하다.
-
-### PPTX 다운로드 실패
-
-- `/api/portfolio/export-pptx` 응답 상태를 확인한다.
-- `coverletter_ppt_template.json`이 누락되었거나 JSON 문법이 깨지면 서버에서 실패한다.
-
-### 내용은 생성됐는데 PPT 디자인이 다르게 나오는 경우
-
-- OpenAI 프롬프트가 아니라 `coverletter_ppt_template.json`을 확인해야 한다.
-- 디자인 좌표, 색상, 카드 위치는 JSON 템플릿이 기준이다.
-
-### 경험 데이터가 반영되지 않는 경우
-
-- 파일 관리에서 해당 경험 데이터의 AI 분석이 완료되었는지 확인한다.
-- 포트폴리오 생성 화면에서 경험 데이터 checkbox가 선택되었는지 확인한다.
-
-## 9. 팀원 작업 기준
-
-- 템플릿 구조를 바꾸려면 `coverletter_ppt_template.json`과 `coverletter_ppt_prompt.md`를 함께 수정한다.
-- OpenAI 출력 키를 바꾸면 `/api/portfolio/export-pptx`의 binding 렌더링도 함께 확인한다.
-- 실제 화면 문구는 한국어로 작성한다.
-- API 키나 Supabase 키는 커밋하지 않는다.
+- OpenAI 출력 키를 바꾸면 `coverletter_ppt_prompt.md`, `lib/openai-portfolio.js`, `/api/portfolio/export-pptx`를 함께 확인한다.
+- 슬라이드 순서나 디자인 원칙을 바꾸면 `coverletter_ppt_design.md`, `coverletter_ppt_template.md`, `coverletter_ppt_template.json`을 함께 갱신한다.
+- 실제 렌더링 품질은 `/api/portfolio/export-pptx`의 전용 렌더러가 결정하므로, 텍스트가 넘치거나 PDF 변환이 깨지면 렌더러의 카드 크기와 줄 수 제한을 우선 조정한다.
