@@ -382,6 +382,16 @@ function hasPrimaryRecommendationGoal(profile) {
     normalizePreferenceList(profile.interestedIndustries).length > 0;
 }
 
+function hasRecommendationDirection(profile) {
+  return [
+    profile.desiredJobs,
+    profile.desiredIndustries,
+    profile.interestedIndustries,
+    profile.interestFields,
+    profile.interestedCompanies
+  ].some((value) => normalizePreferenceList(value).length > 0);
+}
+
 function normalizeDepartmentName(value) {
   const text = String(value || '').trim();
   if (!text || getNoneMinorTextValues().includes(text)) return '';
@@ -562,6 +572,7 @@ function getProfileFitBreakdown(item, profile) {
   const educationScore = educationSignal?.score || baseScore;
   const hasInput = hasProfileInput(profile);
   const hasPrimaryGoal = hasPrimaryRecommendationGoal(profile);
+  const hasDirection = hasRecommendationDirection(profile);
   const scoringSignals = [];
 
   if (normalizePreferenceList(profile.desiredJobs).length) {
@@ -584,7 +595,7 @@ function getProfileFitBreakdown(item, profile) {
     scoringSignals.push({ score: companyScore, weight: 5 });
   }
 
-  if (educationSignal) {
+  if (educationSignal && !hasDirection) {
     scoringSignals.push({ score: educationScore, weight: hasPrimaryGoal ? 5 : 20 });
   }
 
@@ -597,12 +608,14 @@ function getProfileFitBreakdown(item, profile) {
   const fitSignals = [
     { label: '직무 적합', score: jobScore, visible: normalizePreferenceList(profile.desiredJobs).length > 0 },
     { label: '희망 업종', score: desiredIndustryScore, visible: normalizePreferenceList(profile.desiredIndustries).length > 0 },
-    { label: educationSignal?.label || '전공 연결', score: educationScore, visible: Boolean(educationSignal) },
+    { label: educationSignal?.label || '전공 연결', score: educationScore, visible: Boolean(educationSignal), explanationOnly: hasDirection },
     { label: '관심 분야', score: interestFieldScore, visible: normalizePreferenceList(profile.interestFields).length > 0 },
     { label: '관심 산업', score: industryScore, visible: normalizePreferenceList(profile.interestedIndustries).length > 0 },
     { label: '관심 기업', score: companyScore, visible: normalizePreferenceList(profile.interestedCompanies).length > 0 }
   ];
-  const topSignal = getTopFitSignal(fitSignals) || { label: '추천 적합', score };
+  const topSignal = getTopFitSignal(
+    hasDirection ? fitSignals.filter((signal) => !signal.explanationOnly) : fitSignals
+  ) || { label: '추천 적합', score };
 
   return {
     score,

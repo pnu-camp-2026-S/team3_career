@@ -2550,6 +2550,21 @@ assert.match(
 );
 assert.match(
   contestJs,
+  /function\s+hasRecommendationDirection\(profile\)[\s\S]*profile\.desiredJobs[\s\S]*profile\.desiredIndustries[\s\S]*profile\.interestedCompanies/,
+  'contest recommendations should detect when non-education direction signals exist'
+);
+assert.match(
+  contestJs,
+  /if\s*\(educationSignal\s*&&\s*!hasDirection\)[\s\S]*scoringSignals\.push\(\{\s*score:\s*educationScore/,
+  'contest recommendations should only use major, minor, and linked major for scoring when no direction inputs exist'
+);
+assert.match(
+  contestJs,
+  /hasDirection\s*\?\s*fitSignals\.filter\(\(signal\)\s*=>\s*!signal\.explanationOnly\)\s*:\s*fitSignals/,
+  'contest cards should not use education-only signals as the main fit reason when direction inputs exist'
+);
+assert.match(
+  contestJs,
   /jobMatch\.hasInput\s*&&\s*!jobMatch\.matched\s*\?\s*Math\.min\(weightedScore,\s*69\)/,
   'contest recommendations should cap job-mismatched activities below the recommendation threshold'
 );
