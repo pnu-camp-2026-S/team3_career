@@ -86,6 +86,7 @@ function collectExperienceText(experiences) {
 }
 
 const KEYWORD_COMPACT_RULES = [
+  { pattern: /환경\s*문제\s*리서치|환경\s*문제\s*조사|환경.*리서치|환경.*조사/, keyword: '환경 리서치' },
   { pattern: /비교\s*분석/, keyword: '비교 분석' },
   { pattern: /문제\s*정의/, keyword: '문제 정의' },
   { pattern: /문제\s*규모\s*분석|규모\s*분석/, keyword: '규모 분석' },

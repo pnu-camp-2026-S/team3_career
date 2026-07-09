@@ -3,6 +3,39 @@ import { createSupabaseServerClient } from '../../../../lib/supabase-server';
 const FOLDER_COLUMNS = 'id, group_key, type_key, label, created_at';
 const PROJECT_ANALYSIS_COLUMNS = 'project_id, result, provider, based_on_count, updated_at';
 
+const KEYWORD_COMPACT_RULES = [
+  { pattern: /환경\s*문제\s*리서치|환경\s*문제\s*조사|환경.*리서치|환경.*조사/, keyword: '환경 리서치' },
+  { pattern: /비교\s*분석/, keyword: '비교 분석' },
+  { pattern: /문제\s*정의/, keyword: '문제 정의' },
+  { pattern: /문제\s*규모\s*분석|규모\s*분석/, keyword: '규모 분석' },
+  { pattern: /한계\s*분석/, keyword: '한계 분석' },
+  { pattern: /영향\s*정리/, keyword: '영향 정리' },
+  { pattern: /항목\s*구조화|구조화/, keyword: '항목 구조화' },
+  { pattern: /가정\s*설정/, keyword: '가정 설정' },
+  { pattern: /주제\s*기획/, keyword: '주제 기획' },
+  { pattern: /소재\s*제안/, keyword: '소재 제안' },
+  { pattern: /아이디어\s*도출/, keyword: '아이디어 도출' },
+  { pattern: /자료\s*분석|데이터\s*분석/, keyword: '데이터 분석' },
+  { pattern: /공정\s*최적화/, keyword: '공정 최적화' },
+  { pattern: /문제\s*해결/, keyword: '문제 해결' },
+];
+
+const KEYWORD_STOP_WORDS = new Set([
+  '기반',
+  '관점',
+  '관점의',
+  '방식',
+  '방식의',
+  '기존',
+  '사용',
+  '활용',
+  '대한',
+  '관련',
+  '중심',
+  '위한',
+  '통한',
+]);
+
 async function getCurrentUser(supabase) {
   const {
     data: { user },
@@ -13,13 +46,31 @@ async function getCurrentUser(supabase) {
   return user;
 }
 
+function compactKeyword(item) {
+  const text = String(item || '')
+    .replace(/[·ㆍ,;/|+]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (!text) return '';
+
+  const matchedRule = KEYWORD_COMPACT_RULES.find((rule) => rule.pattern.test(text));
+  if (matchedRule) return matchedRule.keyword;
+
+  const words = text.split(' ')
+    .map((word) => word.replace(/의$/, ''))
+    .filter((word) => word && !KEYWORD_STOP_WORDS.has(word));
+  const compacted = words.slice(0, 2).join(' ');
+  return compacted.length > 14 ? compacted.slice(0, 14).trim() : compacted;
+}
+
 function normalizeKeywordList(items) {
   return [...new Set((Array.isArray(items) ? items : [])
     .map((item) => String(item || '')
       .replace(/^[\s\-*•\d.)]+/, '')
       .replace(/^["'`]+|["'`]+$/g, '')
       .trim())
-    .filter((item) => item && item !== '-' && item.length <= 80))]
+    .map(compactKeyword)
+    .filter((item) => item && item !== '-'))]
     .slice(0, 12);
 }
 
