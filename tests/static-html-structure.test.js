@@ -2656,6 +2656,26 @@ assert.match(
 );
 assert.match(
   portfolioManageHtml,
+  /<svg class="portfolio-heart" viewBox="0 0 24 24" aria-hidden="true">[\s\S]*<path d="M12 20\.3s-/,
+  'portfolio_manage like button should render a fixed-size heart icon'
+);
+assert.match(
+  portfolioManageCss,
+  /\.portfolio-library-actions\s+\.like-action\s*\{[^}]*width:\s*44px;[^}]*height:\s*44px;[^}]*display:\s*inline-flex;[^}]*align-items:\s*center;[^}]*justify-content:\s*center;[^}]*background:\s*#fff;/s,
+  'portfolio_manage like button should be a white centered square before click'
+);
+assert.match(
+  portfolioManageCss,
+  /\.portfolio-library-actions\s+\.portfolio-heart\s*\{[^}]*width:\s*22px;[^}]*height:\s*22px;[^}]*fill:\s*none;[^}]*stroke:\s*currentColor;/s,
+  'portfolio_manage empty heart should keep a fixed icon size'
+);
+assert.match(
+  portfolioManageCss,
+  /\.portfolio-library-actions\s+\.like-action\.liked\s+\.portfolio-heart\s*\{[^}]*fill:\s*currentColor;[^}]*stroke:\s*currentColor;/s,
+  'portfolio_manage liked heart should use the same fixed-size filled icon'
+);
+assert.match(
+  portfolioManageHtml,
   /data-action="delete"/,
   'portfolio_manage should support deleting saved portfolios'
 );
