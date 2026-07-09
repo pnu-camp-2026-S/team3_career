@@ -599,6 +599,12 @@
   background: #eef4ff;
 }
 
+.tag.ai-tag {
+  border-color: #b9c9ff;
+  background: #f7f9ff;
+  color: #3347b8;
+}
+
 .portfolio-loading {
   min-height: min(560px, calc(100vh - 108px));
   display: grid;
