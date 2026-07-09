@@ -2,12 +2,17 @@
   display: none !important;
 }
 
+html:not(.portfolio-create-ready) #pfSetupScreen {
+  display: none !important;
+}
+
 html.portfolio-edit-entry #pfSetupScreen {
   display: none !important;
 }
 
-html.portfolio-edit-entry #pfLoadingScreen.hidden {
-  display: grid !important;
+html.portfolio-edit-entry #pfLoadingScreen,
+html.portfolio-edit-entry #pfWorkspaceScreen {
+  display: none !important;
 }
 
 .portfolio-create-page {
