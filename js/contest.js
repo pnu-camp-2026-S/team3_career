@@ -345,15 +345,12 @@ function normalizeRecommendationProfile(profile = {}) {
       profile.job,
       profile.detailJob,
       profile.preferences?.detailJob,
-      profile.preferences?.workIndustry,
       ...selectedJobs
     ].filter(Boolean),
+    desiredIndustries: normalizePreferenceList(profile.preferences?.workIndustry),
     interestFields: normalizePreferenceList(selectedInterestFields),
     interestedCompanies: normalizePreferenceList(selectedCompanies),
-    interestedIndustries: normalizePreferenceList([
-      profile.preferences?.workIndustry,
-      ...selectedIndustries
-    ])
+    interestedIndustries: normalizePreferenceList(selectedIndustries)
   };
 }
 
@@ -372,6 +369,7 @@ function hasProfileInput(profile) {
     profile.minor,
     profile.linkedMajor,
     profile.desiredJobs,
+    profile.desiredIndustries,
     profile.interestFields,
     profile.interestedIndustries,
     profile.interestedCompanies
@@ -380,6 +378,7 @@ function hasProfileInput(profile) {
 
 function hasPrimaryRecommendationGoal(profile) {
   return normalizePreferenceList(profile.desiredJobs).length > 0 ||
+    normalizePreferenceList(profile.desiredIndustries).length > 0 ||
     normalizePreferenceList(profile.interestedIndustries).length > 0;
 }
 
@@ -541,6 +540,12 @@ function getProfileFitBreakdown(item, profile) {
   const jobScore = jobMatch.score;
   const baseScore = getRecommendationScore(item);
   const interestFieldScore = getPreferenceKeywordScore(item, profile.interestFields, baseScore);
+  const desiredIndustryScore = getPreferenceKeywordScore(
+    item,
+    profile.desiredIndustries,
+    baseScore,
+    industryPreferenceKeywordMap
+  );
   const industryScore = getPreferenceKeywordScore(
     item,
     profile.interestedIndustries,
@@ -567,6 +572,10 @@ function getProfileFitBreakdown(item, profile) {
     scoringSignals.push({ score: industryScore, weight: 30 });
   }
 
+  if (normalizePreferenceList(profile.desiredIndustries).length) {
+    scoringSignals.push({ score: desiredIndustryScore, weight: 30 });
+  }
+
   if (normalizePreferenceList(profile.interestFields).length) {
     scoringSignals.push({ score: interestFieldScore, weight: 15 });
   }
@@ -587,6 +596,7 @@ function getProfileFitBreakdown(item, profile) {
   const score = Math.max(12, Math.min(96, cappedScore));
   const fitSignals = [
     { label: '직무 적합', score: jobScore, visible: normalizePreferenceList(profile.desiredJobs).length > 0 },
+    { label: '희망 업종', score: desiredIndustryScore, visible: normalizePreferenceList(profile.desiredIndustries).length > 0 },
     { label: educationSignal?.label || '전공 연결', score: educationScore, visible: Boolean(educationSignal) },
     { label: '관심 분야', score: interestFieldScore, visible: normalizePreferenceList(profile.interestFields).length > 0 },
     { label: '관심 산업', score: industryScore, visible: normalizePreferenceList(profile.interestedIndustries).length > 0 },
