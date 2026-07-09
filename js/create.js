@@ -1003,6 +1003,8 @@
       };
       const failures = [];
       const successProjectIds = [];
+      let refreshedCount = 0;
+      let unchangedCount = 0;
       setAnalysisLoading(true, progressState);
       showToast('전체 프로젝트 분석을 시작했습니다.');
 
@@ -1020,7 +1022,10 @@
             markProjectFileResults(folder, payload);
 
             if (payload.project) {
+              // 변경 없음(#268): 서버가 기존 L2를 유지한 프로젝트도 전체 종합 입력에는 포함한다.
               successProjectIds.push(folder.id);
+              if (payload.unchanged) unchangedCount += 1;
+              else refreshedCount += 1;
             } else if (payload.ok === false && payload.reason === 'no_data') {
               // 파일 없는 프로젝트는 진행률에는 포함하되 실패로 보지 않는다.
             } else if (payload.projectReason && payload.projectReason !== 'no_data') {
@@ -1067,7 +1072,7 @@
         showModal('전체 프로젝트 분석 결과', `
           <div class="manager-preview">
             <strong>${targetFolders.length}개 프로젝트 처리 완료</strong>
-            <p>${successProjectIds.length}개 프로젝트의 AI 요약 산출물을 갱신했습니다. 파일이 없는 프로젝트는 건너뛰었습니다.</p>
+            <p>${refreshedCount}개 프로젝트의 AI 요약 산출물을 갱신했습니다.${unchangedCount > 0 ? ` 변경이 없는 ${unchangedCount}개 프로젝트는 기존 산출물을 유지했습니다.` : ''} 파일이 없는 프로젝트는 건너뛰었습니다.</p>
             ${aggregateResult ? `<p><strong>${escapeHtml(aggregateResult.headline || '')}</strong></p><p>${escapeHtml(aggregateResult.description || '')}</p>` : '<p>성공한 프로젝트가 없어 전체 종합은 실행하지 않았습니다.</p>'}
             ${failureHtml}
           </div>
