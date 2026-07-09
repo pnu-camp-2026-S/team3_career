@@ -440,6 +440,7 @@
         competencies: aiDraft.competencies || [],
         applicationSentences: aiDraft.applicationSentences || [],
         raw: aiDraft.raw || null,
+        templateId: aiDraft.raw?.templateId || aiDraft.templateId || null,
         sourceLabel: aiDraft.sourceLabel || 'ChatGPT 생성',
         updatedAt: new Date().toISOString(),
       };
@@ -462,7 +463,9 @@
 
     function mergeRawPortfolioText(raw, blocks, slides) {
       const nextRaw = JSON.parse(JSON.stringify(raw || {}));
-      if (nextRaw.problem_definition || nextRaw.design_process || nextRaw.implementation || nextRaw.result) {
+      if (nextRaw.templateId === 'detail_a4_two_page_half_blocks') {
+        mergeDetailA4Raw(nextRaw, blocks);
+      } else if (nextRaw.problem_definition || nextRaw.design_process || nextRaw.implementation || nextRaw.result) {
         mergeCaseStudyRaw(nextRaw, blocks);
       } else if (nextRaw.basic_info || nextRaw.core_competencies || nextRaw.experiences) {
         mergeOnePageRaw(nextRaw, blocks);
@@ -472,6 +475,36 @@
         mergeCoverLetterRaw(nextRaw, blocks);
       }
       return nextRaw;
+    }
+
+    function mergeDetailA4Raw(raw, blocks) {
+      const experienceBlocks = blocks.filter((block) => /^경험\s*\d+/.test(String(block.title || '')));
+      if (!experienceBlocks.length) return;
+      raw.experiences = raw.experiences || [];
+      experienceBlocks.forEach((block, index) => {
+        const current = raw.experiences[index] || { rank: index + 1 };
+        const body = block.body || '';
+        current.projectName = String(block.title || '').replace(/^경험\s*\d+\s*:\s*/, '') || current.projectName;
+        current.summary = body.split(/\n+/)[0] || current.summary;
+        current.process = parseLabeledDraftLine(body, '과정');
+        current.contribution = parseLabeledDraftLine(body, '기여도');
+        current.result = parseLabeledDraftLine(body, '결과');
+        current.growth = parseLabeledDraftLine(body, '발전한 점')[0] || current.growth;
+        raw.experiences[index] = current;
+      });
+    }
+
+    function parseLabeledDraftLine(body, label) {
+      const line = String(body || '')
+        .split(/\n+/)
+        .find((item) => item.trim().startsWith(`${label}:`));
+      if (!line) return [];
+      return line
+        .replace(`${label}:`, '')
+        .split(/\s*\/\s*/)
+        .map((item) => item.trim())
+        .filter(Boolean)
+        .slice(0, 3);
     }
 
     function splitRevisionLines(value) {
@@ -754,6 +787,11 @@
     }
 
     function renderCaseStudyPortfolio(raw) {
+      if (raw.templateId === 'detail_a4_two_page_half_blocks' || raw.profile || Array.isArray(raw.experiences)) {
+        renderDetailA4Portfolio(raw);
+        return;
+      }
+
       const problem = raw.problem_definition || {};
       const process = raw.design_process || {};
       const implementation = raw.implementation || {};
@@ -778,6 +816,126 @@
           </div>
         </article>
       `]);
+    }
+
+    function renderDetailA4Portfolio(raw) {
+      const profile = raw.profile || {};
+      const experiences = normalizeDetailPreviewExperiences(raw.experiences);
+      const keywords = normalizeDetailPreviewKeywords(profile.keywords);
+      const pages = [
+        `
+          <article class="portfolio-canvas detail-a4-canvas">
+            ${renderDetailProfileHalf(profile, keywords)}
+            ${renderDetailExperienceHalf(experiences[0])}
+          </article>
+        `,
+        `
+          <article class="portfolio-canvas detail-a4-canvas">
+            ${renderDetailExperienceHalf(experiences[1])}
+            ${renderDetailExperienceHalf(experiences[2])}
+          </article>
+        `,
+      ];
+      document.getElementById('workspaceContent').innerHTML = renderDraftPageViewer(pages);
+    }
+
+    function normalizeDetailPreviewKeywords(keywords) {
+      const list = (Array.isArray(keywords) ? keywords : [])
+        .map((item, index) => ({
+          rank: Number(item.rank || index + 1),
+          label: item.label || item,
+          reason: item.reason || '',
+        }))
+        .filter((item) => item.label)
+        .sort((a, b) => a.rank - b.rank)
+        .slice(0, 3);
+      while (list.length < 3) {
+        list.push({ rank: list.length + 1, label: '키워드 보완 필요', reason: '' });
+      }
+      return list.map((item, index) => ({ ...item, rank: index + 1 }));
+    }
+
+    function normalizeDetailPreviewExperiences(experiences) {
+      const list = (Array.isArray(experiences) ? experiences : []).slice(0, 3).map((item, index) => ({
+        rank: Number(item.rank || index + 1),
+        projectName: item.projectName || '추가 경험 입력 필요',
+        summary: item.summary || '프로젝트 한 줄 설명 보완 필요',
+        process: Array.isArray(item.process) ? item.process.slice(0, 3) : [],
+        contribution: Array.isArray(item.contribution) ? item.contribution.slice(0, 3) : [],
+        result: Array.isArray(item.result) ? item.result.slice(0, 3) : [],
+        growth: item.growth || '이 프로젝트를 통해 발전한 점 보완 필요',
+      }));
+      while (list.length < 3) {
+        const rank = list.length + 1;
+        list.push({
+          rank,
+          projectName: '추가 경험 입력 필요',
+          summary: `${rank}번째 경험 정보가 부족합니다.`,
+          process: ['경험 자료 추가 필요'],
+          contribution: ['본인 역할 확인 필요'],
+          result: ['결과 또는 산출물 확인 필요'],
+          growth: '추가 자료 입력 후 작성할 수 있습니다.',
+        });
+      }
+      return list;
+    }
+
+    function renderDetailProfileHalf(profile, keywords) {
+      const photoText = (profile.photo?.description || profile.name || 'PROFILE').slice(0, 8);
+      return `
+        <section class="detail-a4-half detail-a4-profile">
+          <div class="detail-a4-photo">${escapeHtml(photoText)}</div>
+          <div class="detail-a4-profile-info">
+            <h3>${escapeHtml(profile.name || '정보 없음')}</h3>
+            ${renderInfoRows([
+              ['성별', profile.gender],
+              ['학력', profile.education],
+              ['전공', profile.major || currentPortfolio.major],
+              ['희망 직무', profile.targetRole || currentPortfolio.purpose],
+              ['연락처', profile.contact],
+            ])}
+          </div>
+          <div class="detail-a4-keywords">
+            ${keywords.map((keyword) => `
+              <section>
+                <small>${keyword.rank}순위</small>
+                <b>${escapeHtml(keyword.label)}</b>
+                <span>${escapeHtml(keyword.reason || '근거 자료 기반 키워드')}</span>
+              </section>
+            `).join('')}
+          </div>
+        </section>
+      `;
+    }
+
+    function renderDetailExperienceHalf(experience) {
+      return `
+        <section class="detail-a4-half detail-a4-experience">
+          <header>
+            <b>경험 ${escapeHtml(experience.rank)}</b>
+            <h3>${escapeHtml(experience.projectName)}</h3>
+            <p>${escapeHtml(compactText(experience.summary, 92))}</p>
+          </header>
+          <div class="detail-a4-card-flow">
+            ${renderDetailFlowCard('과정', 'PROCESS', experience.process)}
+            <span class="detail-a4-arrow">&gt;</span>
+            ${renderDetailFlowCard('기여도', 'CONTRIBUTION', experience.contribution)}
+            <span class="detail-a4-arrow">&gt;</span>
+            ${renderDetailFlowCard('결과', 'RESULT', experience.result)}
+          </div>
+          <p class="detail-a4-growth">${escapeHtml(compactText(experience.growth, 96))}</p>
+        </section>
+      `;
+    }
+
+    function renderDetailFlowCard(title, subtitle, items) {
+      return `
+        <section class="detail-a4-flow-card">
+          <h4>${escapeHtml(title)}</h4>
+          <small>(${escapeHtml(subtitle)})</small>
+          ${renderBulletList((items || []).slice(0, 3))}
+        </section>
+      `;
     }
 
     function renderDeckPortfolio(raw) {
@@ -937,6 +1095,8 @@
         keywords: currentPortfolio.keywords,
         blocks: currentPortfolio.blocks || [],
         slides: currentPortfolio.slides || [],
+        raw: currentPortfolio.raw || null,
+        templateId: currentPortfolio.templateId || currentPortfolio.raw?.templateId || null,
       };
       const saved = readPortfolioStore().filter((item) => item.id !== nextPortfolio.id);
 
@@ -951,7 +1111,12 @@
         if (!response.ok) throw new Error('Portfolio save failed.');
 
         const result = await response.json();
-        const savedPortfolio = result.portfolio || nextPortfolio;
+        const savedPortfolio = {
+          ...nextPortfolio,
+          ...(result.portfolio || {}),
+          raw: nextPortfolio.raw,
+          templateId: nextPortfolio.templateId,
+        };
         localStorage.setItem(PORTFOLIO_STORAGE_KEY, JSON.stringify([savedPortfolio, ...saved]));
         currentPortfolio.id = savedPortfolio.id || currentPortfolio.id;
         return savedPortfolio;
@@ -1015,6 +1180,7 @@
           ? portfolio.slides
           : buildSlides(format, purpose, major, experiences, keywords),
         raw: portfolio.raw || null,
+        templateId: portfolio.templateId || portfolio.raw?.templateId || null,
         sourceLabel: '저장본 편집',
         liked: Boolean(portfolio.liked),
         createdAt: portfolio.createdAt,

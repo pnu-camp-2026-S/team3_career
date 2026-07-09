@@ -109,6 +109,8 @@
         format: item.format || fallback.format || '',
         blocks: Array.isArray(item.blocks) ? item.blocks : [],
         slides: Array.isArray(item.slides) ? item.slides : [],
+        raw: item.raw && typeof item.raw === 'object' ? item.raw : null,
+        templateId: item.templateId || item.raw?.templateId || '',
         updatedAt: item.updatedAt || item.updated_at || item.createdAt || fallback.createdAt,
         keywords: Array.isArray(item.keywords) ? item.keywords : [],
         experiences: Array.isArray(item.experiences) ? item.experiences : [],
