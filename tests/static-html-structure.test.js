@@ -1099,7 +1099,7 @@ assert.match(
 );
 assert.match(
   mainHtml,
-  /class="next-card profile-needed-card"[\s\S]*class="metric-icon"[\s\S]*!/, 
+  /class="next-card profile-needed-card"[\s\S]*class="metric-icon"[\s\S]*!/,
   'main profile-required warning should keep the original large next-card icon layout'
 );
 assert.match(
@@ -1745,6 +1745,11 @@ assert.match(
   createHtml,
   /async function\s+organizeProject\(\)[\s\S]*fetch\('\/api\/analysis\/project'[\s\S]*projectId:\s*folder\.id/,
   'project analysis should call the real analysis API with the selected project'
+);
+assert.match(
+  createHtml,
+  /id="analyzeButton"[\s\S]*id="analysisLoading"[\s\S]*function\s+setAnalysisLoading\(isLoading,\s*folder\)/,
+  'file management should show a dedicated loading state while analysis runs (#226)'
 );
 assert.match(
   createHtml,
