@@ -20,13 +20,7 @@
 
 {{keyPointsList}}
 
-## 5. AI 추천 분류
-
-- 추천 하위 폴더: {{recommendedFolderName}}
-- 신뢰도: {{confidence}}
-- 추천 이유: {{classificationReason}}
-
-## 6. 포트폴리오 활용 후보
+## 5. 포트폴리오 활용 후보
 
 ### 역할 후보
 
@@ -40,6 +34,6 @@
 
 {{impactList}}
 
-## 7. 확인 필요 사항
+## 6. 확인 필요 사항
 
 {{warningsList}}

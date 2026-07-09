@@ -646,6 +646,45 @@
   line-height: 1.65;
 }
 
+.analysis-progress-meter {
+  display: grid;
+  gap: 10px;
+  margin: 18px 0 10px;
+}
+
+.analysis-progress-meter strong {
+  color: var(--ink);
+  font-size: 32px;
+  font-weight: 900;
+}
+
+.analysis-progress-track {
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e6e9f7;
+}
+
+.analysis-progress-track span {
+  display: block;
+  width: 0%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--brand), #8bdcff);
+  transition: width 180ms ease;
+}
+
+.analysis-loading-count {
+  margin: 0;
+  font-weight: 800;
+}
+
+.analysis-loading-failed {
+  margin: 4px 0 0;
+  color: #c2410c;
+  font-weight: 800;
+}
+
 .analysis-spinner,
 .button-spinner {
   display: inline-block;

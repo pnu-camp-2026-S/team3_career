@@ -1,6 +1,6 @@
-// 프로젝트 유형별 하위 폴더 구조 정의.
-// DB가 생기면 이 설정이 folders 테이블의 시드 데이터가 된다.
-// 공통 enum은 docs/single-file-ai-analysis-mvp.md §9의 허용 폴더를 그대로 따른다.
+// 프로젝트 유형 라벨과 참고용 하위 폴더 구조 정의.
+// AI 추천 분류를 제거하면서 허용 폴더(getAllowedFolderIds) 개념은 폐지했다.
+// 세부 폴더는 사용자가 직접 만들고 파일을 넣으며, 여기 값은 라벨·참고용으로만 쓴다.
 
 export const SUBFOLDER_TYPES = [
   { key: 'planning', label: '기획서' },
@@ -10,7 +10,6 @@ export const SUBFOLDER_TYPES = [
   { key: 'presentation', label: '발표자료' },
   { key: 'submission', label: '제출 자료' },
   { key: 'visual', label: '이미지/시각자료' },
-  { key: 'pending', label: '분류 대기' },
   { key: 'other', label: '기타' },
 ];
 
@@ -22,19 +21,18 @@ const DEFAULT_ORDER = [
   'presentation',
   'submission',
   'visual',
-  'pending',
   'other',
 ];
 
-// 유형별 하위 폴더 부분집합과 순서(순서 = 중요도).
+// 유형별 참고 하위 폴더 순서(순서 = 중요도). 실제 폴더 구조는 사용자가 정한다.
 // 프로젝트 유형 키는 js/folder-store.js의 FOLDER_TYPES와 동일하게 유지한다.
 export const PROJECT_SUBFOLDER_MAP = {
-  personal: ['planning', 'code', 'data', 'report', 'presentation', 'visual', 'submission', 'pending', 'other'],
-  team: ['planning', 'report', 'code', 'data', 'presentation', 'submission', 'visual', 'pending', 'other'],
-  contest: ['submission', 'presentation', 'planning', 'visual', 'code', 'data', 'report', 'pending', 'other'],
-  certificate: ['submission', 'visual', 'data', 'report', 'pending', 'other'],
-  education: ['report', 'submission', 'code', 'data', 'presentation', 'visual', 'pending', 'other'],
-  volunteer: ['submission', 'visual', 'report', 'planning', 'pending', 'other'],
+  personal: ['planning', 'code', 'data', 'report', 'presentation', 'visual', 'submission', 'other'],
+  team: ['planning', 'report', 'code', 'data', 'presentation', 'submission', 'visual', 'other'],
+  contest: ['submission', 'presentation', 'planning', 'visual', 'code', 'data', 'report', 'other'],
+  certificate: ['submission', 'visual', 'data', 'report', 'other'],
+  education: ['report', 'submission', 'code', 'data', 'presentation', 'visual', 'other'],
+  volunteer: ['submission', 'visual', 'report', 'planning', 'other'],
   other: DEFAULT_ORDER,
 };
 
@@ -58,10 +56,6 @@ export function getSubfoldersForProjectType(projectType) {
   return keys.map((key, index) => ({
     folderId: key,
     folderName: subfolderLabel(key),
-    order: key === 'pending' ? 99 : index + 1,
+    order: index + 1,
   }));
-}
-
-export function getAllowedFolderIds(projectType) {
-  return (PROJECT_SUBFOLDER_MAP[projectType] || PROJECT_SUBFOLDER_MAP.other).slice();
 }

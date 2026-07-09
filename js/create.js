@@ -9,12 +9,21 @@
   // 3. 유틸리티 및 일반 함수 정의 (Functions)
   function runPageScript() {
     const ACTIVITY_FILES_ENDPOINT = '/api/activity-files';
+    const FILE_ANALYSIS_ENDPOINT = '/api/analysis/file';
+    const PROJECT_ANALYSIS_ENDPOINT = '/api/analysis/project';
+    const AGGREGATE_ANALYSIS_ENDPOINT = '/api/analysis/aggregate';
+    const PROJECT_ANALYSIS_ARTIFACTS = [
+      { key: 'summary', name: 'summary.md', type: 'MD', contentKey: 'summaryMd' },
+      { key: 'index', name: 'index.json', type: 'JSON', contentKey: 'indexJson' },
+      { key: 'log', name: 'log.md', type: 'MD', contentKey: 'logMd' },
+    ];
 
     let selectedFolderId = new URLSearchParams(window.location.search).get('folder') || 'completed-personal';
     let selectedSubfolderId = null;
     let nextFileId = 1;
     let toastTimer = null;
     const collapsedFolderTypes = {};
+    const projectAnalyses = {};
 
     let folders = FolderStore.loadFolders();
 
@@ -127,9 +136,10 @@
       const subfolderLabel = selectedSubfolder ? selectedSubfolder.label : '세부 폴더';
       document.getElementById('managedFileList').innerHTML = selectedFiles.length
         ? selectedFiles.map((file, index) => {
-          const isAnalysisSummary = file.kind === 'analysis-summary';
-          const fileDescription = isAnalysisSummary
-            ? `${subfolderLabel} · ${file.sourceFileName || '원본 자료'} 분석 결과`
+          const isProjectArtifact = isProjectAnalysisArtifact(file);
+          const hasFileSummary = Boolean(file.analysis?.summaryMd);
+          const fileDescription = isProjectArtifact
+            ? `${getSelectedFolder().label} · 프로젝트 AI 산출물`
             : `${subfolderLabel} · 우선순위 ${index + 1}`;
           return `
             <article class="manager-file-card">
@@ -140,10 +150,17 @@
               </div>
               <div class="manager-file-actions">
                 <span class="status-pill ${getStatusClass(file.status)}">${file.status || '분석대기'}</span>
-                <button class="ghost-button compact-button" type="button" data-action="preview-file" data-file-id="${file.id}">미리보기</button>
-                ${isAnalysisSummary
-                  ? '<span class="analysis-file-note">AI 산출물</span>'
-                  : `<button class="ghost-button compact-button danger-button" type="button" data-action="delete-file" data-file-id="${file.id}">삭제</button>`}
+                ${isProjectArtifact
+                  ? `
+                    <button class="ghost-button compact-button" type="button" data-action="preview-file" data-file-id="${file.id}">열람</button>
+                    <button class="ghost-button compact-button" type="button" data-action="edit-project-artifact" data-project-id="${escapeHtml(file.projectId)}" data-artifact="${escapeHtml(file.artifact)}">수정</button>
+                    <span class="analysis-file-note">AI 산출물</span>
+                  `
+                  : `
+                    <button class="ghost-button compact-button" type="button" data-action="preview-file" data-file-id="${file.id}">미리보기</button>
+                    ${hasFileSummary ? `<button class="ghost-button compact-button" type="button" data-action="view-file-summary" data-file-id="${file.id}">AI 요약 보기</button>` : ''}
+                    <button class="ghost-button compact-button danger-button" type="button" data-action="delete-file" data-file-id="${file.id}">삭제</button>
+                  `}
               </div>
             </article>
           `;
@@ -174,8 +191,11 @@
       return String(fileName || '자료').replace(/\.[^.]+$/, '');
     }
 
-    function hasAnalysisArtifact(analysis) {
-      return Boolean(analysis?.summaryMd || analysis?.indexDraft || analysis?.logMd);
+    function mapAnalysisStatus(status) {
+      if (status === 'completed') return '분석완료';
+      if (status === 'analyzing' || status === 'pending') return '요약 생성 중';
+      if (status === 'failed') return '요약 실패';
+      return '분석대기';
     }
 
     function mapApiFile(file) {
@@ -183,7 +203,8 @@
         id: file.id,
         name: file.name,
         type: getFileType(file.name),
-        status: file.analysisStatus === 'completed' ? '분석완료' : '분석대기',
+        status: mapAnalysisStatus(file.analysisStatus),
+        analysisStatus: file.analysisStatus || null,
         mimeType: file.mimeType || '',
         size: file.size || 0,
         storagePath: file.storagePath || '',
@@ -192,26 +213,46 @@
       };
     }
 
-    function mapAnalysisSummaryFile(file) {
-      if (!hasAnalysisArtifact(file.analysis)) return null;
-      return {
-        id: `analysis-summary-${file.id}`,
-        name: `${getFileBaseName(file.name)} AI 요약.md`,
-        type: 'MD',
-        status: '작성완료',
-        kind: 'analysis-summary',
-        sourceFileId: file.id,
-        sourceFileName: file.name,
-        summaryMarkdown: file.analysis.summaryMd || '',
-        indexDraft: file.analysis.indexDraft || null,
-        logMarkdown: file.analysis.logMd || '',
-        createdAt: file.createdAt || new Date().toISOString(),
-      };
+    function isProjectAnalysisArtifact(file) {
+      return file?.kind === 'project-analysis-artifact';
     }
 
-    function formatIndexDraft(indexDraft) {
-      if (!indexDraft) return '저장된 index.json 내용이 없습니다.';
-      return JSON.stringify(indexDraft, null, 2);
+    function isGeneratedAnalysisFile(file) {
+      return file?.kind === 'analysis-summary' || isProjectAnalysisArtifact(file);
+    }
+
+    function projectArtifactContent(analysis, artifact) {
+      const definition = PROJECT_ANALYSIS_ARTIFACTS.find((item) => item.key === artifact);
+      const value = definition ? analysis?.[definition.contentKey] : '';
+      if (artifact === 'index') return value ? JSON.stringify(value, null, 2) : '';
+      return String(value || '');
+    }
+
+    function buildProjectArtifactFiles(folder, analysis) {
+      if (!analysis) return [];
+      return PROJECT_ANALYSIS_ARTIFACTS.map((definition) => ({
+        id: `project-artifact-${folder.id}-${definition.key}`,
+        name: definition.name,
+        type: definition.type,
+        status: '작성완료',
+        kind: 'project-analysis-artifact',
+        projectId: folder.id,
+        artifact: definition.key,
+        content: projectArtifactContent(analysis, definition.key),
+        createdAt: analysis.generatedAt || new Date().toISOString(),
+      }));
+    }
+
+    function populateAnalysisSubfolder(folder) {
+      const target = FolderStore.getAnalysisSubfolder(folder);
+      if (!target) return;
+      target.files = (target.files || []).filter((file) => !isGeneratedAnalysisFile(file));
+      const analysis = projectAnalyses[folder.id] || folder.projectAnalysis || null;
+      buildProjectArtifactFiles(folder, analysis).forEach((file) => target.files.push(file));
+    }
+
+    function populateAllAnalysisSubfolders() {
+      Object.values(folders).forEach((folder) => populateAnalysisSubfolder(folder));
     }
 
     async function loadActivityFilesFromApi() {
@@ -242,15 +283,59 @@
             || folders[file.folderId]?.subfolders?.[0];
           if (!target) return;
           const mappedFile = mapApiFile(file);
-          const summaryFile = mapAnalysisSummaryFile(mappedFile);
           target.files.push(mappedFile);
-          const analysisTarget = FolderStore.getAnalysisSubfolder(projectFolder);
-          if (summaryFile && analysisTarget) analysisTarget.files.push(summaryFile);
+          if (projectFolder) populateAnalysisSubfolder(projectFolder);
         });
 
+        populateAllAnalysisSubfolders();
         persistFolders();
       } catch (error) {
         console.warn('Activity files could not be loaded.', error);
+      }
+    }
+
+    async function loadProjectAnalysis(folder) {
+      if (!folder?.id) return null;
+      try {
+        const response = await fetch(`${PROJECT_ANALYSIS_ENDPOINT}?projectId=${encodeURIComponent(folder.id)}`, {
+          credentials: 'same-origin',
+          cache: 'no-store',
+        });
+        if (!response.ok) return null;
+        const payload = await response.json().catch(() => ({}));
+        if (payload.project) {
+          projectAnalyses[folder.id] = payload.project;
+          folder.projectAnalysis = payload.project;
+          populateAnalysisSubfolder(folder);
+          return payload.project;
+        }
+      } catch (error) {
+        console.warn('Project analysis could not be loaded.', error);
+      }
+      return null;
+    }
+
+    async function loadProjectAnalysesForFolders(targetFolders = Object.values(folders)) {
+      for (const folder of targetFolders) {
+        await loadProjectAnalysis(folder);
+      }
+      populateAllAnalysisSubfolders();
+      persistFolders();
+    }
+
+    async function requestFileSummaries(activityFileIds) {
+      if (!activityFileIds.length) return;
+      try {
+        await fetch(FILE_ANALYSIS_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({ activityFileIds }),
+        });
+        await loadActivityFilesFromApi();
+        render();
+      } catch (error) {
+        console.warn('File summary request failed.', error);
       }
     }
 
@@ -283,9 +368,17 @@
           throw uploadError;
         }
 
-        (payload.files || []).forEach((file) => {
-          subfolder.files.push(mapApiFile(file));
+        const savedFiles = payload.files || [];
+        savedFiles.forEach((file) => {
+          const mapped = mapApiFile(file);
+          mapped.status = '요약 생성 중';
+          subfolder.files.push(mapped);
         });
+        if (savedFiles.length) {
+          window.setTimeout(() => {
+            requestFileSummaries(savedFiles.map((file) => file.id).filter(Boolean));
+          }, 0);
+        }
       } catch (error) {
         console.warn('Activity file upload failed.', error);
         const guideMessage = error.status === 401
@@ -308,29 +401,22 @@
       return subfolder ? subfolder.files.find((file) => file.id === fileId) : null;
     }
 
+    function findFileById(fileId) {
+      for (const folder of Object.values(folders)) {
+        for (const subfolder of folder.subfolders || []) {
+          const file = (subfolder.files || []).find((item) => item.id === fileId);
+          if (file) return { folder, subfolder, file };
+        }
+      }
+      return null;
+    }
+
     function previewFile(fileId) {
       const file = getSelectedFile(fileId);
       if (!file) return;
       const subfolder = getSelectedSubfolder();
-      if (file.kind === 'analysis-summary') {
-        showModal('AI 요약 파일', `
-          <div class="manager-preview analysis-artifact-preview">
-            <strong>${escapeHtml(file.name)}</strong>
-            <p>원본 자료: ${escapeHtml(file.sourceFileName || '')}</p>
-            <section>
-              <h3>summary.md</h3>
-              <pre>${escapeHtml(file.summaryMarkdown || '저장된 summary.md 내용이 없습니다.')}</pre>
-            </section>
-            <section>
-              <h3>index.json</h3>
-              <pre>${escapeHtml(formatIndexDraft(file.indexDraft))}</pre>
-            </section>
-            <section>
-              <h3>log.md</h3>
-              <pre>${escapeHtml(file.logMarkdown || '저장된 log.md 내용이 없습니다.')}</pre>
-            </section>
-          </div>
-        `);
+      if (isProjectAnalysisArtifact(file)) {
+        openProjectArtifactModal(file.projectId, file.artifact);
         return;
       }
       showModal('파일 미리보기', `
@@ -342,13 +428,88 @@
       `);
     }
 
+    function openFileSummary(fileId) {
+      const match = findFileById(fileId);
+      if (!match?.file) return;
+      const summary = match.file.analysis?.summaryMd || '';
+      showModal('AI 요약 보기', `
+        <p class="panel-note">파일별 summary.md입니다. 수정한 내용은 이후 재분석해도 보존됩니다.</p>
+        <textarea class="textarea-box" id="fileSummaryInput">${escapeHtml(summary)}</textarea>
+        <div class="form-actions">
+          <button class="primary-button" type="button" data-action="save-file-summary" data-file-id="${escapeHtml(fileId)}">요약 저장</button>
+        </div>
+      `);
+    }
+
+    async function saveFileSummary(fileId) {
+      const summaryMd = document.getElementById('fileSummaryInput')?.value || '';
+      try {
+        const response = await fetch(FILE_ANALYSIS_ENDPOINT, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({ activityFileId: fileId, summaryMd }),
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(payload.message || '요약 저장에 실패했습니다.');
+        await loadActivityFilesFromApi();
+        hideModal();
+        render();
+        showToast('파일 요약을 저장했습니다.');
+      } catch (error) {
+        console.warn('File summary save failed.', error);
+        showToast(error.message || '파일 요약을 저장하지 못했습니다.');
+      }
+    }
+
+    function openProjectArtifactModal(projectId, artifact) {
+      const folder = folders[projectId];
+      const analysis = projectAnalyses[projectId] || folder?.projectAnalysis;
+      const definition = PROJECT_ANALYSIS_ARTIFACTS.find((item) => item.key === artifact);
+      if (!folder || !definition) return;
+      const content = projectArtifactContent(analysis, artifact);
+      showModal(`${definition.name} 열람·수정`, `
+        <p class="panel-note">${escapeHtml(folder.label)} 프로젝트의 AI 종합 산출물입니다. 수정본은 재분석해도 보존됩니다.</p>
+        <textarea class="textarea-box" id="projectArtifactInput">${escapeHtml(content)}</textarea>
+        <div class="form-actions">
+          <button class="primary-button" type="button" data-action="save-project-artifact" data-project-id="${escapeHtml(projectId)}" data-artifact="${escapeHtml(artifact)}">${definition.name} 저장</button>
+        </div>
+      `);
+    }
+
+    async function saveProjectArtifact(projectId, artifact) {
+      const content = document.getElementById('projectArtifactInput')?.value || '';
+      try {
+        const response = await fetch(PROJECT_ANALYSIS_ENDPOINT, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({ projectId, artifact, content }),
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(payload.message || '산출물 저장에 실패했습니다.');
+        if (payload.project && folders[projectId]) {
+          projectAnalyses[projectId] = payload.project;
+          folders[projectId].projectAnalysis = payload.project;
+          populateAnalysisSubfolder(folders[projectId]);
+        }
+        persistFolders();
+        hideModal();
+        render();
+        showToast('프로젝트 산출물을 저장했습니다.');
+      } catch (error) {
+        console.warn('Project artifact save failed.', error);
+        showToast(error.message || '프로젝트 산출물을 저장하지 못했습니다.');
+      }
+    }
+
     async function deleteFile(fileId) {
       const subfolder = getSelectedSubfolder();
       if (!subfolder) return;
       const file = subfolder.files.find((item) => item.id === fileId);
       if (!file) return;
-      if (file.kind === 'analysis-summary') {
-        showToast('AI 요약 파일은 원본 자료 분석 결과입니다. 원본 자료 삭제 시 함께 사라집니다.');
+      if (isGeneratedAnalysisFile(file)) {
+        showToast('AI 산출물은 분석 결과입니다. 원본 자료 삭제나 재분석 흐름에서 관리됩니다.');
         return;
       }
 
@@ -381,9 +542,17 @@
 
     let analysisInFlight = false;
 
-    function setAnalysisLoading(isLoading, folder) {
+    function getProgressPercent(completed, total) {
+      return total > 0 ? Math.round((completed / total) * 100) : 0;
+    }
+
+    function setAnalysisLoading(isLoading, state = {}) {
       const overlay = document.getElementById('analysisLoading');
       const button = document.getElementById('analyzeButton');
+      const total = Number(state.total || 0);
+      const completed = Number(state.completed || 0);
+      const failed = Number(state.failed || 0);
+      const percent = getProgressPercent(completed, total);
       overlay.classList.toggle('hidden', !isLoading);
       overlay.setAttribute('aria-hidden', String(!isLoading));
       button.disabled = isLoading;
@@ -391,86 +560,175 @@
       button.innerHTML = isLoading
         ? '<span class="button-spinner" aria-hidden="true"></span> 분석 중'
         : '<span aria-hidden="true">✦</span> 분석하기';
-      if (isLoading && folder) {
-        document.getElementById('analysisLoadingTitle').textContent = '교육 자료 로딩중';
-        document.getElementById('analysisLoadingMessage').textContent = '잠시 기다려 주세요.';
+      const title = document.getElementById('analysisLoadingTitle');
+      const message = document.getElementById('analysisLoadingMessage');
+      const percentNode = document.getElementById('analysisLoadingPercent');
+      const progressNode = document.getElementById('analysisLoadingProgress');
+      const countNode = document.getElementById('analysisLoadingCount');
+      const failedNode = document.getElementById('analysisLoadingFailed');
+
+      if (isLoading) {
+        title.textContent = '전체 프로젝트 분석 중';
+        message.textContent = state.currentProjectName
+          ? `${state.currentProjectName} 프로젝트를 분석하고 있습니다.`
+          : '프로젝트 목록을 준비하고 있습니다.';
+        percentNode.textContent = `${percent}%`;
+        progressNode.style.width = `${percent}%`;
+        countNode.textContent = `${completed} / ${total}개 프로젝트 완료`;
+        failedNode.hidden = failed === 0;
+        failedNode.textContent = `실패 ${failed}건`;
+      } else {
+        title.textContent = '교육 자료 로딩중';
+        message.textContent = '잠시 기다려 주세요.';
+        percentNode.textContent = '0%';
+        progressNode.style.width = '0%';
+        countNode.textContent = '0 / 0개 프로젝트 완료';
+        failedNode.hidden = true;
       }
     }
 
-    // 프로젝트 단위 AI 분석(#166-4). 서버(/api/analysis/project)가 이 프로젝트의
-    // 미분석 자료만 새로 분석하고, 기존 결과와 합쳐 프로젝트 종합 요약을 생성한다.
-    async function organizeProject() {
-      const folder = getSelectedFolder();
-      if (!folder || analysisInFlight) return;
-
-      analysisInFlight = true;
-      setAnalysisLoading(true, folder);
-      showToast(`${folder.label} 폴더의 자료 분석을 시작했습니다.`);
-
-      try {
-        await loadActivityFilesFromApi();
-        render();
-
-        const response = await fetch('/api/analysis/project', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'same-origin',
-          body: JSON.stringify({ projectId: folder.id, projectType: folder.type, projectName: folder.label }),
-        });
-
-        if (response.status === 401) {
-          showToast('로그인이 필요합니다. 로그인 후 다시 시도해주세요.');
-          return;
-        }
-
-        const payload = await response.json().catch(() => ({}));
-
-        if (!response.ok) {
-          throw new Error(payload.message || '프로젝트 분석 요청이 실패했습니다.');
-        }
-
-        if (payload.ok === false && payload.reason === 'no_data') {
-          showToast('분석할 자료가 없습니다. 선택한 폴더에 자료를 먼저 추가해주세요.');
-          return;
-        }
-
-        await applyProjectAnalysisResult(folder, payload);
-      } catch (error) {
-        console.warn('Project analysis failed.', error);
-        showToast('자료 분석에 실패했습니다. 잠시 후 다시 시도해주세요.');
-      } finally {
-        analysisInFlight = false;
-        setAnalysisLoading(false);
-      }
+    function getAnalysisTargetFolders() {
+      return Object.values(folders).filter((folder) => (
+        folder && (folder.group === 'completed' || folder.group === 'inProgress')
+      ));
     }
 
-    async function applyProjectAnalysisResult(folder, payload) {
+    function markProjectFileResults(folder, payload) {
       const succeededIds = new Set((payload.files || []).filter((file) => file.ok).map((file) => file.activityFileId));
       (folder.subfolders || []).forEach((sub) => {
         sub.files.forEach((file) => {
           if (succeededIds.has(file.id)) file.status = '분석완료';
         });
       });
-      persistFolders();
-      await loadActivityFilesFromApi();
-      render();
+      if (payload.project) {
+        projectAnalyses[folder.id] = payload.project;
+        folder.projectAnalysis = payload.project;
+        populateAnalysisSubfolder(folder);
+      }
+    }
 
-      const doneCount = (payload.analyzedCount || 0) + (payload.skippedCount || 0);
-      const aggregate = payload.aggregate;
-      const fileListHtml = (payload.files || []).map((file) => `
-        <li>${escapeHtml(file.name)} — ${file.ok ? '분석 성공' : `분석 실패${file.errors?.length ? ` (${escapeHtml(file.errors.join(' / '))})` : ''}`}</li>
-      `).join('');
+    async function analyzeSingleProject(folder) {
+      const response = await fetch(PROJECT_ANALYSIS_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ projectId: folder.id, projectType: folder.type, projectName: folder.label }),
+      });
 
-      showModal('프로젝트 분석 결과', `
-        <div class="manager-preview">
-          <strong>${escapeHtml(folder.label)} 프로젝트 분석</strong>
-          ${aggregate
-            ? `<p><strong>${escapeHtml(aggregate.headline || '')}</strong></p><p>${escapeHtml(aggregate.description || '')}</p>`
-            : '<p>종합 요약을 생성하지 못했습니다. 파일별 결과를 확인해주세요.</p>'}
-          <p>완료된 분석 ${doneCount}건을 기준으로 종합했습니다. 분석 결과는 사용자가 확인하기 전까지 초안으로 취급됩니다.</p>
-          ${fileListHtml ? `<ul>${fileListHtml}</ul>` : ''}
-        </div>
-      `);
+      if (response.status === 401) {
+        const authError = new Error('로그인이 필요합니다. 로그인 후 다시 시도해주세요.');
+        authError.status = 401;
+        throw authError;
+      }
+
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.message || '프로젝트 분석 요청이 실패했습니다.');
+      return payload;
+    }
+
+    async function runAggregateAnalysisForProjects(projectIds) {
+      const response = await fetch(AGGREGATE_ANALYSIS_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ projectIds }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.message || '전체 종합 요청이 실패했습니다.');
+      if (payload.ok === false) throw new Error(payload.reason || '전체 종합을 생성하지 못했습니다.');
+      return payload.result;
+    }
+
+    // 전체 프로젝트 AI 분석(#166-4). 화면이 프로젝트별 API를 순차 호출해 진행률을 갱신한다.
+    async function organizeAllProjects() {
+      if (analysisInFlight) return;
+      const targetFolders = getAnalysisTargetFolders();
+      if (targetFolders.length === 0) {
+        showToast('분석할 프로젝트가 없습니다. 먼저 프로젝트를 추가해주세요.');
+        return;
+      }
+
+      analysisInFlight = true;
+      const progressState = {
+        total: targetFolders.length,
+        completed: 0,
+        failed: 0,
+        currentProjectName: '',
+      };
+      const failures = [];
+      const successProjectIds = [];
+      setAnalysisLoading(true, progressState);
+      showToast('전체 프로젝트 분석을 시작했습니다.');
+
+      try {
+        await loadActivityFilesFromApi();
+        await loadProjectAnalysesForFolders(targetFolders);
+        render();
+
+        for (const folder of targetFolders) {
+          progressState.currentProjectName = folder.label;
+          setAnalysisLoading(true, progressState);
+
+          try {
+            const payload = await analyzeSingleProject(folder);
+            markProjectFileResults(folder, payload);
+
+            if (payload.project) {
+              successProjectIds.push(folder.id);
+            } else if (payload.ok === false && payload.reason === 'no_data') {
+              // 파일 없는 프로젝트는 진행률에는 포함하되 실패로 보지 않는다.
+            } else if (payload.projectReason && payload.projectReason !== 'no_data') {
+              failures.push(`${folder.label}: ${payload.projectReason}`);
+              progressState.failed += 1;
+            }
+          } catch (error) {
+            failures.push(`${folder.label}: ${error.message || '분석 실패'}`);
+            progressState.failed += 1;
+            if (error.status === 401) showToast(error.message);
+          } finally {
+            progressState.completed += 1;
+            setAnalysisLoading(true, progressState);
+            persistFolders();
+            render();
+          }
+        }
+
+        let aggregateResult = null;
+        if (successProjectIds.length > 0) {
+          progressState.currentProjectName = '전체 종합';
+          setAnalysisLoading(true, progressState);
+          try {
+            aggregateResult = await runAggregateAnalysisForProjects(successProjectIds);
+          } catch (error) {
+            failures.push(`전체 종합: ${error.message || '종합 실패'}`);
+            progressState.failed += 1;
+            setAnalysisLoading(true, progressState);
+          }
+        }
+
+        await loadActivityFilesFromApi();
+        await loadProjectAnalysesForFolders(targetFolders);
+        render();
+
+        const failureHtml = failures.length
+          ? `<p>실패 ${failures.length}건이 있습니다.</p><ul>${failures.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`
+          : '';
+        showModal('전체 프로젝트 분석 결과', `
+          <div class="manager-preview">
+            <strong>${targetFolders.length}개 프로젝트 처리 완료</strong>
+            <p>${successProjectIds.length}개 프로젝트의 AI 요약 산출물을 갱신했습니다. 파일이 없는 프로젝트는 건너뛰었습니다.</p>
+            ${aggregateResult ? `<p><strong>${escapeHtml(aggregateResult.headline || '')}</strong></p><p>${escapeHtml(aggregateResult.description || '')}</p>` : '<p>성공한 프로젝트가 없어 전체 종합은 실행하지 않았습니다.</p>'}
+            ${failureHtml}
+          </div>
+        `);
+        showToast(failures.length ? '일부 프로젝트 분석이 실패했습니다.' : '전체 프로젝트 분석이 완료되었습니다.');
+      } catch (error) {
+        console.warn('All project analysis failed.', error);
+        showToast(error.message || '전체 프로젝트 분석에 실패했습니다.');
+      } finally {
+        analysisInFlight = false;
+        setAnalysisLoading(false);
+      }
     }
 
     // 완료 ↔ 진행중 양방향 이동(#166-1).
@@ -724,8 +982,12 @@
 
       if (action === 'add-file') document.getElementById('managedFileInput').click();
       if (action === 'preview-file') previewFile(fileId);
+      if (action === 'view-file-summary') openFileSummary(fileId);
+      if (action === 'save-file-summary') saveFileSummary(fileId);
+      if (action === 'edit-project-artifact') openProjectArtifactModal(actionButton.dataset.projectId, actionButton.dataset.artifact);
+      if (action === 'save-project-artifact') saveProjectArtifact(actionButton.dataset.projectId, actionButton.dataset.artifact);
       if (action === 'delete-file') deleteFile(fileId);
-      if (action === 'analyze') organizeProject();
+      if (action === 'analyze') organizeAllProjects();
       if (action === 'toggle-group') toggleProjectGroup();
       if (action === 'rename-project') openRenameModal();
       if (action === 'save-project-name') saveProjectName();
@@ -772,6 +1034,7 @@
       folders = await FolderStore.loadFoldersFromApi();
       ensureSelectedFolder();
       await loadActivityFilesFromApi();
+      await loadProjectAnalysesForFolders();
       render();
     }
 

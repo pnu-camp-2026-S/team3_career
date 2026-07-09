@@ -7,8 +7,7 @@ import { createFileId, createAnalysisId, createEventId } from './ids.mjs';
 import { extractContent } from './extractor.mjs';
 import { runAiAnalysis } from './ai-client.mjs';
 import { validateAnalysisResult } from './validator.mjs';
-import { getAllowedFolderIds } from './subfolder-config.mjs';
-import { buildSummaryMarkdown, buildIndexDraft, buildLogEntry } from './templates.mjs';
+import { buildSummaryMarkdown, buildLogEntry } from './templates.mjs';
 
 const DEFAULT_PROJECT_ID = 'single-file-session';
 const DEFAULT_PROJECT_NAME = '임시 단일 파일 분석';
@@ -130,7 +129,6 @@ export async function analyzeSingleFile({
   const validation = validateAnalysisResult(result, {
     fileId,
     analysisId,
-    allowedFolderIds: getAllowedFolderIds(projectType),
   });
 
   if (!validation.ok) {
@@ -148,18 +146,8 @@ export async function analyzeSingleFile({
   const summaryMarkdown = await buildSummaryMarkdown({ metadata, result, projectType });
   await repository.saveSummaryMarkdown(analysisId, summaryMarkdown);
 
-  const indexDraft = await buildIndexDraft({
-    metadata,
-    result,
-    projectType,
-    projectId,
-    projectName,
-  });
-  await repository.saveIndexDraft(analysisId, indexDraft);
-
   await logEvent('ai_analysis_completed', {
     provider,
-    recommendedFolderId: result.classification.recommendedFolderId,
     reviewStatus: result.reviewStatus,
   });
 
@@ -174,7 +162,6 @@ export async function analyzeSingleFile({
     metadata,
     analysisResult: result,
     summaryMarkdown,
-    indexDraft,
     logMarkdown: bundle?.logMarkdown || '',
   };
 }

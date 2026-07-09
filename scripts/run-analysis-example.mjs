@@ -35,11 +35,10 @@ if (!output.ok) {
 }
 
 console.log(`분석 완료: ${output.analysisId}`);
-console.log(`추천 하위 폴더: ${output.analysisResult.classification.recommendedFolderId} (신뢰도 ${output.analysisResult.classification.confidence})`);
+console.log(`한 줄 요약: ${output.analysisResult.fileSummary?.oneLine || ''}`);
 
 await fs.mkdir(exampleDir, { recursive: true });
 await fs.writeFile(path.join(exampleDir, 'analysis-result.json'), JSON.stringify(output.analysisResult, null, 2), 'utf8');
 await fs.writeFile(path.join(exampleDir, 'summary.md'), output.summaryMarkdown, 'utf8');
-await fs.writeFile(path.join(exampleDir, 'index.json'), JSON.stringify(output.indexDraft, null, 2), 'utf8');
 await fs.writeFile(path.join(exampleDir, 'log.md'), output.logMarkdown, 'utf8');
 console.log(`예시 산출물 저장 완료: ${exampleDir}`);

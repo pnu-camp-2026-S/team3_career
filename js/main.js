@@ -115,7 +115,9 @@
     }
 
     function getUserActivityFiles(folder) {
-      return FolderStore.getFolderFiles(folder).filter((file) => file.kind !== 'analysis-summary');
+      return FolderStore.getFolderFiles(folder).filter((file) => (
+        file.kind !== 'analysis-summary' && file.kind !== 'project-analysis-artifact'
+      ));
     }
 
     function isAnalyzedActivityFile(file) {
