@@ -1,5 +1,7 @@
 ﻿import pptxgen from 'pptxgenjs';
 
+import { renderPortfolioSummaryTemplate } from '../../../../lib/portfolio-summary-pptx';
+
 function normalizeText(value) {
   return String(value || '').replace(/\s+/g, ' ').trim();
 }
@@ -571,10 +573,7 @@ export async function POST(request) {
 
     const pptx = new pptxgen();
     const isOnePageSummary = portfolio.format === '1페이지 요약본';
-    if (isOnePageSummary) {
-      pptx.defineLayout({ name: 'MYFIT_A4_PORTRAIT_SAFE', width: 7.5, height: 10.6 });
-      pptx.layout = 'MYFIT_A4_PORTRAIT_SAFE';
-    } else {
+    if (!isOnePageSummary) {
       pptx.layout = 'LAYOUT_WIDE';
     }
     pptx.author = 'Myfitfolio';
@@ -589,7 +588,7 @@ export async function POST(request) {
     };
 
     if (isOnePageSummary) {
-      addOnePageSummarySlide(pptx, portfolio);
+      renderPortfolioSummaryTemplate(pptx, portfolio);
     } else {
       const blocks = normalizeBlocks(portfolio);
       addOverviewSlide(pptx, portfolio, blocks);

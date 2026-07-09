@@ -1,0 +1,2043 @@
+{
+  "schemaVersion": "1.1",
+  "format": "pptxgenjs-template-json",
+  "sourceFile": "one_page_summary_portfolio_template (2)(3).pptx",
+  "presentation": {
+    "layout": "LAYOUT_WIDE",
+    "width": 13.3333,
+    "height": 7.5,
+    "unit": "inch",
+    "pptxgenjsImport": "import pptxgen from \"pptxgenjs\";"
+  },
+  "placeholders": [
+    "name",
+    "target_role",
+    "phone",
+    "email",
+    "project_or_activity_1",
+    "role_1",
+    "impact_1",
+    "project_or_activity_2",
+    "role_2",
+    "impact_2",
+    "project_or_activity_3",
+    "role_3",
+    "impact_3",
+    "skill_1",
+    "skill_2",
+    "skill_3",
+    "skill_4",
+    "skill_5",
+    "skill_6",
+    "technology_1",
+    "technology_2",
+    "technology_3",
+    "collaboration_tool_1",
+    "collaboration_tool_2",
+    "collaboration_tool_3",
+    "design_tool_1",
+    "design_tool_2",
+    "design_tool_3",
+    "education_or_certificate_1",
+    "education_or_certificate_2",
+    "education_or_certificate_3",
+    "strength_from_experience",
+    "job_or_problem"
+  ],
+  "renderingNotes": [
+    "Render each element by method: addText(text, options), addShape(pptx.ShapeType[shapeType] or pptx.ShapeType.<shapeType>, options), addImage({ path, ...options }).",
+    "Coordinates are converted from PPTX EMU to inches for PptxGenJS.",
+    "Some typography/theme values may be inherited in PowerPoint and therefore absent from extracted runs.",
+    "Version 1.1 splits repeated experience placeholders into _1/_2/_3 fields and skill placeholders into skill_1 through skill_6 so each box can be filled independently.",
+    "For optional tool/education placeholders, replace missing values with an empty string and remove empty bullet lines during rendering if desired."
+  ],
+  "slides": [
+    {
+      "id": "slide_1",
+      "elements": [
+        {
+          "method": "addShape",
+          "id": "s1_el01",
+          "sourceName": "Shape 0",
+          "x": 0.55,
+          "y": 0.33,
+          "w": 1.84,
+          "h": 0.27,
+          "shapeType": "roundRect",
+          "options": {
+            "x": 0.55,
+            "y": 0.33,
+            "w": 1.84,
+            "h": 0.27,
+            "fill": {
+              "color": "EAF4FF"
+            },
+            "line": {
+              "color": "EAF4FF",
+              "pt": 1.0
+            }
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el02",
+          "sourceName": "Text 1",
+          "x": 0.68,
+          "y": 0.385,
+          "w": 1.58,
+          "h": 0.12,
+          "role": "eyebrow",
+          "text": "PORTFOLIO SUMMARY",
+          "originalText": "PORTFOLIO SUMMARY",
+          "options": {
+            "x": 0.68,
+            "y": 0.385,
+            "w": 1.58,
+            "h": 0.12,
+            "fontSize": 6.5,
+            "fontFace": "Malgun Gothic",
+            "bold": true,
+            "color": "3B82F6",
+            "align": "center (2)",
+            "margin": 0.0003,
+            "wrap": true
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el03",
+          "sourceName": "Text 2",
+          "x": 0.55,
+          "y": 0.68,
+          "w": 5.6,
+          "h": 0.35,
+          "role": "deck_title",
+          "text": "{{name}} 1페이지 요약",
+          "originalText": "[이름] 1페이지 요약",
+          "options": {
+            "x": 0.55,
+            "y": 0.68,
+            "w": 5.6,
+            "h": 0.35,
+            "fontSize": 19.0,
+            "fontFace": "Malgun Gothic",
+            "bold": true,
+            "color": "111827",
+            "align": "left (1)",
+            "margin": 0.0003,
+            "wrap": true
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el04",
+          "sourceName": "Text 3",
+          "x": 6.15,
+          "y": 0.73,
+          "w": 4.2,
+          "h": 0.22,
+          "role": "deck_subtitle",
+          "text": "{{target_role}} · 핵심 경험과 역량 중심",
+          "originalText": "[희망 직무] · 핵심 경험과 역량 중심",
+          "options": {
+            "x": 6.15,
+            "y": 0.73,
+            "w": 4.2,
+            "h": 0.22,
+            "fontSize": 8.4,
+            "fontFace": "Malgun Gothic",
+            "color": "6B7280",
+            "align": "left (1)",
+            "margin": 0.0003,
+            "wrap": true
+          }
+        },
+        {
+          "method": "addShape",
+          "id": "s1_el05",
+          "sourceName": "Shape 6",
+          "x": 0.55,
+          "y": 1.08,
+          "w": 12.23,
+          "h": 0.0,
+          "shapeType": "line",
+          "options": {
+            "x": 0.55,
+            "y": 1.08,
+            "w": 12.23,
+            "h": 0.0,
+            "line": {
+              "color": "E5E7EB",
+              "pt": 0.7
+            }
+          }
+        },
+        {
+          "method": "addShape",
+          "id": "s1_el06",
+          "sourceName": "Shape 7",
+          "x": 0.55,
+          "y": 1.095,
+          "w": 1.1,
+          "h": 0.0,
+          "shapeType": "line",
+          "options": {
+            "x": 0.55,
+            "y": 1.095,
+            "w": 1.1,
+            "h": 0.0,
+            "line": {
+              "color": "3B82F6",
+              "pt": 1.5
+            }
+          }
+        },
+        {
+          "method": "addShape",
+          "id": "s1_el07",
+          "sourceName": "Shape 8",
+          "x": 0.55,
+          "y": 1.27,
+          "w": 3.55,
+          "h": 2.46,
+          "shapeType": "rect",
+          "options": {
+            "x": 0.55,
+            "y": 1.27,
+            "w": 3.55,
+            "h": 2.46,
+            "fill": {
+              "color": "FFFFFF"
+            },
+            "line": {
+              "color": "E5E7EB",
+              "pt": 0.8
+            }
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el08",
+          "sourceName": "Text 9",
+          "x": 0.73,
+          "y": 1.43,
+          "w": 3.19,
+          "h": 0.14,
+          "role": "section_header",
+          "text": "PROFILE",
+          "originalText": "PROFILE",
+          "options": {
+            "x": 0.73,
+            "y": 1.43,
+            "w": 3.19,
+            "h": 0.14,
+            "fontSize": 6.3,
+            "fontFace": "Malgun Gothic",
+            "bold": true,
+            "color": "3B82F6",
+            "align": "left (1)",
+            "margin": 0.0003,
+            "wrap": true
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el09",
+          "sourceName": "Text 10",
+          "x": 0.73,
+          "y": 1.58,
+          "w": 3.19,
+          "h": 0.25,
+          "role": "text_8",
+          "text": "기본 정보",
+          "originalText": "기본 정보",
+          "options": {
+            "x": 0.73,
+            "y": 1.58,
+            "w": 3.19,
+            "h": 0.25,
+            "fontSize": 12.2,
+            "fontFace": "Malgun Gothic",
+            "bold": true,
+            "color": "111827",
+            "align": "left (1)",
+            "margin": 0.0003,
+            "wrap": true
+          }
+        },
+        {
+          "method": "addShape",
+          "id": "s1_el10",
+          "sourceName": "Shape 11",
+          "x": 0.73,
+          "y": 1.93,
+          "w": 3.19,
+          "h": 0.0,
+          "shapeType": "line",
+          "options": {
+            "x": 0.73,
+            "y": 1.93,
+            "w": 3.19,
+            "h": 0.0,
+            "line": {
+              "color": "E5E7EB",
+              "pt": 0.55
+            }
+          }
+        },
+        {
+          "method": "addShape",
+          "id": "s1_el11",
+          "sourceName": "Shape 12",
+          "x": 0.77,
+          "y": 2.09,
+          "w": 1.12,
+          "h": 1.12,
+          "shapeType": "ellipse",
+          "options": {
+            "x": 0.77,
+            "y": 2.09,
+            "w": 1.12,
+            "h": 1.12,
+            "fill": {
+              "color": "F8FAFC"
+            },
+            "line": {
+              "color": "BFC7D5",
+              "pt": 0.9
+            }
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el12",
+          "sourceName": "Text 15",
+          "x": 0.97,
+          "y": 3.28,
+          "w": 0.72,
+          "h": 0.27,
+          "role": "text_11",
+          "text": "사진 또는\n아바타",
+          "originalText": "사진 또는\n아바타",
+          "options": {
+            "x": 0.97,
+            "y": 3.28,
+            "w": 0.72,
+            "h": 0.27,
+            "fontSize": 6.7,
+            "fontFace": "Malgun Gothic",
+            "color": "6B7280",
+            "align": "center (2)",
+            "margin": 0.0003,
+            "wrap": true
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el13",
+          "sourceName": "Text 16",
+          "x": 2.1,
+          "y": 2.13,
+          "w": 1.75,
+          "h": 0.3,
+          "role": "placeholder",
+          "text": "{{name}}",
+          "originalText": "[이름]",
+          "options": {
+            "x": 2.1,
+            "y": 2.13,
+            "w": 1.75,
+            "h": 0.3,
+            "fontSize": 15.0,
+            "fontFace": "Malgun Gothic",
+            "bold": true,
+            "color": "111827",
+            "align": "left (1)",
+            "margin": 0.0003,
+            "wrap": true
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el14",
+          "sourceName": "Text 17",
+          "x": 2.1,
+          "y": 2.5,
+          "w": 1.75,
+          "h": 0.2,
+          "role": "placeholder",
+          "text": "{{target_role}}",
+          "originalText": "[희망 직무]",
+          "options": {
+            "x": 2.1,
+            "y": 2.5,
+            "w": 1.75,
+            "h": 0.2,
+            "fontSize": 9.0,
+            "fontFace": "Malgun Gothic",
+            "bold": true,
+            "color": "3B82F6",
+            "align": "left (1)",
+            "margin": 0.0003,
+            "wrap": true
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el15",
+          "sourceName": "Text 18",
+          "x": 2.1,
+          "y": 2.79,
+          "w": 1.74,
+          "h": 0.23,
+          "role": "text_14",
+          "text": "핵심 경험을 기반으로 한 요약 프로필",
+          "originalText": "핵심 경험을 기반으로 한 요약 프로필",
+          "options": {
+            "x": 2.1,
+            "y": 2.79,
+            "w": 1.74,
+            "h": 0.23,
+            "fontSize": 7.4,
+            "fontFace": "Malgun Gothic",
+            "color": "6B7280",
+            "align": "left (1)",
+            "margin": 0.0003,
+            "wrap": true
+          }
+        },
+        {
+          "method": "addShape",
+          "id": "s1_el16",
+          "sourceName": "Shape 19",
+          "x": 2.1,
+          "y": 3.13,
+          "w": 1.73,
+          "h": 0.0,
+          "shapeType": "line",
+          "options": {
+            "x": 2.1,
+            "y": 3.13,
+            "w": 1.73,
+            "h": 0.0,
+            "line": {
+              "color": "E5E7EB",
+              "pt": 0.55
+            }
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el17",
+          "sourceName": "Text 20",
+          "x": 2.1,
+          "y": 3.26,
+          "w": 0.48,
+          "h": 0.13,
+          "role": "text_16",
+          "text": "연락처",
+          "originalText": "연락처",
+          "options": {
+            "x": 2.1,
+            "y": 3.26,
+            "w": 0.48,
+            "h": 0.13,
+            "fontSize": 6.7,
+            "fontFace": "Malgun Gothic",
+            "bold": true,
+            "color": "6B7280",
+            "align": "left (1)",
+            "margin": 0.0003,
+            "wrap": true
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el18",
+          "sourceName": "Text 21",
+          "x": 2.67,
+          "y": 3.24,
+          "w": 1.18,
+          "h": 0.17,
+          "role": "placeholder",
+          "text": "{{phone}}",
+          "originalText": "[전화번호]",
+          "options": {
+            "x": 2.67,
+            "y": 3.24,
+            "w": 1.18,
+            "h": 0.17,
+            "fontSize": 7.6,
+            "fontFace": "Malgun Gothic",
+            "color": "1F2937",
+            "align": "left (1)",
+            "margin": 0.0003,
+            "wrap": true
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el19",
+          "sourceName": "Text 22",
+          "x": 2.1,
+          "y": 3.47,
+          "w": 0.48,
+          "h": 0.13,
+          "role": "text_18",
+          "text": "이메일",
+          "originalText": "이메일",
+          "options": {
+            "x": 2.1,
+            "y": 3.47,
+            "w": 0.48,
+            "h": 0.13,
+            "fontSize": 6.7,
+            "fontFace": "Malgun Gothic",
+            "bold": true,
+            "color": "6B7280",
+            "align": "left (1)",
+            "margin": 0.0003,
+            "wrap": true
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el20",
+          "sourceName": "Text 23",
+          "x": 2.67,
+          "y": 3.45,
+          "w": 1.18,
+          "h": 0.17,
+          "role": "placeholder",
+          "text": "{{email}}",
+          "originalText": "[email@example.com]",
+          "options": {
+            "x": 2.67,
+            "y": 3.45,
+            "w": 1.18,
+            "h": 0.17,
+            "fontSize": 7.6,
+            "fontFace": "Malgun Gothic",
+            "color": "1F2937",
+            "align": "left (1)",
+            "margin": 0.0003,
+            "wrap": true
+          }
+        },
+        {
+          "method": "addShape",
+          "id": "s1_el21",
+          "sourceName": "Shape 24",
+          "x": 4.35,
+          "y": 1.27,
+          "w": 8.43,
+          "h": 2.46,
+          "shapeType": "rect",
+          "options": {
+            "x": 4.35,
+            "y": 1.27,
+            "w": 8.43,
+            "h": 2.46,
+            "fill": {
+              "color": "FFFFFF"
+            },
+            "line": {
+              "color": "E5E7EB",
+              "pt": 0.8
+            }
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el22",
+          "sourceName": "Text 25",
+          "x": 4.53,
+          "y": 1.43,
+          "w": 8.07,
+          "h": 0.14,
+          "role": "section_header",
+          "text": "KEY EXPERIENCE",
+          "originalText": "KEY EXPERIENCE",
+          "options": {
+            "x": 4.53,
+            "y": 1.43,
+            "w": 8.07,
+            "h": 0.14,
+            "fontSize": 6.3,
+            "fontFace": "Malgun Gothic",
+            "bold": true,
+            "color": "3B82F6",
+            "align": "left (1)",
+            "margin": 0.0003,
+            "wrap": true
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el23",
+          "sourceName": "Text 26",
+          "x": 4.53,
+          "y": 1.58,
+          "w": 8.07,
+          "h": 0.25,
+          "role": "text_22",
+          "text": "핵심 경험 2–3개",
+          "originalText": "핵심 경험 2–3개",
+          "options": {
+            "x": 4.53,
+            "y": 1.58,
+            "w": 8.07,
+            "h": 0.25,
+            "fontSize": 12.2,
+            "fontFace": "Malgun Gothic",
+            "bold": true,
+            "color": "111827",
+            "align": "left (1)",
+            "margin": 0.0003,
+            "wrap": true
+          }
+        },
+        {
+          "method": "addShape",
+          "id": "s1_el24",
+          "sourceName": "Shape 27",
+          "x": 4.53,
+          "y": 1.93,
+          "w": 8.07,
+          "h": 0.0,
+          "shapeType": "line",
+          "options": {
+            "x": 4.53,
+            "y": 1.93,
+            "w": 8.07,
+            "h": 0.0,
+            "line": {
+              "color": "E5E7EB",
+              "pt": 0.55
+            }
+          }
+        },
+        {
+          "method": "addShape",
+          "id": "s1_el25",
+          "sourceName": "Shape 28",
+          "x": 4.53,
+          "y": 2.11,
+          "w": 2.5767,
+          "h": 1.35,
+          "shapeType": "roundRect",
+          "options": {
+            "x": 4.53,
+            "y": 2.11,
+            "w": 2.5767,
+            "h": 1.35,
+            "fill": {
+              "color": "F8FAFC"
+            },
+            "line": {
+              "color": "E5E7EB",
+              "pt": 0.7
+            }
+          }
+        },
+        {
+          "method": "addShape",
+          "id": "s1_el26",
+          "sourceName": "Shape 29",
+          "x": 4.65,
+          "y": 2.23,
+          "w": 2.3367,
+          "h": 0.0,
+          "shapeType": "line",
+          "options": {
+            "x": 4.65,
+            "y": 2.23,
+            "w": 2.3367,
+            "h": 0.0,
+            "line": {
+              "color": "3B82F6",
+              "pt": 1.2
+            }
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el27",
+          "sourceName": "Text 30",
+          "x": 4.67,
+          "y": 2.31,
+          "w": 2.2967,
+          "h": 0.12,
+          "role": "text_26",
+          "text": "경험 01",
+          "originalText": "경험 01",
+          "options": {
+            "x": 4.67,
+            "y": 2.31,
+            "w": 2.2967,
+            "h": 0.12,
+            "fontSize": 6.2,
+            "fontFace": "Malgun Gothic",
+            "bold": true,
+            "color": "3B82F6",
+            "align": "left (1)",
+            "margin": 0.0003,
+            "wrap": true
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el28",
+          "sourceName": "Text 31",
+          "x": 4.67,
+          "y": 2.51,
+          "w": 2.2967,
+          "h": 0.22,
+          "role": "placeholder",
+          "text": "{{project_or_activity_1}}",
+          "originalText": "[프로젝트/활동명]",
+          "options": {
+            "x": 4.67,
+            "y": 2.51,
+            "w": 2.2967,
+            "h": 0.22,
+            "fontSize": 9.2,
+            "fontFace": "Malgun Gothic",
+            "bold": true,
+            "color": "111827",
+            "align": "left (1)",
+            "margin": 0.0003,
+            "wrap": true
+          },
+          "templateText": "{{project_or_activity_1}}",
+          "placeholderKeys": [
+            "project_or_activity_1"
+          ]
+        },
+        {
+          "method": "addText",
+          "id": "s1_el29",
+          "sourceName": "Text 32",
+          "x": 4.67,
+          "y": 2.84,
+          "w": 2.2967,
+          "h": 0.16,
+          "role": "placeholder",
+          "text": "역할  {{role_1}}",
+          "originalText": "역할  [담당 역할]",
+          "options": {
+            "x": 4.67,
+            "y": 2.84,
+            "w": 2.2967,
+            "h": 0.16,
+            "fontSize": 7.3,
+            "fontFace": "Malgun Gothic",
+            "color": "6B7280",
+            "align": "left (1)",
+            "margin": 0.0003,
+            "wrap": true
+          },
+          "templateText": "역할  {{role_1}}",
+          "placeholderKeys": [
+            "role_1"
+          ]
+        },
+        {
+          "method": "addText",
+          "id": "s1_el30",
+          "sourceName": "Text 33",
+          "x": 4.67,
+          "y": 3.06,
+          "w": 2.2967,
+          "h": 0.29,
+          "role": "placeholder",
+          "text": "성과  {{impact_1}}",
+          "originalText": "성과  [한 줄 성과/의미]",
+          "options": {
+            "x": 4.67,
+            "y": 3.06,
+            "w": 2.2967,
+            "h": 0.29,
+            "fontSize": 7.3,
+            "fontFace": "Malgun Gothic",
+            "color": "1F2937",
+            "align": "left (1)",
+            "margin": 0.0003,
+            "wrap": true,
+            "fit": "shrink"
+          },
+          "templateText": "성과  {{impact_1}}",
+          "placeholderKeys": [
+            "impact_1"
+          ]
+        },
+        {
+          "method": "addShape",
+          "id": "s1_el31",
+          "sourceName": "Shape 34",
+          "x": 7.2767,
+          "y": 2.11,
+          "w": 2.5767,
+          "h": 1.35,
+          "shapeType": "roundRect",
+          "options": {
+            "x": 7.2767,
+            "y": 2.11,
+            "w": 2.5767,
+            "h": 1.35,
+            "fill": {
+              "color": "F8FAFC"
+            },
+            "line": {
+              "color": "E5E7EB",
+              "pt": 0.7
+            }
+          }
+        },
+        {
+          "method": "addShape",
+          "id": "s1_el32",
+          "sourceName": "Shape 35",
+          "x": 7.3967,
+          "y": 2.23,
+          "w": 2.3367,
+          "h": 0.0,
+          "shapeType": "line",
+          "options": {
+            "x": 7.3967,
+            "y": 2.23,
+            "w": 2.3367,
+            "h": 0.0,
+            "line": {
+              "color": "D1D5DB",
+              "pt": 0.7
+            }
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el33",
+          "sourceName": "Text 36",
+          "x": 7.4167,
+          "y": 2.31,
+          "w": 2.2967,
+          "h": 0.12,
+          "role": "text_32",
+          "text": "경험 02",
+          "originalText": "경험 02",
+          "options": {
+            "x": 7.4167,
+            "y": 2.31,
+            "w": 2.2967,
+            "h": 0.12,
+            "fontSize": 6.2,
+            "fontFace": "Malgun Gothic",
+            "bold": true,
+            "color": "3B82F6",
+            "align": "left (1)",
+            "margin": 0.0003,
+            "wrap": true
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el34",
+          "sourceName": "Text 37",
+          "x": 7.4167,
+          "y": 2.51,
+          "w": 2.2967,
+          "h": 0.22,
+          "role": "placeholder",
+          "text": "{{project_or_activity_2}}",
+          "originalText": "[프로젝트/활동명]",
+          "options": {
+            "x": 7.4167,
+            "y": 2.51,
+            "w": 2.2967,
+            "h": 0.22,
+            "fontSize": 9.2,
+            "fontFace": "Malgun Gothic",
+            "bold": true,
+            "color": "111827",
+            "align": "left (1)",
+            "margin": 0.0003,
+            "wrap": true
+          },
+          "templateText": "{{project_or_activity_2}}",
+          "placeholderKeys": [
+            "project_or_activity_2"
+          ]
+        },
+        {
+          "method": "addText",
+          "id": "s1_el35",
+          "sourceName": "Text 38",
+          "x": 7.4167,
+          "y": 2.84,
+          "w": 2.2967,
+          "h": 0.16,
+          "role": "placeholder",
+          "text": "역할  {{role_2}}",
+          "originalText": "역할  [담당 역할]",
+          "options": {
+            "x": 7.4167,
+            "y": 2.84,
+            "w": 2.2967,
+            "h": 0.16,
+            "fontSize": 7.3,
+            "fontFace": "Malgun Gothic",
+            "color": "6B7280",
+            "align": "left (1)",
+            "margin": 0.0003,
+            "wrap": true
+          },
+          "templateText": "역할  {{role_2}}",
+          "placeholderKeys": [
+            "role_2"
+          ]
+        },
+        {
+          "method": "addText",
+          "id": "s1_el36",
+          "sourceName": "Text 39",
+          "x": 7.4167,
+          "y": 3.06,
+          "w": 2.2967,
+          "h": 0.29,
+          "role": "placeholder",
+          "text": "성과  {{impact_2}}",
+          "originalText": "성과  [한 줄 성과/의미]",
+          "options": {
+            "x": 7.4167,
+            "y": 3.06,
+            "w": 2.2967,
+            "h": 0.29,
+            "fontSize": 7.3,
+            "fontFace": "Malgun Gothic",
+            "color": "1F2937",
+            "align": "left (1)",
+            "margin": 0.0003,
+            "wrap": true,
+            "fit": "shrink"
+          },
+          "templateText": "성과  {{impact_2}}",
+          "placeholderKeys": [
+            "impact_2"
+          ]
+        },
+        {
+          "method": "addShape",
+          "id": "s1_el37",
+          "sourceName": "Shape 40",
+          "x": 10.0233,
+          "y": 2.11,
+          "w": 2.5767,
+          "h": 1.35,
+          "shapeType": "roundRect",
+          "options": {
+            "x": 10.0233,
+            "y": 2.11,
+            "w": 2.5767,
+            "h": 1.35,
+            "fill": {
+              "color": "F8FAFC"
+            },
+            "line": {
+              "color": "E5E7EB",
+              "pt": 0.7
+            }
+          }
+        },
+        {
+          "method": "addShape",
+          "id": "s1_el38",
+          "sourceName": "Shape 41",
+          "x": 10.1433,
+          "y": 2.23,
+          "w": 2.3367,
+          "h": 0.0,
+          "shapeType": "line",
+          "options": {
+            "x": 10.1433,
+            "y": 2.23,
+            "w": 2.3367,
+            "h": 0.0,
+            "line": {
+              "color": "D1D5DB",
+              "pt": 0.7
+            }
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el39",
+          "sourceName": "Text 42",
+          "x": 10.1633,
+          "y": 2.31,
+          "w": 2.2967,
+          "h": 0.12,
+          "role": "text_38",
+          "text": "경험 03",
+          "originalText": "경험 03",
+          "options": {
+            "x": 10.1633,
+            "y": 2.31,
+            "w": 2.2967,
+            "h": 0.12,
+            "fontSize": 6.2,
+            "fontFace": "Malgun Gothic",
+            "bold": true,
+            "color": "3B82F6",
+            "align": "left (1)",
+            "margin": 0.0003,
+            "wrap": true
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el40",
+          "sourceName": "Text 43",
+          "x": 10.1633,
+          "y": 2.51,
+          "w": 2.2967,
+          "h": 0.22,
+          "role": "placeholder",
+          "text": "{{project_or_activity_3}}",
+          "originalText": "[프로젝트/활동명]",
+          "options": {
+            "x": 10.1633,
+            "y": 2.51,
+            "w": 2.2967,
+            "h": 0.22,
+            "fontSize": 9.2,
+            "fontFace": "Malgun Gothic",
+            "bold": true,
+            "color": "111827",
+            "align": "left (1)",
+            "margin": 0.0003,
+            "wrap": true
+          },
+          "templateText": "{{project_or_activity_3}}",
+          "placeholderKeys": [
+            "project_or_activity_3"
+          ]
+        },
+        {
+          "method": "addText",
+          "id": "s1_el41",
+          "sourceName": "Text 44",
+          "x": 10.1633,
+          "y": 2.84,
+          "w": 2.2967,
+          "h": 0.16,
+          "role": "placeholder",
+          "text": "역할  {{role_3}}",
+          "originalText": "역할  [담당 역할]",
+          "options": {
+            "x": 10.1633,
+            "y": 2.84,
+            "w": 2.2967,
+            "h": 0.16,
+            "fontSize": 7.3,
+            "fontFace": "Malgun Gothic",
+            "color": "6B7280",
+            "align": "left (1)",
+            "margin": 0.0003,
+            "wrap": true
+          },
+          "templateText": "역할  {{role_3}}",
+          "placeholderKeys": [
+            "role_3"
+          ]
+        },
+        {
+          "method": "addText",
+          "id": "s1_el42",
+          "sourceName": "Text 45",
+          "x": 10.1633,
+          "y": 3.06,
+          "w": 2.2967,
+          "h": 0.29,
+          "role": "placeholder",
+          "text": "성과  {{impact_3}}",
+          "originalText": "성과  [한 줄 성과/의미]",
+          "options": {
+            "x": 10.1633,
+            "y": 3.06,
+            "w": 2.2967,
+            "h": 0.29,
+            "fontSize": 7.3,
+            "fontFace": "Malgun Gothic",
+            "color": "1F2937",
+            "align": "left (1)",
+            "margin": 0.0003,
+            "wrap": true,
+            "fit": "shrink"
+          },
+          "templateText": "성과  {{impact_3}}",
+          "placeholderKeys": [
+            "impact_3"
+          ]
+        },
+        {
+          "method": "addText",
+          "id": "s1_el43",
+          "sourceName": "Text 46",
+          "x": 4.53,
+          "y": 3.52,
+          "w": 8.07,
+          "h": 0.13,
+          "role": "text_42",
+          "text": "성과 수치가 없으면 임의로 만들지 말고, 직무 관련도가 높은 경험부터 배치",
+          "originalText": "성과 수치가 없으면 임의로 만들지 말고, 직무 관련도가 높은 경험부터 배치",
+          "options": {
+            "x": 4.53,
+            "y": 3.52,
+            "w": 8.07,
+            "h": 0.13,
+            "fontSize": 6.5,
+            "fontFace": "Malgun Gothic",
+            "color": "6B7280",
+            "align": "right (3)",
+            "margin": 0.0003,
+            "wrap": true
+          }
+        },
+        {
+          "method": "addShape",
+          "id": "s1_el44",
+          "sourceName": "Shape 47",
+          "x": 0.55,
+          "y": 4.05,
+          "w": 3.55,
+          "h": 2.13,
+          "shapeType": "rect",
+          "options": {
+            "x": 0.55,
+            "y": 4.05,
+            "w": 3.55,
+            "h": 2.13,
+            "fill": {
+              "color": "FFFFFF"
+            },
+            "line": {
+              "color": "E5E7EB",
+              "pt": 0.8
+            }
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el45",
+          "sourceName": "Text 48",
+          "x": 0.73,
+          "y": 4.21,
+          "w": 3.19,
+          "h": 0.14,
+          "role": "section_header",
+          "text": "SKILLS",
+          "originalText": "SKILLS",
+          "options": {
+            "x": 0.73,
+            "y": 4.21,
+            "w": 3.19,
+            "h": 0.14,
+            "fontSize": 6.3,
+            "fontFace": "Malgun Gothic",
+            "bold": true,
+            "color": "3B82F6",
+            "align": "left (1)",
+            "margin": 0.0003,
+            "wrap": true
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el46",
+          "sourceName": "Text 49",
+          "x": 0.73,
+          "y": 4.36,
+          "w": 3.19,
+          "h": 0.25,
+          "role": "text_45",
+          "text": "보유 역량 키워드",
+          "originalText": "보유 역량 키워드",
+          "options": {
+            "x": 0.73,
+            "y": 4.36,
+            "w": 3.19,
+            "h": 0.25,
+            "fontSize": 12.2,
+            "fontFace": "Malgun Gothic",
+            "bold": true,
+            "color": "111827",
+            "align": "left (1)",
+            "margin": 0.0003,
+            "wrap": true
+          }
+        },
+        {
+          "method": "addShape",
+          "id": "s1_el47",
+          "sourceName": "Shape 50",
+          "x": 0.73,
+          "y": 4.71,
+          "w": 3.19,
+          "h": 0.0,
+          "shapeType": "line",
+          "options": {
+            "x": 0.73,
+            "y": 4.71,
+            "w": 3.19,
+            "h": 0.0,
+            "line": {
+              "color": "E5E7EB",
+              "pt": 0.55
+            }
+          }
+        },
+        {
+          "method": "addShape",
+          "id": "s1_el48",
+          "sourceName": "Shape 51",
+          "x": 0.77,
+          "y": 5.025,
+          "w": 0.98,
+          "h": 0.29,
+          "shapeType": "roundRect",
+          "options": {
+            "x": 0.77,
+            "y": 5.025,
+            "w": 0.98,
+            "h": 0.29,
+            "fill": {
+              "color": "F1F8FF"
+            },
+            "line": {
+              "color": "D7ECFF",
+              "pt": 0.7
+            }
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el49",
+          "sourceName": "Text 52",
+          "x": 0.82,
+          "y": 5.06,
+          "w": 0.88,
+          "h": 0.23,
+          "role": "placeholder",
+          "text": "{{skill_1}}",
+          "originalText": "문제 정의",
+          "options": {
+            "x": 0.82,
+            "y": 5.06,
+            "w": 0.88,
+            "h": 0.23,
+            "fontSize": 8.2,
+            "fontFace": "Malgun Gothic",
+            "color": "1F2937",
+            "align": "center (2)",
+            "margin": 0.0003,
+            "wrap": true
+          },
+          "templateText": "{{skill_1}}",
+          "placeholderKeys": [
+            "skill_1"
+          ]
+        },
+        {
+          "method": "addShape",
+          "id": "s1_el50",
+          "sourceName": "Shape 53",
+          "x": 1.85,
+          "y": 5.025,
+          "w": 1.23,
+          "h": 0.29,
+          "shapeType": "roundRect",
+          "options": {
+            "x": 1.85,
+            "y": 5.025,
+            "w": 1.23,
+            "h": 0.29,
+            "fill": {
+              "color": "F1F8FF"
+            },
+            "line": {
+              "color": "D7ECFF",
+              "pt": 0.7
+            }
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el51",
+          "sourceName": "Text 54",
+          "x": 1.9,
+          "y": 5.06,
+          "w": 1.13,
+          "h": 0.23,
+          "role": "placeholder",
+          "text": "{{skill_2}}",
+          "originalText": "데이터 구조화",
+          "options": {
+            "x": 1.9,
+            "y": 5.06,
+            "w": 1.13,
+            "h": 0.23,
+            "fontSize": 8.2,
+            "fontFace": "Malgun Gothic",
+            "color": "1F2937",
+            "align": "center (2)",
+            "margin": 0.0003,
+            "wrap": true
+          },
+          "templateText": "{{skill_2}}",
+          "placeholderKeys": [
+            "skill_2"
+          ]
+        },
+        {
+          "method": "addShape",
+          "id": "s1_el52",
+          "sourceName": "Shape 55",
+          "x": 3.18,
+          "y": 5.025,
+          "w": 0.7,
+          "h": 0.29,
+          "shapeType": "roundRect",
+          "options": {
+            "x": 3.18,
+            "y": 5.025,
+            "w": 0.7,
+            "h": 0.29,
+            "fill": {
+              "color": "F1F8FF"
+            },
+            "line": {
+              "color": "D7ECFF",
+              "pt": 0.7
+            }
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el53",
+          "sourceName": "Text 56",
+          "x": 3.23,
+          "y": 5.06,
+          "w": 0.6,
+          "h": 0.23,
+          "role": "placeholder",
+          "text": "{{skill_3}}",
+          "originalText": "UI 설계",
+          "options": {
+            "x": 3.23,
+            "y": 5.06,
+            "w": 0.6,
+            "h": 0.23,
+            "fontSize": 8.2,
+            "fontFace": "Malgun Gothic",
+            "color": "1F2937",
+            "align": "center (2)",
+            "margin": 0.0003,
+            "wrap": true
+          },
+          "templateText": "{{skill_3}}",
+          "placeholderKeys": [
+            "skill_3"
+          ]
+        },
+        {
+          "method": "addShape",
+          "id": "s1_el54",
+          "sourceName": "Shape 57",
+          "x": 0.77,
+          "y": 5.495,
+          "w": 0.72,
+          "h": 0.29,
+          "shapeType": "roundRect",
+          "options": {
+            "x": 0.77,
+            "y": 5.495,
+            "w": 0.72,
+            "h": 0.29,
+            "fill": {
+              "color": "FFFFFF"
+            },
+            "line": {
+              "color": "D7ECFF",
+              "pt": 0.7
+            }
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el55",
+          "sourceName": "Text 58",
+          "x": 0.82,
+          "y": 5.53,
+          "w": 0.62,
+          "h": 0.23,
+          "role": "placeholder",
+          "text": "{{skill_4}}",
+          "originalText": "협업",
+          "options": {
+            "x": 0.82,
+            "y": 5.53,
+            "w": 0.62,
+            "h": 0.23,
+            "fontSize": 8.2,
+            "fontFace": "Malgun Gothic",
+            "color": "1F2937",
+            "align": "center (2)",
+            "margin": 0.0003,
+            "wrap": true
+          },
+          "templateText": "{{skill_4}}",
+          "placeholderKeys": [
+            "skill_4"
+          ]
+        },
+        {
+          "method": "addShape",
+          "id": "s1_el56",
+          "sourceName": "Shape 59",
+          "x": 1.59,
+          "y": 5.495,
+          "w": 0.82,
+          "h": 0.29,
+          "shapeType": "roundRect",
+          "options": {
+            "x": 1.59,
+            "y": 5.495,
+            "w": 0.82,
+            "h": 0.29,
+            "fill": {
+              "color": "FFFFFF"
+            },
+            "line": {
+              "color": "D7ECFF",
+              "pt": 0.7
+            }
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el57",
+          "sourceName": "Text 60",
+          "x": 1.64,
+          "y": 5.53,
+          "w": 0.72,
+          "h": 0.23,
+          "role": "placeholder",
+          "text": "{{skill_5}}",
+          "originalText": "문서화",
+          "options": {
+            "x": 1.64,
+            "y": 5.53,
+            "w": 0.72,
+            "h": 0.23,
+            "fontSize": 8.2,
+            "fontFace": "Malgun Gothic",
+            "color": "1F2937",
+            "align": "center (2)",
+            "margin": 0.0003,
+            "wrap": true
+          },
+          "templateText": "{{skill_5}}",
+          "placeholderKeys": [
+            "skill_5"
+          ]
+        },
+        {
+          "method": "addShape",
+          "id": "s1_el58",
+          "sourceName": "Shape 61",
+          "x": 2.51,
+          "y": 5.495,
+          "w": 1.2,
+          "h": 0.29,
+          "shapeType": "roundRect",
+          "options": {
+            "x": 2.51,
+            "y": 5.495,
+            "w": 1.2,
+            "h": 0.29,
+            "fill": {
+              "color": "FFFFFF"
+            },
+            "line": {
+              "color": "D7ECFF",
+              "pt": 0.7
+            }
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el59",
+          "sourceName": "Text 62",
+          "x": 2.56,
+          "y": 5.53,
+          "w": 1.1,
+          "h": 0.23,
+          "role": "placeholder",
+          "text": "{{skill_6}}",
+          "originalText": "[확인된 역량]",
+          "options": {
+            "x": 2.56,
+            "y": 5.53,
+            "w": 1.1,
+            "h": 0.23,
+            "fontSize": 8.2,
+            "fontFace": "Malgun Gothic",
+            "color": "1F2937",
+            "align": "center (2)",
+            "margin": 0.0003,
+            "wrap": true
+          },
+          "templateText": "{{skill_6}}",
+          "placeholderKeys": [
+            "skill_6"
+          ]
+        },
+        {
+          "method": "addShape",
+          "id": "s1_el60",
+          "sourceName": "Shape 64",
+          "x": 4.35,
+          "y": 4.05,
+          "w": 8.43,
+          "h": 2.13,
+          "shapeType": "rect",
+          "options": {
+            "x": 4.35,
+            "y": 4.05,
+            "w": 8.43,
+            "h": 2.13,
+            "fill": {
+              "color": "FFFFFF"
+            },
+            "line": {
+              "color": "E5E7EB",
+              "pt": 0.8
+            }
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el61",
+          "sourceName": "Text 65",
+          "x": 4.53,
+          "y": 4.21,
+          "w": 8.07,
+          "h": 0.14,
+          "role": "section_header",
+          "text": "TOOLS / EDUCATION",
+          "originalText": "TOOLS / EDUCATION",
+          "options": {
+            "x": 4.53,
+            "y": 4.21,
+            "w": 8.07,
+            "h": 0.14,
+            "fontSize": 6.3,
+            "fontFace": "Malgun Gothic",
+            "bold": true,
+            "color": "3B82F6",
+            "align": "left (1)",
+            "margin": 0.0003,
+            "wrap": true
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el62",
+          "sourceName": "Text 66",
+          "x": 4.53,
+          "y": 4.36,
+          "w": 8.07,
+          "h": 0.25,
+          "role": "text_61",
+          "text": "기술·도구 또는 자격·교육",
+          "originalText": "기술·도구 또는 자격·교육",
+          "options": {
+            "x": 4.53,
+            "y": 4.36,
+            "w": 8.07,
+            "h": 0.25,
+            "fontSize": 12.2,
+            "fontFace": "Malgun Gothic",
+            "bold": true,
+            "color": "111827",
+            "align": "left (1)",
+            "margin": 0.0003,
+            "wrap": true
+          }
+        },
+        {
+          "method": "addShape",
+          "id": "s1_el63",
+          "sourceName": "Shape 67",
+          "x": 4.53,
+          "y": 4.71,
+          "w": 8.07,
+          "h": 0.0,
+          "shapeType": "line",
+          "options": {
+            "x": 4.53,
+            "y": 4.71,
+            "w": 8.07,
+            "h": 0.0,
+            "line": {
+              "color": "E5E7EB",
+              "pt": 0.55
+            }
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el64",
+          "sourceName": "Text 68",
+          "x": 4.53,
+          "y": 4.87,
+          "w": 1.8,
+          "h": 0.16,
+          "role": "text_63",
+          "text": "사용 기술",
+          "originalText": "사용 기술",
+          "options": {
+            "x": 4.53,
+            "y": 4.87,
+            "w": 1.8,
+            "h": 0.16,
+            "fontSize": 7.2,
+            "fontFace": "Malgun Gothic",
+            "bold": true,
+            "color": "3B82F6",
+            "align": "left (1)",
+            "margin": 0.0003,
+            "wrap": true
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el65",
+          "sourceName": "Text 69",
+          "x": 4.53,
+          "y": 5.13,
+          "w": 1.8,
+          "h": 0.58,
+          "role": "placeholder",
+          "text": "• {{technology_1}}\n• {{technology_2}}\n• {{technology_3}}",
+          "originalText": "• [기술/프레임워크]\n• [AI/API 이해]",
+          "options": {
+            "x": 4.53,
+            "y": 5.13,
+            "w": 1.8,
+            "h": 0.58,
+            "fontSize": 6.2,
+            "fontFace": "Malgun Gothic",
+            "color": "1F2937",
+            "align": "left (1)",
+            "margin": 0.0003,
+            "wrap": true,
+            "fit": "shrink"
+          },
+          "templateText": "• {{technology_1}}\n• {{technology_2}}\n• {{technology_3}}",
+          "placeholderKeys": [
+            "technology_1",
+            "technology_2",
+            "technology_3"
+          ]
+        },
+        {
+          "method": "addShape",
+          "id": "s1_el66",
+          "sourceName": "Shape 70",
+          "x": 6.41,
+          "y": 4.88,
+          "w": 0.0,
+          "h": 0.95,
+          "shapeType": "line",
+          "options": {
+            "x": 6.41,
+            "y": 4.88,
+            "w": 0.0,
+            "h": 0.95,
+            "line": {
+              "color": "E5E7EB",
+              "pt": 0.5
+            }
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el67",
+          "sourceName": "Text 71",
+          "x": 6.6,
+          "y": 4.87,
+          "w": 1.8,
+          "h": 0.16,
+          "role": "text_66",
+          "text": "협업 도구",
+          "originalText": "협업 도구",
+          "options": {
+            "x": 6.6,
+            "y": 4.87,
+            "w": 1.8,
+            "h": 0.16,
+            "fontSize": 7.2,
+            "fontFace": "Malgun Gothic",
+            "bold": true,
+            "color": "3B82F6",
+            "align": "left (1)",
+            "margin": 0.0003,
+            "wrap": true
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el68",
+          "sourceName": "Text 72",
+          "x": 6.6,
+          "y": 5.13,
+          "w": 1.8,
+          "h": 0.58,
+          "role": "placeholder",
+          "text": "• {{collaboration_tool_1}}\n• {{collaboration_tool_2}}\n• {{collaboration_tool_3}}",
+          "originalText": "• [협업 도구 1]\n• [협업 도구 2]",
+          "options": {
+            "x": 6.6,
+            "y": 5.13,
+            "w": 1.8,
+            "h": 0.58,
+            "fontSize": 6.2,
+            "fontFace": "Malgun Gothic",
+            "color": "1F2937",
+            "align": "left (1)",
+            "margin": 0.0003,
+            "wrap": true,
+            "fit": "shrink"
+          },
+          "templateText": "• {{collaboration_tool_1}}\n• {{collaboration_tool_2}}\n• {{collaboration_tool_3}}",
+          "placeholderKeys": [
+            "collaboration_tool_1",
+            "collaboration_tool_2",
+            "collaboration_tool_3"
+          ]
+        },
+        {
+          "method": "addShape",
+          "id": "s1_el69",
+          "sourceName": "Shape 73",
+          "x": 8.49,
+          "y": 4.88,
+          "w": 0.0,
+          "h": 0.95,
+          "shapeType": "line",
+          "options": {
+            "x": 8.49,
+            "y": 4.88,
+            "w": 0.0,
+            "h": 0.95,
+            "line": {
+              "color": "E5E7EB",
+              "pt": 0.5
+            }
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el70",
+          "sourceName": "Text 74",
+          "x": 8.68,
+          "y": 4.87,
+          "w": 1.8,
+          "h": 0.16,
+          "role": "text_69",
+          "text": "디자인 도구",
+          "originalText": "디자인 도구",
+          "options": {
+            "x": 8.68,
+            "y": 4.87,
+            "w": 1.8,
+            "h": 0.16,
+            "fontSize": 7.2,
+            "fontFace": "Malgun Gothic",
+            "bold": true,
+            "color": "3B82F6",
+            "align": "left (1)",
+            "margin": 0.0003,
+            "wrap": true
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el71",
+          "sourceName": "Text 75",
+          "x": 8.68,
+          "y": 5.13,
+          "w": 1.8,
+          "h": 0.58,
+          "role": "placeholder",
+          "text": "• {{design_tool_1}}\n• {{design_tool_2}}\n• {{design_tool_3}}",
+          "originalText": "• [디자인 도구]\n• [문서/발표 도구]",
+          "options": {
+            "x": 8.68,
+            "y": 5.13,
+            "w": 1.8,
+            "h": 0.58,
+            "fontSize": 6.2,
+            "fontFace": "Malgun Gothic",
+            "color": "1F2937",
+            "align": "left (1)",
+            "margin": 0.0003,
+            "wrap": true,
+            "fit": "shrink"
+          },
+          "templateText": "• {{design_tool_1}}\n• {{design_tool_2}}\n• {{design_tool_3}}",
+          "placeholderKeys": [
+            "design_tool_1",
+            "design_tool_2",
+            "design_tool_3"
+          ]
+        },
+        {
+          "method": "addShape",
+          "id": "s1_el72",
+          "sourceName": "Shape 76",
+          "x": 10.57,
+          "y": 4.88,
+          "w": 0.0,
+          "h": 0.95,
+          "shapeType": "line",
+          "options": {
+            "x": 10.57,
+            "y": 4.88,
+            "w": 0.0,
+            "h": 0.95,
+            "line": {
+              "color": "E5E7EB",
+              "pt": 0.5
+            }
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el73",
+          "sourceName": "Text 77",
+          "x": 10.76,
+          "y": 4.87,
+          "w": 1.8,
+          "h": 0.16,
+          "role": "text_72",
+          "text": "자격·교육",
+          "originalText": "자격·교육",
+          "options": {
+            "x": 10.76,
+            "y": 4.87,
+            "w": 1.8,
+            "h": 0.16,
+            "fontSize": 7.2,
+            "fontFace": "Malgun Gothic",
+            "bold": true,
+            "color": "3B82F6",
+            "align": "left (1)",
+            "margin": 0.0003,
+            "wrap": true
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el74",
+          "sourceName": "Text 78",
+          "x": 10.76,
+          "y": 5.13,
+          "w": 1.8,
+          "h": 0.58,
+          "role": "placeholder",
+          "text": "• {{education_or_certificate_1}}\n• {{education_or_certificate_2}}\n• {{education_or_certificate_3}}",
+          "originalText": "• [교육명]\n• [자격증/수료]",
+          "options": {
+            "x": 10.76,
+            "y": 5.13,
+            "w": 1.8,
+            "h": 0.58,
+            "fontSize": 6.2,
+            "fontFace": "Malgun Gothic",
+            "color": "1F2937",
+            "align": "left (1)",
+            "margin": 0.0003,
+            "wrap": true,
+            "fit": "shrink"
+          },
+          "templateText": "• {{education_or_certificate_1}}\n• {{education_or_certificate_2}}\n• {{education_or_certificate_3}}",
+          "placeholderKeys": [
+            "education_or_certificate_1",
+            "education_or_certificate_2",
+            "education_or_certificate_3"
+          ]
+        },
+        {
+          "method": "addText",
+          "id": "s1_el75",
+          "sourceName": "Text 79",
+          "x": 4.53,
+          "y": 5.83,
+          "w": 8.07,
+          "h": 0.17,
+          "role": "text_74",
+          "text": "사용한 적 없는 기술·도구·자격은 삭제",
+          "originalText": "사용한 적 없는 기술·도구·자격은 삭제",
+          "options": {
+            "x": 4.53,
+            "y": 5.83,
+            "w": 8.07,
+            "h": 0.17,
+            "fontSize": 6.7,
+            "fontFace": "Malgun Gothic",
+            "color": "6B7280",
+            "align": "right (3)",
+            "margin": 0.0003,
+            "wrap": true
+          }
+        },
+        {
+          "method": "addShape",
+          "id": "s1_el76",
+          "sourceName": "Shape 80",
+          "x": 0.5517,
+          "y": 6.53,
+          "w": 12.23,
+          "h": 0.58,
+          "shapeType": "roundRect",
+          "options": {
+            "x": 0.5517,
+            "y": 6.53,
+            "w": 12.23,
+            "h": 0.58,
+            "fill": {
+              "color": "EAF4FF"
+            },
+            "line": {
+              "color": "D7ECFF",
+              "pt": 0.8
+            }
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el77",
+          "sourceName": "Text 81",
+          "x": 0.78,
+          "y": 6.72,
+          "w": 0.9,
+          "h": 0.18,
+          "role": "summary_label",
+          "text": "한 줄 소개",
+          "originalText": "한 줄 소개",
+          "options": {
+            "x": 0.78,
+            "y": 6.72,
+            "w": 0.9,
+            "h": 0.18,
+            "fontSize": 7.2,
+            "fontFace": "Malgun Gothic",
+            "bold": true,
+            "color": "3B82F6",
+            "align": "left (1)",
+            "margin": 0.0003,
+            "wrap": true
+          }
+        },
+        {
+          "method": "addText",
+          "id": "s1_el78",
+          "sourceName": "Text 82",
+          "x": 1.72,
+          "y": 6.68,
+          "w": 10.74,
+          "h": 0.25,
+          "role": "template_text",
+          "text": "{{strength_from_experience}}을 바탕으로 {{job_or_problem}}를 해결하는 {{target_role}} 지원자입니다.",
+          "originalText": "[실제 경험에서 도출된 강점]을 바탕으로 [직무/문제]를 해결하는 [희망 직무] 지원자입니다.",
+          "options": {
+            "x": 1.72,
+            "y": 6.68,
+            "w": 10.74,
+            "h": 0.25,
+            "fontSize": 10.4,
+            "fontFace": "Malgun Gothic",
+            "bold": true,
+            "color": "111827",
+            "align": "left (1)",
+            "margin": 0.0003,
+            "wrap": true
+          }
+        }
+      ],
+      "speakerNotes": "작성 가이드\n- 승인된 Wiki, 이력서, 활동 기록에 있는 정보만 사용합니다.\n- 연락처, 자격증, 경력, 기술은 사용자가 제공하거나 확인된 경우에만 입력합니다.\n- 핵심 경험은 2~3개만 선별하고, 성과 수치가 없으면 임의로 만들지 않습니다.\n- 보유 역량은 3~6개 키워드로 압축합니다.\n- 사진이 없으면 기본 아바타 자리를 유지하거나 대체 이미지를 넣습니다.\n- 한 줄 소개는 실제 경험에서 도출된 강점과 지원 직무를 연결해 1~2줄 이내로 작성합니다."
+    }
+  ],
+  "contentContract": {
+    "profile": {
+      "name": "{{name}}",
+      "target_role": "{{target_role}}",
+      "phone": "{{phone}}",
+      "email": "{{email}}"
+    },
+    "experiences": [
+      {
+        "project_or_activity": "{{project_or_activity_1}}",
+        "role": "{{role_1}}",
+        "impact": "{{impact_1}}"
+      },
+      {
+        "project_or_activity": "{{project_or_activity_2}}",
+        "role": "{{role_2}}",
+        "impact": "{{impact_2}}"
+      },
+      {
+        "project_or_activity": "{{project_or_activity_3}}",
+        "role": "{{role_3}}",
+        "impact": "{{impact_3}}"
+      }
+    ],
+    "skills": [
+      "{{skill_1}}",
+      "{{skill_2}}",
+      "{{skill_3}}",
+      "{{skill_4}}",
+      "{{skill_5}}",
+      "{{skill_6}}"
+    ],
+    "tools_education": {
+      "technologies": [
+        "{{technology_1}}",
+        "{{technology_2}}",
+        "{{technology_3}}"
+      ],
+      "collaboration_tools": [
+        "{{collaboration_tool_1}}",
+        "{{collaboration_tool_2}}",
+        "{{collaboration_tool_3}}"
+      ],
+      "design_tools": [
+        "{{design_tool_1}}",
+        "{{design_tool_2}}",
+        "{{design_tool_3}}"
+      ],
+      "education_certificates": [
+        "{{education_or_certificate_1}}",
+        "{{education_or_certificate_2}}",
+        "{{education_or_certificate_3}}"
+      ]
+    },
+    "one_line_intro": {
+      "strength_from_experience": "{{strength_from_experience}}",
+      "job_or_problem": "{{job_or_problem}}",
+      "target_role": "{{target_role}}"
+    }
+  }
+}

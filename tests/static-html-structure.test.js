@@ -3263,6 +3263,13 @@ const portfolioKeywordsRoutePath = path.join(appDir, 'api', 'portfolio', 'keywor
 const portfolioSourceDataRoutePath = path.join(appDir, 'api', 'portfolio', 'source-data', 'route.js');
 const portfolioReviseRoutePath = path.join(appDir, 'api', 'portfolio', 'revise', 'route.js');
 const portfolioOnePageLibPath = path.join(libDir, 'portfolio-onepage.js');
+const portfolioSummaryPptxLibPath = path.join(libDir, 'portfolio-summary-pptx.js');
+const portfolioSummaryTemplateV2Path = path.join(
+  rootDir,
+  'portfolio_design',
+  'portfolio-summary',
+  'portfolio_summary_template.pptxgen.v2.json'
+);
 const portfolioGenerateRoute = fs.existsSync(portfolioGenerateRoutePath)
   ? fs.readFileSync(portfolioGenerateRoutePath, 'utf8')
   : '';
@@ -3281,6 +3288,12 @@ const portfolioExportPptxRoute = fs.existsSync(portfolioExportPptxRoutePath)
 const portfolioOnePageLib = fs.existsSync(portfolioOnePageLibPath)
   ? fs.readFileSync(portfolioOnePageLibPath, 'utf8')
   : '';
+const portfolioSummaryPptxLib = fs.existsSync(portfolioSummaryPptxLibPath)
+  ? fs.readFileSync(portfolioSummaryPptxLibPath, 'utf8')
+  : '';
+const portfolioSummaryTemplateV2 = fs.existsSync(portfolioSummaryTemplateV2Path)
+  ? fs.readFileSync(portfolioSummaryTemplateV2Path, 'utf8')
+  : '';
 assert.match(
   portfolioGenerateRoute,
   /isAnalysisMockEnabled\(\)[\s\S]*buildMockPortfolioResponse/,
@@ -3292,13 +3305,13 @@ assert.ok(
 );
 assert.match(
   portfolioOnePageLib,
-  /portfolioOnePageSchema[\s\S]*template_version[\s\S]*profile[\s\S]*target_fit[\s\S]*representative_experiences[\s\S]*differentiator/,
-  'one-page summary helper should define the vertical summary schema from the starter kit'
+  /portfolioOnePageSchema[\s\S]*template_version[\s\S]*profile[\s\S]*target_fit[\s\S]*representative_experiences[\s\S]*template_values[\s\S]*differentiator/,
+  'one-page summary helper should define the preview schema and PPTX template_values schema'
 );
 assert.match(
   portfolioOnePageLib,
-  /const INFO_MISSING = '제공된 정보 부족'[\s\S]*buildPortfolioOnePageUserPrompt[\s\S]*마이페이지 기본 정보[\s\S]*사용자가 승인한 활동 요약[\s\S]*정보가 없으면 '\$\{INFO_MISSING\}'/,
-  'one-page summary prompt should send mypage data and approved evidence with missing-info rules'
+  /const INFO_MISSING = '제공된 정보 부족'[\s\S]*template_values[\s\S]*project_or_activity[\s\S]*verified_skills[\s\S]*technologies[\s\S]*education_or_certificates[\s\S]*buildPortfolioOnePageUserPrompt[\s\S]*마이페이지 기본 정보[\s\S]*핵심 프로젝트\/경험 목록[\s\S]*정보가 없으면 '\$\{INFO_MISSING\}'/,
+  'one-page summary prompt should send mypage data, selected projects, and PPTX v2 template value rules'
 );
 assert.match(
   portfolioCreateHtml,
@@ -3314,6 +3327,16 @@ assert.match(
   portfolioGenerateRoute,
   /experienceProjects\s*=\s*\[\][\s\S]*const context = \{[\s\S]*experienceProjects/,
   'portfolio generation API should accept selected project summary context'
+);
+assert.match(
+  portfolioGenerateRoute,
+  /loadServerPortfolioContext[\s\S]*\.from\('user_profiles'\)[\s\S]*\.from\('project_analyses'\)[\s\S]*\.eq\('scope',\s*'project'\)/,
+  'portfolio generation API should reload mypage data and selected project summary data from Supabase before prompting OpenAI'
+);
+assert.match(
+  portfolioGenerateRoute,
+  /function\s+mapProjectAnalysis[\s\S]*summaryMd:\s*result\.summaryMd/,
+  'portfolio generation API should map Supabase project summaryMd into OpenAI project context'
 );
 assert.match(
   portfolioReviseRoute,
@@ -3338,10 +3361,28 @@ assert.ok(
   fs.existsSync(portfolioExportPptxRoutePath),
   'portfolio PPTX export API should live in app/api/portfolio/export-pptx/route.js'
 );
+assert.ok(
+  fs.existsSync(portfolioSummaryPptxLibPath),
+  'portfolio summary PPTX renderer should live in lib/portfolio-summary-pptx.js'
+);
+assert.ok(
+  fs.existsSync(portfolioSummaryTemplateV2Path),
+  'portfolio summary PPTX v2 template JSON should exist'
+);
+assert.match(
+  portfolioSummaryTemplateV2,
+  /"project_or_activity_1"[\s\S]*"role_1"[\s\S]*"impact_1"[\s\S]*"skill_1"[\s\S]*"technology_1"[\s\S]*"education_or_certificate_1"/,
+  'portfolio summary PPTX v2 template should split repeated placeholders into numbered fields'
+);
 assert.match(
   portfolioExportPptxRoute,
-  /isOnePageSummary[\s\S]*MYFIT_A4_PORTRAIT_SAFE[\s\S]*addOnePageSummarySlide\(pptx,\s*portfolio\)/,
-  'portfolio PPTX export should render 1페이지 요약본 with the vertical one-page summary template'
+  /isOnePageSummary[\s\S]*renderPortfolioSummaryTemplate\(pptx,\s*portfolio\)/,
+  'portfolio PPTX export should render 1페이지 요약본 from the pptxgenjs JSON template'
+);
+assert.match(
+  portfolioSummaryPptxLib,
+  /portfolio_summary_template\.pptxgen\.v2\.json[\s\S]*buildPlaceholderMap[\s\S]*project_or_activity_\$\{number\}[\s\S]*technology_\$\{number\}[\s\S]*skill_\$\{index \+ 1\}[\s\S]*slide\.addText/,
+  'portfolio summary PPTX renderer should replace v2 placeholders in the template JSON'
 );
 assert.ok(
   fs.existsSync(portfolioKeywordsRoutePath),
