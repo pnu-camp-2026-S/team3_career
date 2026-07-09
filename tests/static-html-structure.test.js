@@ -3269,8 +3269,13 @@ assert.match(
 );
 assert.match(
   portfolioCreateHtml,
-  /async function\s+downloadPptPreview\(\)[\s\S]*saveGeneratedPortfolio\(\{\s*requireRemote:\s*true\s*\}\)[\s\S]*fetch\('\/api\/portfolio\/export-pptx'[\s\S]*JSON\.stringify\(currentPortfolio\)[\s\S]*response\.blob\(\)/,
-  'portfolio_create should save to the portfolio DB before downloading editable PowerPoint files'
+  /async function\s+downloadPptPreview\(\)[\s\S]*saveGeneratedPortfolio\(\{\s*requireRemote:\s*true\s*\}\)[\s\S]*Portfolio remote save failed before PPT download[\s\S]*fetch\('\/api\/portfolio\/export-pptx'[\s\S]*JSON\.stringify\(currentPortfolio\)[\s\S]*response\.blob\(\)/,
+  'portfolio_create should try DB save but continue downloading editable PowerPoint files when remote save fails'
+);
+assert.match(
+  portfolioCreateHtml,
+  /document\.body\.appendChild\(link\)[\s\S]*link\.click\(\)[\s\S]*link\.remove\(\)/,
+  'portfolio_create should attach the PPTX download link before clicking it'
 );
 
 const portfolioExportPptxRoutePath = path.join(appDir, 'api', 'portfolio', 'export-pptx', 'route.js');

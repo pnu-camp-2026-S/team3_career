@@ -1174,8 +1174,12 @@
     async function downloadPptPreview() {
       if (!currentPortfolio) return;
 
-      const savedPortfolio = await saveGeneratedPortfolio({ requireRemote: true });
-      currentPortfolio.id = savedPortfolio?.id || currentPortfolio.id;
+      try {
+        const savedPortfolio = await saveGeneratedPortfolio({ requireRemote: true });
+        currentPortfolio.id = savedPortfolio?.id || currentPortfolio.id;
+      } catch (error) {
+        console.warn('Portfolio remote save failed before PPT download. Continuing with current draft.', error);
+      }
 
       const response = await fetch('/api/portfolio/export-pptx', {
         method: 'POST',
@@ -1193,8 +1197,10 @@
       const downloadUrl = URL.createObjectURL(blob);
       link.href = downloadUrl;
       link.download = `${currentPortfolio.format.replace(/[\\/:*?"<>|]/g, '_')}.pptx`;
+      document.body.appendChild(link);
       link.click();
-      URL.revokeObjectURL(downloadUrl);
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 0);
     }
 
     function exitEditingSession() {
