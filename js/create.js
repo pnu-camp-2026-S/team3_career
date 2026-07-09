@@ -365,11 +365,13 @@
       overlay.classList.toggle('hidden', !isLoading);
       overlay.setAttribute('aria-hidden', String(!isLoading));
       button.disabled = isLoading;
+      button.setAttribute('aria-busy', String(isLoading));
       button.innerHTML = isLoading
         ? '<span class="button-spinner" aria-hidden="true"></span> 분석 중'
-        : '<span aria-hidden="true">✦</span> 선택한 폴더 분석하기';
+        : '<span aria-hidden="true">✦</span> 분석하기';
       if (isLoading && folder) {
-        document.getElementById('analysisLoadingTitle').textContent = `${folder.label} 자료를 분석하고 있어요`;
+        document.getElementById('analysisLoadingTitle').textContent = '교육 자료 로딩중';
+        document.getElementById('analysisLoadingMessage').textContent = '잠시 기다려 주세요.';
       }
     }
 

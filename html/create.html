@@ -23,7 +23,7 @@
         <div class="file-manager-actions">
           <button class="primary-button analyze-button" id="analyzeButton" type="button" data-action="analyze">
             <span aria-hidden="true">✦</span>
-            선택한 폴더 분석하기
+            분석하기
           </button>
         </div>
       </section>
@@ -73,12 +73,12 @@
       </section>
     </main>
 
-    <div class="analysis-loading hidden" id="analysisLoading" role="status" aria-live="polite" aria-hidden="true">
+    <div class="analysis-loading hidden" id="analysisLoading" role="dialog" aria-modal="true" aria-live="polite" aria-hidden="true" aria-labelledby="analysisLoadingTitle" aria-describedby="analysisLoadingMessage">
       <div class="analysis-loading-card">
         <div class="analysis-spinner" aria-hidden="true"></div>
         <p class="analysis-loading-kicker">AI 자료 분석</p>
-        <h2 id="analysisLoadingTitle">폴더 자료를 분석하고 있어요</h2>
-        <p>업로드한 자료에서 근거를 찾고 활동 내용을 정리하고 있습니다.</p>
+        <h2 id="analysisLoadingTitle">교육 자료 로딩중</h2>
+        <p id="analysisLoadingMessage">잠시 기다려 주세요.</p>
         <div class="analysis-loading-steps" aria-hidden="true">
           <span class="active"></span><span></span><span></span>
         </div>
