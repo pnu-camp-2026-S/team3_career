@@ -135,12 +135,33 @@ button {
 
 .profile-menu {
   position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.profile-name-card {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  border: 1px solid #e6eaf4;
+  border-radius: 999px;
+  background: #fff;
+  color: #3c4658;
+  font-size: 13px;
+  font-weight: 850;
+  white-space: nowrap;
+  box-shadow: 0 6px 18px rgba(31, 36, 62, 0.035);
 }
 
 .profile-menu .user-chip {
   width: 42px;
   height: 42px;
+  flex: 0 0 42px;
   justify-content: center;
+  aspect-ratio: 1 / 1;
   border-radius: 50%;
 }
 
@@ -201,7 +222,11 @@ button {
 .avatar,
 .avatar-lg {
   position: relative;
+  display: inline-block;
+  flex: 0 0 auto;
+  aspect-ratio: 1 / 1;
   border-radius: 50%;
+  overflow: hidden;
   background:
     radial-gradient(circle at 50% 35%, #d9dde5 0 17%, transparent 18%),
     radial-gradient(circle at 50% 82%, #c8cdd7 0 35%, transparent 36%),

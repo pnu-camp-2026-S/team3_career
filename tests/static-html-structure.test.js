@@ -339,8 +339,12 @@ assert.match(
 );
 assert.match(
   sharedNavJs,
-  /href="withdraw\.html"[\s\S]*회원 탈퇴/,
-  'shared navigation profile dropdown should link to account withdrawal'
+  /data-profile-name-card/,
+  'shared navigation should render a passive user name card next to the profile icon'
+);
+assert.ok(
+  !sharedNavJs.includes('href="withdraw.html"') && !sharedNavJs.includes('profile-danger-link'),
+  'shared navigation profile dropdown should not expose account withdrawal'
 );
 assert.ok(
   !/aria-label="알림"|<button class="icon-button"[^>]*>\s*!/.test(sharedNavJs),
@@ -1667,6 +1671,16 @@ assert.match(
 );
 assert.match(
   fitfolioCss,
+  /\.profile-name-card\s*\{[^}]*border-radius:\s*999px;[^}]*white-space:\s*nowrap;/s,
+  'shared stylesheet should render the profile name as a compact passive card'
+);
+assert.match(
+  fitfolioCss,
+  /\.profile-menu\s+\.user-chip\s*\{[^}]*width:\s*42px;[^}]*height:\s*42px;[^}]*aspect-ratio:\s*1\s*\/\s*1;[^}]*border-radius:\s*50%;/s,
+  'shared profile button should stay perfectly circular'
+);
+assert.match(
+  fitfolioCss,
   /\.profile-dropdown\.open\s*\{[^}]*display:\s*grid;/s,
   'shared stylesheet should display an opened profile dropdown'
 );
@@ -2877,6 +2891,10 @@ assert.match(
   sharedNavJs,
   /data-logout/,
   'shared navigation should expose logout in the profile menu'
+);
+assert.ok(
+  sharedNavJs.includes('data-profile-name-card') && !sharedNavJs.includes('profile-danger-link'),
+  'shared navigation should show the user name card and keep withdrawal out of the dropdown'
 );
 assert.match(
     mypageHtml,
