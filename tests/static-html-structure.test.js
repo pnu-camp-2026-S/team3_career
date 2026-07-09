@@ -1632,7 +1632,7 @@ assert.match(
   /\{\s*key:\s*'create',\s*href:\s*'create\.html',\s*label:\s*'파일 관리'\s*\}/,
   'file management should keep the shared file management nav link'
 );
-for (const text of ['파일 관리', '폴더 목록', '자료 추가', '미리보기', '분석하기', 'GitHub 동기화', '대화로 내용 추가하기', '세부 폴더', '이름 수정', '프로젝트 삭제']) {
+for (const text of ['파일 관리', '폴더 목록', '자료 추가', '미리보기', '분석하기', '대화로 내용 추가하기', '세부 폴더', '이름 수정', '프로젝트 삭제']) {
   assert.ok(
     createHtml.includes(text),
     `file management page should include ${text}`
@@ -1780,25 +1780,11 @@ assert.ok(
   !createHtml.includes('class="ai-status-summary"'),
   'file management should not keep the 전체 자료 중 분석 완료 summary box (#132)'
 );
-assert.match(
-  createHtml,
-  /id="analysisPanelTitle"/,
-  'file management should give the AI status panel a dynamic, per-project title (#132)'
-);
-assert.match(
-  createHtml,
-  /\$\{selectedFolder\.label\} AI 정리 상태/,
-  'file management AI status title should follow the [프로젝트 이름] AI 정리 상태 format (#132)'
-);
-assert.match(
-  createHtml,
-  /data-action="connect-repo"[^>]*id="repoConnectButton"/,
-  'file management should expose a per-project repo connect button (#132)'
-);
-assert.match(
-  createHtml,
-  /data-action="connect-repo-save"/,
-  'file management repo modal should save the per-project connection (#132)'
+assert.ok(
+  !createHtml.includes('AI 정리 상태')
+    && !createHtml.includes('GitHub 동기화')
+    && !createHtml.includes('data-action="connect-repo"'),
+  'file management should remove the unused AI status and GitHub connection UI (#225)'
 );
 assert.match(
   createHtml,
