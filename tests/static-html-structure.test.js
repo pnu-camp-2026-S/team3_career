@@ -1938,8 +1938,8 @@ assert.match(
 );
 assert.match(
   contestHtml,
-  /<section class="filter-bar">[\s\S]*<section class="activity-sort-strip">[\s\S]*<div class="sort-controls" aria-label="활동 정렬 기준">[\s\S]*<button class="sort-option active"[\s\S]*aria-pressed="true"[\s\S]*추천순 정렬[\s\S]*<button class="sort-option"[\s\S]*aria-pressed="false"[\s\S]*마감순 정렬[\s\S]*<section class="dashboard-grid">[\s\S]*<div class="panel activity-panel">/,
-  'contest sort controls should sit between category tabs and the activity recommendation list'
+  /<section class="filter-bar">[\s\S]*<div class="activity-filter-row">[\s\S]*<div class="tabs" id="tabs">[\s\S]*data-filter="교육"[\s\S]*<div class="sort-controls" aria-label="활동 정렬 기준">[\s\S]*<button class="sort-option active"[\s\S]*aria-pressed="true"[\s\S]*추천순 정렬[\s\S]*<button class="sort-option"[\s\S]*aria-pressed="false"[\s\S]*마감순 정렬/,
+  'contest sort controls should sit on the same row as the category tabs'
 );
 assert.match(
   contestHtml,
