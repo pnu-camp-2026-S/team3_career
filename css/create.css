@@ -25,6 +25,35 @@
   justify-content: space-between;
 }
 
+.folder-overview-panel > .panel-head,
+.editable-file-panel > .panel-head {
+  align-items: flex-start;
+}
+
+.panel-heading-block {
+  min-width: 0;
+  flex: 1;
+}
+
+.panel-title-row,
+.editable-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.panel-title-row .panel-title,
+.editable-title-row .panel-title {
+  margin: 0;
+  line-height: 34px;
+}
+
+.panel-title-row .compact-button,
+.editable-title-row .compact-button {
+  flex: 0 0 auto;
+}
+
 .analyze-button {
   min-width: 280px;
   min-height: 58px;
@@ -528,13 +557,6 @@
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
-}
-
-.editable-title-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
 }
 
 .manager-toast {
