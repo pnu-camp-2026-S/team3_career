@@ -270,6 +270,7 @@
       const major = getCurrentMajor();
       const experiences = getSelectedExperienceLabels();
       const experienceProjects = getSelectedExperienceProjects();
+      const projectIds = getSelectedProjectFolders().map((folder) => String(folder.id));
       const keywords = getSelectedKeywords();
 
       if (!keywords.length) {
@@ -292,7 +293,7 @@
       document.getElementById('workspaceTitle').textContent = `${format} 초안`;
       startLoadingProgress(async () => {
         try {
-          const aiDraft = await requestPortfolioGeneration({ format, purpose, major: major.label, experiences, experienceProjects, keywords });
+          const aiDraft = await requestPortfolioGeneration({ format, purpose, major: major.label, experiences, experienceProjects, projectIds, keywords });
           currentPortfolio = normalizeGeneratedPortfolio(aiDraft, portfolioShell);
           currentDraftPageIndex = 0;
           showToast(currentPortfolio.sourceLabel === '목데이터 생성'
@@ -369,7 +370,7 @@
       return {};
     }
 
-    async function requestPortfolioGeneration({ format, purpose, major, experiences, experienceProjects, keywords }) {
+    async function requestPortfolioGeneration({ format, purpose, major, experiences, experienceProjects, projectIds, keywords }) {
       const response = await fetch('/api/portfolio/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -380,6 +381,7 @@
           major,
           experiences,
           experienceProjects,
+          projectIds,
           keywords,
           myPageInfo: readMyPageInfo(),
         }),
