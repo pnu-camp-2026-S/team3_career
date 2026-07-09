@@ -2781,6 +2781,8 @@ for (const fnName of [
   'buildSlides',
   'renderPortfolioPreview',
   'renderPptPreview',
+  'renderDraftPageViewer',
+  'moveDraftPage',
   'moveSlide',
   'handleMasterAction',
   'downloadPptPreview',
@@ -2797,8 +2799,23 @@ for (const fnName of [
 }
 assert.match(
   portfolioCreateHtml,
-  /let\s+currentPortfolio\s*=\s*null;[\s\S]*let\s+chatHistory\s*=\s*\[\];[\s\S]*let\s+currentSlideIndex\s*=\s*0;/,
-  'portfolio_create should track current portfolio, chat history, and PPT slide index'
+  /let\s+currentPortfolio\s*=\s*null;[\s\S]*let\s+chatHistory\s*=\s*\[\];[\s\S]*let\s+currentSlideIndex\s*=\s*0;[\s\S]*let\s+currentDraftPageIndex\s*=\s*0;/,
+  'portfolio_create should track current portfolio, chat history, PPT slide index, and draft page index'
+);
+assert.match(
+  portfolioCreateHtml,
+  /function\s+chunkItems\(items,\s*size\)[\s\S]*renderDraftPageViewer\(pages\)[\s\S]*data-draft-page-direction="-1"[\s\S]*data-draft-page-direction="1"/,
+  'portfolio_create should split long drafts into pages with previous and next buttons'
+);
+assert.match(
+  portfolioCreateHtml,
+  /function\s+moveDraftPage\(direction\)[\s\S]*currentDraftPageIndex\s*\+=\s*direction;[\s\S]*renderPortfolioPreview\(\)/,
+  'portfolio_create should rerender the portfolio preview when draft pages move'
+);
+assert.match(
+  portfolioCreateHtml,
+  /function\s+renderDeckPortfolio\(raw\)[\s\S]*chunkItems\(slides,\s*4\)[\s\S]*renderDraftPageViewer\(pages\)/,
+  'portfolio_create should paginate PPT draft preview cards four slides at a time'
 );
 assert.match(
   portfolioCreateHtml,
@@ -2896,6 +2913,9 @@ for (const cssPattern of [
   /\.ppt-preview-wrap\s*\{/,
   /\.ppt-slide\s*\{/,
   /\.slide-arrow\s*\{/,
+  /\.draft-page-viewer\s*\{/,
+  /\.draft-page-arrow\s*\{/,
+  /\.draft-page-counter\s*\{/,
   /\.master-actions\s*\{/,
   /\.flat-action\.danger\s*\{/,
   /\.chat-input\s+textarea\s*\{/,

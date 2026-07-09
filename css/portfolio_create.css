@@ -843,6 +843,55 @@
   box-shadow: 0 18px 38px rgba(25, 35, 60, 0.10);
 }
 
+.draft-page-viewer {
+  position: relative;
+  min-height: 420px;
+  padding: 0 56px;
+}
+
+.draft-page-frame {
+  min-height: 420px;
+}
+
+.draft-page-arrow {
+  position: absolute;
+  top: 50%;
+  width: 42px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #d7e0f1;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--brand);
+  font-size: 26px;
+  font-weight: 900;
+  box-shadow: 0 12px 28px rgba(31, 36, 62, 0.1);
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+.draft-page-arrow:hover {
+  border-color: #9eb8ff;
+  background: #f4f7ff;
+}
+
+.draft-page-arrow.prev {
+  left: 0;
+}
+
+.draft-page-arrow.next {
+  right: 0;
+}
+
+.draft-page-counter {
+  margin-top: 12px;
+  color: #697586;
+  font-size: 13px;
+  font-weight: 850;
+  text-align: center;
+}
+
 .canvas-hero {
   display: grid;
   gap: 10px;
@@ -1421,6 +1470,15 @@
 
   .portfolio-canvas {
     padding: 22px;
+  }
+
+  .draft-page-viewer {
+    padding: 0 42px;
+  }
+
+  .draft-page-arrow {
+    width: 34px;
+    height: 46px;
   }
 
   .resume-grid,

@@ -53,6 +53,7 @@
     let currentPortfolio = null;
     let chatHistory = [];
     let currentSlideIndex = 0;
+    let currentDraftPageIndex = 0;
     let profileMajor = '';
     let activityFiles = [];
     let isPortfolioRevising = false;
@@ -83,6 +84,12 @@
       await handleMasterAction(actionButton.dataset.masterAction);
     });
     document.getElementById('workspaceContent').addEventListener('click', (event) => {
+      const draftPageButton = event.target.closest('[data-draft-page-direction]');
+      if (draftPageButton) {
+        moveDraftPage(Number(draftPageButton.dataset.draftPageDirection));
+        return;
+      }
+
       const slideButton = event.target.closest('[data-slide-direction]');
       if (!slideButton) return;
       moveSlide(Number(slideButton.dataset.slideDirection));
@@ -327,6 +334,7 @@
 
       currentPortfolio = null;
       currentSlideIndex = 0;
+      currentDraftPageIndex = 0;
       chatHistory = [];
 
       document.getElementById('pfSetupScreen').classList.add('hidden');
@@ -337,6 +345,7 @@
         try {
           const aiDraft = await requestPortfolioGeneration({ format, purpose, major: major.label, experiences, keywords });
           currentPortfolio = normalizeGeneratedPortfolio(aiDraft, portfolioShell);
+          currentDraftPageIndex = 0;
           showToast(currentPortfolio.sourceLabel === '목데이터 생성'
             ? '목데이터로 초안을 생성했습니다.'
             : 'ChatGPT API로 초안을 생성했습니다.');
@@ -650,6 +659,40 @@
       ];
     }
 
+    function chunkItems(items, size) {
+      const list = Array.isArray(items) ? items : [];
+      return Array.from({ length: Math.ceil(list.length / size) || 1 }, (_, index) =>
+        list.slice(index * size, index * size + size)
+      );
+    }
+
+    function renderDraftPageViewer(pages) {
+      const safePages = pages.filter(Boolean);
+      const pageCount = safePages.length || 1;
+      currentDraftPageIndex = Math.max(0, Math.min(currentDraftPageIndex, pageCount - 1));
+      const hasPages = pageCount > 1;
+
+      return `
+        <div class="draft-page-viewer">
+          ${hasPages ? '<button class="draft-page-arrow prev" type="button" aria-label="이전 페이지" data-draft-page-direction="-1">&lt;</button>' : ''}
+          <div class="draft-page-frame">
+            ${safePages[currentDraftPageIndex] || safePages[0] || ''}
+          </div>
+          ${hasPages ? '<button class="draft-page-arrow next" type="button" aria-label="다음 페이지" data-draft-page-direction="1">&gt;</button>' : ''}
+        </div>
+        ${hasPages ? `<div class="draft-page-counter">${currentDraftPageIndex + 1} / ${pageCount}</div>` : ''}
+      `;
+    }
+
+    function renderPlainDraftPage(blocks) {
+      return blocks.map((block) => `
+        <div class="portfolio-block">
+          <h3>${escapeHtml(block.title)}</h3>
+          <p>${escapeHtml(block.body)}</p>
+        </div>
+      `).join('');
+    }
+
     function renderPortfolioPreview() {
       if (!currentPortfolio) return;
 
@@ -667,12 +710,8 @@
         return;
       }
 
-      document.getElementById('workspaceContent').innerHTML = currentPortfolio.blocks.map((block) => `
-        <div class="portfolio-block">
-          <h3>${escapeHtml(block.title)}</h3>
-          <p>${escapeHtml(block.body)}</p>
-        </div>
-      `).join('');
+      const pages = chunkItems(currentPortfolio.blocks, 3).map(renderPlainDraftPage);
+      document.getElementById('workspaceContent').innerHTML = renderDraftPageViewer(pages);
     }
 
     function renderPortfolioError(format, message) {
@@ -705,19 +744,15 @@
         renderCoverLetterPortfolio(raw);
         return;
       }
-      document.getElementById('workspaceContent').innerHTML = currentPortfolio.blocks.map((block) => `
-        <div class="portfolio-block">
-          <h3>${escapeHtml(block.title)}</h3>
-          <p>${escapeHtml(block.body)}</p>
-        </div>
-      `).join('');
+      const pages = chunkItems(currentPortfolio.blocks, 3).map(renderPlainDraftPage);
+      document.getElementById('workspaceContent').innerHTML = renderDraftPageViewer(pages);
     }
 
     function renderOnePagePortfolio(raw) {
       const info = raw.basic_info || {};
       const competencies = raw.core_competencies || [];
       const experiences = raw.experiences || [];
-      document.getElementById('workspaceContent').innerHTML = `
+      document.getElementById('workspaceContent').innerHTML = renderDraftPageViewer([`
         <article class="portfolio-canvas">
           <header class="canvas-hero">
             <span class="canvas-kicker">One Page Portfolio</span>
@@ -754,7 +789,7 @@
             </section>
           </div>
         </article>
-      `;
+      `]);
     }
 
     function renderCaseStudyPortfolio(raw) {
@@ -762,7 +797,7 @@
       const process = raw.design_process || {};
       const implementation = raw.implementation || {};
       const result = raw.result || {};
-      document.getElementById('workspaceContent').innerHTML = `
+      document.getElementById('workspaceContent').innerHTML = renderDraftPageViewer([`
         <article class="portfolio-canvas compact-case-canvas">
           <header class="canvas-hero">
             <span class="canvas-kicker">Case Study</span>
@@ -781,12 +816,12 @@
             ${renderCaseCard('결과 및 성과', [result.quantitative_result, result.qualitative_result, raw.reflection?.learned])}
           </div>
         </article>
-      `;
+      `]);
     }
 
     function renderDeckPortfolio(raw) {
       const slides = currentPortfolio.slides || [];
-      document.getElementById('workspaceContent').innerHTML = `
+      const pages = chunkItems(slides, 4).map((pageSlides, pageIndex) => `
         <article class="portfolio-canvas">
           <header class="canvas-hero">
             <span class="canvas-kicker">Presentation Preview</span>
@@ -794,21 +829,22 @@
             <p>${escapeHtml(currentPortfolio.summary || '발표 흐름에 맞춰 핵심 슬라이드를 구성했습니다.')}</p>
           </header>
           <div class="deck-grid">
-            ${slides.slice(0, 6).map((slide, index) => `
+            ${pageSlides.map((slide, index) => `
               <section class="deck-slide-card">
-                <span>Slide ${index + 1}</span>
+                <span>Slide ${pageIndex * 4 + index + 1}</span>
                 <h4>${escapeHtml(slide.title)}</h4>
                 ${renderBulletList(String(slide.body || '').split(/\n+/).slice(0, 4))}
               </section>
             `).join('')}
           </div>
         </article>
-      `;
+      `);
+      document.getElementById('workspaceContent').innerHTML = renderDraftPageViewer(pages);
     }
 
     function renderCoverLetterPortfolio(raw) {
       const items = raw.items || [];
-      document.getElementById('workspaceContent').innerHTML = `
+      const pages = chunkItems(items, 2).map((pageItems) => `
         <article class="portfolio-canvas">
           <header class="canvas-hero">
             <span class="canvas-kicker">Story Portfolio</span>
@@ -820,7 +856,7 @@
             raw.core_summary?.experience,
             raw.core_summary?.skill,
           ].filter(Boolean))}
-          ${items.map((item) => `
+          ${pageItems.map((item) => `
             <section class="coverletter-question">
               <h4>${escapeHtml(item.question_title || '자기소개서 문항')}</h4>
               <small>${escapeHtml(item.question_reason || '경험과 직무 연결')}</small>
@@ -828,7 +864,8 @@
             </section>
           `).join('')}
         </article>
-      `;
+      `);
+      document.getElementById('workspaceContent').innerHTML = renderDraftPageViewer(pages);
     }
 
     function renderInfoRows(rows) {
@@ -894,6 +931,12 @@
       const slideCount = currentPortfolio.slides.length;
       currentSlideIndex = (currentSlideIndex + direction + slideCount) % slideCount;
       renderPptPreview();
+    }
+
+    function moveDraftPage(direction) {
+      if (!currentPortfolio) return;
+      currentDraftPageIndex += direction;
+      renderPortfolioPreview();
     }
 
     function resetPortfolioStudio() {
@@ -991,6 +1034,7 @@
           .map((text, index) => ({ title: `${index + 1}. 저장된 내용`, body: text.replace(/\s+/g, ' ').trim() })),
         slides: buildSlides(portfolio.format || '상세 기술 포트폴리오', portfolio.purpose || '취업 지원용', '기존 저장 항목', portfolio.experiences || [], portfolio.keywords || [])
       };
+      currentDraftPageIndex = 0;
 
       document.getElementById('pfSetupScreen').classList.add('hidden');
       document.getElementById('pfLoadingScreen').classList.add('hidden');
@@ -1049,6 +1093,7 @@
         currentPortfolio = null;
         chatHistory = [];
         currentSlideIndex = 0;
+        currentDraftPageIndex = 0;
         workspace.classList.add('hidden');
         workspace.classList.remove('leaving');
         document.getElementById('pfLoadingScreen').classList.add('hidden');
@@ -1087,6 +1132,7 @@
       try {
         const revised = await requestPortfolioRevision(revisionNote);
         applyRevisionToCurrentPortfolio(revised);
+        currentDraftPageIndex = 0;
         if (currentPortfolio.raw) {
         currentPortfolio.raw = mergeRawPortfolioText(
           currentPortfolio.raw,
@@ -1105,6 +1151,7 @@
       }
 
       currentPortfolio.updatedAt = new Date().toISOString();
+      currentDraftPageIndex = 0;
 
       if (currentPortfolio.format === 'PPT 발표 스펙') {
         currentPortfolio.slides = currentPortfolio.slides.map((slide, index) => {
