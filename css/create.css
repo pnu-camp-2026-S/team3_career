@@ -543,6 +543,11 @@
   margin: 18px 0 10px;
 }
 
+.subfolder-toolbar > div {
+  display: grid;
+  gap: 4px;
+}
+
 .subfolder-toolbar h3,
 .manager-section-title {
   margin: 0;
@@ -563,17 +568,15 @@
 
 .subfolder-card {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 8px;
   min-height: 62px;
-  padding: 12px 14px;
+  padding: 10px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fff;
   color: var(--ink);
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
 }
 
 .subfolder-card.active,
@@ -584,6 +587,18 @@
 
 .subfolder-card.active {
   color: var(--brand);
+}
+
+.subfolder-select {
+  flex: 1;
+  min-width: 0;
+  padding: 2px 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
 }
 
 .subfolder-card strong,
@@ -599,6 +614,20 @@
   font-size: 12px;
   font-weight: 700;
 }
+
+.subfolder-delete-button {
+  align-self: center;
+  flex: 0 0 auto;
+  margin-right: 0;
+}
+
+.file-delete-button {
+  margin-right: 0;
+}
+
+/* 세부 폴더·파일 삭제 휴지통은 왼쪽 폴더 목록의 휴지통과 동일하게 보이도록
+   .folder-delete-button 기본·hover 스타일(#fff1f1 배경)을 그대로 공유한다.
+   (위치용 margin/align만 각 상황에 맞게 재정의) */
 
 .project-actions {
   display: flex;
@@ -640,8 +669,8 @@
 }
 
 .manager-modal-card {
-  width: min(680px, 100%);
-  max-height: 86vh;
+  width: min(960px, calc(100vw - 44px));
+  max-height: 92vh;
   overflow: auto;
   padding: 26px;
   border-radius: 18px;
@@ -839,6 +868,133 @@
   font: 13px/1.7 Consolas, "Courier New", monospace;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+.markdown-modal-shell {
+  display: grid;
+  gap: 14px;
+}
+
+.markdown-modal-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.markdown-preview {
+  max-height: min(68vh, 720px);
+  overflow: auto;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcff;
+  color: #25314a;
+  line-height: 1.75;
+}
+
+.markdown-preview.empty {
+  color: var(--muted);
+}
+
+.markdown-preview h1,
+.markdown-preview h2,
+.markdown-preview h3 {
+  margin: 1.1em 0 0.55em;
+  color: var(--ink);
+  line-height: 1.3;
+}
+
+.markdown-preview h1:first-child,
+.markdown-preview h2:first-child,
+.markdown-preview h3:first-child,
+.markdown-preview p:first-child {
+  margin-top: 0;
+}
+
+.markdown-preview h1 {
+  font-size: 26px;
+}
+
+.markdown-preview h2 {
+  font-size: 21px;
+}
+
+.markdown-preview h3 {
+  font-size: 17px;
+}
+
+.markdown-preview p,
+.markdown-preview ul {
+  margin: 0 0 12px;
+}
+
+.markdown-preview ul {
+  padding-left: 22px;
+}
+
+.markdown-preview li + li {
+  margin-top: 6px;
+}
+
+.markdown-preview code {
+  padding: 2px 5px;
+  border-radius: 5px;
+  background: #eef2ff;
+  color: #1f2a44;
+  font-family: Consolas, "Courier New", monospace;
+}
+
+.markdown-preview pre {
+  overflow: auto;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #111827;
+  color: #f8fafc;
+  white-space: pre-wrap;
+}
+
+.markdown-preview pre code {
+  padding: 0;
+  background: transparent;
+  color: inherit;
+}
+
+.markdown-preview table {
+  width: 100%;
+  margin: 12px 0;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.markdown-preview th,
+.markdown-preview td {
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.markdown-preview th {
+  background: #eef2ff;
+  color: var(--ink);
+}
+
+.markdown-editor-input {
+  min-height: min(62vh, 640px);
+}
+
+.json-artifact-preview {
+  max-height: min(68vh, 720px);
+  overflow: auto;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #111827;
+  color: #f8fafc;
+  font: 13px/1.7 Consolas, "Courier New", monospace;
+  white-space: pre-wrap;
 }
 
 .file-preview-empty {

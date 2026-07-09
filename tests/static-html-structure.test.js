@@ -229,6 +229,16 @@ assert.match(
 );
 assert.match(
   folderStoreJs,
+  /function\s+createSubfolder\(folder,\s*label\)[\s\S]*::custom-[\s\S]*files:\s*\[\]/,
+  'folder store should create user-defined subfolders with ids that do not collide with template subfolders (#272)'
+);
+assert.match(
+  folderStoreJs,
+  /function\s+stripSubfolderFiles\(subfolders\)[\s\S]*async function\s+updateFolderRemote\(folder\)[\s\S]*subfolders:\s*stripSubfolderFiles\(folder\.subfolders\)/,
+  'folder store should persist updated subfolder lists through the folder PATCH API (#272)'
+);
+assert.match(
+  folderStoreJs,
   /window\.FolderStore\s*=/,
   'folder store should expose its API on window.FolderStore'
 );
@@ -896,6 +906,12 @@ assert.match(
   packageJson.dependencies?.['pdf-parse'] || '',
   /\^?2/,
   'pdf-parse v2 should be installed for PDF text extraction'
+);
+const extractorSource = fs.readFileSync(path.join(rootDir, 'ai_analysis', 'extractor.mjs'), 'utf8');
+assert.match(
+  extractorSource,
+  /async function\s+extractPdf\(buffer\)[\s\S]*PDFParse[\s\S]*getText\(\)[\s\S]*pageCount[\s\S]*pdf:\s*extractPdf/,
+  'single-file analysis extractor should support PDF text extraction and page count metadata (#264)'
 );
 assert.ok(
   Boolean(packageJson.dependencies?.mammoth),
@@ -1772,6 +1788,36 @@ assert.match(
 );
 assert.match(
   createHtml,
+  /id="managedFileInput"[\s\S]*accept="[^"]*\.pdf[^"]*application\/pdf[^"]*"[\s\S]*PDF, Markdown, TXT, CSV, DOCX/,
+  'file management should clearly allow PDF files in the upload control and guidance (#264)'
+);
+assert.match(
+  createHtml,
+  /function\s+renderMarkdownPreview\(markdown\)[\s\S]*escapeHtml[\s\S]*function\s+buildMarkdownEditorHtml[\s\S]*markdown-preview[\s\S]*enable-markdown-edit/,
+  'file summary and project markdown artifacts should render safe Markdown previews before editing (#267)'
+);
+assert.match(
+  createCss,
+  /\.manager-modal-card\s*\{[^}]*width:\s*min\(960px,[^;]+;[\s\S]*\.markdown-preview[\s\S]*max-height:\s*min\(68vh,\s*720px\)[\s\S]*\.markdown-editor-input/,
+  'file summary modal should be wider and provide readable Markdown preview/edit areas (#267)'
+);
+assert.match(
+  createHtml,
+  /data-action="create-subfolder"[\s\S]*function\s+openCreateSubfolderModal\(\)[\s\S]*function\s+confirmCreateSubfolder\(\)[\s\S]*AI 요약은 예약된 폴더 이름입니다[\s\S]*같은 이름의 세부 폴더가 이미 있습니다/,
+  'file management should let users add validated custom subfolders inside a project (#272)'
+);
+assert.match(
+  createHtml,
+  /data-action="delete-subfolder"[\s\S]*async function\s+deleteSubfolder\(subfolderId\)[\s\S]*deleteStoredFile\(file\)[\s\S]*FolderStore\.updateFolderRemote\(folder\)/,
+  'file management should delete custom subfolders and persist the updated subfolder list (#272)'
+);
+assert.match(
+  createHtml,
+  /class="folder-delete-button file-delete-button"[\s\S]*data-action="delete-file"[\s\S]*🗑[\s\S]*class="folder-delete-button subfolder-delete-button"[\s\S]*data-action="delete-subfolder"[\s\S]*🗑/,
+  'file and subfolder delete actions should use the same trash icon style as the left project delete button'
+);
+assert.match(
+  createHtml,
   /data-shared-nav data-active="create"/,
   'file management should use the shared top navigation mount'
 );
@@ -1789,7 +1835,7 @@ assert.match(
   /\{\s*key:\s*'create',\s*href:\s*'create\.html',\s*label:\s*'파일 관리'\s*\}/,
   'file management should keep the shared file management nav link'
 );
-for (const text of ['파일 관리', '폴더 목록', '자료 추가', '미리보기', '분석하기', '대화로 내용 추가하기', '세부 폴더', '이름 수정']) {
+for (const text of ['파일 관리', '폴더 목록', '자료 추가', '미리보기', '분석하기', '세부 폴더', '이름 수정']) {
   assert.ok(
     createHtml.includes(text),
     `file management page should include ${text}`
@@ -1805,15 +1851,15 @@ assert.ok(
   !createHtml.includes('data-action="summarize-file"') && !createHtml.includes('function summarizeFile'),
   'file management should remove the per-file AI 요약 action (#137-3)'
 );
-// #137-5: 상단 공용 'AI 대화로 md 만들기' 제거, 프로젝트별 '대화로 내용 추가하기'로 교체
+// #137-5: 상단 공용 'AI 대화로 md 만들기' 제거
 assert.ok(
   !createHtml.includes('AI 대화로 md 만들기') && !createHtml.includes('data-action="make-md"'),
   'file management should drop the shared top AI md button (#137-5)'
 );
-assert.match(
-  createHtml,
-  /data-action="add-conversation"/,
-  'file management should offer a per-project 대화로 내용 추가하기 action (#137-5)'
+// 프로젝트별 '대화로 내용 추가하기' 버튼 제거
+assert.ok(
+  !createHtml.includes('대화로 내용 추가하기') && !createHtml.includes('data-action="add-conversation"'),
+  'file management should remove the per-project 대화로 내용 추가하기 action'
 );
 // 프로젝트 분석 진입점은 상단 '분석하기' 하나로 통합한다.
 assert.ok(
@@ -1858,6 +1904,11 @@ assert.match(
   createHtml,
   /PROJECT_ANALYSIS_ARTIFACTS[\s\S]*summary\.md[\s\S]*index\.json[\s\S]*log\.md[\s\S]*function\s+buildProjectArtifactFiles[\s\S]*kind:\s*'project-analysis-artifact'[\s\S]*FolderStore\.getAnalysisSubfolder\(folder\)/,
   'file management should show project summary.md/index.json/log.md artifacts in the dedicated AI 요약 subfolder'
+);
+const projectArtifactBranch = (createHtml.match(/\$\{isProjectArtifact[\s\S]*?\n\s*:\s*`/) || [''])[0];
+assert.ok(
+  projectArtifactBranch.includes('data-action="edit-project-artifact"') && !projectArtifactBranch.includes('data-action="preview-file"'),
+  'AI 요약 세부 폴더 산출물 카드는 열람 버튼 없이 수정 버튼만 보여야 한다'
 );
 assert.match(
   createHtml,
@@ -2044,8 +2095,8 @@ assert.ok(
 );
 assert.match(
   createHtml,
-  /collapsedFolderTypes\[typeKey\]\s*\?\?\s*typeFolders\.length\s*===\s*0[\s\S]*aria-expanded="\$\{String\(!isCollapsed\)\}"/,
-  'file management should collapse empty activity type buckets by default'
+  /collapsedFolderTypes\[typeKey\]\s*\?\?\s*true[\s\S]*aria-expanded="\$\{String\(!isCollapsed\)\}"/,
+  'file management should start every activity type bucket collapsed in the left folder list'
 );
 assert.match(
   createHtml,
@@ -2095,7 +2146,7 @@ assert.match(
 );
 assert.match(
   createHtml,
-  /async function\s+deleteFile[\s\S]*fetch\(ACTIVITY_FILES_ENDPOINT,\s*\{[\s\S]*method:\s*'DELETE'/,
+  /async function\s+deleteStoredFile\(file\)[\s\S]*fetch\(ACTIVITY_FILES_ENDPOINT,\s*\{[\s\S]*method:\s*'DELETE'[\s\S]*async function\s+deleteFile/,
   'file management deletes should remove files through the activity file API'
 );
 assert.match(
