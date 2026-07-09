@@ -890,7 +890,8 @@
         if (requestId !== pdfPreviewRequestId) return;
         if (response.status === 503) {
           pdfPreviewUnavailable = true;
-          throw new Error('PDF preview converter is not configured.');
+          renderPptxMatchedPreview();
+          return;
         }
         if (!response.ok) {
           const payload = await response.json().catch(() => ({}));

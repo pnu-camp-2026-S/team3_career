@@ -18,12 +18,13 @@ Vercel 배포 환경에서는 앱과 API 라우트만 Vercel에 두고, PPTX를 
 ## Vercel 환경 변수
 
 ```env
-PORTFOLIO_CONVERTER_URL=https://your-worker.example.com/convert/pptx-to-pdf
+PORTFOLIO_CONVERTER_URL=https://<service-name>.onrender.com/convert/pptx-to-pdf
 PORTFOLIO_CONVERTER_TOKEN=optional_shared_secret
 PORTFOLIO_CONVERTER_TIMEOUT_MS=45000
 ```
 
 `PORTFOLIO_CONVERTER_TOKEN`은 선택값이다. 설정하면 Vercel API가 워커 요청에 `Authorization: Bearer <token>` 헤더를 붙인다.
+`your-worker.example.com` 같은 예시 도메인은 실제 워커 주소가 아니므로 넣지 않는다. 실제 워커를 배포하기 전에는 환경 변수를 비워두면 기존 캔버스 미리보기로 자동 전환된다.
 
 ## 변환 워커 계약
 

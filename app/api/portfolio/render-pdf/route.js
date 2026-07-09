@@ -3,6 +3,7 @@ import { POST as exportPortfolioPptx } from '../export-pptx/route';
 const PPTX_MIME_TYPE = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
 const PDF_MIME_TYPE = 'application/pdf';
 const DEFAULT_TIMEOUT_MS = 45_000;
+const PLACEHOLDER_HOSTS = new Set(['your-worker.example.com']);
 
 function normalizeText(value) {
   return String(value || '').replace(/\s+/g, ' ').trim();
@@ -22,6 +23,7 @@ function getConverterUrl() {
   if (!['http:', 'https:'].includes(url.protocol)) {
     throw new Error('PORTFOLIO_CONVERTER_URL must be an HTTP(S) URL.');
   }
+  if (PLACEHOLDER_HOSTS.has(url.hostname)) return '';
   return url.toString();
 }
 

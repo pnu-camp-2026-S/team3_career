@@ -3455,6 +3455,11 @@ assert.match(
 );
 assert.match(
   portfolioRenderPdfRoute,
+  /PLACEHOLDER_HOSTS[\s\S]*your-worker\.example\.com[\s\S]*PLACEHOLDER_HOSTS\.has\(url\.hostname\)[\s\S]*return ''/,
+  'portfolio PDF render API should treat copied placeholder converter URLs as unconfigured'
+);
+assert.match(
+  portfolioRenderPdfRoute,
   /new FormData\(\)[\s\S]*formData\.append\('file',\s*new Blob\(\[pptxBuffer\]/,
   'portfolio PDF render API should send the generated PPTX to the worker as multipart form data'
 );
