@@ -288,7 +288,8 @@ let isScheduleExpanded = false;
 const activitiesPerPage = 20;
 const visibleScheduleLimit = 5;
 const recommendationMatchThreshold = 85;
-const savedSchedules = [];
+const savedScheduleStorageKey = 'myfitfolioSavedActivitySchedules';
+let savedSchedules = loadSavedSchedules();
 
 function clearExpandedDetail() {
   if (activeDetailElement) {
@@ -338,6 +339,28 @@ function renderRecommendationCount() {
 
 function isActivitySaved(id) {
   return savedSchedules.some((event) => event.id === id);
+}
+
+function loadSavedSchedules() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(savedScheduleStorageKey));
+    if (!Array.isArray(stored)) return [];
+
+    return stored
+      .filter((event) => event && event.id && event.title && event.date)
+      .map((event) => ({
+        id: Number(event.id),
+        title: String(event.title),
+        note: String(event.note || ''),
+        date: String(event.date)
+      }));
+  } catch {
+    return [];
+  }
+}
+
+function persistSavedSchedules() {
+  localStorage.setItem(savedScheduleStorageKey, JSON.stringify(savedSchedules));
 }
 
 function renderActivities() {
@@ -739,6 +762,7 @@ function toggleSaveToCalendar(item) {
     savedSchedules.splice(existingIndex, 1);
   }
 
+  persistSavedSchedules();
   renderSchedule();
   renderCalendarHighlight();
   updateSaveButton(item);
@@ -761,7 +785,6 @@ function renderSchedule() {
           <strong>저장된 일정이 없습니다.</strong>
           <p>활동을 선택하고 저장하면 여기에 추가됩니다.</p>
         </div>
-        <button class="text-button" type="button">대기</button>
       </div>
     `;
     document.querySelectorAll('.calendar-grid .day').forEach((dayBtn) => {
@@ -795,7 +818,6 @@ function renderSchedule() {
             <strong>${event.title}</strong>
             <p>${event.note}</p>
           </div>
-          <button class="text-button schedule-view" type="button" data-date="${event.date}">보기</button>
         </div>
       `
     )
@@ -854,11 +876,6 @@ scheduleList.addEventListener('click', (event) => {
     renderSchedule();
     return;
   }
-
-  const viewButton = event.target.closest('.schedule-view');
-  if (!viewButton) return;
-
-  showScheduleDate(viewButton.dataset.date);
 });
 
 prevCalendarMonth.addEventListener('click', () => moveCalendarMonth(-1));
