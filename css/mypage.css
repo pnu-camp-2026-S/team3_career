@@ -297,7 +297,7 @@
 
 .education-grid {
   display: grid;
-  grid-template-columns: 140px 1fr 1.3fr 1fr 1fr 100px;
+  grid-template-columns: 140px 1fr 1.3fr 1fr 1fr;
   gap: 16px;
 }
 

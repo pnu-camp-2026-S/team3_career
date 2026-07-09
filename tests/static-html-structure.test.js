@@ -1323,6 +1323,15 @@ assert.ok(
   mypageHtml.includes('<label>세부직무</label>') && !mypageHtml.includes('<label>세부직무 선택</label>'),
   'mypage detail job field label should be shortened to 세부직무'
 );
+assert.ok(
+  !mypageHtml.includes('<label>학점</label>') && !mypageHtml.includes('data-edu-field="gpa"'),
+  'mypage education card should not render a GPA field'
+);
+assert.match(
+  mypageHtml,
+  /profile\.educations\.map\(\(\{\s*gpa,\s*\.\.\.education\s*\}\)\s*=>\s*education\)/,
+  'mypage should strip legacy GPA values from persisted education data'
+);
 assert.match(
   mypageHtml,
   /function\s+formatMonthDisplay\(value\)[\s\S]*return\s+`\$\{year\}\.\$\{String\(month\)\.padStart\(2,\s*"0"\)\}`;/,
@@ -1336,6 +1345,11 @@ assert.match(
   mypageCss,
   /\.profile-readonly\s+\.form-field\s+select:disabled\s*\{[^}]*background-image:\s*none;/s,
   'mypage readonly selects should hide dropdown arrows until edit mode'
+);
+assert.match(
+  mypageCss,
+  /\.education-grid\s*\{[^}]*grid-template-columns:\s*140px 1fr 1\.3fr 1fr 1fr;/s,
+  'mypage education grid should use five columns after removing GPA'
 );
 assert.match(
   mypageCss,
