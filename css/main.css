@@ -1126,6 +1126,15 @@
   white-space: nowrap;
 }
 
+.category-label small {
+  display: block;
+  margin-top: 3px;
+  color: #8a93a7;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
 .category-bar {
   height: 10px;
   overflow: hidden;
@@ -1168,9 +1177,113 @@
   line-height: 1.65;
 }
 
+.analysis-result-panel {
+  margin-top: 18px;
+  padding: 22px;
+  border: 1px solid #e7eaf3;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: var(--shadow);
+}
+
+.analysis-result-panel[hidden] {
+  display: none;
+}
+
+.analysis-result-panel .analysis-card-head {
+  align-items: flex-start;
+}
+
+.analysis-result-panel .small-title {
+  margin-top: 0;
+  font-size: 18px;
+}
+
+.aggregate-result-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(240px, 0.65fr);
+  gap: 20px;
+  margin-top: 18px;
+}
+
+.aggregate-result-column {
+  min-width: 0;
+}
+
+.aggregate-result-column h3 {
+  margin: 0 0 12px;
+  color: #344054;
+  font-size: 14px;
+  font-weight: 950;
+}
+
+.aggregate-project-list {
+  display: grid;
+  gap: 10px;
+}
+
+.aggregate-project-item {
+  padding: 14px 16px;
+  border: 1px solid #e8edf5;
+  border-radius: 8px;
+  background: #fbfcff;
+}
+
+.aggregate-project-item strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #17203a;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.aggregate-project-item p {
+  margin: 0;
+  color: #667085;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.55;
+}
+
+.portfolio-keyword-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.portfolio-keyword-list span {
+  padding: 9px 12px;
+  border: 1px solid #dcf0ea;
+  border-radius: 999px;
+  background: #f0fbf7;
+  color: #167a57;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.aggregate-warning {
+  margin: 14px 0 0;
+  padding: 12px 14px;
+  border: 1px solid #fde3c0;
+  border-radius: 8px;
+  background: #fff8ed;
+  color: #9a5b00;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+.aggregate-empty-text {
+  margin: 0;
+  color: #8a93a7;
+  font-size: 13px;
+  font-weight: 800;
+}
+
 @media (max-width: 980px) {
   .keyword-overview,
-  .focused-analysis-grid {
+  .focused-analysis-grid,
+  .aggregate-result-grid {
     grid-template-columns: 1fr;
   }
 

@@ -21,6 +21,10 @@
     const analysisDashboard = document.getElementById('analysisDashboard');
     const analysisOverview = document.getElementById('analysisOverview');
     const analysisOverviewText = document.getElementById('analysisOverviewText');
+    const aggregateResultPanel = document.getElementById('aggregateResultPanel');
+    const aggregateProjectList = document.getElementById('aggregateProjectList');
+    const portfolioKeywordList = document.getElementById('portfolioKeywordList');
+    const aggregateWarningText = document.getElementById('aggregateWarningText');
 
     // 분석 시작 전에는 키워드 개요·활동 분류를 "분석이 필요합니다" 상태로 두고,
     // 분석 시작을 누르면 서버 종합 분석(/api/analysis/aggregate) 결과로 채운다.
@@ -62,9 +66,9 @@
       tutorialBody.hidden = !isOpen;
     }
 
-    function initializeTutorialPanel() {
+    function initializeTutorialPanel(hasDatabaseProfile = false) {
       if (!tutorialPanel || !tutorialToggle || !tutorialBody) return;
-      const shouldOpen = localStorage.getItem(TUTORIAL_SEEN_KEY) !== 'true';
+      const shouldOpen = !hasDatabaseProfile && localStorage.getItem(TUTORIAL_SEEN_KEY) !== 'true';
       setTutorialOpen(shouldOpen);
       localStorage.setItem(TUTORIAL_SEEN_KEY, 'true');
 
@@ -110,8 +114,27 @@
       ), 0);
     }
 
-    function getCompletedFileCount(folder) {
-      return getUserActivityFiles(folder).length;
+    function getProjectFolderTotal(groupKey) {
+      return Object.values(folders).filter((folder) => folder.group === groupKey).length;
+    }
+
+    function buildFolderTypeBreakdown() {
+      const folderList = Object.values(folders);
+      return FolderStore.FOLDER_TYPES.map((type) => {
+        const completedCount = folderList.filter((folder) => (
+          folder.group === 'completed' && folder.type === type.key
+        )).length;
+        const inProgressCount = folderList.filter((folder) => (
+          folder.group === 'inProgress' && folder.type === type.key
+        )).length;
+        return {
+          label: type.label,
+          color: type.color,
+          completedCount,
+          inProgressCount,
+          count: completedCount + inProgressCount,
+        };
+      });
     }
 
     function getUserActivityFiles(folder) {
@@ -136,6 +159,12 @@
       ), 0);
     }
 
+    function getAnalyzedProjectTotal() {
+      return Object.values(folders).filter((folder) => (
+        getUserActivityFiles(folder).some(isAnalyzedActivityFile)
+      )).length;
+    }
+
     function includesMockText(value) {
       return String(value || '').toLowerCase().includes('mock')
         || String(value || '').includes('모의')
@@ -153,11 +182,12 @@
 
     function shouldRunAggregateAnalysis() {
       const analyzedFileTotal = getAnalyzedActivityFileTotal();
+      const analyzedProjectTotal = getAnalyzedProjectTotal();
       const storedBasedOnCount = Number(aggregateResult?.basedOnCount || 0);
-      return analyzedFileTotal > 0 && (
+      return analyzedFileTotal > 0 && analyzedProjectTotal > 0 && (
         !aggregateResult?.activityOverview
         || isMockAggregateResult(aggregateResult)
-        || storedBasedOnCount < analyzedFileTotal
+        || storedBasedOnCount < analyzedProjectTotal
       );
     }
 
@@ -253,43 +283,32 @@
     function updateAnalysisSummary() {
       const completedFileTotal = getFolderFileTotal('completed');
       const inProgressFileTotal = getFolderFileTotal('inProgress');
-      const allFileTotal = completedFileTotal + inProgressFileTotal;
-      const completedShare = allFileTotal ? Math.round((completedFileTotal / allFileTotal) * 100) : 0;
+      const completedProjectTotal = getProjectFolderTotal('completed');
+      const inProgressProjectTotal = getProjectFolderTotal('inProgress');
+      const allProjectTotal = completedProjectTotal + inProgressProjectTotal;
+      const completedProjectShare = allProjectTotal ? Math.round((completedProjectTotal / allProjectTotal) * 100) : 0;
 
-      document.getElementById('analyzedProjectTotal').textContent = completedFileTotal;
-      document.getElementById('completedActivityTotal').textContent = completedFileTotal;
-      document.getElementById('inProgressActivityTotal').textContent = inProgressFileTotal;
-      document.getElementById('analysisSummaryBar').style.width = `${completedShare}%`;
-      document.getElementById('analysisCompletionPercent').textContent = `${completedShare}%`;
+      document.getElementById('analyzedProjectTotal').textContent = allProjectTotal;
+      document.getElementById('completedActivityTotal').textContent = completedProjectTotal;
+      document.getElementById('inProgressActivityTotal').textContent = inProgressProjectTotal;
+      document.getElementById('analysisSummaryBar').style.width = `${completedProjectShare}%`;
+      document.getElementById('analysisCompletionPercent').textContent = `${completedProjectShare}%`;
 
-      const breakdown = FolderStore.FOLDER_TYPES.map((type) => {
-        const folder = folders[`completed-${type.key}`];
-        return {
-          label: type.label,
-          color: type.color,
-          count: folder ? getCompletedFileCount(folder) : 0,
-        };
-      });
-      const inProgressBreakdownItem = {
-        label: '진행중인 활동',
-        color: '#98a2b3',
-        count: inProgressFileTotal,
-      };
-      const chartBreakdown = [...breakdown, inProgressBreakdownItem];
-      document.getElementById('classificationDonut').style.background = buildDonutGradient(chartBreakdown, allFileTotal);
+      const breakdown = buildFolderTypeBreakdown();
+      document.getElementById('classificationDonut').style.background = buildDonutGradient(breakdown, allProjectTotal);
 
-      document.getElementById('categoryBreakdown').innerHTML = chartBreakdown.length
-        ? chartBreakdown.map((item) => {
-            const itemShare = allFileTotal ? Math.round((item.count / allFileTotal) * 100) : 0;
+      document.getElementById('categoryBreakdown').innerHTML = breakdown.length
+        ? breakdown.map((item) => {
+            const itemShare = allProjectTotal ? Math.round((item.count / allProjectTotal) * 100) : 0;
             return `
             <div class="category-row ${item.count ? '' : 'empty'}" style="--category-color: ${item.color}">
-              <span class="category-label">${escapeHtml(item.label)}</span>
+              <span class="category-label">${escapeHtml(item.label)}<small>완료 ${item.completedCount} · 진행 ${item.inProgressCount}</small></span>
               <span class="category-bar" aria-hidden="true"><i style="width: ${itemShare}%"></i></span>
               <strong>${item.count}개</strong>
             </div>
           `;
           }).join('')
-        : '<p class="empty-folder">완료된 활동 폴더에 파일을 추가하면 분류가 표시됩니다.</p>';
+        : '<p class="empty-folder">파일 관리에서 프로젝트 폴더를 추가하면 분류가 표시됩니다.</p>';
       renderAnalysisOverview(completedFileTotal, inProgressFileTotal, breakdown);
     }
 
@@ -298,6 +317,50 @@
       document.getElementById('keywordChipList').innerHTML = keywords
         .map((keyword) => `<span>${escapeHtml(keyword)}</span>`)
         .join('');
+    }
+
+    function normalizeAggregateProjects(result) {
+      return Array.isArray(result?.projects)
+        ? result.projects.filter((project) => project && (project.name || project.highlight || project.description || project.headline))
+        : [];
+    }
+
+    function renderAggregateResultPanel() {
+      if (!aggregateResultPanel || !aggregateProjectList || !portfolioKeywordList || !aggregateWarningText) return;
+
+      const projects = normalizeAggregateProjects(aggregateResult);
+      const portfolioKeywords = Array.isArray(aggregateResult?.portfolioKeywords)
+        ? aggregateResult.portfolioKeywords.filter(Boolean)
+        : [];
+      const warnings = Array.isArray(aggregateResult?.warnings)
+        ? aggregateResult.warnings.filter(Boolean)
+        : [];
+
+      if (!hasAnalyzed || (!projects.length && !portfolioKeywords.length)) {
+        aggregateResultPanel.hidden = true;
+        return;
+      }
+
+      aggregateProjectList.innerHTML = projects.length
+        ? projects.map((project) => {
+            const title = project.name || '프로젝트';
+            const body = project.highlight || project.description || project.headline || '분석 결과에 포함된 프로젝트입니다.';
+            return `
+              <article class="aggregate-project-item">
+                <strong>${escapeHtml(title)}</strong>
+                <p>${escapeHtml(body)}</p>
+              </article>
+            `;
+          }).join('')
+        : '<p class="aggregate-empty-text">프로젝트별 하이라이트가 아직 없습니다.</p>';
+
+      portfolioKeywordList.innerHTML = portfolioKeywords.length
+        ? portfolioKeywords.map((keyword) => `<span>${escapeHtml(keyword)}</span>`).join('')
+        : '<p class="aggregate-empty-text">포트폴리오 키워드가 아직 없습니다.</p>';
+
+      aggregateWarningText.textContent = warnings.join(' ');
+      aggregateWarningText.hidden = warnings.length === 0;
+      aggregateResultPanel.hidden = false;
     }
 
     // 분석 전/후 화면 전환. 키워드 개요는 하나의 섹션이며 상태에 따라 내용이 바뀐다(#166-3).
@@ -320,6 +383,7 @@
       document.getElementById('classificationResult').hidden = !shouldShowAnalysisCards;
       document.getElementById('classificationBadge').textContent = shouldShowAnalysisCards ? '분석 완료' : '분석 전';
       analysisOverview.hidden = false;
+      renderAggregateResultPanel();
     }
 
     function applyAggregateResult(result) {
@@ -327,6 +391,7 @@
       hasAnalyzed = true;
       localStorage.setItem(AI_KEYWORDS_STORAGE_KEY, JSON.stringify(result));
       renderKeywordChips();
+      renderAggregateResultPanel();
       updateAnalysisSummary();
       applyAnalysisState();
     }
@@ -398,25 +463,28 @@
       return false;
     }
 
-    async function renderDashboardState() {
-      const isProfileSaved = await hasSavedDatabaseProfile();
+    async function renderDashboardState(profileSaved = null) {
+      const isProfileSaved = typeof profileSaved === 'boolean'
+        ? profileSaved
+        : await hasSavedDatabaseProfile();
       profileNeededPanel.hidden = isProfileSaved;
       analysisDashboard.hidden = !isProfileSaved;
       updateAnalysisSummary();
       applyAnalysisState();
     }
 
-    function renderFolders() {
+    function renderFolders(profileSaved = null) {
       FolderStore.saveFolders(folders);
-      renderDashboardState();
+      return renderDashboardState(profileSaved);
     }
 
 
     async function initMainDashboard() {
-      initializeTutorialPanel();
       folders = await FolderStore.loadFoldersFromApi();
       await loadActivityFilesFromApi();
-      renderFolders();
+      const isProfileSaved = await hasSavedDatabaseProfile();
+      initializeTutorialPanel(isProfileSaved);
+      await renderFolders(isProfileSaved);
       await restoreAggregateResult();
       if (shouldRunAggregateAnalysis()) await runAnalysis();
     }

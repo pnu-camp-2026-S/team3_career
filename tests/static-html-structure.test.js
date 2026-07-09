@@ -28,7 +28,6 @@ const linkedHtmlFiles = [
   'portfolio_create.html',
   'portfolio_manage.html',
   'portfolio_viewer.html',
-  'signup.html',
   'withdraw.html',
 ];
 
@@ -46,7 +45,6 @@ for (const file of linkedHtmlFiles) {
 const pageCssFiles = {
   'index.html': 'index.css',
   'login.html': 'login.css',
-  'signup.html': 'signup.css',
   'main.html': 'main.css',
   'mypage.html': 'mypage.css',
   'create.html': 'create.css',
@@ -309,24 +307,13 @@ for (const authFile of ['index.html', 'login.html']) {
     `${authFile} should not duplicate inline login button behavior`
   );
 }
-{
-  const signupHtml = fs.readFileSync(path.join(htmlDir, 'signup.html'), 'utf8');
+assert.ok(!fs.existsSync(path.join(htmlDir, 'signup.html')), 'signup.html should be removed from the auth UI');
+assert.ok(!fs.existsSync(path.join(cssDir, 'signup.css')), 'signup.css should be removed with the signup UI');
+for (const authFile of ['index.html', 'login.html']) {
+  const html = fs.readFileSync(path.join(htmlDir, authFile), 'utf8');
   assert.ok(
-    !signupHtml.includes('shared-nav.js'),
-    'signup.html should not load the shared app navigation'
-  );
-  assert.ok(
-    !signupHtml.includes('auth-danger-link') && !signupHtml.includes('withdraw.html'),
-    'signup.html should not expose account withdrawal from the signup flow'
-  );
-  assert.match(
-    signupHtml,
-    /<script src="\.\.\/js\/auth-nav\.js"><\/script>/,
-    'signup.html should load shared auth behavior'
-  );
-  assert.ok(
-    !signupHtml.includes("document.querySelectorAll('[data-login]')"),
-    'signup.html should not duplicate inline login button behavior'
+    !html.includes('signup.html') && !html.includes('회원가입'),
+    `${authFile} should not expose the removed signup window`
   );
 }
 for (const navText of ['메인', '포트폴리오 생성', '포트폴리오 관리', '파일 관리', '활동 추천', '마이페이지']) {
@@ -454,10 +441,9 @@ assert.ok(
   ),
   'activity recommendation dataset should include company, industry, and interest field mock signals'
 );
-assert.match(
-  fitfolioCss,
-  /\.auth-tab\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*center;[^}]*justify-content:\s*center;/s,
-  'auth tabs should center their text'
+assert.ok(
+  !/\.auth-tabs?\b/.test(fitfolioCss),
+  'auth tab styles should be removed with the signup window'
 );
 assert.match(
   fitfolioCss,
@@ -632,6 +618,16 @@ assert.match(
   authWithdrawRoute,
   /USER_ROW_TARGETS[\s\S]*activity_schedules[\s\S]*activity_files[\s\S]*portfolios[\s\S]*user_profiles[\s\S]*profiles[\s\S]*\.delete\(\)[\s\S]*\.eq\(target\.column, userId\)/,
   'withdrawal API should hard-delete app-owned rows for the withdrawing user'
+);
+assert.match(
+  authWithdrawRoute,
+  /activity_schedules',\s*column:\s*'user_id',\s*optional:\s*true[\s\S]*function\s+isMissingTableError\(error\)[\s\S]*schema cache[\s\S]*target\.optional[\s\S]*continue;/,
+  'withdrawal API should skip missing optional feature tables such as activity_schedules'
+);
+assert.match(
+  authWithdrawRoute,
+  /USER_ROW_TARGETS[\s\S]*file_analyses[\s\S]*project_analyses[\s\S]*activity_files[\s\S]*activity_folders[\s\S]*portfolios[\s\S]*\.from\(target\.table\)[\s\S]*\.delete\(\)[\s\S]*\.eq\(target\.column, userId\)/,
+  'withdrawal API should explicitly delete analysis, activity, and portfolio rows for the current uid'
 );
 assert.match(
   authWithdrawRoute,
@@ -968,13 +964,23 @@ assert.match(
 );
 assert.match(
   mainHtml,
+  /<section class="tutorial-panel tutorial-collapsed" id="mainTutorialPanel"[\s\S]*aria-expanded="false"[\s\S]*<div class="tutorial-body" id="mainTutorialBody" hidden>/,
+  'main tutorial should default to collapsed markup until profile state is known'
+);
+assert.match(
+  mainHtml,
   /myfitfolioMainTutorialSeen/,
   'main tutorial should remember whether the user has already seen it'
 );
 assert.match(
   mainHtml,
-  /function\s+initializeTutorialPanel\(\)[\s\S]*localStorage\.getItem\(TUTORIAL_SEEN_KEY\)[\s\S]*setTutorialOpen\(shouldOpen\)[\s\S]*localStorage\.setItem\(TUTORIAL_SEEN_KEY,\s*'true'\)/,
-  'main tutorial should open for first-time users and collapse by default after it has been seen'
+  /function\s+initializeTutorialPanel\(hasDatabaseProfile\s*=\s*false\)[\s\S]*const shouldOpen = !hasDatabaseProfile && localStorage\.getItem\(TUTORIAL_SEEN_KEY\) !== 'true'[\s\S]*setTutorialOpen\(shouldOpen\)[\s\S]*localStorage\.setItem\(TUTORIAL_SEEN_KEY,\s*'true'\)/,
+  'main tutorial should open for first-time users but stay collapsed for users with a saved DB profile'
+);
+assert.match(
+  mainHtml,
+  /const isProfileSaved = await hasSavedDatabaseProfile\(\);[\s\S]*initializeTutorialPanel\(isProfileSaved\);[\s\S]*await renderFolders\(isProfileSaved\);/,
+  'main dashboard should decide the tutorial collapsed state after checking the saved database profile'
 );
 assert.ok(
   !mainHtml.includes('id="deleteModeBtn"'),
@@ -1180,7 +1186,7 @@ assert.match(
 );
 assert.match(
   mainHtml,
-  /async function\s+renderDashboardState\(\)[\s\S]*analysisDashboard\.hidden\s*=\s*!isProfileSaved/,
+  /async function\s+renderDashboardState\(profileSaved\s*=\s*null\)[\s\S]*analysisDashboard\.hidden\s*=\s*!isProfileSaved/,
   'main dashboard should keep the analysis panel below the tutorial for saved profiles'
 );
 assert.match(
@@ -1215,13 +1221,13 @@ assert.match(
 );
 assert.match(
   mainHtml,
-  /analyzedProjectTotal'\)\.textContent\s*=\s*completedFileTotal/,
-  'main dashboard should count analyzed materials from completed folder files, not completed folder count'
+  /analyzedProjectTotal'\)\.textContent\s*=\s*allProjectTotal[\s\S]*completedActivityTotal'\)\.textContent\s*=\s*completedProjectTotal[\s\S]*inProgressActivityTotal'\)\.textContent\s*=\s*inProgressProjectTotal/,
+  'main dashboard analyzed materials should equal the sum of file-management project folder classification counts'
 );
 assert.match(
   mainHtml,
-  /analysisSummaryBar[\s\S]*completedShare/,
-  'main dashboard should visualize completed file share with a progress bar'
+  /analysisSummaryBar[\s\S]*completedProjectShare/,
+  'main dashboard should visualize completed project share with a progress bar'
 );
 assert.match(
   folderStoreJs,
@@ -1235,18 +1241,18 @@ assert.match(
 );
 assert.match(
   mainHtml,
-  /inProgressBreakdownItem[\s\S]*label:\s*'진행중인 활동'[\s\S]*color:\s*'#[0-9a-fA-F]{6}'[\s\S]*count:\s*inProgressFileTotal/,
-  'main dashboard should add in-progress activity as a gray chart item'
+  /function\s+buildFolderTypeBreakdown\(\)[\s\S]*FolderStore\.FOLDER_TYPES\.map[\s\S]*folder\.group\s*===\s*'completed'\s*&&\s*folder\.type\s*===\s*type\.key[\s\S]*folder\.group\s*===\s*'inProgress'\s*&&\s*folder\.type\s*===\s*type\.key/,
+  'main dashboard should sync activity classification counts with file-management status and type tabs'
 );
 assert.match(
   mainHtml,
-  /buildDonutGradient\(chartBreakdown,\s*allFileTotal\)/,
-  'main dashboard donut should include completed category files and in-progress files'
+  /completedProjectTotal\s*=\s*getProjectFolderTotal\('completed'\)[\s\S]*inProgressProjectTotal\s*=\s*getProjectFolderTotal\('inProgress'\)[\s\S]*completedProjectShare[\s\S]*analysisCompletionPercent'\)\.textContent\s*=\s*`\$\{completedProjectShare\}%`/,
+  'main dashboard donut percent should use the same completed and in-progress project folders as file management'
 );
 assert.match(
   mainHtml,
-  /const\s+itemShare\s*=\s*allFileTotal\s*\?\s*Math\.round\(\(item\.count\s*\/\s*allFileTotal\)\s*\*\s*100\)/,
-  'main dashboard category bars should scale against all chart files including in-progress activity'
+  /buildDonutGradient\(breakdown,\s*allProjectTotal\)[\s\S]*const\s+itemShare\s*=\s*allProjectTotal\s*\?\s*Math\.round\(\(item\.count\s*\/\s*allProjectTotal\)\s*\*\s*100\)/,
+  'main dashboard category bars should scale against all file-management project folders'
 );
 assert.match(
   mainHtml,
@@ -1254,9 +1260,14 @@ assert.match(
   'main dashboard should pass each folder color into its category bar row'
 );
 assert.match(
+  mainHtml,
+  /완료 \$\{item\.completedCount\} · 진행 \$\{item\.inProgressCount\}/,
+  'main dashboard should show completed and in-progress split for each activity type'
+);
+assert.match(
   fitfolioCss,
-  /--in-progress-color:\s*#[0-9a-fA-F]{6}/,
-  'main dashboard should use a distinct color token for in-progress activity'
+  /\.category-label small\s*\{[^}]*font-size:\s*11px;/s,
+  'main dashboard should style the file-management status split inside category rows'
 );
 assert.match(
   fitfolioCss,
@@ -1304,6 +1315,26 @@ assert.match(
 );
 assert.match(
   mainHtml,
+  /id="aggregateResultPanel"[\s\S]*전체 프로젝트 종합 분석[\s\S]*id="aggregateProjectList"[\s\S]*id="portfolioKeywordList"/,
+  'main dashboard should include the user-scoped aggregate analysis result panel'
+);
+assert.match(
+  mainHtml,
+  /function\s+renderAggregateResultPanel\(\)[\s\S]*normalizeAggregateProjects\(aggregateResult\)[\s\S]*aggregateResult\?\.portfolioKeywords[\s\S]*aggregateResultPanel\.hidden\s*=\s*false/,
+  'main dashboard should render scope=user projects and portfolio keywords from aggregate results'
+);
+assert.match(
+  mainHtml,
+  /function\s+getAnalyzedProjectTotal\(\)[\s\S]*some\(isAnalyzedActivityFile\)[\s\S]*storedBasedOnCount\s*<\s*analyzedProjectTotal/,
+  'main dashboard should compare aggregate basedOnCount against analyzed project count'
+);
+assert.match(
+  fitfolioCss,
+  /\.analysis-result-panel\[hidden\]\s*\{[^}]*display:\s*none;/s,
+  'main dashboard should hide the aggregate analysis result panel before user-scoped results exist'
+);
+assert.match(
+  mainHtml,
   /function\s+isMockAggregateResult\(result\)[\s\S]*function\s+shouldRunAggregateAnalysis\(\)[\s\S]*isMockAggregateResult\(aggregateResult\)/,
   'main dashboard should rerun aggregate analysis when the saved overview is mock data'
 );
@@ -1314,7 +1345,7 @@ assert.match(
 );
 assert.match(
   mainHtml,
-  /async function\s+renderDashboardState\(\)\s*\{[\s\S]*updateAnalysisSummary\(\)[\s\S]*applyAnalysisState\(\)/,
+  /async function\s+renderDashboardState\(profileSaved\s*=\s*null\)\s*\{[\s\S]*updateAnalysisSummary\(\)[\s\S]*applyAnalysisState\(\)/,
   'main dashboard should refresh analysis numbers when folders render so file-management analysis can reveal the chart'
 );
 assert.ok(
@@ -2687,6 +2718,7 @@ for (const file of fs.readdirSync(htmlDir).filter((name) => name.endsWith('.html
 
 const portfolioCreateHtml = readPageSource('portfolio_create.html');
 const portfolioCreateCss = fs.readFileSync(path.join(cssDir, 'portfolio_create.css'), 'utf8');
+const portfolioEditEntryJs = fs.readFileSync(path.join(jsDir, 'portfolio-edit-entry.js'), 'utf8');
 assert.match(
   portfolioCreateHtml,
   /data-shared-nav data-active="portfolio_create"/,
@@ -2756,8 +2788,8 @@ assert.match(
 );
 assert.match(
   portfolioCreateHtml,
-  /pfLoadingScreen'\)\.classList\.remove\('hidden'\)[\s\S]*startLoadingProgress\(async\s*\(\)\s*=>\s*\{[\s\S]*pfLoadingScreen'\)\.classList\.add\('hidden'\)[\s\S]*pfWorkspaceScreen'\)\.classList\.remove\('hidden'\)/,
-  'portfolio_create should transition from loading screen to workspace screen'
+  /pfLoadingScreen'\)\.classList\.remove\('hidden'\)[\s\S]*await startLoadingProgress\(async\s*\(\)\s*=>\s*\{[\s\S]*requestPortfolioGeneration[\s\S]*pfLoadingScreen'\)\.classList\.add\('hidden'\)[\s\S]*pfWorkspaceScreen'\)\.classList\.remove\('hidden'\)/,
+  'portfolio_create should keep the loading screen until portfolio generation finishes'
 );
 assert.match(
   portfolioCreateHtml,
@@ -2776,8 +2808,8 @@ assert.match(
 );
 assert.match(
   portfolioCreateHtml,
-  /const\s+loadingDuration\s*=\s*1200/,
-  'portfolio_create loading progress should use the faster attachment timing'
+  /async function\s+startLoadingProgress\(onComplete\)[\s\S]*window\.setInterval[\s\S]*Math\.exp\(-elapsed \/ 1800\)[\s\S]*Math\.min\(92,\s*easedProgress\)[\s\S]*await onComplete\(\)[\s\S]*setProgress\(100\)/,
+  'portfolio_create loading progress should stay synced with the actual async generation task'
 );
 assert.match(
   portfolioCreateCss,
@@ -2922,8 +2954,23 @@ assert.match(
 );
 assert.match(
   portfolioCreateHtml,
-  /function\s+prepareEditorEntryScreen\(\)[\s\S]*editPortfolioId[\s\S]*pfSetupScreen'\)\.classList\.add\('hidden'\)[\s\S]*pfLoadingScreen'\)\.classList\.remove\('hidden'\)[\s\S]*prepareEditorEntryScreen\(\);[\s\S]*openPortfolioEditorFromQuery\(\);/,
+  /<script src="\.\.\/js\/portfolio-edit-entry\.js"><\/script>[\s\S]*<link rel="stylesheet" href="\.\.\/css\/common\.css"/,
+  'portfolio_create should load edit-entry script before stylesheets to prevent the setup screen flash'
+);
+assert.match(
+  portfolioEditEntryJs,
+  /new URLSearchParams\(window\.location\.search\)\.has\('edit'\)[\s\S]*document\.documentElement\.classList\.add\('portfolio-edit-entry'\)/,
+  'portfolio edit-entry script should mark edit mode before portfolio_create.js is deferred'
+);
+assert.match(
+  portfolioCreateHtml,
+  /function\s+prepareEditorEntryScreen\(\)[\s\S]*editPortfolioId[\s\S]*pfSetupScreen'\)\.classList\.add\('hidden'\)[\s\S]*pfLoadingScreen'\)\.classList\.remove\('hidden'\)[\s\S]*async function\s+initializePortfolioCreatePage\(\)[\s\S]*if \(editPortfolioId\)[\s\S]*prepareEditorEntryScreen\(\);[\s\S]*await openPortfolioEditorFromQuery\(\);/,
   'portfolio_create edit mode should hide the format setup screen before loading the saved draft'
+);
+assert.match(
+  portfolioCreateCss,
+  /html\.portfolio-edit-entry #pfSetupScreen\s*\{[^}]*display:\s*none\s*!important;[\s\S]*html\.portfolio-edit-entry #pfLoadingScreen\.hidden\s*\{[^}]*display:\s*grid\s*!important;/,
+  'portfolio_create edit mode should hide setup and show loading through CSS before deferred scripts finish'
 );
 assert.match(
   portfolioCreateHtml,
@@ -3122,11 +3169,9 @@ assert.ok(
 
 const loginHtml = fs.readFileSync(path.join(htmlDir, 'login.html'), 'utf8');
 const indexAuthHtml = fs.readFileSync(path.join(htmlDir, 'index.html'), 'utf8');
-const signupHtml = fs.readFileSync(path.join(htmlDir, 'signup.html'), 'utf8');
 for (const [fileName, html] of [
   ['index.html', indexAuthHtml],
   ['login.html', loginHtml],
-  ['signup.html', signupHtml],
 ]) {
   assert.ok(
     !/data-provider="naver"|Naver|네이버|naver-icon/.test(html),
@@ -3333,10 +3378,6 @@ assert.ok(
   'login page should not link directly to account withdrawal'
 );
 assert.ok(
-  !signupHtml.includes('href="withdraw.html"'),
-  'signup page should not link directly to account withdrawal'
-);
-assert.ok(
   !indexAuthHtml.includes('href="withdraw.html"'),
   'auth index page should not link directly to account withdrawal'
 );
@@ -3376,10 +3417,6 @@ assert.match(
   'mypage account management should link to withdrawal'
 );
 
-assert.ok(
-  !signupHtml.includes('auth-danger-link') && !signupHtml.includes('withdraw.html'),
-  'signup page should not link to account withdrawal'
-);
 assert.match(
   withdrawHtml,
   /id="withdrawConfirm"/,

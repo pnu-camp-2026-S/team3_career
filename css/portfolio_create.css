@@ -2,6 +2,14 @@
   display: none !important;
 }
 
+html.portfolio-edit-entry #pfSetupScreen {
+  display: none !important;
+}
+
+html.portfolio-edit-entry #pfLoadingScreen.hidden {
+  display: grid !important;
+}
+
 .portfolio-create-page {
   padding-top: 18px;
   padding-bottom: 18px;
