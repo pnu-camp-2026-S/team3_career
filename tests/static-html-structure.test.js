@@ -867,50 +867,65 @@ assert.ok(
   'main sidebar should not include the open/close toggle button'
 );
 assert.ok(
-  !/<span class="folder-count">/.test(mainHtml),
-  'main sidebar folder rows should not display the file count number'
+  !mainHtml.includes('id="activitySidebar"') && !mainHtml.includes('id="sidebarResizeHandle"'),
+  'main page should remove the old activity sidebar and resize handle'
 );
 assert.match(
   mainHtml,
-  /id="sidebarResizeHandle"/,
-  'main sidebar should keep the width resize handle'
+  /id="mainTutorialPanel"[\s\S]*id="mainTutorialToggle"[\s\S]*aria-controls="mainTutorialBody"/,
+  'main page should include a collapsible tutorial panel'
 );
 assert.match(
   mainHtml,
-  /const\s+sidebarResizeHandle\s*=\s*document\.getElementById\('sidebarResizeHandle'\)/,
-  'main sidebar should keep the resize handle element wired in JavaScript'
+  /myfitfolioMainTutorialSeen/,
+  'main tutorial should remember whether the user has already seen it'
 );
 assert.match(
   mainHtml,
-  /myfitfolioSidebarWidth/,
-  'main sidebar should persist the resized sidebar width'
+  /function\s+initializeTutorialPanel\(\)[\s\S]*localStorage\.getItem\(TUTORIAL_SEEN_KEY\)[\s\S]*setTutorialOpen\(shouldOpen\)[\s\S]*localStorage\.setItem\(TUTORIAL_SEEN_KEY,\s*'true'\)/,
+  'main tutorial should open for first-time users and collapse by default after it has been seen'
 );
 assert.ok(
   !mainHtml.includes('id="deleteModeBtn"'),
   'main sidebar should remove the old delete mode button'
 );
 assert.ok(
-  !mainHtml.includes('활동 자료 업로드'),
-  'main sidebar should remove the activity upload button'
-);
-assert.match(
-  mainHtml,
-  /data-analysis-start/,
-  'main sidebar should move analysis start to the top action area'
+  !mainHtml.includes('id="fileInput"'),
+  'main dashboard should not offer a file upload input'
 );
 assert.ok(
-  !mainHtml.includes('id="fileInput"'),
-  'main sidebar should not offer a file upload input (uploads happen in file management only)'
+  !mainHtml.includes('data-analysis-start') && !mainHtml.includes('class="dashboard-head"'),
+  'main dashboard should remove the visible AI full analysis title and start button'
 );
 assert.match(
   mainHtml,
-  /완료된 활동 폴더의 자료로 강점 키워드와 활동 분류를 정리해 드려요/,
-  'main sidebar should explain that completed folders drive analysis'
+  /<ol class="tutorial-groups">[\s\S]*href="mypage\.html">[\s\S]*href="create\.html">[\s\S]*href="portfolio_create\.html">[\s\S]*href="portfolio_manage\.html">[\s\S]*href="contest\.html">/ ,
+  'main tutorial should show one row per destination with navigation actions'
 );
 assert.match(
   mainHtml,
-  /진행중인 활동 폴더/,
-  'main sidebar should rename ready folders to in-progress folders'
+  /<img class="tutorial-illustration" src="data:image\/svg\+xml,[^"]+" alt="" \/>/,
+  'main tutorial should include an image with each explanation'
+);
+assert.match(
+  mainHtml,
+  /class="tutorial-group tutorial-group-nested"[\s\S]*class="tutorial-substeps"[\s\S]*portfolio_create\.html/ ,
+  'main tutorial should group same-page portfolio creation tasks inside one nested box'
+);
+assert.match(
+  mainHtml,
+  /tutorial-step-meta[\s\S]*1단계[\s\S]*tutorial-nav-name">마이페이지[\s\S]*tutorial-step-meta[\s\S]*2단계[\s\S]*tutorial-nav-name">파일관리[\s\S]*tutorial-step-meta[\s\S]*3-4단계[\s\S]*tutorial-nav-name">포트폴리오 생성[\s\S]*tutorial-step-meta[\s\S]*5단계[\s\S]*tutorial-nav-name">포트폴리오 관리[\s\S]*tutorial-step-meta[\s\S]*6단계[\s\S]*tutorial-nav-name">활동 추천/,
+  'main tutorial should show the matching top navigation tab name next to each step label'
+);
+assert.match(
+  mainHtml,
+  /<ol class="tutorial-substeps"[\s\S]*<li class="tutorial-substep"><strong>3\. 원하는 형식 선택<\/strong><span>[\s\S]*<li class="tutorial-substep"><strong>4\. AI 대화창에서 내용 수정<\/strong><span>/,
+  'main tutorial should list portfolio creation steps 3 and 4 as one-line rows'
+);
+assert.match(
+  mainHtml,
+  /<li class="tutorial-substep"><strong>3\. 원하는 형식 선택<\/strong><span>[\s\S]*<figure class="tutorial-image-slot">[\s\S]*src="\/images\/tutorial\/portfolio_format\.png"[\s\S]*<li class="tutorial-substep"><strong>4\. AI 대화창에서 내용 수정<\/strong><span>[\s\S]*<figure class="tutorial-image-slot">[\s\S]*src="\/images\/tutorial\/portfolio_modify\.png"/,
+  'main tutorial should keep portfolio creation screenshots under each matching step'
 );
 assert.match(
   folderStoreJs,
@@ -935,10 +950,9 @@ assert.ok(
   !mainHtml.includes('data-rename-folder') && !mainHtml.includes('renameFolder') && !mainHtml.includes('폴더명 수정'),
   'main sidebar should not offer folder rename controls (#125)'
 );
-assert.match(
-  mainHtml,
-  /<a class="folder-row" href="create\.html\?folder=\$\{escapeHtml\(folder\.id\)\}"/,
-  'main sidebar folders should be summary cards linking to file management (#126 5-7)'
+assert.ok(
+  !mainHtml.includes('<a class="folder-row"') && !/function\s+renderFolder\(/.test(mainHtml),
+  'main page should remove sidebar folder summary cards'
 );
 assert.ok(
   !mainHtml.includes('data-toggle-folder') && !mainHtml.includes('파일을 이 폴더로 끌어오세요'),
@@ -982,34 +996,28 @@ assert.match(
   /async function\s+loadActivityFilesFromApi\(\)[\s\S]*fetch\(ACTIVITY_FILES_ENDPOINT/,
   'main dashboard should load existing uploaded files from the activity file API'
 );
-assert.match(
-  mainHtml,
-  /FolderStore\.FOLDER_GROUPS/,
-  'main sidebar should render folder groups from the shared folder store'
+assert.ok(
+  !mainHtml.includes('FolderStore.FOLDER_GROUPS'),
+  'main page should not render sidebar folder groups'
 );
 
 assert.match(
   mainHtml,
-  /내 정보 입력이 필요해요/,
+  /id="profileNeededPanel"[\s\S]*class="next-card profile-needed-card"/,
   'main dashboard should show a large profile-required message before profile save'
 );
 assert.match(
   mainHtml,
-  /class="next-card profile-needed-card"[\s\S]*class="metric-icon"[\s\S]*![\s\S]*내 정보 입력이 필요해요/,
+  /class="next-card profile-needed-card"[\s\S]*class="metric-icon"[\s\S]*!/, 
   'main profile-required warning should keep the original large next-card icon layout'
 );
 assert.match(
   mainHtml,
-  /href="mypage\.html">내 정보 작성하기<\/a>/,
-  'main profile-required warning should keep the mypage call to action'
-);
-assert.match(
-  mainHtml,
-  /href="create\.html">활동기록 먼저 정리하기<\/a>/,
-  'main profile-required warning should keep the activity organization call to action'
+  /class="next-card profile-needed-card"[\s\S]*href="mypage\.html"[\s\S]*href="create\.html"/,
+  'main profile-required warning should keep the mypage and activity organization calls to action'
 );
 assert.ok(
-  !mainHtml.includes('파일 관리로 이동'),
+  !mainHtml.includes('<a class="folder-row"'),
   'main sidebar should remove per-folder file management shortcut buttons'
 );
 assert.match(
@@ -1081,8 +1089,8 @@ assert.match(
 );
 assert.match(
   mainHtml,
-  /data-analysis-start\]'\)\.addEventListener\('click',\s*async\s*\(\)\s*=>\s*\{\s*await runAnalysis\(\)/,
-  'the analysis start button should trigger runAnalysis'
+  /async function\s+renderDashboardState\(\)[\s\S]*analysisDashboard\.hidden\s*=\s*!isProfileSaved/,
+  'main dashboard should keep the analysis panel below the tutorial for saved profiles'
 );
 assert.match(
   mainHtml,
@@ -1101,8 +1109,18 @@ assert.match(
 );
 assert.match(
   mainHtml,
-  /function\s+getFolderFileTotal[\s\S]*folder\.group\s*===\s*groupKey[\s\S]*sum\s*\+\s*FolderStore\.getFolderFiles\(folder\)\.length/,
-  'main dashboard should total analysis counts from files inside each folder group'
+  /function\s+getFolderFileTotal\(groupKey\)[\s\S]*folder\.group\s*===\s*groupKey[\s\S]*sum\s*\+\s*getUserActivityFiles\(folder\)\.length[\s\S]*function\s+getUserActivityFiles\(folder\)[\s\S]*file\.kind\s*!==\s*'analysis-summary'/,
+  'main dashboard should total analysis counts from user files inside each folder group'
+);
+assert.match(
+  mainHtml,
+  /function\s+isAnalyzedActivityFile\(file\)[\s\S]*file\.status\s*===\s*'분석완료'[\s\S]*file\.analysisStatus\s*===\s*'completed'[\s\S]*function\s+hasAnalyzedActivityFiles\(\)[\s\S]*getUserActivityFiles\(folder\)\.some\(isAnalyzedActivityFile\)/,
+  'main dashboard should detect files analyzed from the file management analyze button'
+);
+assert.match(
+  mainHtml,
+  /function\s+applyAnalysisState\(\)[\s\S]*shouldShowAnalysisCards\s*=\s*hasAnalyzed\s*\|\|\s*hasAnalyzedFiles[\s\S]*classificationResult'\)\.hidden\s*=\s*!shouldShowAnalysisCards/,
+  'main dashboard should show the classification donut after file analysis even before aggregate keyword analysis'
 );
 assert.match(
   mainHtml,
@@ -1161,6 +1179,30 @@ assert.match(
 );
 assert.match(
   mainHtml,
+  /analysis-info-control[\s\S]*analysis-info-tooltip/,
+  'main dashboard info buttons should show hover tooltips instead of click-open boxes'
+);
+assert.ok(
+  !mainHtml.includes('data-info-target') && !mainHtml.includes('analysis-info-box'),
+  'main dashboard info help should not depend on click toggled info boxes'
+);
+assert.match(
+  fitfolioCss,
+  /\.keyword-overview\[hidden\]\s*\{[^}]*display:\s*none;/s,
+  'main dashboard should fully hide the keyword overview box when hidden'
+);
+assert.match(
+  fitfolioCss,
+  /\.analysis-empty-state\[hidden\]\s*\{[^}]*display:\s*none;/s,
+  'main dashboard should hide the 분석이 필요합니다 empty state after analysis'
+);
+assert.match(
+  fitfolioCss,
+  /\.classification-visual\[hidden\]\s*\{[^}]*display:\s*none;/s,
+  'main dashboard should hide the classification donut before analysis'
+);
+assert.match(
+  mainHtml,
   /id="analysisOverview"[\s\S]*id="analysisOverviewText"/,
   'main dashboard should include an AI analysis overview panel below the analysis cards'
 );
@@ -1174,9 +1216,10 @@ assert.match(
   /function\s+applyAggregateResult\(result\)[\s\S]*updateAnalysisSummary\(\)/,
   'main dashboard should update analysis numbers when analysis runs'
 );
-assert.ok(
-  !/function\s+renderDashboardState\(\)\s*\{[^}]*updateAnalysisSummary\(\)/.test(mainHtml),
-  'main dashboard should not refresh analysis numbers just because folders render'
+assert.match(
+  mainHtml,
+  /async function\s+renderDashboardState\(\)\s*\{[\s\S]*updateAnalysisSummary\(\)[\s\S]*applyAnalysisState\(\)/,
+  'main dashboard should refresh analysis numbers when folders render so file-management analysis can reveal the chart'
 );
 assert.ok(
   !mainHtml.includes('커리어 준비도'),
