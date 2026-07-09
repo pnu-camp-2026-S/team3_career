@@ -1816,11 +1816,6 @@ assert.match(
   /class="folder-delete-button file-delete-button"[\s\S]*data-action="delete-file"[\s\S]*🗑[\s\S]*class="folder-delete-button subfolder-delete-button"[\s\S]*data-action="delete-subfolder"[\s\S]*🗑/,
   'file and subfolder delete actions should use the same trash icon style as the left project delete button'
 );
-assert.match(
-  createHtml,
-  /data-action="rename-subfolder"[\s\S]*function\s+openRenameSubfolderModal\(subfolderId\)[\s\S]*function\s+saveSubfolderName\(subfolderId\)[\s\S]*AI 요약은 예약된 폴더 이름입니다[\s\S]*같은 이름의 세부 폴더가 이미 있습니다/,
-  'file management should let users rename a subfolder with a dedicated pencil button next to it'
-);
 assert.ok(
   !createHtml.includes('메인 사이드바와 같은 폴더 형식입니다'),
   'file management should remove the stale main-sidebar comparison note under the folder list'

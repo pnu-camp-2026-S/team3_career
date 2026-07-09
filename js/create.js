@@ -216,9 +216,6 @@
             <span>${sub.files.length}개 자료</span>
           </button>
           ${isAnalysisSubfolder(sub) ? '' : `
-            <button class="subfolder-rename-button" type="button" data-action="rename-subfolder" data-subfolder-rename-id="${escapeHtml(sub.id)}" aria-label="${escapeHtml(sub.label)} 세부 폴더 이름 수정">
-              <span aria-hidden="true">✏️</span>
-            </button>
             <button class="folder-delete-button subfolder-delete-button" type="button" data-action="delete-subfolder" data-subfolder-delete-id="${escapeHtml(sub.id)}" aria-label="${escapeHtml(sub.label)} 세부 폴더 삭제">
               <span aria-hidden="true">🗑</span>
             </button>
@@ -1289,56 +1286,6 @@
       showToast(`'${name}' 세부 폴더를 추가했습니다.`);
     }
 
-    function openRenameSubfolderModal(subfolderId) {
-      const folder = getSelectedFolder();
-      const subfolder = (folder?.subfolders || []).find((sub) => sub.id === subfolderId);
-      if (!folder || !subfolder) return;
-      showModal('세부 폴더 이름 수정', `
-        <p class="panel-note">이름을 바꿔도 안의 자료는 그대로 유지됩니다.</p>
-        <div class="repo-form">
-          <label class="repo-field"><span>세부 폴더 이름</span><input id="renameSubfolderInput" type="text" value="${escapeHtml(subfolder.label)}" /></label>
-          <div class="form-actions">
-            <button class="primary-button" type="button" data-action="save-subfolder-name" data-subfolder-rename-id="${escapeHtml(subfolderId)}">이름 저장</button>
-          </div>
-        </div>
-      `);
-    }
-
-    async function saveSubfolderName(subfolderId) {
-      const folder = getSelectedFolder();
-      const subfolder = (folder?.subfolders || []).find((sub) => sub.id === subfolderId);
-      if (!folder || !subfolder) return;
-      const name = normalizeSubfolderName(document.getElementById('renameSubfolderInput')?.value);
-      if (!name) {
-        showToast('세부 폴더 이름을 입력하세요.');
-        return;
-      }
-      if (name === FolderStore.ANALYSIS_SUBFOLDER_LABEL) {
-        showToast('AI 요약은 예약된 폴더 이름입니다.');
-        return;
-      }
-      if (name !== subfolder.label && isDuplicateSubfolderName(folder, name)) {
-        showToast('같은 이름의 세부 폴더가 이미 있습니다.');
-        return;
-      }
-
-      const previousLabel = subfolder.label;
-      subfolder.label = name;
-      try {
-        await FolderStore.updateFolderRemote(folder);
-      } catch (error) {
-        console.warn('Subfolder rename could not be saved.', error);
-        subfolder.label = previousLabel;
-        showToast('세부 폴더 이름을 저장하지 못했습니다. 잠시 후 다시 시도해주세요.');
-        return;
-      }
-
-      persistFolders();
-      hideModal();
-      render();
-      showToast(`세부 폴더 이름을 '${name}'(으)로 변경했습니다.`);
-    }
-
     async function deleteSubfolder(subfolderId) {
       const folder = getSelectedFolder();
       const subfolder = (folder?.subfolders || []).find((sub) => sub.id === subfolderId);
@@ -1494,8 +1441,6 @@
       if (action === 'create-folder-confirm') confirmCreateFolder();
       if (action === 'create-subfolder') openCreateSubfolderModal();
       if (action === 'create-subfolder-confirm') confirmCreateSubfolder();
-      if (action === 'rename-subfolder') openRenameSubfolderModal(actionButton.dataset.subfolderRenameId);
-      if (action === 'save-subfolder-name') saveSubfolderName(actionButton.dataset.subfolderRenameId);
       if (action === 'delete-subfolder') deleteSubfolder(actionButton.dataset.subfolderDeleteId);
       if (action === 'close-modal') hideModal();
     });
