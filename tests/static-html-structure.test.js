@@ -2209,8 +2209,8 @@ assert.match(
 );
 assert.match(
   contestJs,
-  /return interpolateScore\(96,\s*75,[\s\S]*return interpolateScore\(74,\s*40,[\s\S]*return interpolateScore\(40,\s*12,/,
-  'contest displayed match scores should use lower high, middle, and low score ranges'
+  /return interpolateScore\(96,\s*90,[\s\S]*return interpolateScore\(89,\s*80,[\s\S]*return interpolateScore\(79,\s*70,/,
+  'contest displayed mock match scores should distribute into 90, 80, and 70 score ranges'
 );
 assert.match(
   contestJs,
@@ -2505,8 +2505,8 @@ assert.match(
 );
 assert.match(
   contestJs,
-  /const\s+recommendedActivityLimit\s*=\s*24/,
-  'contest recommendation count should keep a stable maximum 24 recommendation pool'
+  /const\s+activitiesPerPage\s*=\s*20/,
+  'contest recommendation count should rely on pagination instead of a hard list cap'
 );
 assert.match(
   contestJs,
@@ -2515,8 +2515,8 @@ assert.match(
 );
 assert.match(
   contestJs,
-  /function\s+getRecommendationQualityPool\(\)[\s\S]*strongItems[\s\S]*standardItems[\s\S]*exploratoryItems[\s\S]*slice\(0,\s*recommendedActivityLimit\)/,
-  'contest activity list should fill recommendations from quality bands while hiding low-score activities'
+  /function\s+getRecommendationQualityPool\(\)[\s\S]*strongItems[\s\S]*standardItems[\s\S]*exploratoryItems[\s\S]*return\s+\[\.\.\.strongItems,\s*\.\.\.standardItems,\s*\.\.\.exploratoryItems\]/,
+  'contest activity list should show every activity that passes the quality bands while hiding low-score activities'
 );
 assert.match(
   contestJs,
@@ -2540,8 +2540,13 @@ assert.match(
 );
 assert.match(
   contestJs,
-  /function\s+getProfileFitBreakdown\([\s\S]*profile\.major[\s\S]*profile\.minor[\s\S]*profile\.linkedMajor[\s\S]*profile\.desiredJobs[\s\S]*profile\.interestFields[\s\S]*profile\.interestedIndustries[\s\S]*profile\.interestedCompanies/,
-  'contest recommendations should calculate profile-fit breakdown scores from mypage preferences'
+  /function\s+getProfileFitBreakdown\([\s\S]*profile\.desiredJobs[\s\S]*profile\.interestedIndustries[\s\S]*profile\.interestFields[\s\S]*profile\.interestedCompanies[\s\S]*educationSignal/,
+  'contest recommendations should prioritize desired job and industry, use interests and companies as boosts, and keep education as explanation'
+);
+assert.match(
+  contestJs,
+  /jobMatch\.hasInput\s*&&\s*!jobMatch\.matched\s*\?\s*Math\.min\(weightedScore,\s*69\)/,
+  'contest recommendations should cap job-mismatched activities below the recommendation threshold'
 );
 assert.match(
   contestJs,
@@ -2560,8 +2565,13 @@ assert.match(
 );
 assert.match(
   contestJs,
-  /topFitLabel[\s\S]*topFitScore[\s\S]*recommendationGradeLabel[\s\S]*recommendationGradeClass[\s\S]*function\s+renderFitSignalSummary/,
-  'contest cards and detail panels should show recommendation grade and the strongest profile-fit reason'
+  /hasProfileFitSignals[\s\S]*topFitLabel[\s\S]*topFitScore[\s\S]*recommendationGradeLabel[\s\S]*recommendationGradeClass[\s\S]*function\s+renderFitSignalSummary/,
+  'contest cards and detail panels should show recommendation grade and the strongest profile-fit reason only when profile inputs exist'
+);
+assert.match(
+  contestJs,
+  /item\.hasProfileFitSignals\s*\?\s*`<span class="metric">[\s\S]*세부 일치 근거/,
+  'contest should hide detailed profile percentages when the user has not entered profile recommendation data'
 );
 assert.match(
   contestCss,
