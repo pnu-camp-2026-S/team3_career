@@ -68,6 +68,16 @@
     function renderFolderGroups() {
       const container = document.getElementById('fileManagerFolderGroups');
       const folderList = Object.values(folders);
+      if (folderList.length === 0) {
+        container.innerHTML = `
+          <div class="manager-onboarding-empty">
+            <strong>먼저 프로젝트 폴더를 만들어 주세요.</strong>
+            <span>활동 자료는 프로젝트 폴더와 세부 폴더 안에서 정리할 수 있습니다.</span>
+            <button class="primary-button compact-button" type="button" data-action="create-folder">프로젝트 폴더 추가</button>
+          </div>
+        `;
+        return;
+      }
       container.innerHTML = FolderStore.FOLDER_GROUPS.map((group) => {
         const groupFolders = folderList.filter((folder) => folder.group === group.key);
         return `
@@ -119,11 +129,18 @@
 
     function renderFilePanel() {
       const selectedFolder = getSelectedFolder();
+      setFolderDependentActionsVisible(Boolean(selectedFolder));
       if (!selectedFolder) {
-        document.getElementById('editablePanelTitle').textContent = '프로젝트 없음';
-        document.getElementById('editablePanelDesc').textContent = '왼쪽에서 프로젝트를 만들어 자료를 관리하세요.';
+        document.getElementById('editablePanelTitle').textContent = '자료를 정리할 프로젝트가 필요해요';
+        document.getElementById('editablePanelDesc').textContent = '프로젝트 폴더를 만든 뒤 세부 폴더에 자료를 추가할 수 있습니다.';
         document.getElementById('subfolderList').innerHTML = '';
-        document.getElementById('managedFileList').innerHTML = '<div class="manager-empty"><strong>표시할 프로젝트가 없습니다.</strong><span>폴더 추가로 새 프로젝트를 만들어 보세요.</span></div>';
+        document.getElementById('managedFileList').innerHTML = `
+          <div class="manager-onboarding-empty manager-onboarding-empty-wide">
+            <strong>프로젝트 폴더를 먼저 만들어 주세요.</strong>
+            <span>폴더를 만들면 자료 추가, 이름 수정, 프로젝트 이동 기능을 사용할 수 있습니다.</span>
+            <button class="primary-button compact-button" type="button" data-action="create-folder">프로젝트 폴더 추가</button>
+          </div>
+        `;
         return;
       }
       const selectedSubfolder = getSelectedSubfolder();
@@ -166,6 +183,13 @@
           `;
         }).join('')
         : '<div class="manager-empty"><strong>이 세부 폴더에는 아직 자료가 없습니다.</strong><span>자료 추가 버튼을 눌러 선택한 세부 폴더에 자료를 넣어보세요.</span></div>';
+    }
+
+    function setFolderDependentActionsVisible(isVisible) {
+      document.querySelector('[data-action="rename-project"]').hidden = !isVisible;
+      document.querySelector('.project-actions').hidden = !isVisible;
+      document.querySelector('.subfolder-toolbar').hidden = !isVisible;
+      document.querySelector('.manager-dropzone').hidden = !isVisible;
     }
 
     function renderSubfolders(folder) {

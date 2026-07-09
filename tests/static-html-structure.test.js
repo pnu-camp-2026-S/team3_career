@@ -1808,6 +1808,26 @@ assert.match(
   'file status pills should restore the saved analysis state after reload'
 );
 assert.match(
+  createHtml,
+  /folderList\.length\s*===\s*0[\s\S]*먼저 프로젝트 폴더를 만들어 주세요\.[\s\S]*data-action="create-folder"[^>]*>프로젝트 폴더 추가</,
+  '폴더 목록은 프로젝트가 없을 때 생성 이유와 바로 실행 가능한 CTA를 보여줘야 한다'
+);
+assert.match(
+  createHtml,
+  /function\s+setFolderDependentActionsVisible\(isVisible\)[\s\S]*rename-project[^;]*hidden\s*=\s*!isVisible;[\s\S]*project-actions[^;]*hidden\s*=\s*!isVisible;[\s\S]*subfolder-toolbar[^;]*hidden\s*=\s*!isVisible;[\s\S]*manager-dropzone[^;]*hidden\s*=\s*!isVisible;/,
+  '폴더가 없을 때 자료 추가, 이름 수정, 이동 등 폴더 의존 액션을 숨겨야 한다'
+);
+assert.match(
+  createHtml,
+  /자료를 정리할 프로젝트가 필요해요[\s\S]*프로젝트 폴더를 먼저 만들어 주세요\.[\s\S]*폴더를 만들면 자료 추가, 이름 수정, 프로젝트 이동 기능을 사용할 수 있습니다\.[\s\S]*data-action="create-folder"[^>]*>프로젝트 폴더 추가</,
+  '우측 자료 영역은 폴더 없음 안내와 프로젝트 생성 CTA를 제공해야 한다'
+);
+assert.match(
+  createCss,
+  /\.editable-file-panel\s+\[hidden\]\s*\{[^}]*display:\s*none\s*!important;[\s\S]*\.manager-onboarding-empty\s*\{[^}]*display:\s*grid;[^}]*gap:\s*10px;[^}]*padding:\s*20px;[\s\S]*@media\s*\(max-width:\s*680px\)\s*\{[\s\S]*\.manager-onboarding-empty\s+\.primary-button\s*\{[^}]*width:\s*100%;/s,
+  '폴더 없음 안내와 CTA는 모바일에서도 겹치지 않는 레이아웃을 유지해야 한다'
+);
+assert.match(
   createCss,
   /\.status-pill\s*\{[^}]*justify-content:\s*center;[^}]*align-items:\s*center;[^}]*width:\s*80px;[^}]*height:\s*28px;[^}]*padding:\s*0;[^}]*line-height:\s*1;[^}]*\}[\s\S]*\.manager-file-card\s+\.status-pill\s*\{[^}]*display:\s*inline-flex;[^}]*margin-top:\s*0;/s,
   '파일 상태 뱃지는 5글자 기준 고정 폭 안에서 텍스트를 중앙 정렬해야 한다'
