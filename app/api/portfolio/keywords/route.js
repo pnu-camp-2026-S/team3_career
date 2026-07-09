@@ -35,7 +35,7 @@ const keywordSchema = {
   properties: {
     keywords: {
       type: 'array',
-      items: { type: 'string' },
+      items: { type: 'string', maxLength: 14 },
     },
     rationale: { type: 'string' },
   },
@@ -85,10 +85,59 @@ function collectExperienceText(experiences) {
     .join(' ');
 }
 
+const KEYWORD_COMPACT_RULES = [
+  { pattern: /비교\s*분석/, keyword: '비교 분석' },
+  { pattern: /문제\s*정의/, keyword: '문제 정의' },
+  { pattern: /문제\s*규모\s*분석|규모\s*분석/, keyword: '규모 분석' },
+  { pattern: /한계\s*분석/, keyword: '한계 분석' },
+  { pattern: /영향\s*정리/, keyword: '영향 정리' },
+  { pattern: /항목\s*구조화|구조화/, keyword: '항목 구조화' },
+  { pattern: /가정\s*설정/, keyword: '가정 설정' },
+  { pattern: /주제\s*기획/, keyword: '주제 기획' },
+  { pattern: /소재\s*제안/, keyword: '소재 제안' },
+  { pattern: /아이디어\s*도출/, keyword: '아이디어 도출' },
+  { pattern: /자료\s*분석|데이터\s*분석/, keyword: '데이터 분석' },
+  { pattern: /공정\s*최적화/, keyword: '공정 최적화' },
+  { pattern: /문제\s*해결/, keyword: '문제 해결' },
+];
+
+const KEYWORD_STOP_WORDS = new Set([
+  '기반',
+  '관점',
+  '관점의',
+  '방식',
+  '방식의',
+  '기존',
+  '사용',
+  '활용',
+  '대한',
+  '관련',
+  '중심',
+  '위한',
+  '통한',
+]);
+
+function compactKeyword(item) {
+  const text = String(item || '')
+    .replace(/[·ㆍ,;/|+]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (!text) return '';
+
+  const matchedRule = KEYWORD_COMPACT_RULES.find((rule) => rule.pattern.test(text));
+  if (matchedRule) return matchedRule.keyword;
+
+  const words = text.split(' ')
+    .map((word) => word.replace(/의$/, ''))
+    .filter((word) => word && !KEYWORD_STOP_WORDS.has(word));
+  const compacted = words.slice(0, 2).join(' ');
+  return compacted.length > 14 ? compacted.slice(0, 14).trim() : compacted;
+}
+
 function uniqueKeywords(items) {
   return [...new Set((items || [])
-    .map((item) => String(item || '').trim())
-    .filter((item) => item && item.length <= 32))]
+    .map(compactKeyword)
+    .filter(Boolean))]
     .slice(0, 12);
 }
 
@@ -114,6 +163,8 @@ function buildKeywordPrompt({ major, experiences, fallbackKeywords }) {
   return [
     'Myfitfolio 포트폴리오 생성 화면의 "강조할 AI 역량 키워드"를 추천한다.',
     '사용자가 선택한 경험 파일 정보와 마이페이지 전공을 종합해, 포트폴리오에 바로 넣을 수 있는 짧은 한국어 역량 키워드 6~10개를 추천한다.',
+    '각 키워드는 반드시 공백 기준 2단어 이내로 작성한다. 예: "문제 정의", "데이터 분석", "공정 최적화", "협업 조율".',
+    '긴 문장형 표현은 금지한다. 예: "정량 자료 기반 문제 규모 분석"처럼 긴 표현 대신 "정량 분석"처럼 줄인다.',
     '파일이 자격증/기사/시험 자료처럼 보이면 웹 검색으로 해당 자격증의 일반적인 평가 범위나 직무 의미를 확인하고, 그 자격증명과 전공 적합성을 반영한다.',
     '근거가 없는 성과, 역할, 수치, 자격 취득 여부는 만들지 않는다.',
     '너무 포괄적인 "문제 해결", "협업"만 반복하지 말고 전공과 경험에 맞는 구체 키워드를 우선한다.',
