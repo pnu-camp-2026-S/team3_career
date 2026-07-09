@@ -210,7 +210,6 @@
           description: folder.projectAnalysis.description || '',
           summaryMd: folder.projectAnalysis.summaryMd || '',
           summaryKeywords: getFolderSummaryKeywords(folder),
-          fileCount: folder.fileCount || 0,
         }));
     }
 
@@ -218,7 +217,7 @@
       const selectedFolders = getSelectedProjectFolders();
 
       if (!selectedFolders.length && portfolioSourceFolders.length) {
-        keywordPool.innerHTML = '<p class="keyword-empty">프로젝트 폴더를 선택하면 summary.md 기반 역량 키워드가 표시됩니다.</p>';
+        keywordPool.innerHTML = '<p class="keyword-empty">프로젝트 폴더를 선택하면 분석 결과의 포트폴리오 키워드가 표시됩니다.</p>';
         return;
       }
 
@@ -239,9 +238,8 @@
     function getFolderMeta(folder) {
       const groupLabel = folder.group === 'completed' ? '완료' : folder.group === 'inProgress' ? '진행중' : folder.group;
       const typeLabel = folder.type || '기타';
-      const fileCountText = `${folder.fileCount || 0}개 파일`;
-      const analysisText = folder.projectAnalysis ? '분석 완료' : '분석 필요';
-      return [groupLabel, typeLabel, fileCountText, analysisText].filter(Boolean).join(' · ');
+      const summaryText = folder.projectAnalysis ? '포트폴리오 키워드 사용' : 'AI 분석 필요';
+      return [groupLabel, typeLabel, summaryText].filter(Boolean).join(' · ');
     }
 
     function renderExperienceOptions() {

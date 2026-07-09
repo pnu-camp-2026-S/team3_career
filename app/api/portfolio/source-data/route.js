@@ -74,47 +74,7 @@ function normalizeKeywordList(items) {
     .slice(0, 12);
 }
 
-function extractMarkdownListSection(markdown, headingMatchers) {
-  const lines = String(markdown || '').split(/\r?\n/);
-  const startIndex = lines.findIndex((line) => {
-    if (!/^##\s+/.test(line)) return false;
-    return headingMatchers.some((matcher) => matcher.test(line));
-  });
-
-  if (startIndex < 0) return [];
-
-  const sectionLines = [];
-  for (let index = startIndex + 1; index < lines.length; index += 1) {
-    const line = lines[index];
-    if (/^##\s+/.test(line)) break;
-    sectionLines.push(line);
-  }
-
-  return normalizeKeywordList(
-    sectionLines
-      .map((line) => line.match(/^\s*[-*]\s+(.+?)\s*$/)?.[1] || '')
-      .filter(Boolean)
-  );
-}
-
 function buildSummaryKeywords(result) {
-  const summaryMd = result?.summaryMd || '';
-  const portfolioSummaryKeywords = extractMarkdownListSection(summaryMd, [
-    /포트폴리오.*키워드/,
-    /portfolio.*keyword/i,
-  ]);
-  if (portfolioSummaryKeywords.length) {
-    return { keywords: portfolioSummaryKeywords, source: 'summary_portfolio' };
-  }
-
-  const activitySummaryKeywords = extractMarkdownListSection(summaryMd, [
-    /강점.*키워드/,
-    /activity.*keyword/i,
-  ]);
-  if (activitySummaryKeywords.length) {
-    return { keywords: activitySummaryKeywords, source: 'summary_activity' };
-  }
-
   const portfolioKeywords = normalizeKeywordList(result?.portfolioKeywords);
   if (portfolioKeywords.length) {
     return { keywords: portfolioKeywords, source: 'portfolioKeywords' };
@@ -126,22 +86,6 @@ function buildSummaryKeywords(result) {
   }
 
   return { keywords: [], source: 'none' };
-}
-
-function projectIdFromFileRow(row) {
-  const projectId = String(row.project_id || '').trim();
-  if (projectId) return projectId;
-  return String(row.folder_id || '').split('::')[0] || '';
-}
-
-function countFilesByProject(files) {
-  const counts = new Map();
-  (files || []).forEach((file) => {
-    const projectId = projectIdFromFileRow(file);
-    if (!projectId) return;
-    counts.set(projectId, (counts.get(projectId) || 0) + 1);
-  });
-  return counts;
 }
 
 function mapProjectAnalysis(row, folder) {
@@ -166,7 +110,7 @@ function mapProjectAnalysis(row, folder) {
   };
 }
 
-function mapFolder(row, fileCounts, analysisByProjectId) {
+function mapFolder(row, analysisByProjectId) {
   const analysisRow = analysisByProjectId.get(row.id) || null;
   const projectAnalysis = mapProjectAnalysis(analysisRow, row);
 
@@ -175,7 +119,6 @@ function mapFolder(row, fileCounts, analysisByProjectId) {
     label: row.label,
     group: row.group_key,
     type: row.type_key,
-    fileCount: fileCounts.get(row.id) || 0,
     analysisStatus: projectAnalysis ? 'completed' : 'missing',
     projectAnalysis,
   };
@@ -190,7 +133,6 @@ export async function GET() {
 
     const [
       { data: folders, error: foldersError },
-      { data: files, error: filesError },
       { data: analyses, error: analysesError },
     ] = await Promise.all([
       supabase
@@ -199,10 +141,6 @@ export async function GET() {
         .eq('user_id', user.id)
         .order('created_at', { ascending: true }),
       supabase
-        .from('activity_files')
-        .select('project_id, folder_id')
-        .eq('user_id', user.id),
-      supabase
         .from('project_analyses')
         .select(PROJECT_ANALYSIS_COLUMNS)
         .eq('user_id', user.id)
@@ -210,14 +148,12 @@ export async function GET() {
     ]);
 
     if (foldersError) return Response.json({ message: foldersError.message }, { status: 500 });
-    if (filesError) return Response.json({ message: filesError.message }, { status: 500 });
     if (analysesError) return Response.json({ message: analysesError.message }, { status: 500 });
 
-    const fileCounts = countFilesByProject(files || []);
     const analysisByProjectId = new Map((analyses || []).map((row) => [row.project_id, row]));
 
     return Response.json({
-      folders: (folders || []).map((folder) => mapFolder(folder, fileCounts, analysisByProjectId)),
+      folders: (folders || []).map((folder) => mapFolder(folder, analysisByProjectId)),
     });
   } catch (error) {
     return Response.json(

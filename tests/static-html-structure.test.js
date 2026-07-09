@@ -3098,12 +3098,16 @@ assert.match(
 assert.match(
   portfolioCreateHtml,
   /function\s+getFolderSummaryKeywords\(folder\)[\s\S]*projectAnalysis\?\.summaryKeywords[\s\S]*function\s+renderKeywordPool\(\)[\s\S]*summaryKeywords\s*=\s*selectedFolders\.flatMap\(getFolderSummaryKeywords\)/,
-  'portfolio_create should render keyword chips from selected project summary.md keywords'
+  'portfolio_create should render keyword chips from selected project portfolio keywords'
 );
 assert.match(
   portfolioCreateHtml,
-  /function\s+getSelectedExperienceProjects\(\)[\s\S]*projectId:\s*folder\.id[\s\S]*summaryMd:\s*folder\.projectAnalysis\.summaryMd[\s\S]*summaryKeywords:\s*getFolderSummaryKeywords\(folder\)/,
-  'portfolio_create should build selected project analysis context for portfolio generation'
+  /function\s+getSelectedExperienceProjects\(\)[\s\S]*projectId:\s*folder\.id[\s\S]*summaryMd:\s*folder\.projectAnalysis\.summaryMd[\s\S]*summaryKeywords:\s*getFolderSummaryKeywords\(folder\)[\s\S]*function\s+getFolderMeta[\s\S]*포트폴리오 키워드 사용/,
+  'portfolio_create should build selected project summary context and label portfolio keyword availability'
+);
+assert.ok(
+  !/fileCount:\s*folder\.fileCount/.test(portfolioCreateHtml),
+  'portfolio_create should not send project file counts with selected summary context'
 );
 assert.match(
   portfolioCreateHtml,
@@ -3421,6 +3425,10 @@ assert.match(
   /function\s+mapProjectAnalysis[\s\S]*summaryMd:\s*result\.summaryMd/,
   'portfolio generation API should map Supabase project summaryMd into OpenAI project context'
 );
+assert.ok(
+  !/loadFolderFileSummariesForUser|folderFileSummaries|file_analyses|activity_files/.test(portfolioGenerateRoute),
+  'portfolio generation API should not load selected project files or file-level summaries'
+);
 assert.match(
   portfolioReviseRoute,
   /isAnalysisMockEnabled\(\)[\s\S]*buildMockPortfolioRevision/,
@@ -3432,13 +3440,21 @@ assert.ok(
 );
 assert.match(
   portfolioSourceDataRoute,
-  /\.from\('activity_folders'\)[\s\S]*\.from\('activity_files'\)[\s\S]*\.from\('project_analyses'\)[\s\S]*\.eq\('scope',\s*'project'\)/,
-  'portfolio source data API should combine folders, file counts, and project-scoped analyses'
+  /\.from\('activity_folders'\)[\s\S]*\.from\('project_analyses'\)[\s\S]*\.eq\('scope',\s*'project'\)/,
+  'portfolio source data API should combine folders and project-scoped summary analyses'
+);
+assert.ok(
+  !/\.from\('activity_files'\)|fileCount|countFilesByProject/.test(portfolioSourceDataRoute),
+  'portfolio source data API should not load project files for the portfolio selection list'
 );
 assert.match(
   portfolioSourceDataRoute,
-  /extractMarkdownListSection[\s\S]*summaryMd[\s\S]*포트폴리오.*키워드[\s\S]*강점.*키워드[\s\S]*portfolioKeywords[\s\S]*activityKeywords/,
-  'portfolio source data API should extract keywords from project summary.md before structured keyword fallbacks'
+  /function\s+buildSummaryKeywords\(result\)[\s\S]*result\?\.portfolioKeywords[\s\S]*source:\s*'portfolioKeywords'[\s\S]*result\?\.activityKeywords[\s\S]*source:\s*'activityKeywords'/,
+  'portfolio source data API should prefer project JSON portfolioKeywords before activityKeywords'
+);
+assert.ok(
+  !/extractMarkdownListSection|포트폴리오\.\*키워드|강점\.\*키워드/.test(portfolioSourceDataRoute),
+  'portfolio source data API should not parse summary.md keyword sections for selection chips'
 );
 assert.ok(
   fs.existsSync(portfolioExportPptxRoutePath),
