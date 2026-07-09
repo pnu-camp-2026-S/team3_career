@@ -227,14 +227,14 @@ function getDistributedMatchScore(index, total) {
   const bands = getScoreBandCounts(total);
 
   if (index < bands.high) {
-    return interpolateScore(96, 75, index, bands.high);
+    return interpolateScore(96, 90, index, bands.high);
   }
 
   if (index < bands.high + bands.middle) {
-    return interpolateScore(74, 40, index - bands.high, bands.middle);
+    return interpolateScore(89, 80, index - bands.high, bands.middle);
   }
 
-  return interpolateScore(40, 12, index - bands.high - bands.middle, bands.low);
+  return interpolateScore(79, 70, index - bands.high - bands.middle, bands.low);
 }
 
 function formatDateFromDeadlineDays(deadlineDays) {
@@ -285,7 +285,6 @@ let visibleCalendarMonth = 6;
 let focusedScheduleDate = null;
 let isScheduleExpanded = false;
 const activitiesPerPage = 20;
-const recommendedActivityLimit = 24;
 const strongRecommendationThreshold = 90;
 const standardRecommendationThreshold = 80;
 const exploratoryRecommendationThreshold = 70;
@@ -367,6 +366,23 @@ function getRecommendationProfileSignature(profile) {
   return JSON.stringify(profile || {});
 }
 
+function hasProfileInput(profile) {
+  return [
+    profile.major,
+    profile.minor,
+    profile.linkedMajor,
+    profile.desiredJobs,
+    profile.interestFields,
+    profile.interestedIndustries,
+    profile.interestedCompanies
+  ].some((value) => normalizePreferenceList(value).length > 0);
+}
+
+function hasPrimaryRecommendationGoal(profile) {
+  return normalizePreferenceList(profile.desiredJobs).length > 0 ||
+    normalizePreferenceList(profile.interestedIndustries).length > 0;
+}
+
 function normalizeDepartmentName(value) {
   const text = String(value || '').trim();
   if (!text || getNoneMinorTextValues().includes(text)) return '';
@@ -391,11 +407,20 @@ function getDepartmentFitScore(item, departmentName) {
   return fitKey ? Number(item.departmentFit[fitKey]) || 0 : 0;
 }
 
-function getProfileJobScore(item, desiredJobs) {
-  const preferenceText = desiredJobs.join(' ').toLowerCase();
-  if (!preferenceText) return getRecommendationScore(item);
+const jobKeywordGroups = [
+  ['개발', '프론트엔드', '백엔드', '풀스택', 'devops', 'api', 'javascript', 'node'],
+  ['데이터', 'sql', '분석', 'bi', 'python', 'etl'],
+  ['ai', '머신러닝', 'mlops', '모델'],
+  ['보안', '네트워크', '클라우드', 'sre'],
+  ['전기', '전자', '회로', '전력', '반도체', '임베디드', 'iot'],
+  ['화공', '화학', '바이오', '공정', '품질', '환경', '소재'],
+  ['산업', '생산', '물류', 'scm', '품질', '최적화', '프로세스'],
+  ['기획', 'pm', 'po', '서비스', 'ux', 'ui'],
+  ['마케팅', '브랜드', '콘텐츠', '디자인']
+];
 
-  const activityText = [
+function getActivityJobText(item) {
+  return [
     item.title,
     item.type,
     item.industry,
@@ -404,26 +429,32 @@ function getProfileJobScore(item, desiredJobs) {
     ...(item.targetJobs || []),
     ...(item.skills || [])
   ].join(' ').toLowerCase();
+}
 
-  const jobKeywordGroups = [
-    ['개발', '프론트엔드', '백엔드', '풀스택', 'devops', 'api', 'javascript', 'node'],
-    ['데이터', 'sql', '분석', 'bi', 'python', 'etl'],
-    ['ai', '머신러닝', 'mlops', '모델'],
-    ['보안', '네트워크', '클라우드', 'sre'],
-    ['전기', '전자', '회로', '전력', '반도체', '임베디드', 'iot'],
-    ['화공', '화학', '바이오', '공정', '품질', '환경', '소재'],
-    ['산업', '생산', '물류', 'scm', '품질', '최적화', '프로세스'],
-    ['기획', 'pm', 'po', '서비스', 'ux', 'ui'],
-    ['마케팅', '브랜드', '콘텐츠', '디자인']
-  ];
+function getProfileJobMatch(item, desiredJobs) {
+  const preferenceText = desiredJobs.join(' ').toLowerCase();
+  const fallbackScore = getRecommendationScore(item);
+  if (!preferenceText) {
+    return { score: fallbackScore, matched: false, hasInput: false };
+  }
 
-  const matchedGroup = jobKeywordGroups.find((group) => group.some((keyword) => preferenceText.includes(keyword)));
-  if (!matchedGroup) return getRecommendationScore(item);
+  const activityText = getActivityJobText(item);
+  const matchedGroup = jobKeywordGroups.find((group) =>
+    group.some((keyword) => preferenceText.includes(keyword))
+  );
+
+  if (!matchedGroup) {
+    return { score: fallbackScore, matched: false, hasInput: true };
+  }
 
   const matchedKeywordCount = matchedGroup.filter((keyword) => activityText.includes(keyword)).length;
-  if (matchedKeywordCount >= 2) return 96;
-  if (matchedKeywordCount === 1) return 88;
-  return Math.max(45, getRecommendationScore(item) - 12);
+  if (matchedKeywordCount >= 2) return { score: 96, matched: true, hasInput: true };
+  if (matchedKeywordCount === 1) return { score: 88, matched: true, hasInput: true };
+  return { score: Math.max(45, fallbackScore - 12), matched: false, hasInput: true };
+}
+
+function getProfileJobScore(item, desiredJobs) {
+  return getProfileJobMatch(item, desiredJobs).score;
 }
 
 function normalizeMatchText(value) {
@@ -506,7 +537,8 @@ function getProfileFitBreakdown(item, profile) {
   const majorScore = getDepartmentFitScore(item, profile.major);
   const minorScore = getDepartmentFitScore(item, profile.minor);
   const linkedMajorScore = getDepartmentFitScore(item, profile.linkedMajor);
-  const jobScore = getProfileJobScore(item, profile.desiredJobs);
+  const jobMatch = getProfileJobMatch(item, profile.desiredJobs);
+  const jobScore = jobMatch.score;
   const baseScore = getRecommendationScore(item);
   const interestFieldScore = getPreferenceKeywordScore(item, profile.interestFields, baseScore);
   const industryScore = getPreferenceKeywordScore(
@@ -523,31 +555,36 @@ function getProfileFitBreakdown(item, profile) {
   );
   const educationSignal = getStrongestEducationFit(majorScore, minorScore, linkedMajorScore);
   const educationScore = educationSignal?.score || baseScore;
-  const hasGoalSignals = [
-    profile.desiredJobs,
-    profile.interestFields,
-    profile.interestedIndustries,
-    profile.interestedCompanies
-  ].some((values) => normalizePreferenceList(values).length > 0);
+  const hasInput = hasProfileInput(profile);
+  const hasPrimaryGoal = hasPrimaryRecommendationGoal(profile);
+  const scoringSignals = [];
 
-  const weightedScore = hasGoalSignals
-    ? Math.round(
-        educationScore * 0.25 +
-          jobScore * 0.35 +
-          interestFieldScore * 0.1 +
-          industryScore * 0.2 +
-          companyScore * 0.1
-      )
-    : Math.round(
-        (majorScore || baseScore) * 0.45 +
-          (minorScore || majorScore || baseScore) * 0.08 +
-          (linkedMajorScore || minorScore || majorScore || baseScore) * 0.05 +
-          jobScore * 0.17 +
-          interestFieldScore * 0.1 +
-          industryScore * 0.1 +
-          companyScore * 0.05
-      );
-  const score = Math.max(12, Math.min(96, weightedScore));
+  if (normalizePreferenceList(profile.desiredJobs).length) {
+    scoringSignals.push({ score: jobScore, weight: 45 });
+  }
+
+  if (normalizePreferenceList(profile.interestedIndustries).length) {
+    scoringSignals.push({ score: industryScore, weight: 30 });
+  }
+
+  if (normalizePreferenceList(profile.interestFields).length) {
+    scoringSignals.push({ score: interestFieldScore, weight: 15 });
+  }
+
+  if (normalizePreferenceList(profile.interestedCompanies).length) {
+    scoringSignals.push({ score: companyScore, weight: 5 });
+  }
+
+  if (educationSignal) {
+    scoringSignals.push({ score: educationScore, weight: hasPrimaryGoal ? 5 : 20 });
+  }
+
+  const totalWeight = scoringSignals.reduce((sum, signal) => sum + signal.weight, 0);
+  const weightedScore = totalWeight
+    ? Math.round(scoringSignals.reduce((sum, signal) => sum + signal.score * signal.weight, 0) / totalWeight)
+    : baseScore;
+  const cappedScore = jobMatch.hasInput && !jobMatch.matched ? Math.min(weightedScore, 69) : weightedScore;
+  const score = Math.max(12, Math.min(96, cappedScore));
   const fitSignals = [
     { label: '직무 적합', score: jobScore, visible: normalizePreferenceList(profile.desiredJobs).length > 0 },
     { label: educationSignal?.label || '전공 연결', score: educationScore, visible: Boolean(educationSignal) },
@@ -560,7 +597,8 @@ function getProfileFitBreakdown(item, profile) {
   return {
     score,
     topSignal,
-    signals: fitSignals.filter((signal) => signal.visible)
+    signals: hasInput ? fitSignals.filter((signal) => signal.visible) : [],
+    hasInput
   };
 }
 
@@ -741,7 +779,7 @@ function renderActivities() {
             <span class="metric">일치도 ${item.match}</span>
             <span class="metric">난이도 ${item.difficulty}</span>
             <span class="metric recommendation-grade ${item.recommendationGradeClass}">${item.recommendationGradeLabel}</span>
-            <span class="metric">${item.topFitLabel} ${item.topFitScore}%</span>
+            ${item.hasProfileFitSignals ? `<span class="metric">${item.topFitLabel} ${item.topFitScore}%</span>` : ''}
           </div>
         </article>
       `
@@ -765,6 +803,7 @@ const scheduleDates = {
   10: '2026-10-04'
 };
 function normalizeActivityDataset(dataset, profile = recommendationProfile) {
+  const hasInput = hasProfileInput(profile);
   const rankedItems = [...dataset]
     .map((item) => {
       const fitBreakdown = getProfileFitBreakdown(item, profile);
@@ -782,7 +821,9 @@ function normalizeActivityDataset(dataset, profile = recommendationProfile) {
     );
 
   return rankedItems.map((item, index) => {
-    const score = item.recommendationScore || getDistributedMatchScore(index, rankedItems.length);
+    const score = !hasInput && item.category !== 'low-value-noise'
+      ? getDistributedMatchScore(index, rankedItems.length)
+      : item.recommendationScore || getDistributedMatchScore(index, rankedItems.length);
 
     if (!scheduleDates[item.id]) {
       scheduleDates[item.id] = formatDateFromDeadlineDays(item.deadlineDays);
@@ -797,6 +838,7 @@ function normalizeActivityDataset(dataset, profile = recommendationProfile) {
       topFitLabel: item.fitBreakdown?.topSignal?.label || '추천 적합',
       topFitScore: item.fitBreakdown?.topSignal?.score || score,
       fitSignals: item.fitBreakdown?.signals || [],
+      hasProfileFitSignals: Boolean(item.fitBreakdown?.hasInput && item.fitBreakdown?.signals?.length),
       recommendationGradeLabel: getRecommendationGrade(score).label,
       recommendationGradeClass: getRecommendationGrade(score).className,
       difficulty: item.difficulty === '상' ? '어려움' : item.difficulty === '하' ? '쉬움' : '중간'
@@ -894,7 +936,7 @@ function getRecommendationQualityPool() {
       getMatchScore(item) < standardRecommendationThreshold
   );
 
-  return [...strongItems, ...standardItems, ...exploratoryItems].slice(0, recommendedActivityLimit);
+  return [...strongItems, ...standardItems, ...exploratoryItems];
 }
 
 function getSortedRecommendedActivities() {
@@ -1090,10 +1132,12 @@ function openDetail(id, cardElement) {
       <h4>추천 이유</h4>
       <p>${item.reason}</p>
     </section>
-    <section>
-      <h4>세부 일치 근거</h4>
-      ${renderFitSignalSummary(item)}
-    </section>
+    ${item.hasProfileFitSignals ? `
+      <section>
+        <h4>세부 일치 근거</h4>
+        ${renderFitSignalSummary(item)}
+      </section>
+    ` : ''}
     <section>
       <h4>내 경험과 연결</h4>
       <p>${item.connection}</p>
