@@ -755,23 +755,6 @@
   height: 17px;
 }
 
-.analysis-loading-steps {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin: 24px 0 18px;
-}
-
-.analysis-loading-steps span {
-  height: 6px;
-  border-radius: 999px;
-  background: #e6e9f7;
-}
-
-.analysis-loading-steps span.active {
-  background: linear-gradient(90deg, var(--brand), #8bdcff);
-}
-
 @keyframes analysis-spin {
   to { transform: rotate(360deg); }
 }

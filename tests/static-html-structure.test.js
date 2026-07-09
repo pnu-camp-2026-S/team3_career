@@ -1792,6 +1792,14 @@ assert.match(
   /id="analyzeButton"[\s\S]*id="analysisLoading"[\s\S]*id="analysisLoadingPercent"[\s\S]*id="analysisLoadingCount"[\s\S]*function\s+setAnalysisLoading\(isLoading,\s*state\s*=\s*\{\}\)[\s\S]*percentNode\.textContent\s*=\s*`\$\{percent\}%`[\s\S]*countNode\.textContent\s*=\s*`\$\{completed\} \/ \$\{total\}개 프로젝트 완료`/,
   'file management should show a dedicated loading progress modal while all-project analysis runs (#226)'
 );
+assert.ok(
+  !createHtml.includes('analysis-loading-steps'),
+  'analysis loading modal should not render the redundant three-step bar (#270)'
+);
+assert.ok(
+  !createCss.includes('analysis-loading-steps'),
+  'analysis loading modal should not keep unused three-step bar styles (#270)'
+);
 assert.match(
   createHtml,
   /PROJECT_ANALYSIS_ARTIFACTS[\s\S]*summary\.md[\s\S]*index\.json[\s\S]*log\.md[\s\S]*function\s+buildProjectArtifactFiles[\s\S]*kind:\s*'project-analysis-artifact'[\s\S]*FolderStore\.getAnalysisSubfolder\(folder\)/,
