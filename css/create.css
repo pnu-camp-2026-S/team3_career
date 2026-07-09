@@ -12,13 +12,6 @@
   gap: 24px;
 }
 
-.section-kicker {
-  margin: 0 0 8px;
-  color: var(--brand);
-  font-size: 13px;
-  font-weight: 900;
-}
-
 .file-manager-actions,
 .panel-head,
 .manager-file-actions {

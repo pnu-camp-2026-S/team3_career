@@ -25,8 +25,17 @@
   padding: 20px 24px;
 }
 
+.portfolio-setup .page-title {
+  margin: 0;
+  font-size: 28px;
+}
+
 .portfolio-setup .page-subtitle {
   margin: 8px 0 16px;
+  color: #697586;
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.6;
 }
 
 .setup-layout {
