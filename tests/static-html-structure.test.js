@@ -8,6 +8,7 @@ const cssDir = path.join(rootDir, 'css');
 const jsDir = path.join(rootDir, 'js');
 const appDir = path.join(rootDir, 'app');
 const libDir = path.join(rootDir, 'lib');
+const workersDir = path.join(rootDir, 'workers');
 
 function readHtml(fileName) {
   return fs.readFileSync(path.join(htmlDir, fileName), 'utf8');
@@ -3211,6 +3212,56 @@ assert.match(
 );
 assert.match(
   portfolioCreateHtml,
+  /const\s+PORTFOLIO_PDF_PREVIEW_ENDPOINT\s*=\s*'\/api\/portfolio\/render-pdf'/,
+  'portfolio_create should define the external-worker-backed PDF preview endpoint'
+);
+assert.match(
+  portfolioCreateHtml,
+  /function\s+renderPortfolioPreview\(\)[\s\S]*workspaceBadge'\)\.textContent = '실제 PDF 미리보기'[\s\S]*renderActualPdfPreview\(\)/,
+  'portfolio_create should prefer the real converted PDF preview for the left draft'
+);
+assert.match(
+  portfolioCreateHtml,
+  /async function\s+renderActualPdfPreview\(\)[\s\S]*fetch\(PORTFOLIO_PDF_PREVIEW_ENDPOINT[\s\S]*response\.status\s*===\s*503[\s\S]*renderPptxMatchedPreview\(\)/,
+  'portfolio_create should fall back to the PPTX-matched canvas preview when the PDF worker is unavailable'
+);
+assert.match(
+  portfolioCreateHtml,
+  /function\s+renderPdfPreviewFrame\(pdfUrl\)[\s\S]*class="portfolio-pdf-frame"[\s\S]*title="실제 변환 PDF 미리보기"/,
+  'portfolio_create should render the converted portfolio PDF as the draft preview'
+);
+assert.match(
+  portfolioCreateHtml,
+  /function\s+cancelPdfPreviewRequest\(\)[\s\S]*pdfPreviewController\.abort\(\)[\s\S]*revokePdfPreviewObjectUrl\(\)/,
+  'portfolio_create should cancel stale PDF preview requests when the draft changes'
+);
+assert.match(
+  portfolioCreateHtml,
+  /function\s+renderPptxMatchedPreview\(\)[\s\S]*revokePdfPreviewObjectUrl\(\)[\s\S]*class="pptx-preview-canvas"/,
+  'portfolio_create should keep the PPTX-matched canvas renderer as a safe fallback'
+);
+assert.match(
+  portfolioCreateHtml,
+  /function\s+createPptxMatchedPreviewSlides\(portfolio\)[\s\S]*type:\s*'overview'[\s\S]*type:\s*'detail'/,
+  'portfolio_create should build the same overview and detail slide structure used by PPTX export'
+);
+assert.match(
+  portfolioCreateHtml,
+  /function\s+renderPptxMatchedPreview\(\)[\s\S]*class="pptx-preview-canvas"[\s\S]*data-pptx-preview-index/,
+  'portfolio_create should show generated portfolio drafts as slide canvases'
+);
+assert.match(
+  portfolioCreateHtml,
+  /function\s+createOnePagePptxPreviewSlide\(portfolio\)[\s\S]*PORTFOLIO SUMMARY/,
+  'portfolio_create should use a portrait PPT-style preview for one-page summary portfolios'
+);
+assert.match(
+  portfolioCreateCss,
+  /\.pptx-preview-page\s*\{[\s\S]*\.pptx-preview-page\.portrait[\s\S]*\.pptx-preview-canvas\s*\{/,
+  'portfolio_create stylesheet should size PPTX-matched preview canvases'
+);
+assert.match(
+  portfolioCreateHtml,
   /<textarea id="pfAssistantInput"[\s\S]*id="pfAssistantSendBtn"/,
   'portfolio_create assistant should use a textarea and dedicated send button'
 );
@@ -3273,6 +3324,11 @@ assert.match(
 );
 
 const portfolioExportPptxRoutePath = path.join(appDir, 'api', 'portfolio', 'export-pptx', 'route.js');
+const portfolioRenderPdfRoutePath = path.join(appDir, 'api', 'portfolio', 'render-pdf', 'route.js');
+const portfolioConverterWorkerDir = path.join(workersDir, 'portfolio-converter');
+const portfolioConverterWorkerServerPath = path.join(portfolioConverterWorkerDir, 'server.js');
+const portfolioConverterWorkerDockerfilePath = path.join(portfolioConverterWorkerDir, 'Dockerfile');
+const portfolioConverterWorkerReadmePath = path.join(portfolioConverterWorkerDir, 'README.md');
 const portfolioGenerateRoutePath = path.join(appDir, 'api', 'portfolio', 'generate', 'route.js');
 const portfolioKeywordsRoutePath = path.join(appDir, 'api', 'portfolio', 'keywords', 'route.js');
 const portfolioSourceDataRoutePath = path.join(appDir, 'api', 'portfolio', 'source-data', 'route.js');
@@ -3292,6 +3348,18 @@ const portfolioReviseRoute = fs.existsSync(portfolioReviseRoutePath)
   : '';
 const portfolioExportPptxRoute = fs.existsSync(portfolioExportPptxRoutePath)
   ? fs.readFileSync(portfolioExportPptxRoutePath, 'utf8')
+  : '';
+const portfolioRenderPdfRoute = fs.existsSync(portfolioRenderPdfRoutePath)
+  ? fs.readFileSync(portfolioRenderPdfRoutePath, 'utf8')
+  : '';
+const portfolioConverterWorkerServer = fs.existsSync(portfolioConverterWorkerServerPath)
+  ? fs.readFileSync(portfolioConverterWorkerServerPath, 'utf8')
+  : '';
+const portfolioConverterWorkerDockerfile = fs.existsSync(portfolioConverterWorkerDockerfilePath)
+  ? fs.readFileSync(portfolioConverterWorkerDockerfilePath, 'utf8')
+  : '';
+const portfolioConverterWorkerReadme = fs.existsSync(portfolioConverterWorkerReadmePath)
+  ? fs.readFileSync(portfolioConverterWorkerReadmePath, 'utf8')
   : '';
 const portfolioOnePageLib = fs.existsSync(portfolioOnePageLibPath)
   ? fs.readFileSync(portfolioOnePageLibPath, 'utf8')
@@ -3353,6 +3421,62 @@ assert.ok(
   fs.existsSync(portfolioExportPptxRoutePath),
   'portfolio PPTX export API should live in app/api/portfolio/export-pptx/route.js'
 );
+assert.ok(
+  fs.existsSync(portfolioRenderPdfRoutePath),
+  'portfolio PDF render API should live in app/api/portfolio/render-pdf/route.js'
+);
+assert.match(
+  portfolioRenderPdfRoute,
+  /import\s+\{\s*POST as exportPortfolioPptx\s*\}\s+from '..\/export-pptx\/route'[\s\S]*PORTFOLIO_CONVERTER_URL/,
+  'portfolio PDF render API should reuse PPTX export and delegate conversion to an external worker URL'
+);
+assert.match(
+  portfolioRenderPdfRoute,
+  /new FormData\(\)[\s\S]*formData\.append\('file',\s*new Blob\(\[pptxBuffer\]/,
+  'portfolio PDF render API should send the generated PPTX to the worker as multipart form data'
+);
+assert.match(
+  portfolioRenderPdfRoute,
+  /PORTFOLIO_CONVERTER_TOKEN[\s\S]*headers\.Authorization\s*=\s*`Bearer/,
+  'portfolio PDF render API should support an optional bearer token for the external converter worker'
+);
+assert.match(
+  portfolioRenderPdfRoute,
+  /contentType\.includes\('application\/json'\)[\s\S]*pdfUrl[\s\S]*Content-Type': PDF_MIME_TYPE/,
+  'portfolio PDF render API should accept either a returned PDF file or a worker-hosted PDF URL'
+);
+assert.ok(
+  fs.existsSync(portfolioConverterWorkerServerPath),
+  'portfolio converter worker server should live in workers/portfolio-converter/server.js'
+);
+assert.ok(
+  fs.existsSync(portfolioConverterWorkerDockerfilePath),
+  'portfolio converter worker should include a Dockerfile for Render or Railway deployment'
+);
+assert.ok(
+  fs.existsSync(portfolioConverterWorkerReadmePath),
+  'portfolio converter worker should document deployment steps'
+);
+assert.match(
+  portfolioConverterWorkerServer,
+  /app\.post\('\/convert\/pptx-to-pdf'[\s\S]*upload\.single\('file'\)[\s\S]*runLibreOffice[\s\S]*Content-Type',\s*'application\/pdf'/,
+  'portfolio converter worker should expose a PPTX-to-PDF multipart endpoint'
+);
+assert.match(
+  portfolioConverterWorkerServer,
+  /CONVERTER_TOKEN[\s\S]*authorization[\s\S]*Bearer[\s\S]*Unauthorized converter request/,
+  'portfolio converter worker should protect conversion requests with an optional bearer token'
+);
+assert.match(
+  portfolioConverterWorkerDockerfile,
+  /apt-get install -y[\s\S]*libreoffice[\s\S]*fonts-noto-cjk[\s\S]*CMD \["npm", "start"\]/,
+  'portfolio converter worker Dockerfile should install LibreOffice and Korean fonts'
+);
+assert.match(
+  portfolioConverterWorkerReadme,
+  /Root Directory[\s\S]*workers\/portfolio-converter[\s\S]*PORTFOLIO_CONVERTER_URL/,
+  'portfolio converter worker README should explain Render registration and Vercel wiring'
+);
 assert.match(
   portfolioExportPptxRoute,
   /isOnePageSummary[\s\S]*MYFIT_A4_PORTRAIT_SAFE[\s\S]*addOnePageSummarySlide\(pptx,\s*portfolio\)/,
@@ -3407,6 +3531,10 @@ for (const cssPattern of [
   /\.experience-checkbox-group\s*\{[\s\S]*max-height:\s*214px;[\s\S]*overflow-y:\s*auto;/,
   /\.ppt-preview-wrap\s*\{/,
   /\.ppt-slide\s*\{/,
+  /\.portfolio-pdf-preview\s*\{/,
+  /\.portfolio-pdf-frame\s*\{/,
+  /\.portfolio-pdf-preview-state\s*\{/,
+  /\.portfolio-pdf-spinner\s*\{/,
   /\.slide-arrow\s*\{/,
   /\.draft-page-viewer\s*\{/,
   /\.draft-page-arrow\s*\{/,
