@@ -410,11 +410,10 @@
 }
 
 .status-pill {
-  display: inline-flex;
   justify-content: center;
   align-items: center;
   width: 80px;
-  min-height: 28px;
+  height: 28px;
   padding: 0;
   box-sizing: border-box;
   border-radius: 999px;
@@ -422,7 +421,13 @@
   color: #3567d5;
   font-size: 12px;
   font-weight: 900;
+  line-height: 1;
   white-space: nowrap;
+}
+
+.manager-file-card .status-pill {
+  display: inline-flex;
+  margin-top: 0;
 }
 
 .status-pill.done {
