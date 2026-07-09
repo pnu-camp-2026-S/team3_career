@@ -143,7 +143,7 @@ export async function analyzeSingleFile({
   // [10]~[14] 결과 저장 + 산출물 생성
   metadata.analysisStatus = 'completed';
   await repository.saveMetadata(metadata);
-  await repository.saveAnalysisResult(result);
+  await repository.saveAnalysisResult(result, provider);
 
   const summaryMarkdown = await buildSummaryMarkdown({ metadata, result, projectType });
   await repository.saveSummaryMarkdown(analysisId, summaryMarkdown);

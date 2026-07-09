@@ -67,6 +67,7 @@
     const assistantSendBtn = document.getElementById('pfAssistantSendBtn');
     const portfolioDraft = document.querySelector('.portfolio-draft');
     const portfolioRevisionOverlay = document.getElementById('portfolioRevisionOverlay');
+    const editPortfolioId = new URLSearchParams(window.location.search).get('edit');
 
     document.querySelectorAll('.format-card').forEach((card) => {
       card.addEventListener('click', () => selectFormat(card.dataset.format));
@@ -911,7 +912,7 @@
       }
     }
 
-    async function saveGeneratedPortfolio() {
+    async function saveGeneratedPortfolio({ requireRemote = false } = {}) {
       if (!currentPortfolio) return null;
 
       const content = currentPortfolio.format === 'PPT 발표 스펙'
@@ -950,8 +951,12 @@
         const result = await response.json();
         const savedPortfolio = result.portfolio || nextPortfolio;
         localStorage.setItem(PORTFOLIO_STORAGE_KEY, JSON.stringify([savedPortfolio, ...saved]));
+        currentPortfolio.id = savedPortfolio.id || currentPortfolio.id;
         return savedPortfolio;
       } catch (error) {
+        if (requireRemote) {
+          throw error;
+        }
         console.warn('Portfolio API save fell back to local state.', error);
         localStorage.setItem(PORTFOLIO_STORAGE_KEY, JSON.stringify([nextPortfolio, ...saved]));
         return nextPortfolio;
@@ -959,12 +964,11 @@
     }
 
     async function openPortfolioEditorFromQuery() {
-      const editId = new URLSearchParams(window.location.search).get('edit');
-      if (!editId) return;
+      if (!editPortfolioId) return;
 
       let portfolio = null;
       try {
-        const response = await fetch(`${PORTFOLIO_ENDPOINT}?id=${encodeURIComponent(editId)}`, {
+        const response = await fetch(`${PORTFOLIO_ENDPOINT}?id=${encodeURIComponent(editPortfolioId)}`, {
           credentials: 'same-origin',
           cache: 'no-store',
         });
@@ -976,26 +980,48 @@
         console.warn('Portfolio API edit load failed.', error);
       }
 
-      if (!portfolio) portfolio = readPortfolioStore().find((item) => item.id === editId);
-      if (!portfolio) return;
+      if (!portfolio) portfolio = readPortfolioStore().find((item) => item.id === editPortfolioId);
+      if (!portfolio) {
+        document.getElementById('pfLoadingScreen').classList.add('hidden');
+        document.getElementById('pfSetupScreen').classList.remove('hidden');
+        showToast('수정할 포트폴리오를 찾지 못했습니다.');
+        return;
+      }
+
+      const format = portfolio.format || '상세 기술 포트폴리오';
+      const purpose = portfolio.purpose || '취업 지원용';
+      const major = portfolio.major || '기존 저장 항목';
+      const experiences = Array.isArray(portfolio.experiences) ? portfolio.experiences : [];
+      const keywords = Array.isArray(portfolio.keywords) ? portfolio.keywords : [];
+      const fallbackBlocks = (portfolio.content || portfolio.summary || '저장된 포트폴리오입니다.')
+        .split(/\n{2,}/)
+        .map((text, index) => ({ title: `${index + 1}. 저장된 내용`, body: text.replace(/\s+/g, ' ').trim() }));
 
       currentPortfolio = {
         id: portfolio.id,
-        format: portfolio.format || '상세 기술 포트폴리오',
-        purpose: portfolio.purpose || '취업 지원용',
-        major: '기존 저장 항목',
-        experiences: portfolio.experiences || [],
-        keywords: portfolio.keywords || [],
-        blocks: (portfolio.content || portfolio.summary || '저장된 포트폴리오입니다.')
-          .split(/\n{2,}/)
-          .map((text, index) => ({ title: `${index + 1}. 저장된 내용`, body: text.replace(/\s+/g, ' ').trim() })),
-        slides: buildSlides(portfolio.format || '상세 기술 포트폴리오', portfolio.purpose || '취업 지원용', '기존 저장 항목', portfolio.experiences || [], portfolio.keywords || [])
+        title: portfolio.title || `${format} 초안`,
+        summary: portfolio.summary || '',
+        content: portfolio.content || '',
+        format,
+        purpose,
+        major,
+        experiences,
+        keywords,
+        blocks: Array.isArray(portfolio.blocks) && portfolio.blocks.length ? portfolio.blocks : fallbackBlocks,
+        slides: Array.isArray(portfolio.slides) && portfolio.slides.length
+          ? portfolio.slides
+          : buildSlides(format, purpose, major, experiences, keywords),
+        raw: portfolio.raw || null,
+        sourceLabel: '저장본 편집',
+        updatedAt: portfolio.updatedAt || new Date().toISOString(),
       };
 
       document.getElementById('pfSetupScreen').classList.add('hidden');
       document.getElementById('pfLoadingScreen').classList.add('hidden');
       document.getElementById('pfWorkspaceScreen').classList.remove('hidden');
+      resetAssistantChat();
       renderPortfolioPreview();
+      focusAssistantConversation();
     }
 
     async function handleMasterAction(action) {
@@ -1009,8 +1035,13 @@
       }
 
       if (action === 'download') {
-        await downloadPptPreview();
-        showToast('PPT 다운로드 파일을 준비했습니다.');
+        try {
+          await downloadPptPreview();
+          showToast('보관함 저장 후 PPT 다운로드 파일을 준비했습니다.');
+        } catch (error) {
+          console.warn('PPT save/download failed.', error);
+          showToast('보관함 저장에 실패해 PPT 다운로드를 중단했습니다. 로그인 상태를 확인해주세요.');
+        }
         return;
       }
 
@@ -1021,6 +1052,9 @@
 
     async function downloadPptPreview() {
       if (!currentPortfolio) return;
+
+      const savedPortfolio = await saveGeneratedPortfolio({ requireRemote: true });
+      currentPortfolio.id = savedPortfolio?.id || currentPortfolio.id;
 
       const response = await fetch('/api/portfolio/export-pptx', {
         method: 'POST',
@@ -1158,6 +1192,20 @@
       setPortfolioRevisionState(false);
     }
 
+    function prepareEditorEntryScreen() {
+      if (!editPortfolioId) return;
+      document.getElementById('pfSetupScreen').classList.add('hidden');
+      document.getElementById('pfWorkspaceScreen').classList.add('hidden');
+      document.getElementById('pfLoadingScreen').classList.remove('hidden');
+    }
+
+    function focusAssistantConversation() {
+      window.setTimeout(() => {
+        document.querySelector('.portfolio-ai')?.scrollIntoView({ block: 'nearest' });
+        assistantInput.focus();
+      }, 0);
+    }
+
     function escapeHtml(value) {
       return String(value || '').replace(/[&<>"']/g, (char) => ({
         '&': '&amp;',
@@ -1175,6 +1223,7 @@
       window.setTimeout(() => toast.classList.remove('show'), 1800);
     }
 
+    prepareEditorEntryScreen();
     loadPortfolioSetupData();
     openPortfolioEditorFromQuery();
   }

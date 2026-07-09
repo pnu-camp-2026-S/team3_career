@@ -7,6 +7,7 @@ import {
   createSupabaseAdminClient,
   createSupabaseServerClient,
 } from '../../../../lib/supabase-server';
+import { resolveProvider } from '../../../../ai_analysis/ai-client.mjs';
 import { analyzeSingleFile } from '../../../../ai_analysis/service.mjs';
 import { aggregateAnalyses } from '../../../../ai_analysis/aggregate.mjs';
 import { DbAnalysisRepository } from '../../../../ai_analysis/db-repository.mjs';
@@ -49,6 +50,21 @@ function isAnalysisCurrent(fileRow, analysisRow) {
   return analysisUpdatedAt >= fileUpdatedAt;
 }
 
+function includesMockText(value) {
+  return String(value || '').toLowerCase().includes('mock')
+    || String(value || '').includes('모의');
+}
+
+function isMockAnalysisRow(row) {
+  const result = row?.analysis_result || {};
+  const warnings = Array.isArray(result.warnings) ? result.warnings : [];
+  return row?.provider === 'mock'
+    || result.provider === 'mock'
+    || warnings.some(includesMockText)
+    || includesMockText(result.fileSummary?.oneLine)
+    || includesMockText(result.fileSummary?.detailed);
+}
+
 export async function POST(request) {
   try {
     const supabase = await createSupabaseServerClient();
@@ -79,14 +95,19 @@ export async function POST(request) {
     // 변경되지 않은 완료 분석은 건너뛰고, 신규/수정 파일만 새로 분석한다.
     const { data: analysisRows, error: completedError } = await supabase
       .from('file_analyses')
-      .select('activity_file_id, updated_at')
+      .select('activity_file_id, updated_at, provider, analysis_result')
       .eq('user_id', user.id)
       .eq('project_id', projectId)
       .eq('status', 'completed');
     if (completedError) return Response.json({ message: completedError.message }, { status: 500 });
 
     const analysisByFileId = new Map((analysisRows || []).map((row) => [row.activity_file_id, row]));
-    const pendingFiles = projectFiles.filter((row) => !isAnalysisCurrent(row, analysisByFileId.get(row.id)));
+    const currentProvider = resolveProvider();
+    const pendingFiles = projectFiles.filter((row) => {
+      const analysisRow = analysisByFileId.get(row.id);
+      if (currentProvider !== 'mock' && isMockAnalysisRow(analysisRow)) return true;
+      return !isAnalysisCurrent(row, analysisRow);
+    });
 
     const repository = new DbAnalysisRepository({ supabase, userId: user.id, projectId });
     const storage = (createSupabaseAdminClient() || supabase).storage;

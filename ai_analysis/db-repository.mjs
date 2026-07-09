@@ -76,9 +76,9 @@ export class DbAnalysisRepository {
     await this.updateFileAnalysis({ extracted_text: text }, 'saveExtractedText');
   }
 
-  async saveAnalysisResult(result) {
+  async saveAnalysisResult(result, provider = null) {
     await this.updateFileAnalysis(
-      { analysis_result: result },
+      { analysis_result: result, provider: provider || null },
       'saveAnalysisResult'
     );
   }
@@ -116,6 +116,7 @@ export class DbAnalysisRepository {
     return {
       analysisId: row.analysis_id,
       activityFileId: row.activity_file_id,
+      provider: row.provider || null,
       metadata: row.metadata,
       analysisResult: row.analysis_result,
       summaryMarkdown: row.summary_md || '',

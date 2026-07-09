@@ -94,16 +94,22 @@
       }
     ];
 
-    function normalizePortfolio(item, index) {
+    function normalizePortfolio(item, index = 0) {
+      const fallback = seedPortfolios[index % seedPortfolios.length];
       return {
         id: item.id || `portfolio-${index}`,
-        title: String(item.title || seedPortfolios[index % seedPortfolios.length].title).replace(/\s*초안\s*/g, ' '),
-        createdAt: item.createdAt || seedPortfolios[index % seedPortfolios.length].createdAt,
-        purpose: item.purpose || item.targetRole || seedPortfolios[index % seedPortfolios.length].purpose,
-        summary: String(item.summary || item.content || seedPortfolios[index % seedPortfolios.length].summary).replace(/\s*초안\s*/g, ' '),
+        title: String(item.title || fallback.title).replace(/\s*초안\s*/g, ' '),
+        createdAt: item.createdAt || fallback.createdAt,
+        purpose: item.purpose || item.targetRole || fallback.purpose,
+        summary: String(item.summary || item.content || fallback.summary).replace(/\s*초안\s*/g, ' '),
         liked: Boolean(item.liked),
         coverLines: item.coverLines || [item.title, item.purpose || item.targetRole, item.summary || item.content],
-        content: item.content || item.summary || seedPortfolios[index % seedPortfolios.length].content
+        content: item.content || item.summary || fallback.content,
+        format: item.format || fallback.format || '',
+        blocks: Array.isArray(item.blocks) ? item.blocks : [],
+        slides: Array.isArray(item.slides) ? item.slides : [],
+        keywords: Array.isArray(item.keywords) ? item.keywords : [],
+        experiences: Array.isArray(item.experiences) ? item.experiences : []
       };
     }
 
@@ -211,22 +217,58 @@
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
 
+    function compactText(value, maxLength = 90) {
+      const text = String(value || '').replace(/\s+/g, ' ').trim();
+      if (text.length <= maxLength) return text;
+      return `${text.slice(0, maxLength - 1)}…`;
+    }
+
+    function normalizePreviewBlocks(items) {
+      return (Array.isArray(items) ? items : [])
+        .map((item, index) => ({
+          title: compactText(item?.title || `섹션 ${index + 1}`, 38),
+          body: compactText(item?.body || item?.description || '', 78),
+        }))
+        .filter((item) => item.title || item.body);
+    }
+
+    function getPortfolioFirstPage(portfolio) {
+      const slides = normalizePreviewBlocks(portfolio.slides);
+      const blocks = normalizePreviewBlocks(portfolio.blocks);
+      const source = slides.length ? slides : blocks;
+      const first = source[0] || {};
+      const second = source[1] || {};
+      return {
+        kicker: portfolio.format || 'Portfolio',
+        title: first.title || portfolio.title,
+        summary: first.body || portfolio.summary,
+        detail: second.title || portfolio.purpose,
+        chips: (portfolio.keywords || portfolio.coverLines || [])
+          .filter(Boolean)
+          .slice(0, 3)
+          .map((item) => compactText(item, 16)),
+      };
+    }
+
     function firstPagePreview(portfolio) {
-      const lines = portfolio.coverLines?.length ? portfolio.coverLines : [portfolio.title, portfolio.purpose, portfolio.summary];
+      const page = getPortfolioFirstPage(portfolio);
       const image = portfolio.coverImage || portfolio.thumbnail || portfolio.firstPageImage;
       if (image) {
         return `
-          <div class="portfolio-library-thumb" aria-label="${escapeHtml(portfolio.title)} 첫페이지 미리보기">
+          <div class="portfolio-library-thumb portfolio-library-thumb-image" aria-label="${escapeHtml(portfolio.title)} 첫 페이지 썸네일">
             <img src="${escapeHtml(image)}" alt="" />
           </div>
         `;
       }
       return `
-        <div class="portfolio-library-thumb" aria-label="${escapeHtml(portfolio.title)} 첫페이지 미리보기">
-          <span>${escapeHtml(lines[0])}</span>
-          <span>${escapeHtml(lines[1])}</span>
-          <span>${escapeHtml(lines[2])}</span>
-          <strong></strong>
+        <div class="portfolio-library-thumb portfolio-library-first-page" aria-label="${escapeHtml(portfolio.title)} 첫 페이지 썸네일">
+          <small>${escapeHtml(page.kicker)}</small>
+          <h3>${escapeHtml(page.title)}</h3>
+          <p>${escapeHtml(page.summary)}</p>
+          <b>${escapeHtml(page.detail)}</b>
+          <div>
+            ${page.chips.map((chip) => `<i>${escapeHtml(chip)}</i>`).join('')}
+          </div>
         </div>
       `;
     }

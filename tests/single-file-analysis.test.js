@@ -12,7 +12,19 @@ process.env.ANALYSIS_MOCK = '1';
   const { analyzeSingleFile } = await import('../ai_analysis/service.mjs');
   const { LocalAnalysisRepository } = await import('../ai_analysis/repository.mjs');
   const { aggregateAnalyses } = await import('../ai_analysis/aggregate.mjs');
+  const { supportsCustomTemperature } = await import('../ai_analysis/ai-client.mjs');
   const { deriveFolderTree } = await import('../lib/folder-tree.js');
+
+  assert.strictEqual(
+    supportsCustomTemperature('gpt-5.5'),
+    false,
+    'gpt-5 계열 모델에는 기본 temperature만 사용해야 한다'
+  );
+  assert.strictEqual(
+    supportsCustomTemperature('gpt-4o-mini'),
+    true,
+    'gpt-4o-mini에는 기존 temperature 설정을 유지할 수 있어야 한다'
+  );
 
   // deriveFolderTree: 세부 폴더 id와 구버전 프로젝트 id를 트리 컬럼으로 파싱한다(#167).
   assert.deepStrictEqual(deriveFolderTree('completed-personal::sub0'), {
@@ -89,6 +101,12 @@ process.env.ANALYSIS_MOCK = '1';
     // 3) 종합 분석: 완료된 분석이 있으면 키워드 개요가 생성되어야 한다.
     const aggregateOutcome = await aggregateAnalyses({ repository });
     assert.strictEqual(aggregateOutcome.ok, true, '완료 분석이 있으면 종합이 성공해야 한다');
+    assert.strictEqual(
+      (await repository.getAnalysisBundle(okResult.analysisId)).provider,
+      'mock',
+      '파일 분석 저장소에 AI provider가 기록되어야 한다'
+    );
+    assert.ok(typeof aggregateOutcome.result.activityOverview === 'string', '활동 흐름 개요가 있어야 한다');
     assert.ok(Array.isArray(aggregateOutcome.result.activityKeywords), '활동 키워드 목록이 있어야 한다');
     assert.ok(Array.isArray(aggregateOutcome.result.portfolioKeywords), '포트폴리오 키워드 목록이 있어야 한다');
     assert.strictEqual(aggregateOutcome.result.basedOnCount, 1, '실패 분석은 종합 입력에서 제외되어야 한다');

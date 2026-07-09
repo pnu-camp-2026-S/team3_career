@@ -128,6 +128,37 @@
       return Object.values(folders).some((folder) => getUserActivityFiles(folder).some(isAnalyzedActivityFile));
     }
 
+    function getAnalyzedActivityFileTotal() {
+      return Object.values(folders).reduce((sum, folder) => (
+        sum + getUserActivityFiles(folder).filter(isAnalyzedActivityFile).length
+      ), 0);
+    }
+
+    function includesMockText(value) {
+      return String(value || '').toLowerCase().includes('mock')
+        || String(value || '').includes('모의')
+        || String(value || '').includes('분석된 활동 자료');
+    }
+
+    function isMockAggregateResult(result) {
+      if (!result) return false;
+      const warnings = Array.isArray(result.warnings) ? result.warnings : [];
+      return result.provider === 'mock'
+        || warnings.some(includesMockText)
+        || includesMockText(result.activityOverview)
+        || includesMockText(result.description);
+    }
+
+    function shouldRunAggregateAnalysis() {
+      const analyzedFileTotal = getAnalyzedActivityFileTotal();
+      const storedBasedOnCount = Number(aggregateResult?.basedOnCount || 0);
+      return analyzedFileTotal > 0 && (
+        !aggregateResult?.activityOverview
+        || isMockAggregateResult(aggregateResult)
+        || storedBasedOnCount < analyzedFileTotal
+      );
+    }
+
     function mapApiFile(file) {
       return {
         id: file.id,
@@ -194,6 +225,13 @@
     }
 
     function renderAnalysisOverview(completedFileTotal, inProgressFileTotal, breakdown) {
+      const aiOverview = aggregateResult?.activityOverview || aggregateResult?.description || '';
+      if (hasAnalyzed && aiOverview.trim()) {
+        analysisOverviewText.textContent = aiOverview.trim();
+        analysisOverview.hidden = false;
+        return;
+      }
+
       const topCategory = breakdown
         .filter((item) => item.count > 0)
         .sort((a, b) => b.count - a.count)[0];
@@ -298,6 +336,8 @@
       analysisInFlight = true;
       const overviewText = document.getElementById('keywordOverviewText');
       overviewText.textContent = '완료된 활동 자료를 모아 AI가 분석하고 있습니다. 잠시만 기다려주세요.';
+      analysisOverview.hidden = false;
+      analysisOverviewText.textContent = '활동 유형, 맡은 역할, 반복해서 드러난 강점을 AI가 간단한 개요로 정리하고 있습니다.';
 
       try {
         const response = await fetch(AGGREGATE_ENDPOINT, {
@@ -317,9 +357,14 @@
         }
 
         if (payload.ok === false) {
-          overviewText.textContent = payload.reason === 'no_data'
-            ? '분석할 완료된 자료가 없습니다. 파일 관리에서 자료를 업로드하고 분석하기를 먼저 실행해주세요.'
-            : '분석에 실패했습니다. 잠시 후 다시 시도해주세요.';
+          if (payload.reason === 'no_data') {
+            overviewText.textContent = '분석이 완료된 자료가 없습니다. 파일 관리에서 자료를 업로드하고 분석하기를 먼저 실행해주세요.';
+          } else if (payload.reason === 'mock_data') {
+            overviewText.textContent = '이전에 저장된 mock 분석 결과만 있어요. 파일 관리에서 해당 활동을 다시 분석하면 실제 AI API 결과로 개요를 만들 수 있습니다.';
+            analysisOverviewText.textContent = '실제 AI 분석 개요를 만들려면 파일 관리에서 활동 자료를 다시 분석해주세요.';
+          } else {
+            overviewText.textContent = '분석에 실패했습니다. 잠시 후 다시 시도해주세요.';
+          }
           return;
         }
 
@@ -339,12 +384,16 @@
           credentials: 'same-origin',
           cache: 'no-store',
         });
-        if (!response.ok) return;
+        if (!response.ok) return false;
         const payload = await response.json();
-        if (payload.result) applyAggregateResult(payload.result);
+        if (payload.result) {
+          applyAggregateResult(payload.result);
+          return true;
+        }
       } catch (error) {
         console.warn('Saved aggregate result could not be restored.', error);
       }
+      return false;
     }
 
     async function renderDashboardState() {
@@ -366,7 +415,8 @@
       folders = await FolderStore.loadFoldersFromApi();
       await loadActivityFilesFromApi();
       renderFolders();
-      restoreAggregateResult();
+      await restoreAggregateResult();
+      if (shouldRunAggregateAnalysis()) await runAnalysis();
     }
 
     initMainDashboard();

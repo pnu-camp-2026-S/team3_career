@@ -166,7 +166,7 @@ Supabase Auth 사용자와 앱 프로필을 잇는다. `auth.users`에 사용자
 ### 3.5 `public.file_analyses` / `public.project_analyses` — AI 분석 결과 (`supabase-analysis.sql`)
 
 - `file_analyses`: 파일 1건당 분석 1행(`activity_file_id` unique, 재분석은 upsert). `status`(`pending/analyzing/completed/failed`), `provider`, `metadata`/`analysis_result`/`index_draft`(jsonb), `summary_md`/`log_md`/`extracted_text`(text), 실패 시 `stage`/`errors`.
-- `project_analyses`: 종합 결과. `scope='project'`(프로젝트 단위)와 `scope='user'`(메인 키워드 개요)를 `(user_id, scope, project_id)` unique로 upsert. `result`(jsonb)에 headline/description/activityKeywords/portfolioKeywords/basedOnCount 저장.
+- `project_analyses`: 종합 결과. `scope='project'`(프로젝트 단위)와 `scope='user'`(메인 키워드 개요)를 `(user_id, scope, project_id)` unique로 upsert. `result`(jsonb)에 headline/description/activityOverview/activityKeywords/portfolioKeywords/basedOnCount 저장.
 - `project_analyses`의 `scope='user'` 행은 특정 폴더에 묶이지 않으므로 단순 foreign key를 걸지 않는다. 대신 `activity_folders` 삭제 트리거가 `scope='project'`인 해당 프로젝트 분석 결과만 정리한다.
 - 저장 계층은 `ai_analysis/db-repository.mjs`(`DbAnalysisRepository`)가 담당하며, 상세 기준은 [AI 자동 정리 및 분석 기준](ai-analysis.md)을 따른다.
 
