@@ -1,0 +1,239 @@
+{
+  "templateId": "detail_a4_two_page_half_blocks",
+  "templateName": "상세기술 포트폴리오 A4 2장",
+  "outputFormat": "PPTX",
+  "engine": "PptxGenJS",
+  "page": {
+    "size": "A4",
+    "orientation": "portrait",
+    "widthIn": 8.27,
+    "heightIn": 11.69,
+    "count": 2
+  },
+  "theme": {
+    "fontFace": "Malgun Gothic",
+    "background": "FFFFFF",
+    "text": "111827",
+    "mutedText": "4B5563",
+    "line": "D8E2F5",
+    "primary": "2563EB",
+    "cardFill": "EAF4FF",
+    "cardLine": "AFC8E8",
+    "keywordFill": "EFF6FF"
+  },
+  "layout": {
+    "pageMargin": 0.45,
+    "halfHeight": 5.395,
+    "topHalf": {
+      "x": 0.45,
+      "y": 0.45,
+      "w": 7.37,
+      "h": 5.1
+    },
+    "bottomHalf": {
+      "x": 0.45,
+      "y": 6.0,
+      "w": 7.37,
+      "h": 5.1
+    }
+  },
+  "components": {
+    "profileBlock": {
+      "photo": {
+        "x": 0.7,
+        "y": 0.85,
+        "w": 1.55,
+        "h": 1.85,
+        "shape": "roundRect",
+        "placeholderText": "PROFILE"
+      },
+      "name": {
+        "x": 2.55,
+        "y": 0.82,
+        "w": 4.9,
+        "h": 0.42,
+        "fontSize": 22,
+        "bold": true
+      },
+      "metaGrid": {
+        "x": 2.55,
+        "y": 1.42,
+        "w": 4.9,
+        "h": 1.35,
+        "fontSize": 9.5,
+        "rows": ["gender", "education", "major", "targetRole", "contact"]
+      },
+      "keywordCards": {
+        "x": 0.7,
+        "y": 3.35,
+        "w": 2.15,
+        "h": 0.95,
+        "gap": 0.28,
+        "count": 3
+      }
+    },
+    "experienceBlock": {
+      "label": {
+        "xOffset": 0.2,
+        "yOffset": 0.15,
+        "w": 0.9,
+        "h": 0.25,
+        "fontSize": 9,
+        "bold": true
+      },
+      "projectName": {
+        "xOffset": 1.05,
+        "yOffset": 0.12,
+        "w": 5.7,
+        "h": 0.3,
+        "fontSize": 13,
+        "bold": true
+      },
+      "summary": {
+        "xOffset": 0.2,
+        "yOffset": 0.56,
+        "w": 6.95,
+        "h": 0.32,
+        "fontSize": 8.5
+      },
+      "cards": {
+        "yOffset": 1.25,
+        "w": 1.86,
+        "h": 2.45,
+        "gap": 0.42,
+        "startXOffset": 0.2,
+        "titleFontSize": 10,
+        "labelFontSize": 6.5,
+        "bodyFontSize": 7.2,
+        "maxBullets": 3,
+        "types": [
+          {
+            "key": "process",
+            "title": "과정",
+            "subtitle": "PROCESS"
+          },
+          {
+            "key": "contribution",
+            "title": "기여도",
+            "subtitle": "CONTRIBUTION"
+          },
+          {
+            "key": "result",
+            "title": "결과",
+            "subtitle": "RESULT"
+          }
+        ]
+      },
+      "arrows": {
+        "text": ">",
+        "fontSize": 14,
+        "color": "6B7280"
+      },
+      "growth": {
+        "xOffset": 0.35,
+        "yOffset": 4.05,
+        "w": 6.65,
+        "h": 0.35,
+        "fontSize": 8.5,
+        "align": "center"
+      }
+    }
+  },
+  "pages": [
+    {
+      "pageNumber": 1,
+      "regions": [
+        {
+          "region": "topHalf",
+          "component": "profileBlock",
+          "dataPath": "profile"
+        },
+        {
+          "region": "bottomHalf",
+          "component": "experienceBlock",
+          "dataPath": "experiences[0]"
+        }
+      ]
+    },
+    {
+      "pageNumber": 2,
+      "regions": [
+        {
+          "region": "topHalf",
+          "component": "experienceBlock",
+          "dataPath": "experiences[1]"
+        },
+        {
+          "region": "bottomHalf",
+          "component": "experienceBlock",
+          "dataPath": "experiences[2]"
+        }
+      ]
+    }
+  ],
+  "dataShape": {
+    "format": "상세 기술 포트폴리오",
+    "templateId": "detail_a4_two_page_half_blocks",
+    "pageSize": "A4_PORTRAIT",
+    "pageCount": 2,
+    "profile": {
+      "photo": {
+        "path": "",
+        "description": ""
+      },
+      "name": "",
+      "gender": "",
+      "education": "",
+      "major": "",
+      "targetRole": "",
+      "contact": "",
+      "keywords": [
+        {
+          "rank": 1,
+          "label": "",
+          "reason": ""
+        },
+        {
+          "rank": 2,
+          "label": "",
+          "reason": ""
+        },
+        {
+          "rank": 3,
+          "label": "",
+          "reason": ""
+        }
+      ]
+    },
+    "experiences": [
+      {
+        "rank": 1,
+        "projectName": "",
+        "summary": "",
+        "process": ["", "", ""],
+        "contribution": ["", "", ""],
+        "result": ["", "", ""],
+        "growth": ""
+      },
+      {
+        "rank": 2,
+        "projectName": "",
+        "summary": "",
+        "process": ["", "", ""],
+        "contribution": ["", "", ""],
+        "result": ["", "", ""],
+        "growth": ""
+      },
+      {
+        "rank": 3,
+        "projectName": "",
+        "summary": "",
+        "process": ["", "", ""],
+        "contribution": ["", "", ""],
+        "result": ["", "", ""],
+        "growth": ""
+      }
+    ],
+    "missingFields": []
+  }
+}
