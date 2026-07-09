@@ -87,6 +87,7 @@
     document.getElementById('workspaceContent').addEventListener('click', (event) => {
       const draftPageButton = event.target.closest('[data-draft-page-direction]');
       if (draftPageButton) {
+        if (draftPageButton.disabled) return;
         moveDraftPage(Number(draftPageButton.dataset.draftPageDirection));
         return;
       }
@@ -669,17 +670,18 @@
       const safePages = pages.filter(Boolean);
       const pageCount = safePages.length || 1;
       currentDraftPageIndex = Math.max(0, Math.min(currentDraftPageIndex, pageCount - 1));
-      const hasPages = pageCount > 1;
+      const isFirstPage = currentDraftPageIndex === 0;
+      const isLastPage = currentDraftPageIndex === pageCount - 1;
 
       return `
         <div class="draft-page-viewer">
-          ${hasPages ? '<button class="draft-page-arrow prev" type="button" aria-label="이전 페이지" data-draft-page-direction="-1">&lt;</button>' : ''}
+          <button class="draft-page-arrow prev" type="button" aria-label="이전 페이지" data-draft-page-direction="-1" ${isFirstPage ? 'disabled' : ''}>&lt;</button>
           <div class="draft-page-frame">
             ${safePages[currentDraftPageIndex] || safePages[0] || ''}
           </div>
-          ${hasPages ? '<button class="draft-page-arrow next" type="button" aria-label="다음 페이지" data-draft-page-direction="1">&gt;</button>' : ''}
+          <button class="draft-page-arrow next" type="button" aria-label="다음 페이지" data-draft-page-direction="1" ${isLastPage ? 'disabled' : ''}>&gt;</button>
         </div>
-        ${hasPages ? `<div class="draft-page-counter">${currentDraftPageIndex + 1} / ${pageCount}</div>` : ''}
+        <div class="draft-page-counter">${currentDraftPageIndex + 1} / ${pageCount}</div>
       `;
     }
 
