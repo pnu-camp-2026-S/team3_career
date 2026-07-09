@@ -23,6 +23,26 @@
     sessionStorage.clear();
   }
 
+  function getAccountDisplayName(account) {
+    const rawName = account?.name || account?.email || '';
+    const name = String(rawName).trim();
+    if (!name) return '사용자';
+    return name.includes('@') ? name.split('@')[0] : name;
+  }
+
+  function renderProfileNameCards(account) {
+    document.querySelectorAll('[data-profile-name-card]').forEach((card) => {
+      if (!account) {
+        card.hidden = true;
+        card.textContent = '';
+        return;
+      }
+
+      card.textContent = `${getAccountDisplayName(account)} 님`;
+      card.hidden = false;
+    });
+  }
+
   function closeAllMenus(exceptMenu) {
     document.querySelectorAll('[data-profile-menu]').forEach((menu) => {
       if (menu !== exceptMenu) menu.classList.remove('open');
@@ -91,17 +111,18 @@
     `;
   }
 
-  async function renderAuthGuard() {
+  function renderAuthGuard(account) {
     if (!document.body.dataset.page || document.body.dataset.page !== 'main') return;
 
-    const account = await getCurrentAccount();
     if (!account) renderLoggedOutMain();
   }
 
   async function initAuthNav() {
     wireAuthLoginButtons();
     wireProfileMenus();
-    await renderAuthGuard();
+    const account = await getCurrentAccount();
+    renderProfileNameCards(account);
+    renderAuthGuard(account);
   }
 
   if (document.readyState === 'loading') {
