@@ -2535,13 +2535,18 @@ assert.match(
 );
 assert.match(
   contestJs,
-  /function\s+normalizeRecommendationProfile\(profile\s*=\s*\{\}\)[\s\S]*educations[\s\S]*chips[\s\S]*interestFields[\s\S]*companies[\s\S]*industries[\s\S]*preferences\?\.detailJob[\s\S]*preferences\?\.workIndustry/,
-  'contest recommendations should use major, minor, desired job, and interest data from mypage'
+  /function\s+normalizeRecommendationProfile\(profile\s*=\s*\{\}\)[\s\S]*preferences\?\.detailJob[\s\S]*desiredIndustries:\s*normalizePreferenceList\(profile\.preferences\?\.workIndustry\)[\s\S]*interestedIndustries:\s*normalizePreferenceList\(selectedIndustries\)/,
+  'contest recommendations should separate desired industry from selected interest industries'
 );
 assert.match(
   contestJs,
-  /function\s+getProfileFitBreakdown\([\s\S]*profile\.desiredJobs[\s\S]*profile\.interestedIndustries[\s\S]*profile\.interestFields[\s\S]*profile\.interestedCompanies[\s\S]*educationSignal/,
-  'contest recommendations should prioritize desired job and industry, use interests and companies as boosts, and keep education as explanation'
+  /function\s+getProfileFitBreakdown\([\s\S]*profile\.desiredJobs[\s\S]*profile\.desiredIndustries[\s\S]*profile\.interestedIndustries[\s\S]*profile\.interestFields[\s\S]*profile\.interestedCompanies[\s\S]*educationSignal/,
+  'contest recommendations should prioritize desired job and desired industry, use interest inputs as boosts, and keep education as explanation'
+);
+assert.match(
+  contestJs,
+  /label:\s*'희망 업종'[\s\S]*profile\.desiredIndustries[\s\S]*label:\s*'관심 산업'[\s\S]*profile\.interestedIndustries/,
+  'contest detail should only show interest industry scores when selected interest industry chips exist'
 );
 assert.match(
   contestJs,
