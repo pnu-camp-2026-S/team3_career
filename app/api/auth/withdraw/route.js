@@ -6,8 +6,11 @@ import {
 const ACTIVITY_FILE_BUCKET = 'activity-files';
 
 const USER_ROW_TARGETS = [
-  { table: 'activity_schedules', column: 'user_id' },
+  { table: 'activity_schedules', column: 'user_id', optional: true },
+  { table: 'file_analyses', column: 'user_id', optional: true },
+  { table: 'project_analyses', column: 'user_id', optional: true },
   { table: 'activity_files', column: 'user_id' },
+  { table: 'activity_folders', column: 'user_id', optional: true },
   { table: 'portfolios', column: 'user_id' },
   { table: 'user_profiles', column: 'user_id' },
   { table: 'profiles', column: 'id' },
@@ -34,6 +37,17 @@ function groupStoragePaths(fileRows) {
   }, new Map());
 }
 
+function isMissingTableError(error) {
+  const code = String(error?.code || '');
+  const message = String(error?.message || '');
+  return code === '42P01'
+    || code === 'PGRST205'
+    || code === 'PGRST200'
+    || message.includes('schema cache')
+    || message.includes('Could not find the table')
+    || /relation\s+"?public\.[^"]+"?\s+does not exist/i.test(message);
+}
+
 async function removeActivityStorageObjects(supabaseAdmin, userId) {
   const { data, error } = await supabaseAdmin
     .from('activity_files')
@@ -58,6 +72,11 @@ async function deleteUserRows(supabaseAdmin, userId) {
       .from(target.table)
       .delete()
       .eq(target.column, userId);
+
+    if (error && target.optional && isMissingTableError(error)) {
+      console.warn(`Account withdrawal skipped missing optional table: ${target.table}`);
+      continue;
+    }
 
     if (error) throw error;
   }

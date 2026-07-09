@@ -1,4 +1,4 @@
-/* Auth pages: index, login, signup */
+/* Auth pages: index, login */
 .auth-page {
   min-height: 100vh;
   display: grid;
@@ -62,32 +62,6 @@
   align-items: center;
   padding: 58px 60px;
   background: #fff;
-}
-
-.auth-tabs {
-  width: min(420px, 100%);
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0;
-  margin-bottom: 72px;
-}
-
-.auth-tab {
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 0;
-  border-bottom: 3px solid transparent;
-  color: #7b8493;
-  background: transparent;
-  font-size: 18px;
-  font-weight: 700;
-}
-
-.auth-tab.active {
-  color: var(--brand);
-  border-color: var(--brand);
 }
 
 .auth-content {
@@ -249,31 +223,6 @@
   padding: 42px;
 }
 
-.auth-tabs {
-  width: min(430px, 100%);
-  margin-bottom: 28px;
-  padding: 5px;
-  border-radius: 14px;
-  background: #eef0f7;
-}
-
-.auth-tab {
-  height: 42px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-bottom: 0;
-  border-radius: 11px;
-  color: #656b7f;
-  font-size: 14px;
-}
-
-.auth-tab.active {
-  background: #fff;
-  color: var(--brand);
-  box-shadow: 0 6px 16px rgba(32, 34, 54, 0.08);
-}
-
 .auth-content {
   width: min(430px, 100%);
   text-align: left;
@@ -376,7 +325,4 @@
     padding: 44px 26px;
   }
 
-  .auth-tabs {
-    margin-bottom: 48px;
-  }
 }

@@ -600,8 +600,7 @@ a.quick-link,
 a.btn,
 a.primary-button,
 a.outline-button,
-a.ghost-button,
-a.auth-tab {
+a.ghost-button {
   text-decoration: none;
 }
 .brand-word {

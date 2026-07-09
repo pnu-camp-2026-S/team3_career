@@ -316,7 +316,7 @@
         .map((tag) => tag.textContent.trim());
     }
 
-    function triggerGeneratePortfolio() {
+    async function triggerGeneratePortfolio() {
       const format = formatSelect.value;
       const purpose = purposeSelect.value;
       const major = getCurrentMajor();
@@ -341,7 +341,7 @@
       document.getElementById('pfWorkspaceScreen').classList.add('hidden');
       document.getElementById('pfLoadingScreen').classList.remove('hidden');
       document.getElementById('workspaceTitle').textContent = `${format} 초안`;
-      startLoadingProgress(async () => {
+      await startLoadingProgress(async () => {
         try {
           const aiDraft = await requestPortfolioGeneration({ format, purpose, major: major.label, experiences, keywords });
           currentPortfolio = normalizeGeneratedPortfolio(aiDraft, portfolioShell);
@@ -364,33 +364,39 @@
           renderPortfolioError(currentPortfolio.format, currentPortfolio.errorMessage);
           showToast('ChatGPT API 생성에 실패했습니다.');
         }
-
-        document.getElementById('pfLoadingScreen').classList.add('hidden');
-        document.getElementById('pfWorkspaceScreen').classList.remove('hidden');
       });
+
+      document.getElementById('pfLoadingScreen').classList.add('hidden');
+      document.getElementById('pfWorkspaceScreen').classList.remove('hidden');
     }
 
-    function startLoadingProgress(onComplete) {
-      const loadingDuration = 1200;
+    async function startLoadingProgress(onComplete) {
       const progressBar = document.getElementById('loadingProgressBar');
       const progressText = document.getElementById('loadingProgressText');
       const startedAt = Date.now();
+      let currentProgress = 0;
 
-      progressBar.style.width = '0%';
-      progressText.textContent = '0%';
+      function setProgress(value) {
+        currentProgress = Math.max(currentProgress, Math.min(100, Math.round(value)));
+        progressBar.style.width = `${currentProgress}%`;
+        progressText.textContent = `${currentProgress}%`;
+      }
+
+      setProgress(0);
 
       const timer = window.setInterval(() => {
         const elapsed = Date.now() - startedAt;
-        const progress = Math.min(100, Math.round((elapsed / loadingDuration) * 100));
+        const easedProgress = 12 + (1 - Math.exp(-elapsed / 1800)) * 78;
+        setProgress(Math.min(92, easedProgress));
+      }, 80);
 
-        progressBar.style.width = `${progress}%`;
-        progressText.textContent = `${progress}%`;
-
-        if (progress >= 100) {
-          window.clearInterval(timer);
-          onComplete();
-        }
-      }, 60);
+      try {
+        await onComplete();
+      } finally {
+        window.clearInterval(timer);
+        setProgress(100);
+        await new Promise((resolve) => window.setTimeout(resolve, 180));
+      }
     }
 
     function buildPortfolioShell({ format, purpose, major, experiences, keywords }) {
@@ -1025,6 +1031,7 @@
 
       if (!portfolio) portfolio = readPortfolioStore().find((item) => item.id === editPortfolioId);
       if (!portfolio) {
+        document.documentElement.classList.remove('portfolio-edit-entry');
         document.getElementById('pfLoadingScreen').classList.add('hidden');
         document.getElementById('pfSetupScreen').classList.remove('hidden');
         showToast('수정할 포트폴리오를 찾지 못했습니다.');
@@ -1063,6 +1070,7 @@
       document.getElementById('pfSetupScreen').classList.add('hidden');
       document.getElementById('pfLoadingScreen').classList.add('hidden');
       document.getElementById('pfWorkspaceScreen').classList.remove('hidden');
+      document.documentElement.classList.remove('portfolio-edit-entry');
       resetAssistantChat();
       renderPortfolioPreview();
       focusAssistantConversation();
@@ -1270,9 +1278,18 @@
       window.setTimeout(() => toast.classList.remove('show'), 1800);
     }
 
-    prepareEditorEntryScreen();
-    loadPortfolioSetupData();
-    openPortfolioEditorFromQuery();
+    async function initializePortfolioCreatePage() {
+      if (editPortfolioId) {
+        prepareEditorEntryScreen();
+        await openPortfolioEditorFromQuery();
+        loadPortfolioSetupData();
+        return;
+      }
+
+      await loadPortfolioSetupData();
+    }
+
+    initializePortfolioCreatePage();
   }
 
   // 4. 이벤트 리스너 등록 (Event Listeners)
