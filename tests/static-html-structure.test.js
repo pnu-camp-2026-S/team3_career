@@ -673,8 +673,18 @@ assert.match(
 );
 assert.match(
   activitySchedulesRoute,
+  /PROFILE_SCHEDULE_KEY\s*=\s*'savedActivitySchedules'[\s\S]*function\s+loadProfileScheduleFallback\(supabase,\s*userId\)[\s\S]*\.from\('user_profiles'\)/,
+  'activity schedule API should restore saved calendar items from user_profiles when the schedule table is unavailable'
+);
+assert.match(
+  activitySchedulesRoute,
   /export async function PUT\(request\)[\s\S]*\.from\('activity_schedules'\)[\s\S]*\.delete\(\)[\s\S]*\.insert\(rows\)/,
   'activity schedule API should replace saved calendar items in Supabase'
+);
+assert.match(
+  activitySchedulesRoute,
+  /function\s+saveProfileScheduleFallback\(supabase,\s*userId,\s*schedules\)[\s\S]*\[PROFILE_SCHEDULE_KEY\]:\s*toClientSchedules\(schedules\)[\s\S]*\.from\('user_profiles'\)[\s\S]*upsert\(/,
+  'activity schedule API should persist saved calendar items to user_profiles as a migration-safe fallback'
 );
 assert.match(
   portfoliosRoute,
