@@ -1,4 +1,9 @@
-import { generateOpenAiJson, portfolioReviseSchema } from '../../../../lib/openai-portfolio';
+import {
+  buildMockPortfolioRevision,
+  generateOpenAiJson,
+  isAnalysisMockEnabled,
+  portfolioReviseSchema,
+} from '../../../../lib/openai-portfolio';
 
 export async function POST(request) {
   try {
@@ -13,6 +18,14 @@ export async function POST(request) {
         { success: false, error: '현재 초안과 수정 요청이 필요합니다.' },
         { status: 400 }
       );
+    }
+
+    if (isAnalysisMockEnabled()) {
+      return Response.json({
+        success: true,
+        data: buildMockPortfolioRevision(currentDraft, revisionRequest),
+        provider: 'mock',
+      });
     }
 
     const prompt = `

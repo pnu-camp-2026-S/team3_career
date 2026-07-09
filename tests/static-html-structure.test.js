@@ -1326,6 +1326,11 @@ assert.match(
 );
 assert.match(
   mypageCss,
+  /\.profile-readonly\s+\.form-field\s+input:disabled\s*\{[^}]*background-color:\s*#fff;/s,
+  'mypage readonly text inputs should keep a white background after saving profile data'
+);
+assert.match(
+  mypageCss,
   /\.profile-readonly\s+\.date-trigger:disabled\s+\.calendar-icon,\s*\.profile-readonly\s+\.major-trigger:disabled\s+\.select-chevron,\s*\.profile-readonly\s+\.picker-trigger:disabled\s+span\[aria-hidden="true"\]\s*\{[^}]*display:\s*none;/s,
   'mypage readonly date, major, and search picker icons should be hidden until edit mode'
 );
@@ -2527,19 +2532,28 @@ assert.match(
 const portfolioExportPptxRoutePath = path.join(appDir, 'api', 'portfolio', 'export-pptx', 'route.js');
 const portfolioGenerateRoutePath = path.join(appDir, 'api', 'portfolio', 'generate', 'route.js');
 const portfolioKeywordsRoutePath = path.join(appDir, 'api', 'portfolio', 'keywords', 'route.js');
+const portfolioReviseRoutePath = path.join(appDir, 'api', 'portfolio', 'revise', 'route.js');
 const portfolioGenerateRoute = fs.existsSync(portfolioGenerateRoutePath)
   ? fs.readFileSync(portfolioGenerateRoutePath, 'utf8')
   : '';
 const portfolioKeywordsRoute = fs.existsSync(portfolioKeywordsRoutePath)
   ? fs.readFileSync(portfolioKeywordsRoutePath, 'utf8')
   : '';
+const portfolioReviseRoute = fs.existsSync(portfolioReviseRoutePath)
+  ? fs.readFileSync(portfolioReviseRoutePath, 'utf8')
+  : '';
 const portfolioExportPptxRoute = fs.existsSync(portfolioExportPptxRoutePath)
   ? fs.readFileSync(portfolioExportPptxRoutePath, 'utf8')
   : '';
 assert.match(
   portfolioGenerateRoute,
-  /ANALYSIS_MOCK\s*===\s*'1'[\s\S]*buildMockPortfolioResponse/,
+  /isAnalysisMockEnabled\(\)[\s\S]*buildMockPortfolioResponse/,
   'portfolio generation API should return mock portfolio data when ANALYSIS_MOCK=1'
+);
+assert.match(
+  portfolioReviseRoute,
+  /isAnalysisMockEnabled\(\)[\s\S]*buildMockPortfolioRevision/,
+  'portfolio revision API should return mock revision data when ANALYSIS_MOCK=1'
 );
 assert.ok(
   fs.existsSync(portfolioExportPptxRoutePath),

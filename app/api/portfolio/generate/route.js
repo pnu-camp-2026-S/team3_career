@@ -3,6 +3,7 @@ import {
   buildPortfolioPrompt,
   generateOpenAiJson,
   getPortfolioSchema,
+  isAnalysisMockEnabled,
   normalizePortfolioResponse,
 } from '../../../../lib/openai-portfolio';
 
@@ -25,7 +26,7 @@ export async function POST(request) {
     }
 
     const context = { format, purpose, major, experiences, keywords, myPageInfo };
-    if (process.env.ANALYSIS_MOCK === '1') {
+    if (isAnalysisMockEnabled()) {
       return Response.json({
         success: true,
         data: buildMockPortfolioResponse(format, context),
