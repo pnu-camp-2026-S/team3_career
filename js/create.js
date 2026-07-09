@@ -612,12 +612,14 @@
 
       if (isLoading) {
         title.textContent = '전체 프로젝트 분석 중';
-        message.textContent = state.currentProjectName
-          ? `${state.currentProjectName} 프로젝트를 분석하고 있습니다.`
-          : '프로젝트 목록을 준비하고 있습니다.';
+        message.textContent = state.currentProjectName === '전체 종합'
+          ? '전체 프로젝트를 종합하고 있습니다.'
+          : state.currentProjectName
+            ? `${state.currentProjectName} 프로젝트를 분석하고 있습니다.`
+            : '프로젝트 목록을 준비하고 있습니다.';
         percentNode.textContent = `${percent}%`;
         progressNode.style.width = `${percent}%`;
-        countNode.textContent = `${completed} / ${total}개 프로젝트 완료`;
+        countNode.textContent = `${completed} / ${total}단계 완료`;
         failedNode.hidden = failed === 0;
         failedNode.textContent = `실패 ${failed}건`;
       } else {
@@ -625,7 +627,7 @@
         message.textContent = '잠시 기다려 주세요.';
         percentNode.textContent = '0%';
         progressNode.style.width = '0%';
-        countNode.textContent = '0 / 0개 프로젝트 완료';
+        countNode.textContent = '0 / 0단계 완료';
         failedNode.hidden = true;
       }
     }
@@ -693,7 +695,7 @@
 
       analysisInFlight = true;
       const progressState = {
-        total: targetFolders.length,
+        total: targetFolders.length + 1,
         completed: 0,
         failed: 0,
         currentProjectName: '',
@@ -745,8 +747,13 @@
           } catch (error) {
             failures.push(`전체 종합: ${error.message || '종합 실패'}`);
             progressState.failed += 1;
+          } finally {
+            progressState.completed += 1;
             setAnalysisLoading(true, progressState);
           }
+        } else {
+          progressState.total = targetFolders.length;
+          setAnalysisLoading(true, progressState);
         }
 
         await loadActivityFilesFromApi();
