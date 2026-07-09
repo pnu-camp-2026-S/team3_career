@@ -691,6 +691,16 @@ assert.match(
 );
 assert.match(
   activityFilesRoute,
+  /previewId[\s\S]*\.eq\('id',\s*previewId\)[\s\S]*\.eq\('user_id',\s*user\.id\)[\s\S]*buildActivityFilePreview/,
+  'activity file API should only preview files owned by the current user (#285)'
+);
+assert.match(
+  activityFilesRoute,
+  /createSignedUrl\(path,\s*SIGNED_URL_EXPIRES_IN_SECONDS\)[\s\S]*download\(path\)/,
+  'activity file API should support signed URL previews and inline text downloads (#285)'
+);
+assert.match(
+  activityFilesRoute,
   /file_analyses\(status, summary_md, index_draft, log_md\)[\s\S]*summaryMd[\s\S]*indexDraft[\s\S]*logMd/,
   'activity file API should return saved AI summary artifacts for file-management display'
 );
@@ -1721,6 +1731,16 @@ assert.match(
 );
 
 const createHtml = readPageSource('create.html');
+assert.match(
+  createHtml,
+  /function\s+getPreviewKind\(file\)[\s\S]*application\/pdf[\s\S]*startsWith\('image\/'\)[\s\S]*\['txt',\s*'md',\s*'csv'\][\s\S]*function\s+renderFilePreviewContent\(file,\s*preview\s*=\s*\{\}\)[\s\S]*file-preview-image[\s\S]*file-preview-pdf[\s\S]*file-preview-text[\s\S]*loadFilePreview\(file\)/,
+  'file management should render real previews for image, PDF, and text-like files (#285)'
+);
+assert.match(
+  createCss,
+  /\.file-preview-image[\s\S]*\.file-preview-pdf iframe[\s\S]*\.file-preview-text[\s\S]*\.file-preview-empty/,
+  'file management should style image, PDF, text, and unavailable preview states (#285)'
+);
 assert.match(
   createHtml,
   /data-shared-nav data-active="create"/,
