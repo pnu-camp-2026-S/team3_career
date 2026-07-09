@@ -1011,6 +1011,7 @@
     }
 
     function resetPortfolioStudio() {
+      document.documentElement.classList.add('portfolio-create-ready');
       document.getElementById('pfWorkspaceScreen').classList.add('hidden');
       document.getElementById('pfLoadingScreen').classList.add('hidden');
       document.getElementById('pfSetupScreen').classList.remove('hidden');
@@ -1094,6 +1095,7 @@
 
       if (!portfolio) portfolio = readPortfolioStore().find((item) => item.id === editPortfolioId);
       if (!portfolio) {
+        document.documentElement.classList.add('portfolio-create-ready');
         document.documentElement.classList.remove('portfolio-edit-entry');
         document.getElementById('pfLoadingScreen').classList.add('hidden');
         document.getElementById('pfSetupScreen').classList.remove('hidden');
@@ -1135,6 +1137,7 @@
       document.getElementById('pfSetupScreen').classList.add('hidden');
       document.getElementById('pfLoadingScreen').classList.add('hidden');
       document.getElementById('pfWorkspaceScreen').classList.remove('hidden');
+      document.documentElement.classList.add('portfolio-create-ready');
       document.documentElement.classList.remove('portfolio-edit-entry');
       resetAssistantChat();
       renderPortfolioPreview();
@@ -1325,9 +1328,10 @@
 
     function prepareEditorEntryScreen() {
       if (!editPortfolioId) return;
+      document.documentElement.classList.add('portfolio-create-ready');
       document.getElementById('pfSetupScreen').classList.add('hidden');
       document.getElementById('pfWorkspaceScreen').classList.add('hidden');
-      document.getElementById('pfLoadingScreen').classList.remove('hidden');
+      document.getElementById('pfLoadingScreen').classList.add('hidden');
     }
 
     function focusAssistantConversation() {
@@ -1362,6 +1366,7 @@
         return;
       }
 
+      document.documentElement.classList.add('portfolio-create-ready');
       await loadPortfolioSetupData();
     }
 

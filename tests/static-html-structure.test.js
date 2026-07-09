@@ -3191,13 +3191,28 @@ assert.match(
 );
 assert.match(
   portfolioCreateHtml,
-  /function\s+prepareEditorEntryScreen\(\)[\s\S]*editPortfolioId[\s\S]*pfSetupScreen'\)\.classList\.add\('hidden'\)[\s\S]*pfLoadingScreen'\)\.classList\.remove\('hidden'\)[\s\S]*async function\s+initializePortfolioCreatePage\(\)[\s\S]*if \(editPortfolioId\)[\s\S]*prepareEditorEntryScreen\(\);[\s\S]*await openPortfolioEditorFromQuery\(\);/,
-  'portfolio_create edit mode should hide the format setup screen before loading the saved draft'
+  /function\s+prepareEditorEntryScreen\(\)[\s\S]*editPortfolioId[\s\S]*pfSetupScreen'\)\.classList\.add\('hidden'\)[\s\S]*pfWorkspaceScreen'\)\.classList\.add\('hidden'\)[\s\S]*pfLoadingScreen'\)\.classList\.add\('hidden'\)[\s\S]*async function\s+initializePortfolioCreatePage\(\)[\s\S]*if \(editPortfolioId\)[\s\S]*prepareEditorEntryScreen\(\);[\s\S]*await openPortfolioEditorFromQuery\(\);/,
+  'portfolio_create edit mode should hide setup and loading while loading the saved draft'
 );
 assert.match(
   portfolioCreateCss,
-  /html\.portfolio-edit-entry #pfSetupScreen\s*\{[^}]*display:\s*none\s*!important;[\s\S]*html\.portfolio-edit-entry #pfLoadingScreen\.hidden\s*\{[^}]*display:\s*grid\s*!important;/,
-  'portfolio_create edit mode should hide setup and show loading through CSS before deferred scripts finish'
+  /html\.portfolio-edit-entry #pfSetupScreen\s*\{[^}]*display:\s*none\s*!important;[\s\S]*html\.portfolio-edit-entry #pfLoadingScreen,\s*html\.portfolio-edit-entry #pfWorkspaceScreen\s*\{[^}]*display:\s*none\s*!important;/,
+  'portfolio_create edit mode should hide setup, loading, and workspace through CSS before deferred scripts finish'
+);
+assert.match(
+  portfolioCreateCss,
+  /html:not\(\.portfolio-create-ready\) #pfSetupScreen\s*\{[^}]*display:\s*none\s*!important;/,
+  'portfolio_create should keep the setup form hidden until page mode initialization is ready'
+);
+assert.match(
+  portfolioCreateHtml,
+  /function\s+prepareEditorEntryScreen\(\)[\s\S]*document\.documentElement\.classList\.add\('portfolio-create-ready'\)[\s\S]*pfSetupScreen'\)\.classList\.add\('hidden'\)[\s\S]*pfLoadingScreen'\)\.classList\.add\('hidden'\)/,
+  'portfolio_create edit mode should mark the page ready while keeping setup and loading hidden'
+);
+assert.match(
+  portfolioCreateHtml,
+  /document\.getElementById\('pfWorkspaceScreen'\)\.classList\.remove\('hidden'\);[\s\S]*document\.documentElement\.classList\.add\('portfolio-create-ready'\);[\s\S]*document\.documentElement\.classList\.remove\('portfolio-edit-entry'\);/,
+  'portfolio_create edit mode should only remove the early edit class after the workspace is visible'
 );
 assert.match(
   portfolioCreateHtml,
