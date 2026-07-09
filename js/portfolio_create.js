@@ -804,6 +804,59 @@
     }
 
     function renderCoverLetterPortfolio(raw) {
+      if (raw.templateId === 'coverletter_ppt_v1' || raw.motivation || raw.representativeExperience) {
+        const storySections = [
+          raw.motivation && {
+            question_title: '지원 동기',
+            question_reason: raw.motivation.subtitle || '경험과 직무 관심 연결',
+            answer: raw.motivation.narrative,
+          },
+          raw.competencies?.length && {
+            question_title: '직무 적합 역량',
+            question_reason: '선택 경험에서 확인한 역량',
+            answer: raw.competencies.map((item) => `${item.name}: ${item.evidence}`).join('\n'),
+          },
+          raw.representativeExperience && {
+            question_title: raw.representativeExperience.title || '대표 경험 서술',
+            question_reason: '문제, 행동, 결과 흐름',
+            answer: [
+              raw.representativeExperience.narrative,
+              ...(raw.representativeExperience.star || []).map((item) => `${item.label}: ${item.text}`),
+            ].filter(Boolean).join('\n'),
+          },
+          raw.contributionPlan?.length && {
+            question_title: '입사 후 기여 계획',
+            question_reason: '초기 적응부터 실무 기여까지',
+            answer: raw.contributionPlan.map((item) => `${item.period}: ${item.plan}`).join('\n'),
+          },
+          raw.questionMap?.length && {
+            question_title: '자기소개서 문항 연결',
+            question_reason: '문항별 연결 경험과 답변 포인트',
+            answer: raw.questionMap.map((item) => `${item.question}: ${item.experience} - ${item.answerPoint}`).join('\n'),
+          },
+        ].filter(Boolean);
+
+        const pages = chunkItems(storySections, 2).map((pageItems) => `
+          <article class="portfolio-canvas">
+            <header class="canvas-hero">
+              <span class="canvas-kicker">Cover Letter PPT</span>
+              <h3>${escapeHtml(raw.title || currentPortfolio.title || '자기소개서 연결형')}</h3>
+              <p>${escapeHtml(raw.headline || currentPortfolio.summary || '경험을 자기소개서형 PPT 흐름으로 정리했습니다.')}</p>
+            </header>
+            ${renderChipSection(raw.coverChips || [])}
+            ${pageItems.map((item) => `
+              <section class="coverletter-question">
+                <h4>${escapeHtml(item.question_title || '자기소개서 문항')}</h4>
+                <small>${escapeHtml(item.question_reason || '경험과 직무 연결')}</small>
+                <p>${escapeHtml(item.answer || '')}</p>
+              </section>
+            `).join('')}
+          </article>
+        `);
+        document.getElementById('workspaceContent').innerHTML = renderDraftPageViewer(pages);
+        return;
+      }
+
       const items = raw.items || [];
       const pages = chunkItems(items, 2).map((pageItems) => `
         <article class="portfolio-canvas">

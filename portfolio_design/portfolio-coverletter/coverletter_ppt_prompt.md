@@ -1,6 +1,6 @@
 # 자기소개서형 포트폴리오 PPT 생성 프롬프트
 
-이 문서는 `portfolio_design/portfolio-coverletter/design.md`와 `portfolio_design/portfolio-coverletter/coverletter_ppt_template.json` 기준에 맞춰 자기소개서형 포트폴리오 PPT 데이터를 생성하기 위한 OpenAI 프롬프트 기준이다.
+이 문서는 `portfolio_design/portfolio-coverletter/coverletter_ppt_design.md`와 `portfolio_design/portfolio-coverletter/coverletter_ppt_template.json` 기준에 맞춰 자기소개서형 포트폴리오 PPT 데이터를 생성하기 위한 OpenAI 프롬프트 기준이다.
 
 ## 역할
 
