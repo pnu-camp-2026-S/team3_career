@@ -1236,6 +1236,15 @@ assert.match(
   /<body class="profile-loading profile-readonly">[\s\S]*<main class="mypage" aria-busy="true">/,
   'mypage should start hidden in readonly loading state until the profile request finishes'
 );
+assert.match(
+  mypageHtml,
+  /<div class="section-stack">\s*<div class="profile-top-actions">\s*<div class="form-actions" data-form-actions><\/div>\s*<\/div>\s*<section class="profile-section" id="basic">\s*<h2 class="section-heading">기본 정보<\/h2>/,
+  'mypage edit and save actions should sit above the basic information card'
+);
+assert.ok(
+  !/<section class="profile-section" id="basic">[\s\S]*<div class="form-actions" data-form-actions><\/div>/.test(mypageHtml),
+  'mypage should not keep the edit and save actions inside the basic information card'
+);
 for (const sampleValue of ['김예지', 'user@univ.ac.kr', '010-1234-5678', '부산광역시 금정구 장전동', '2001.03.15', '2001-03-15', '부산대학교', '4.1/4.5']) {
   assert.ok(
     !mypageHtml.includes(sampleValue),
@@ -1347,8 +1356,13 @@ assert.match(
 );
 assert.match(
   mypageCss,
-  /\.account-actions\s+\.danger-button\s*\{[^}]*border-color:\s*#f05265;[^}]*background:\s*#f05265;[^}]*color:\s*#fff;/s,
-  'mypage account withdrawal button should use the login-related danger button style'
+  /\.account-actions\s+\.danger-button\s*\{[^}]*border-color:\s*#f05265;[^}]*background:\s*#fff;[^}]*color:\s*#d13f52;/s,
+  'mypage account withdrawal button should use a white danger outline style'
+);
+assert.match(
+  mypageCss,
+  /\.mypage\s*\{[^}]*--mypage-top-action-offset:\s*76px;[\s\S]*\.anchor-menu\s*\{[^}]*margin-top:\s*var\(--mypage-top-action-offset\);/s,
+  'mypage side anchor menu should align to the top action area through the shared offset'
 );
 assert.match(
   mypageCss,

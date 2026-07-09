@@ -1,5 +1,6 @@
 /* Mypage profile form */
 .mypage {
+  --mypage-top-action-offset: 76px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 176px;
   gap: 30px;
@@ -41,6 +42,13 @@
   margin: 0 0 18px;
   font-size: 18px;
   font-weight: 900;
+}
+
+.profile-top-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 40px;
 }
 
 .field-grid {
@@ -609,10 +617,14 @@
   border-color: #f05265;
   border-radius: 8px;
   padding: 0 18px;
-  background: #f05265;
-  color: #fff;
+  background: #fff;
+  color: #d13f52;
   text-decoration: none;
   font-weight: 900;
+}
+
+.account-actions .danger-button:hover {
+  background: #fff5f7;
 }
 
 .profile-readonly .form-field input:disabled,
@@ -664,7 +676,7 @@
   position: sticky;
   top: 96px;
   align-self: start;
-  margin-top: 76px;
+  margin-top: var(--mypage-top-action-offset);
   padding: 22px 18px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -853,6 +865,10 @@
   .education-grid,
   .search-row {
     grid-template-columns: 1fr;
+  }
+
+  .profile-top-actions {
+    justify-content: flex-end;
   }
 
   .account-card {
