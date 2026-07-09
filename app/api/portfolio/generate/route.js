@@ -54,44 +54,10 @@ function normalizeKeywordList(items) {
     .slice(0, 12);
 }
 
-function extractMarkdownListSection(markdown, headingMatchers) {
-  const lines = String(markdown || '').split(/\r?\n/);
-  const startIndex = lines.findIndex((line) => (
-    /^##\s+/.test(line) && headingMatchers.some((matcher) => matcher.test(line))
-  ));
-
-  if (startIndex < 0) return [];
-
-  const sectionLines = [];
-  for (let index = startIndex + 1; index < lines.length; index += 1) {
-    const line = lines[index];
-    if (/^##\s+/.test(line)) break;
-    sectionLines.push(line);
-  }
-
-  return normalizeKeywordList(
-    sectionLines
-      .map((line) => line.match(/^\s*[-*]\s+(.+?)\s*$/)?.[1] || '')
-      .filter(Boolean)
-  );
-}
-
 function buildSummaryKeywords(result) {
-  const summaryMd = result?.summaryMd || '';
-  const portfolioSummaryKeywords = extractMarkdownListSection(summaryMd, [
-    /포트폴리오.*키워드/,
-    /portfolio.*keyword/i,
-  ]);
-  if (portfolioSummaryKeywords.length) return portfolioSummaryKeywords;
-
-  const activitySummaryKeywords = extractMarkdownListSection(summaryMd, [
-    /강점.*키워드/,
-    /activity.*keyword/i,
-  ]);
-  if (activitySummaryKeywords.length) return activitySummaryKeywords;
-
-  return normalizeKeywordList(result?.portfolioKeywords).length
-    ? normalizeKeywordList(result?.portfolioKeywords)
+  const portfolioKeywords = normalizeKeywordList(result?.portfolioKeywords);
+  return portfolioKeywords.length
+    ? portfolioKeywords
     : normalizeKeywordList(result?.activityKeywords);
 }
 
@@ -123,7 +89,7 @@ async function loadServerPortfolioContext(projectIds) {
   try {
     const supabase = await createSupabaseServerClient();
     const user = await getCurrentUser(supabase);
-    if (!user) return { myPageInfo: {}, experienceProjects: [], folderFileSummaries: [] };
+    if (!user) return { myPageInfo: {}, experienceProjects: [] };
 
     const profilePromise = supabase
       .from('user_profiles')
@@ -168,67 +134,10 @@ async function loadServerPortfolioContext(projectIds) {
     return {
       myPageInfo: profileError ? {} : toClientProfile(profile),
       experienceProjects,
-      folderFileSummaries: await loadFolderFileSummariesForUser(supabase, user.id, ids),
     };
   } catch (error) {
     console.warn('포트폴리오 생성용 서버 데이터 로드 실패:', error.message);
-    return { myPageInfo: {}, experienceProjects: [], folderFileSummaries: [] };
-  }
-}
-
-// 선택한 프로젝트 폴더의 파일별 요약(file_analyses.summary_md)을 조회한다.
-// 인증 실패/데이터 없음/예외 시에는 빈 배열을 반환해 기존 생성 흐름을 유지한다.
-async function loadFolderFileSummariesForUser(supabase, userId, ids) {
-  if (!ids.length) return [];
-
-  try {
-    const [
-      { data: files, error: filesError },
-      { data: analyses, error: analysesError },
-    ] = await Promise.all([
-      supabase
-        .from('activity_files')
-        .select('id, project_id, file_name, folder_label')
-        .eq('user_id', userId)
-        .in('project_id', ids),
-      supabase
-        .from('file_analyses')
-        .select('activity_file_id, project_id, summary_md')
-        .eq('user_id', userId)
-        .in('project_id', ids),
-    ]);
-
-    if (filesError || analysesError) return [];
-
-    const summaryByFileId = new Map(
-      (analyses || [])
-        .filter((row) => row.summary_md)
-        .map((row) => [row.activity_file_id, row.summary_md])
-    );
-
-    const byProject = new Map();
-    (files || []).forEach((file) => {
-      const summary = summaryByFileId.get(file.id);
-      if (!summary) return;
-
-      const projectId = String(file.project_id || '');
-      if (!byProject.has(projectId)) {
-        byProject.set(projectId, {
-          projectId,
-          label: file.folder_label || projectId,
-          files: [],
-        });
-      }
-      byProject.get(projectId).files.push({
-        name: file.file_name || '이름 없는 파일',
-        summary,
-      });
-    });
-
-    return [...byProject.values()].filter((project) => project.files.length);
-  } catch (error) {
-    console.warn('폴더 파일 요약 로드 실패:', error.message);
-    return [];
+    return { myPageInfo: {}, experienceProjects: [] };
   }
 }
 
@@ -272,7 +181,6 @@ export async function POST(request) {
       major,
       experiences,
       experienceProjects: mergeByProjectId(serverContext.experienceProjects, experienceProjects),
-      folderFileSummaries: serverContext.folderFileSummaries,
       keywords,
       myPageInfo: {
         ...myPageInfo,
