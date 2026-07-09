@@ -1766,6 +1766,11 @@ assert.match(
   /file\.analysisStatus\s*===\s*'completed'\s*\?\s*'분석완료'\s*:\s*'분석대기'/,
   'file status pills should restore the saved analysis state after reload'
 );
+assert.match(
+  createCss,
+  /\.status-pill\s*\{[^}]*display:\s*inline-flex;[^}]*justify-content:\s*center;[^}]*align-items:\s*center;[^}]*width:\s*80px;[^}]*padding:\s*0;/s,
+  '파일 상태 뱃지는 5글자 기준 고정 폭 안에서 텍스트를 중앙 정렬해야 한다'
+);
 // #166-1: 완료 ↔ 진행중 양방향 이동
 assert.match(
   createHtml,
