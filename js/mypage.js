@@ -74,8 +74,7 @@
           periodStart: "",
           periodEnd: "",
           major: "",
-          minor: "",
-          gpa: ""
+          minor: ""
         }
       ],
       chips: {
@@ -125,7 +124,9 @@
       if (Object.hasOwn(profile, "email")) document.querySelector("#profileEmail").value = profile.email || "";
       if (Object.hasOwn(profile, "phone")) document.querySelector("#profilePhone").value = profile.phone || "";
       if (Object.hasOwn(profile, "address")) document.querySelector("#profileAddress").value = profile.address || "";
-      if (Array.isArray(profile.educations) && profile.educations.length) profileState.educations = profile.educations;
+      if (Array.isArray(profile.educations) && profile.educations.length) {
+        profileState.educations = profile.educations.map(({ gpa, ...education }) => education);
+      }
       if (profile.preferences) profileState.preferences = { ...profileState.preferences, ...profile.preferences };
       if (profile.chips) {
         Object.entries(profile.chips).forEach(([key, values]) => {
@@ -267,10 +268,6 @@
             </div>
             ${renderMajorPicker(index, "major", "전공", education.major)}
             ${renderMajorPicker(index, "minor", "부전공/연계전공", education.minor)}
-            <div class="form-field">
-              <label>학점</label>
-              <input data-edu-field="gpa" data-edu-index="${index}" type="text" value="${escapeHtml(education.gpa)}" />
-            </div>
           </div>
         </div>
       `).join("");
@@ -432,7 +429,7 @@
         email: document.querySelector("#profileEmail")?.value || "",
         phone: document.querySelector("#profilePhone")?.value || "",
         address: document.querySelector("#profileAddress")?.value || "",
-        educations: profileState.educations,
+        educations: profileState.educations.map(({ gpa, ...education }) => education),
         preferences: profileState.preferences,
         chips: Object.fromEntries(Object.entries(profileState.chips).map(([key, value]) => [key, [...value]]))
       };
@@ -557,7 +554,7 @@
       if (addEducation) {
         collectEducationValues();
         profileState.periodPicker = null;
-        profileState.educations.push({ schoolType: "대학교 4년", school: "", periodStart: "", periodEnd: "", major: "", minor: "", gpa: "" });
+        profileState.educations.push({ schoolType: "대학교 4년", school: "", periodStart: "", periodEnd: "", major: "", minor: "" });
         renderEducationList();
         renderEditState();
       }
