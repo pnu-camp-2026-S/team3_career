@@ -1393,6 +1393,11 @@ assert.match(
 );
 assert.match(
   withdrawHtml,
+  /<a class="outline-button" href="main\.html">취소<\/a>/,
+  'withdraw cancel should keep the current login state and return to the main page'
+);
+assert.match(
+  withdrawHtml,
   /function clearClientStateAndRedirect\(\)[\s\S]*localStorage\.clear\(\);[\s\S]*sessionStorage\.clear\(\);[\s\S]*window\.location\.href\s*=\s*'login\.html'[\s\S]*fetch\(WITHDRAW_ENDPOINT,[\s\S]*method:\s*'POST'[\s\S]*if \(!response\.ok\)[\s\S]*clearClientStateAndRedirect\(\)/,
   'withdraw page should call the server withdrawal API before clearing local and session state'
 );
