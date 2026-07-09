@@ -10,6 +10,7 @@
   function runPageScript() {
     const PORTFOLIO_STORAGE_KEY = 'careerfit_portfolios';
     const PORTFOLIO_ENDPOINT = '/api/portfolios';
+    const PORTFOLIO_PDF_PREVIEW_ENDPOINT = '/api/portfolio/render-pdf';
     const PROFILE_ENDPOINT = '/api/profile';
     const PORTFOLIO_SOURCE_ENDPOINT = '/api/portfolio/source-data';
     const majorKeywordMap = {
@@ -46,6 +47,10 @@
     let profileData = {};
     let portfolioSourceFolders = [];
     let isPortfolioRevising = false;
+    let pdfPreviewController = null;
+    let pdfPreviewRequestId = 0;
+    let pdfPreviewObjectUrl = '';
+    let pdfPreviewUnavailable = false;
 
     const formatSelect = document.getElementById('pfFormatSelect');
     const purposeSelect = document.getElementById('pfPurposeSelect');
@@ -336,6 +341,7 @@
 
       const portfolioShell = buildPortfolioShell({ format, purpose, major, experiences, experienceProjects, keywords });
 
+      cancelPdfPreviewRequest();
       currentPortfolio = null;
       currentSlideIndex = 0;
       currentDraftPageIndex = 0;
@@ -709,25 +715,349 @@
       `).join('');
     }
 
+    function normalizePptxPreviewText(value) {
+      return String(value || '').replace(/\s+/g, ' ').trim();
+    }
+
+    function normalizePptxPreviewBlocks(portfolio) {
+      const source = portfolio.format === 'PPT 발표 스펙' ? portfolio.slides : portfolio.blocks;
+      const blocks = Array.isArray(source) ? source : [];
+      if (blocks.length) {
+        return blocks.map((block, index) => ({
+          title: normalizePptxPreviewText(block.title) || `섹션 ${index + 1}`,
+          body: normalizePptxPreviewText(block.body || block.description),
+        }));
+      }
+      return [{
+        title: normalizePptxPreviewText(portfolio.title || portfolio.format || '포트폴리오 초안'),
+        body: normalizePptxPreviewText(portfolio.summary || '생성된 포트폴리오 초안입니다.'),
+      }];
+    }
+
+    function createPptxMatchedPreviewSlides(portfolio) {
+      if (portfolio.format === '1페이지 요약본') return [createOnePagePptxPreviewSlide(portfolio)];
+      const blocks = normalizePptxPreviewBlocks(portfolio);
+      const keywords = Array.isArray(portfolio.keywords) ? portfolio.keywords.slice(0, 3).filter(Boolean) : [];
+      return [
+        {
+          type: 'overview',
+          eyebrow: normalizePptxPreviewText(portfolio.format || 'Portfolio'),
+          title: normalizePptxPreviewText(portfolio.title || `${portfolio.format || '포트폴리오'} - ${portfolio.purpose || ''}`),
+          subtitle: `${normalizePptxPreviewText(portfolio.major || '전공 정보')} / ${normalizePptxPreviewText(portfolio.purpose || '생성 목적')}`,
+          meta: [
+            ['형식', portfolio.format],
+            ['전공', portfolio.major],
+            ['키워드', keywords.join(', ')],
+          ].filter(([, value]) => normalizePptxPreviewText(value)),
+          cards: blocks.slice(0, 4),
+        },
+        ...blocks.slice(0, 5).map((block, index) => ({
+          type: 'detail',
+          eyebrow: `Slide ${index + 2}`,
+          title: block.title,
+          subtitle: normalizePptxPreviewText(portfolio.title || `${portfolio.format || '포트폴리오'} 초안`),
+          body: block.body,
+        })),
+      ];
+    }
+
+    function createOnePagePptxPreviewSlide(portfolio) {
+      const raw = portfolio.raw || {};
+      const profile = raw.profile || raw.basic_info || {};
+      const headline = raw.headline || {};
+      const competencies = raw.core_competencies || [];
+      const experiences = raw.representative_experiences || raw.experiences || [];
+      const skills = raw.skill_keywords || raw.skills || portfolio.keywords || [];
+      const targetFit = raw.target_fit || {};
+      return {
+        type: 'onepage',
+        eyebrow: 'PORTFOLIO SUMMARY',
+        title: normalizePptxPreviewText(headline.title || raw.headline || portfolio.title || '1페이지 요약본'),
+        body: normalizePptxPreviewText(headline.one_line_intro || portfolio.summary || '승인된 활동 근거를 바탕으로 구성한 1페이지 요약본입니다.'),
+        profile: [
+          ['이름', profile.name],
+          ['학교', [profile.school_name || profile.school, profile.school_type].filter(Boolean).join(' / ')],
+          ['전공', profile.major || portfolio.major],
+          ['이메일', profile.email],
+        ].filter(([, value]) => normalizePptxPreviewText(value)),
+        target: [
+          ['ROLE', targetFit.role?.value],
+          ['INDUSTRY', targetFit.industry?.value],
+          ['COMPANY', targetFit.company?.value],
+        ].filter(([, value]) => normalizePptxPreviewText(value)),
+        competencies: competencies.map((item) => item.text || `${item.title || ''} ${item.description || ''}`.trim()).filter(Boolean).slice(0, 3),
+        experiences: experiences.map((item) => ({
+          title: item.title || item.project || '대표 경험',
+          body: item.summary || item.highlight || item.role || '근거 보완 필요',
+        })).slice(0, 3),
+        skills: skills.map((item) => typeof item === 'string' ? item : item.text).filter(Boolean).slice(0, 8),
+      };
+    }
+
+    function renderPptxMatchedPreview() {
+      revokePdfPreviewObjectUrl();
+      const slides = createPptxMatchedPreviewSlides(currentPortfolio);
+      const pages = slides.map((slide, index) => `
+        <article class="pptx-preview-page ${slide.type === 'onepage' ? 'portrait' : ''}" aria-label="PPT 슬라이드 ${index + 1} 미리보기">
+          <canvas
+            class="pptx-preview-canvas"
+            data-pptx-preview-index="${index}"
+            width="${slide.type === 'onepage' ? 900 : 1600}"
+            height="${slide.type === 'onepage' ? 1272 : 900}"
+          ></canvas>
+        </article>
+      `);
+      document.getElementById('workspaceContent').innerHTML = renderDraftPageViewer(pages);
+      drawPptxPreviewCanvases(slides);
+    }
+
+    function revokePdfPreviewObjectUrl() {
+      if (!pdfPreviewObjectUrl) return;
+      URL.revokeObjectURL(pdfPreviewObjectUrl);
+      pdfPreviewObjectUrl = '';
+    }
+
+    function cancelPdfPreviewRequest() {
+      pdfPreviewRequestId += 1;
+      if (pdfPreviewController) {
+        pdfPreviewController.abort();
+        pdfPreviewController = null;
+      }
+      revokePdfPreviewObjectUrl();
+    }
+
+    function createPdfPreviewPayload(portfolio) {
+      return {
+        id: portfolio.id,
+        title: portfolio.title,
+        summary: portfolio.summary,
+        content: portfolio.content,
+        format: portfolio.format,
+        purpose: portfolio.purpose,
+        major: portfolio.major,
+        experiences: portfolio.experiences || [],
+        keywords: portfolio.keywords || [],
+        blocks: portfolio.blocks || [],
+        slides: portfolio.slides || [],
+        raw: portfolio.raw || null,
+      };
+    }
+
+    function renderPdfPreviewLoading() {
+      document.getElementById('workspaceContent').innerHTML = `
+        <div class="portfolio-pdf-preview-state" aria-live="polite">
+          <span class="portfolio-pdf-spinner" aria-hidden="true"></span>
+          <strong>실제 PPT를 PDF로 변환하는 중입니다.</strong>
+          <p>변환 워커가 준비되면 생성된 PDF 미리보기를 바로 표시합니다.</p>
+        </div>
+      `;
+    }
+
+    function renderPdfPreviewFrame(pdfUrl) {
+      document.getElementById('workspaceContent').innerHTML = `
+        <div class="portfolio-pdf-preview">
+          <iframe
+            class="portfolio-pdf-frame"
+            src="${escapeHtml(pdfUrl)}"
+            title="실제 변환 PDF 미리보기"
+          ></iframe>
+        </div>
+      `;
+    }
+
+    async function renderActualPdfPreview() {
+      if (!currentPortfolio) return;
+      if (pdfPreviewUnavailable) {
+        renderPptxMatchedPreview();
+        return;
+      }
+
+      const requestId = pdfPreviewRequestId + 1;
+      pdfPreviewRequestId = requestId;
+      if (pdfPreviewController) pdfPreviewController.abort();
+      pdfPreviewController = new AbortController();
+      renderPdfPreviewLoading();
+
+      try {
+        const response = await fetch(PORTFOLIO_PDF_PREVIEW_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify(createPdfPreviewPayload(currentPortfolio)),
+          signal: pdfPreviewController.signal,
+        });
+
+        if (requestId !== pdfPreviewRequestId) return;
+        if (response.status === 503) {
+          pdfPreviewUnavailable = true;
+          throw new Error('PDF preview converter is not configured.');
+        }
+        if (!response.ok) {
+          const payload = await response.json().catch(() => ({}));
+          throw new Error(payload.message || 'PDF preview render failed.');
+        }
+
+        const contentType = response.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          const payload = await response.json().catch(() => ({}));
+          if (!payload.pdfUrl) throw new Error('PDF preview URL is missing.');
+          revokePdfPreviewObjectUrl();
+          renderPdfPreviewFrame(payload.pdfUrl);
+          return;
+        }
+
+        const blob = await response.blob();
+        if (!blob.size) throw new Error('PDF preview response is empty.');
+        revokePdfPreviewObjectUrl();
+        pdfPreviewObjectUrl = URL.createObjectURL(blob);
+        renderPdfPreviewFrame(pdfPreviewObjectUrl);
+      } catch (error) {
+        if (error.name === 'AbortError') return;
+        console.warn('Portfolio PDF preview fell back to canvas preview.', error);
+        renderPptxMatchedPreview();
+      } finally {
+        if (requestId === pdfPreviewRequestId) pdfPreviewController = null;
+      }
+    }
+
+    function drawPptxPreviewCanvases(slides) {
+      document.querySelectorAll('[data-pptx-preview-index]').forEach((canvas) => {
+        const slide = slides[Number(canvas.dataset.pptxPreviewIndex)];
+        if (!slide) return;
+        const context = canvas.getContext('2d');
+        if (slide.type === 'onepage') drawOnePagePptxPreview(context, slide, canvas.width, canvas.height);
+        else drawWidePptxPreview(context, slide, canvas.width, canvas.height);
+      });
+    }
+
+    function drawRoundRect(context, x, y, width, height, radius) {
+      const safeRadius = Math.min(radius, width / 2, height / 2);
+      context.beginPath();
+      context.moveTo(x + safeRadius, y);
+      context.arcTo(x + width, y, x + width, y + height, safeRadius);
+      context.arcTo(x + width, y + height, x, y + height, safeRadius);
+      context.arcTo(x, y + height, x, y, safeRadius);
+      context.arcTo(x, y, x + width, y, safeRadius);
+      context.closePath();
+    }
+
+    function drawWrappedText(context, text, x, y, maxWidth, lineHeight, maxLines) {
+      const words = normalizePptxPreviewText(text).split(/\s+/).filter(Boolean);
+      const lines = [];
+      let line = '';
+      words.forEach((word) => {
+        const nextLine = line ? `${line} ${word}` : word;
+        if (context.measureText(nextLine).width > maxWidth && line) {
+          lines.push(line);
+          line = word;
+        } else {
+          line = nextLine;
+        }
+      });
+      if (line) lines.push(line);
+      lines.slice(0, maxLines).forEach((item, index) => context.fillText(item, x, y + index * lineHeight));
+    }
+
+    function drawPptxPill(context, text, x, y, width) {
+      if (!text) return;
+      context.fillStyle = '#eef4ff';
+      context.strokeStyle = '#d6e4ff';
+      context.lineWidth = 2;
+      drawRoundRect(context, x, y, width, 42, 16);
+      context.fill();
+      context.stroke();
+      context.fillStyle = '#3156e8';
+      context.font = '700 18px Malgun Gothic, Arial, sans-serif';
+      context.fillText(normalizePptxPreviewText(text).slice(0, 22), x + 18, y + 27);
+    }
+
+    function drawPptxCard(context, block, x, y, width, height, compact = false) {
+      context.fillStyle = '#ffffff';
+      context.strokeStyle = '#d8e2f5';
+      context.lineWidth = 2;
+      drawRoundRect(context, x, y, width, height, 18);
+      context.fill();
+      context.stroke();
+      context.fillStyle = '#101828';
+      context.font = `${compact ? '800 20px' : '800 25px'} Malgun Gothic, Arial, sans-serif`;
+      drawWrappedText(context, block.title, x + 28, y + (compact ? 42 : 50), width - 56, 30, compact ? 1 : 2);
+      context.fillStyle = '#344054';
+      context.font = `${compact ? '500 18px' : '500 20px'} Malgun Gothic, Arial, sans-serif`;
+      drawWrappedText(context, block.body, x + 28, y + (compact ? 82 : 112), width - 56, compact ? 29 : 34, compact ? 3 : 5);
+    }
+
+    function drawWidePptxPreview(context, slide, width, height) {
+      context.fillStyle = slide.type === 'overview' ? '#f5f7fb' : '#f8fafc';
+      context.fillRect(0, 0, width, height);
+      context.fillStyle = '#ffffff';
+      context.strokeStyle = '#dbe4f4';
+      context.lineWidth = 2;
+      drawRoundRect(context, 34, 30, width - 68, height - 60, 22);
+      context.fill();
+      context.stroke();
+      drawPptxPill(context, slide.eyebrow, 78, 76, slide.type === 'overview' ? 198 : 138);
+      context.fillStyle = '#101828';
+      context.font = '900 48px Malgun Gothic, Arial, sans-serif';
+      drawWrappedText(context, slide.title, 78, 170, 1320, 58, 2);
+
+      if (slide.type === 'overview') {
+        context.fillStyle = '#667085';
+        context.font = '600 24px Malgun Gothic, Arial, sans-serif';
+        context.fillText(slide.subtitle || '', 80, 270);
+        context.strokeStyle = '#101828';
+        context.lineWidth = 4;
+        context.beginPath();
+        context.moveTo(78, 300);
+        context.lineTo(1460, 300);
+        context.stroke();
+        slide.meta.forEach(([label, value], index) => {
+          drawPptxCard(context, { title: label, body: normalizePptxPreviewText(value) }, 82 + index * 474, 336, 410, 95, true);
+        });
+        [[82, 474, 670, 160], [804, 474, 670, 160], [82, 666, 670, 160], [804, 666, 670, 160]]
+          .forEach((position, index) => {
+            if (slide.cards[index]) drawPptxCard(context, slide.cards[index], ...position, true);
+          });
+        return;
+      }
+
+      context.fillStyle = '#667085';
+      context.font = '600 24px Malgun Gothic, Arial, sans-serif';
+      context.fillText(slide.subtitle || '', 80, 250);
+      drawPptxCard(context, { title: '핵심 내용', body: slide.body }, 90, 330, 1420, 420);
+    }
+
+    function drawOnePagePptxPreview(context, slide, width, height) {
+      context.fillStyle = '#f7faf9';
+      context.fillRect(0, 0, width, height);
+      context.fillStyle = '#ffffff';
+      context.strokeStyle = '#d8e7e3';
+      context.lineWidth = 2;
+      drawRoundRect(context, 34, 34, width - 68, height - 68, 24);
+      context.fill();
+      context.stroke();
+      context.fillStyle = '#2f766d';
+      context.font = '900 20px Malgun Gothic, Arial, sans-serif';
+      context.fillText(slide.eyebrow, 74, 96);
+      context.fillStyle = '#111827';
+      context.font = '900 38px Malgun Gothic, Arial, sans-serif';
+      drawWrappedText(context, slide.title, 74, 150, 720, 48, 2);
+      context.fillStyle = '#4b5563';
+      context.font = '600 22px Malgun Gothic, Arial, sans-serif';
+      drawWrappedText(context, slide.body, 74, 260, 720, 34, 3);
+      drawPptxCard(context, { title: 'ABOUT ME', body: slide.profile.map(([label, value]) => `${label}: ${value}`).join(' / ') || '프로필 정보 보완 필요' }, 74, 380, 350, 160, true);
+      drawPptxCard(context, { title: 'TARGET FIT', body: slide.target.map(([label, value]) => `${label}: ${value}`).join(' / ') || '목표 직무 정보 보완 필요' }, 476, 380, 350, 160, true);
+      drawPptxCard(context, { title: 'CORE COMPETENCIES', body: slide.competencies.join(' / ') || '역량 정보 보완 필요' }, 74, 582, 752, 180, true);
+      slide.experiences.forEach((item, index) => drawPptxCard(context, item, 74 + index * 252, 804, 224, 180, true));
+      drawPptxCard(context, { title: 'SKILL KEYWORDS', body: slide.skills.join(' / ') || '키워드 보완 필요' }, 74, 1028, 752, 150, true);
+    }
+
     function renderPortfolioPreview() {
       if (!currentPortfolio) return;
 
       document.getElementById('workspaceTitle').textContent = `${currentPortfolio.format} 초안`;
       document.getElementById('workspaceSubtitle').textContent = `${currentPortfolio.major} / ${currentPortfolio.purpose} 기준으로 생성한 초안입니다.`;
-      document.getElementById('workspaceBadge').textContent = currentPortfolio.sourceLabel || (currentPortfolio.format === 'PPT 발표 스펙' ? 'PPT 프리뷰' : '초안 생성');
-
-      if (currentPortfolio.raw) {
-        renderPortfolioImagePreview();
-        return;
-      }
-
-      if (currentPortfolio.format === 'PPT 발표 스펙') {
-        renderPptPreview();
-        return;
-      }
-
-      const pages = chunkItems(currentPortfolio.blocks, 3).map(renderPlainDraftPage);
-      document.getElementById('workspaceContent').innerHTML = renderDraftPageViewer(pages);
+      document.getElementById('workspaceBadge').textContent = '실제 PDF 미리보기';
+      renderActualPdfPreview();
     }
 
     function renderPortfolioError(format, message) {
@@ -1011,6 +1341,8 @@
     }
 
     function resetPortfolioStudio() {
+      cancelPdfPreviewRequest();
+      document.documentElement.classList.add('portfolio-create-ready');
       document.getElementById('pfWorkspaceScreen').classList.add('hidden');
       document.getElementById('pfLoadingScreen').classList.add('hidden');
       document.getElementById('pfSetupScreen').classList.remove('hidden');
@@ -1097,6 +1429,7 @@
 
       if (!portfolio) portfolio = readPortfolioStore().find((item) => item.id === editPortfolioId);
       if (!portfolio) {
+        document.documentElement.classList.add('portfolio-create-ready');
         document.documentElement.classList.remove('portfolio-edit-entry');
         document.getElementById('pfLoadingScreen').classList.add('hidden');
         document.getElementById('pfSetupScreen').classList.remove('hidden');
@@ -1138,6 +1471,7 @@
       document.getElementById('pfSetupScreen').classList.add('hidden');
       document.getElementById('pfLoadingScreen').classList.add('hidden');
       document.getElementById('pfWorkspaceScreen').classList.remove('hidden');
+      document.documentElement.classList.add('portfolio-create-ready');
       document.documentElement.classList.remove('portfolio-edit-entry');
       resetAssistantChat();
       renderPortfolioPreview();
@@ -1204,6 +1538,7 @@
     function exitEditingSession() {
       const workspace = document.getElementById('pfWorkspaceScreen');
       workspace.classList.add('leaving');
+      cancelPdfPreviewRequest();
       window.setTimeout(() => {
         currentPortfolio = null;
         chatHistory = [];
@@ -1322,9 +1657,10 @@
 
     function prepareEditorEntryScreen() {
       if (!editPortfolioId) return;
+      document.documentElement.classList.add('portfolio-create-ready');
       document.getElementById('pfSetupScreen').classList.add('hidden');
       document.getElementById('pfWorkspaceScreen').classList.add('hidden');
-      document.getElementById('pfLoadingScreen').classList.remove('hidden');
+      document.getElementById('pfLoadingScreen').classList.add('hidden');
     }
 
     function focusAssistantConversation() {
@@ -1359,6 +1695,7 @@
         return;
       }
 
+      document.documentElement.classList.add('portfolio-create-ready');
       await loadPortfolioSetupData();
     }
 
