@@ -2077,6 +2077,26 @@ assert.match(
   'contest should limit saved schedule previews to five items'
 );
 assert.match(
+  contestJs,
+  /savedScheduleStorageKey\s*=\s*'myfitfolioSavedActivitySchedules'/,
+  'contest should keep saved activity schedules in a stable localStorage key'
+);
+assert.match(
+  contestJs,
+  /function\s+loadSavedSchedules\(\)[\s\S]*localStorage\.getItem\(savedScheduleStorageKey\)/,
+  'contest should restore saved activity schedules from localStorage'
+);
+assert.match(
+  contestJs,
+  /function\s+persistSavedSchedules\(\)[\s\S]*localStorage\.setItem\(savedScheduleStorageKey,\s*JSON\.stringify\(savedSchedules\)\)/,
+  'contest should persist saved activity schedules to localStorage'
+);
+assert.match(
+  contestJs,
+  /persistSavedSchedules\(\);[\s\S]*renderSchedule\(\);/,
+  'contest should persist schedule changes before re-rendering the saved schedule list'
+);
+assert.match(
   contestHtml,
   /id="recommendCount"/,
   'contest recommendation count should have a stable render target'
@@ -2130,15 +2150,9 @@ assert.ok(
   !contestJs.includes('https://calendar.google.com/calendar/u/0/r'),
   'contest more schedules control should not navigate to Google Calendar'
 );
-assert.match(
-  contestJs,
-  /class="text-button schedule-view"/,
-  'contest saved schedule view buttons should be identifiable'
-);
-assert.match(
-  contestJs,
-  /data-date="\$\{event\.date\}"/,
-  'contest saved schedule view buttons should carry the saved date'
+assert.ok(
+  !contestJs.includes('schedule-view'),
+  'contest saved schedule previews should not render view buttons below the calendar'
 );
 assert.match(
   contestJs,
@@ -2158,12 +2172,7 @@ assert.match(
 assert.match(
   contestJs,
   /scheduleList\.addEventListener\('click'/,
-  'contest should handle saved schedule view button clicks'
-);
-assert.match(
-  contestJs,
-  /event\.target\.closest\('\.schedule-view'\)/,
-  'contest should detect saved schedule view button clicks'
+  'contest should handle saved schedule expansion clicks'
 );
 assert.match(
   contestCss,
