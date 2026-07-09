@@ -58,23 +58,33 @@
 
     function renderFolderGroups() {
       const container = document.getElementById('fileManagerFolderGroups');
-      container.innerHTML = FolderStore.FOLDER_GROUPS.map((group) => {
-        const groupFolders = Object.values(folders).filter((folder) => folder.group === group.key);
+      const folderList = Object.values(folders);
+      container.innerHTML = FolderStore.FOLDER_TYPES.map((type) => {
+        const typeFolders = folderList.filter((folder) => folder.type === type.key);
+        if (typeFolders.length === 0) return '';
         return `
           <section class="manager-folder-section">
-            <h3>${group.label}</h3>
+            <div class="manager-folder-section-head">
+              <h3>${escapeHtml(type.label)}</h3>
+              <span>${typeFolders.length}개</span>
+            </div>
             <div class="manager-folder-list">
-              ${groupFolders.map((folder) => `
+              ${typeFolders.map((folder) => `
                 <button class="manager-folder-item ${folder.id === selectedFolderId ? 'active' : ''}" type="button" data-folder-id="${escapeHtml(folder.id)}">
                   <span class="mini-folder" aria-hidden="true"></span>
-                  <span>${escapeHtml(folder.label)}</span>
-                  <strong>${FolderStore.getFolderFiles(folder).length}</strong>
+                  <span class="manager-folder-copy">
+                    <strong>${escapeHtml(folder.label)}</strong>
+                    <small>${escapeHtml(getGroupLabel(folder.group))} · ${FolderStore.getFolderFiles(folder).length}개 자료</small>
+                  </span>
                 </button>
               `).join('')}
             </div>
           </section>
         `;
       }).join('');
+      if (!container.innerHTML.trim()) {
+        container.innerHTML = '<div class="manager-empty compact-empty"><strong>아직 폴더가 없습니다.</strong><span>폴더 추가 버튼으로 첫 활동을 등록해보세요.</span></div>';
+      }
     }
 
     function renderFilePanel() {
