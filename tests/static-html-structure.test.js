@@ -2758,8 +2758,13 @@ assert.match(
 );
 assert.match(
   contestJs,
-  /jobMatch\.hasInput\s*&&\s*!jobMatch\.matched\s*\?\s*Math\.min\(weightedScore,\s*69\)/,
-  'contest recommendations should cap job-mismatched activities below the recommendation threshold'
+  /function\s+hasDirectionMismatch\(jobMatch,\s*industryDirectionMatch\)[\s\S]*jobMatch\.hasInput[\s\S]*industryDirectionMatch\.hasInput/,
+  'contest recommendations should detect both job and industry direction mismatches'
+);
+assert.match(
+  contestJs,
+  /hasDirectionMismatch\(jobMatch,\s*industryDirectionMatch\)[\s\S]*Math\.min\(weightedScore,\s*directionMismatchScoreCap\)/,
+  'contest recommendations should cap direction-mismatched activities below the recommendation threshold'
 );
 assert.match(
   contestJs,
@@ -2768,8 +2773,18 @@ assert.match(
 );
 assert.match(
   contestJs,
-  /companyPreferenceKeywordMap[\s\S]*industryPreferenceKeywordMap[\s\S]*function\s+getPreferenceKeywordScore\(/,
-  'contest recommendations should score interest company and industry keyword matches'
+  /companyPreferenceKeywordMap[\s\S]*industryPreferenceKeywordMap[\s\S]*function\s+getPreferenceKeywordMatch\(/,
+  'contest recommendations should score interest company and industry keyword matches with match metadata'
+);
+assert.match(
+  contestJs,
+  /바이오:\s*\[[^\]]*'바이오'[^\]]*'화공'[^\]]*'화학'[^\]]*'생명'[\s\S]*function\s+getProfileIndustryDirectionMatch/,
+  'contest recommendations should use strict industry direction keywords so broad process or quality terms do not overmatch 바이오'
+);
+assert.match(
+  contestJs,
+  /industryDepartmentGuards[\s\S]*바이오:\s*\['화공생명공학과'\][\s\S]*function\s+isIndustryDepartmentAllowed/,
+  'contest recommendations should only accept 바이오 industry matches from chemical or bio-related departments'
 );
 assert.match(
   contestJs,

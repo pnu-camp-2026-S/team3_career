@@ -288,6 +288,7 @@ const activitiesPerPage = 20;
 const strongRecommendationThreshold = 90;
 const standardRecommendationThreshold = 80;
 const exploratoryRecommendationThreshold = 70;
+const directionMismatchScoreCap = 69;
 const visibleScheduleLimit = 5;
 const savedScheduleStorageKey = 'myfitfolioSavedActivitySchedules';
 const activitySchedulesEndpoint = '/api/activity-schedules';
@@ -499,32 +500,76 @@ const companyPreferenceKeywordMap = {
 };
 
 const industryPreferenceKeywordMap = {
-  반도체: ['반도체', '공정', '전기', '전자', '품질'],
+  반도체: ['반도체', '웨이퍼', 'fab', '파운드리', '메모리', '소자', '전기', '전자'],
   'IT/SW': ['IT', 'SW', '개발', '데이터', 'AI', '클라우드', '보안', '서비스'],
-  금융: ['금융', '데이터', '보안', '서비스'],
-  교육: ['교육', '콘텐츠', '서비스'],
+  금융: ['금융', '핀테크', '리스크', '자산', '결제'],
+  교육: ['교육', '에듀테크', '학습', '강의'],
   콘텐츠: ['콘텐츠', '브랜드', '마케팅', '디자인'],
-  제조: ['제조', '생산', '품질', '공정', '물류'],
-  바이오: ['바이오', '화공', '공정', '품질', '연구'],
+  제조: ['제조', '생산', '설비', '공장', '스마트팩토리'],
+  바이오: ['바이오', '화공', '화학', '생명', '제약', '배양', '소재', '실험'],
   유통: ['유통', '물류', 'SCM', '마케팅', '서비스'],
-  공공: ['공공', '정책', '데이터', '서비스'],
+  공공: ['공공', '정책', '행정', '데이터'],
   게임: ['게임', '개발', '콘텐츠', '서비스']
 };
 
-function getPreferenceKeywordScore(item, preferences, fallbackScore, keywordMap = {}) {
+const industryDepartmentGuards = {
+  바이오: ['화공생명공학과'],
+  반도체: ['전기공학과', '화공생명공학과'],
+  제조: ['산업공학과', '전기공학과', '화공생명공학과']
+};
+
+function isIndustryDepartmentAllowed(item, preference, keywordMap) {
+  if (keywordMap !== industryPreferenceKeywordMap) return true;
+
+  const allowedDepartments = industryDepartmentGuards[preference];
+  if (!allowedDepartments?.length) return true;
+
+  const primaryDepartment = normalizeDepartmentName(item.primaryDepartment);
+  return allowedDepartments.some((allowed) => primaryDepartment === allowed || primaryDepartment.includes(allowed));
+}
+
+function getPreferenceKeywordMatch(item, preferences, fallbackScore, keywordMap = {}) {
   const normalizedPreferences = normalizePreferenceList(preferences);
-  if (!normalizedPreferences.length) return fallbackScore;
+  if (!normalizedPreferences.length) {
+    return { score: fallbackScore, matched: false, hasInput: false, matchCount: 0 };
+  }
 
   const activityText = normalizeMatchText(getActivityPreferenceText(item));
   const bestMatchCount = normalizedPreferences.reduce((bestCount, preference) => {
+    if (!isIndustryDepartmentAllowed(item, preference, keywordMap)) return bestCount;
+
     const keywords = [preference, ...(keywordMap[preference] || [])];
     const matchCount = keywords.filter((keyword) => activityText.includes(normalizeMatchText(keyword))).length;
     return Math.max(bestCount, matchCount);
   }, 0);
 
-  if (bestMatchCount >= 2) return 96;
-  if (bestMatchCount === 1) return 90;
-  return Math.max(40, fallbackScore - 8);
+  if (bestMatchCount >= 2) {
+    return { score: 96, matched: true, hasInput: true, matchCount: bestMatchCount };
+  }
+
+  if (bestMatchCount === 1) {
+    return { score: 90, matched: true, hasInput: true, matchCount: bestMatchCount };
+  }
+
+  return { score: Math.max(40, fallbackScore - 8), matched: false, hasInput: true, matchCount: 0 };
+}
+
+function getPreferenceKeywordScore(item, preferences, fallbackScore, keywordMap = {}) {
+  return getPreferenceKeywordMatch(item, preferences, fallbackScore, keywordMap).score;
+}
+
+function getProfileIndustryDirectionMatch(item, profile, baseScore) {
+  const directionIndustries = normalizePreferenceList([
+    ...normalizePreferenceList(profile.desiredIndustries),
+    ...normalizePreferenceList(profile.interestedIndustries)
+  ]);
+
+  return getPreferenceKeywordMatch(item, directionIndustries, baseScore, industryPreferenceKeywordMap);
+}
+
+function hasDirectionMismatch(jobMatch, industryDirectionMatch) {
+  return (jobMatch.hasInput && !jobMatch.matched) ||
+    (industryDirectionMatch.hasInput && !industryDirectionMatch.matched);
 }
 
 function getStrongestEducationFit(majorScore, minorScore, linkedMajorScore) {
@@ -549,25 +594,30 @@ function getProfileFitBreakdown(item, profile) {
   const jobMatch = getProfileJobMatch(item, profile.desiredJobs);
   const jobScore = jobMatch.score;
   const baseScore = getRecommendationScore(item);
-  const interestFieldScore = getPreferenceKeywordScore(item, profile.interestFields, baseScore);
-  const desiredIndustryScore = getPreferenceKeywordScore(
+  const interestFieldMatch = getPreferenceKeywordMatch(item, profile.interestFields, baseScore);
+  const interestFieldScore = interestFieldMatch.score;
+  const desiredIndustryMatch = getPreferenceKeywordMatch(
     item,
     profile.desiredIndustries,
     baseScore,
     industryPreferenceKeywordMap
   );
-  const industryScore = getPreferenceKeywordScore(
+  const desiredIndustryScore = desiredIndustryMatch.score;
+  const industryMatch = getPreferenceKeywordMatch(
     item,
     profile.interestedIndustries,
     baseScore,
     industryPreferenceKeywordMap
   );
-  const companyScore = getPreferenceKeywordScore(
+  const industryScore = industryMatch.score;
+  const industryDirectionMatch = getProfileIndustryDirectionMatch(item, profile, baseScore);
+  const companyMatch = getPreferenceKeywordMatch(
     item,
     profile.interestedCompanies,
     baseScore,
     companyPreferenceKeywordMap
   );
+  const companyScore = companyMatch.score;
   const educationSignal = getStrongestEducationFit(majorScore, minorScore, linkedMajorScore);
   const educationScore = educationSignal?.score || baseScore;
   const hasInput = hasProfileInput(profile);
@@ -576,23 +626,23 @@ function getProfileFitBreakdown(item, profile) {
   const scoringSignals = [];
 
   if (normalizePreferenceList(profile.desiredJobs).length) {
-    scoringSignals.push({ score: jobScore, weight: 45 });
-  }
-
-  if (normalizePreferenceList(profile.interestedIndustries).length) {
-    scoringSignals.push({ score: industryScore, weight: 30 });
+    scoringSignals.push({ score: jobMatch.matched ? jobScore : 45, weight: 45 });
   }
 
   if (normalizePreferenceList(profile.desiredIndustries).length) {
-    scoringSignals.push({ score: desiredIndustryScore, weight: 30 });
+    scoringSignals.push({ score: desiredIndustryMatch.matched ? desiredIndustryScore : 45, weight: 35 });
+  }
+
+  if (normalizePreferenceList(profile.interestedIndustries).length) {
+    scoringSignals.push({ score: industryMatch.matched ? industryScore : 45, weight: 35 });
   }
 
   if (normalizePreferenceList(profile.interestFields).length) {
-    scoringSignals.push({ score: interestFieldScore, weight: 15 });
+    scoringSignals.push({ score: interestFieldScore, weight: 8 });
   }
 
   if (normalizePreferenceList(profile.interestedCompanies).length) {
-    scoringSignals.push({ score: companyScore, weight: 5 });
+    scoringSignals.push({ score: companyScore, weight: 7 });
   }
 
   if (educationSignal && !hasDirection) {
@@ -603,7 +653,9 @@ function getProfileFitBreakdown(item, profile) {
   const weightedScore = totalWeight
     ? Math.round(scoringSignals.reduce((sum, signal) => sum + signal.score * signal.weight, 0) / totalWeight)
     : baseScore;
-  const cappedScore = jobMatch.hasInput && !jobMatch.matched ? Math.min(weightedScore, 69) : weightedScore;
+  const cappedScore = hasDirectionMismatch(jobMatch, industryDirectionMatch)
+    ? Math.min(weightedScore, directionMismatchScoreCap)
+    : weightedScore;
   const score = Math.max(12, Math.min(96, cappedScore));
   const fitSignals = [
     { label: '직무 적합', score: jobScore, visible: normalizePreferenceList(profile.desiredJobs).length > 0 },
