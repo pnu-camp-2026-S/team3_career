@@ -2419,6 +2419,11 @@ assert.match(
 );
 assert.match(
   portfolioCreateHtml,
+  /const\s+KEYWORD_RECOMMEND_ENDPOINT\s*=\s*'\/api\/portfolio\/keywords'/,
+  'portfolio_create should define the contextual portfolio keyword recommendation API endpoint'
+);
+assert.match(
+  portfolioCreateHtml,
   /async function\s+loadProfileMajor\(\)[\s\S]*fetch\(PROFILE_ENDPOINT,[\s\S]*profileMajor\s*=\s*educations\.find\(\(education\)\s*=>\s*education\?\.major\)\?\.major/,
   'portfolio_create should load the displayed major from mypage education data'
 );
@@ -2429,8 +2434,13 @@ assert.match(
 );
 assert.match(
   portfolioCreateHtml,
-  /function\s+getExperienceKeywordRecommendations\(\)[\s\S]*experienceKeywordRules[\s\S]*getSelectedExperienceLabels\(\)/,
-  'portfolio_create should recommend keyword chips from selected experience files'
+  /function\s+getExperienceKeywordRecommendations\(selectedFiles\s*=\s*getSelectedExperienceFiles\(\)\)[\s\S]*experienceKeywordRules[\s\S]*analysis\?\.summaryMd/,
+  'portfolio_create should recommend keyword chips from selected experience files and analysis summaries'
+);
+assert.match(
+  portfolioCreateHtml,
+  /async function\s+requestKeywordRecommendations\(selectedFiles,\s*fallbackKeywords\)[\s\S]*fetch\(KEYWORD_RECOMMEND_ENDPOINT,[\s\S]*experiences:\s*selectedFiles\.map\(compactExperienceForKeywords\)/,
+  'portfolio_create should ask the server for major and experience-aware keyword recommendations'
 );
 assert.match(
   portfolioCreateHtml,
@@ -2505,8 +2515,8 @@ assert.match(
 );
 assert.match(
   portfolioCreateHtml,
-  /const\s+commonKeywords[\s\S]*const\s+majorKeywordMap[\s\S]*const\s+experienceKeywordRules/,
-  'portfolio_create should generate keyword options from common, major, and selected-experience rules'
+  /const\s+commonKeywords[\s\S]*const\s+majorKeywordMap[\s\S]*const\s+experienceKeywordRules[\s\S]*buildLocalKeywordRecommendations/,
+  'portfolio_create should keep local keyword fallback options from common, major, and selected-experience rules'
 );
 assert.match(
   portfolioCreateHtml,
@@ -2521,9 +2531,13 @@ assert.match(
 
 const portfolioExportPptxRoutePath = path.join(appDir, 'api', 'portfolio', 'export-pptx', 'route.js');
 const portfolioGenerateRoutePath = path.join(appDir, 'api', 'portfolio', 'generate', 'route.js');
+const portfolioKeywordsRoutePath = path.join(appDir, 'api', 'portfolio', 'keywords', 'route.js');
 const portfolioReviseRoutePath = path.join(appDir, 'api', 'portfolio', 'revise', 'route.js');
 const portfolioGenerateRoute = fs.existsSync(portfolioGenerateRoutePath)
   ? fs.readFileSync(portfolioGenerateRoutePath, 'utf8')
+  : '';
+const portfolioKeywordsRoute = fs.existsSync(portfolioKeywordsRoutePath)
+  ? fs.readFileSync(portfolioKeywordsRoutePath, 'utf8')
   : '';
 const portfolioReviseRoute = fs.existsSync(portfolioReviseRoutePath)
   ? fs.readFileSync(portfolioReviseRoutePath, 'utf8')
@@ -2544,6 +2558,25 @@ assert.match(
 assert.ok(
   fs.existsSync(portfolioExportPptxRoutePath),
   'portfolio PPTX export API should live in app/api/portfolio/export-pptx/route.js'
+);
+assert.ok(
+  fs.existsSync(portfolioKeywordsRoutePath),
+  'portfolio keyword recommendation API should live in app/api/portfolio/keywords/route.js'
+);
+assert.match(
+  portfolioKeywordsRoute,
+  /tools:\s*\[\{\s*type:\s*'web_search_preview'\s*\}\][\s\S]*tool_choice:\s*'required'/,
+  'portfolio keyword API should require OpenAI web search for certificate and experience context when available'
+);
+assert.match(
+  portfolioKeywordsRoute,
+  /EXPERIENCE_RULES[\s\S]*buildFallbackKeywords[\s\S]*자격증형 파일 감지 여부/,
+  'portfolio keyword API should combine certificate detection, major context, and local fallback rules'
+);
+assert.match(
+  portfolioKeywordsRoute,
+  /analysisSummary[\s\S]*analysisIndex[\s\S]*collectExperienceText/,
+  'portfolio keyword API should consider uploaded file analysis summaries and index drafts'
 );
 assert.match(
   portfolioExportPptxRoute,
@@ -2580,6 +2613,7 @@ for (const cssPattern of [
   /\.flat-action\.danger\s*\{/,
   /\.chat-input\s+textarea\s*\{/,
   /\.chat-send-button\s*\{/,
+  /\.tag\.ai-tag\s*\{/,
   /\.portfolio-canvas\s*\{/,
   /\.compact-case-canvas\s*\{/,
   /\.case-summary-strip\s*\{/,

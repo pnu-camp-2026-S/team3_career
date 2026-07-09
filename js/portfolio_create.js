@@ -12,6 +12,7 @@
     const PORTFOLIO_ENDPOINT = '/api/portfolios';
     const PROFILE_ENDPOINT = '/api/profile';
     const ACTIVITY_FILES_ENDPOINT = '/api/activity-files';
+    const KEYWORD_RECOMMEND_ENDPOINT = '/api/portfolio/keywords';
     const commonKeywords = ['문제 해결', '협업', '학습 민첩성'];
     const majorKeywordMap = {
       industrial: {
@@ -55,6 +56,7 @@
     let profileMajor = '';
     let activityFiles = [];
     let isPortfolioRevising = false;
+    let keywordRequestId = 0;
 
     const formatSelect = document.getElementById('pfFormatSelect');
     const purposeSelect = document.getElementById('pfPurposeSelect');
@@ -70,7 +72,9 @@
       card.addEventListener('click', () => selectFormat(card.dataset.format));
     });
 
-    experienceDataList.addEventListener('change', renderKeywordPool);
+    experienceDataList.addEventListener('change', () => {
+      renderKeywordPool();
+    });
     document.getElementById('generatePortfolioBtn').addEventListener('click', triggerGeneratePortfolio);
     assistantSendBtn.addEventListener('click', sendPfAssistantChat);
     document.querySelector('.master-actions').addEventListener('click', async (event) => {
@@ -111,8 +115,16 @@
       };
     }
 
-    function getExperienceKeywordRecommendations() {
-      const selectedTexts = getSelectedExperienceLabels();
+    function getExperienceKeywordRecommendations(selectedFiles = getSelectedExperienceFiles()) {
+      const selectedTexts = selectedFiles.length
+        ? selectedFiles.map((file) => [
+          getExperienceLabel(file),
+          file.folderGroup,
+          file.folderType,
+          file.analysis?.summaryMd,
+          JSON.stringify(file.analysis?.indexDraft || {})
+        ].filter(Boolean).join(' '))
+        : getSelectedExperienceLabels();
       if (!selectedTexts.length) return [];
 
       const joinedText = selectedTexts.join(' ');
@@ -121,31 +133,22 @@
         .flatMap((rule) => rule.keywords);
     }
 
-    function pickRandomKeywords(keywords, count) {
-      return [...keywords]
-        .map((keyword) => ({ keyword, weight: Math.random() }))
-        .sort((a, b) => a.weight - b.weight)
-        .slice(0, count)
-        .map((item) => item.keyword);
+    function buildLocalKeywordRecommendations(selectedFiles = getSelectedExperienceFiles()) {
+      const selectedMajor = getCurrentMajor();
+      return [
+        ...commonKeywords,
+        ...selectedMajor.keywords.slice(0, 4),
+        ...getExperienceKeywordRecommendations(selectedFiles)
+      ];
     }
 
-    function renderKeywordPool() {
-      const selectedMajor = getCurrentMajor();
-      const recommendedKeywords = [
-        ...commonKeywords,
-        ...pickRandomKeywords(selectedMajor.keywords, 3),
-        ...getExperienceKeywordRecommendations()
-      ];
-      const keywords = [...new Set(recommendedKeywords)].slice(0, 12);
+    function renderKeywordTags(keywords, { source = 'local' } = {}) {
+      const uniqueKeywords = [...new Set(keywords.filter(Boolean))].slice(0, 12);
 
-      if (!getSelectedExperienceLabels().length && activityFiles.length) {
-        keywordPool.innerHTML = '<p class="keyword-empty">경험 데이터를 선택하면 추천 키워드가 표시됩니다.</p>';
-        return;
-      }
-
-      keywordPool.innerHTML = keywords.map((keyword) => (
-        `<button class="tag" type="button" data-keyword="${escapeHtml(keyword)}" aria-pressed="false">${escapeHtml(keyword)}</button>`
-      )).join('');
+      keywordPool.innerHTML = uniqueKeywords.map((keyword) => {
+        const sourceClass = source === 'ai' ? ' ai-tag' : '';
+        return `<button class="tag${sourceClass}" type="button" data-keyword="${escapeHtml(keyword)}" aria-pressed="false">${escapeHtml(keyword)}</button>`;
+      }).join('');
 
       keywordPool.querySelectorAll('[data-keyword]').forEach((tag) => {
         tag.addEventListener('click', () => {
@@ -155,9 +158,74 @@
       });
     }
 
+    function compactExperienceForKeywords(file) {
+      return {
+        id: file.id,
+        name: file.name,
+        folderGroup: file.folderGroup,
+        folderType: file.folderType,
+        folderLabel: file.folderLabel,
+        analysisStatus: file.analysisStatus,
+        analysisSummary: file.analysis?.summaryMd || '',
+        analysisIndex: file.analysis?.indexDraft || null,
+      };
+    }
+
+    async function requestKeywordRecommendations(selectedFiles, fallbackKeywords) {
+      const response = await fetch(KEYWORD_RECOMMEND_ENDPOINT, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({
+          major: getCurrentMajor().label,
+          experiences: selectedFiles.map(compactExperienceForKeywords),
+          fallbackKeywords,
+        }),
+      });
+
+      if (!response.ok) throw new Error('Keyword recommendation failed.');
+
+      const result = await response.json();
+      return Array.isArray(result.keywords) ? result.keywords : [];
+    }
+
+    async function renderKeywordPool() {
+      const selectedFiles = getSelectedExperienceFiles();
+      const currentRequestId = ++keywordRequestId;
+
+      if (!selectedFiles.length && activityFiles.length) {
+        keywordPool.innerHTML = '<p class="keyword-empty">경험 데이터를 선택하면 추천 키워드가 표시됩니다.</p>';
+        return;
+      }
+
+      const fallbackKeywords = buildLocalKeywordRecommendations(selectedFiles);
+      renderKeywordTags(fallbackKeywords);
+
+      if (!selectedFiles.length) return;
+
+      try {
+        const aiKeywords = await requestKeywordRecommendations(selectedFiles, fallbackKeywords);
+        if (currentRequestId !== keywordRequestId || !aiKeywords.length) return;
+        renderKeywordTags(aiKeywords, { source: 'ai' });
+      } catch (error) {
+        console.warn('Contextual keyword recommendation failed.', error);
+      }
+    }
+
     function getSelectedExperienceLabels() {
       return Array.from(document.querySelectorAll('.experience-option input:checked'))
         .map((input) => input.value);
+    }
+
+    function getSelectedExperienceFiles() {
+      const selectedIds = new Set(
+        Array.from(document.querySelectorAll('.experience-option input:checked'))
+          .map((input) => input.dataset.experienceId)
+      );
+      return activityFiles.filter((file) => selectedIds.has(String(file.id)));
     }
 
     function getExperienceLabel(file) {
