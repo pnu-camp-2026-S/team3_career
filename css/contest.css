@@ -367,6 +367,13 @@ button {
   margin-bottom: 16px;
 }
 
+.activity-header-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+
 .panel h2 {
   margin: 0;
   color: var(--text);
@@ -888,6 +895,10 @@ button {
   .panel-header,
   .filter-bar {
     flex-direction: column;
+    align-items: stretch;
+  }
+
+  .activity-header-actions {
     align-items: stretch;
   }
 
