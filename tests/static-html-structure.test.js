@@ -419,6 +419,15 @@ for (const department of ['컴퓨터공학과', '전기공학과', '화공생명
     `activity recommendation dataset should score every activity for ${department}`
   );
 }
+assert.ok(
+  activityRecommendationDataset.every(
+    (item) =>
+      Array.isArray(item.targetCompanies) &&
+      Array.isArray(item.targetIndustries) &&
+      Array.isArray(item.interestFields)
+  ),
+  'activity recommendation dataset should include company, industry, and interest field mock signals'
+);
 assert.match(
   fitfolioCss,
   /\.auth-tab\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*center;[^}]*justify-content:\s*center;/s,
@@ -2134,6 +2143,36 @@ assert.match(
   contestJs,
   /getMatchScore\(item\)\s*>=\s*recommendationMatchThreshold/,
   'contest recommendation count should include only activities over the match threshold'
+);
+assert.match(
+  contestJs,
+  /return\s+activities[\s\S]*\.filter\(\(item\)\s*=>\s*getMatchScore\(item\)\s*>=\s*recommendationMatchThreshold\)/,
+  'contest activity list should show only activities over the match threshold'
+);
+assert.match(
+  contestJs,
+  /const\s+profileStorageKeys\s*=\s*\[[\s\S]*'myfitfolioProfile'/,
+  'contest recommendations should read the cached mypage profile'
+);
+assert.match(
+  contestJs,
+  /function\s+readRecommendationProfile\(\)[\s\S]*educations[\s\S]*chips[\s\S]*interestFields[\s\S]*companies[\s\S]*industries[\s\S]*preferences\?\.detailJob[\s\S]*preferences\?\.workIndustry/,
+  'contest recommendations should use major, minor, desired job, and interest data from mypage'
+);
+assert.match(
+  contestJs,
+  /function\s+getProfileRecommendationScore\([\s\S]*profile\.major[\s\S]*profile\.minor[\s\S]*profile\.linkedMajor[\s\S]*profile\.desiredJobs[\s\S]*profile\.interestFields[\s\S]*profile\.interestedIndustries[\s\S]*profile\.interestedCompanies/,
+  'contest recommendations should calculate mock scores from profile preferences'
+);
+assert.match(
+  contestJs,
+  /departmentFit[\s\S]*targetJobs[\s\S]*targetCompanies[\s\S]*targetIndustries[\s\S]*interestFields[\s\S]*skills/,
+  'contest recommendations should combine department fit, job, company, industry, and interest activity data'
+);
+assert.match(
+  contestJs,
+  /companyPreferenceKeywordMap[\s\S]*industryPreferenceKeywordMap[\s\S]*function\s+getPreferenceKeywordScore\(/,
+  'contest recommendations should score interest company and industry keyword matches'
 );
 assert.match(
   contestJs,
