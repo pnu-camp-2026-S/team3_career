@@ -63,6 +63,7 @@
       editing: false,
       saving: false,
       saveError: "",
+      validationErrors: new Set(),
       birthDate: "",
       datePickerOpen: false,
       periodPicker: null,
@@ -90,6 +91,15 @@
         salary: "회사 내규에 따름"
       }
     };
+
+    const requiredFieldRules = [
+      { key: "name", sectionId: "basic", selector: "#profileName", getValue: () => document.querySelector("#profileName")?.value || "" },
+      { key: "gender", sectionId: "basic", selector: "#profileGender", getValue: () => document.querySelector("#profileGender")?.value || "" },
+      { key: "birthDate", sectionId: "basic", selector: "[data-toggle-date-picker]", getValue: () => profileState.birthDate || "" },
+      { key: "email", sectionId: "contact", selector: "#profileEmail", getValue: () => document.querySelector("#profileEmail")?.value || "" },
+      { key: "phone", sectionId: "contact", selector: "#profilePhone", getValue: () => document.querySelector("#profilePhone")?.value || "" },
+      { key: "address", sectionId: "contact", selector: "#profileAddress", getValue: () => document.querySelector("#profileAddress")?.value || "" }
+    ];
 
     const searchConfigs = {
       detailJob: {
@@ -360,6 +370,45 @@
       });
     }
 
+    function renderValidationState() {
+      requiredFieldRules.forEach((rule) => {
+        const control = document.querySelector(rule.selector);
+        const field = control?.closest(".form-field");
+        const hasError = profileState.validationErrors.has(rule.key);
+
+        field?.classList.toggle("has-error", hasError);
+        if (control) {
+          control.setAttribute("aria-invalid", String(hasError));
+        }
+      });
+    }
+
+    function clearResolvedValidationErrors() {
+      requiredFieldRules.forEach((rule) => {
+        if (profileState.validationErrors.has(rule.key) && String(rule.getValue()).trim()) {
+          profileState.validationErrors.delete(rule.key);
+        }
+      });
+      renderValidationState();
+    }
+
+    function validateRequiredProfileFields() {
+      const missingFields = requiredFieldRules.filter((rule) => !String(rule.getValue()).trim());
+      profileState.validationErrors = new Set(missingFields.map((rule) => rule.key));
+      renderValidationState();
+
+      if (!missingFields.length) return true;
+
+      const firstMissing = missingFields[0];
+      const section = document.querySelector(`#${firstMissing.sectionId}`);
+      const control = document.querySelector(firstMissing.selector);
+
+      section?.scrollIntoView({ behavior: "smooth", block: "start" });
+      window.setTimeout(() => control?.focus?.({ preventScroll: true }), 240);
+      profileState.saveError = "필수 정보를 모두 입력해주세요.";
+      return false;
+    }
+
     function renderPhoto() {
       const preview = document.querySelector("[data-photo-preview]");
       if (!preview) return;
@@ -475,6 +524,7 @@
       renderChipRows();
       renderSalarySelect();
       renderPickedValues();
+      renderValidationState();
       renderFormActions();
       renderEditState();
     }
@@ -534,6 +584,8 @@
       const editButton = event.target.closest("[data-edit-profile]");
       if (editButton) {
         profileState.editing = true;
+        profileState.saveError = "";
+        profileState.validationErrors.clear();
         renderAllDynamicParts();
         return;
       }
@@ -557,6 +609,7 @@
         profileState.birthDate = `${year}-${String(month).padStart(2, "0")}-${String(nextDay).padStart(2, "0")}`;
         profileState.datePickerOpen = false;
         renderDatePicker();
+        clearResolvedValidationErrors();
       }
 
       const addEducation = event.target.closest("[data-add-education]");
@@ -668,8 +721,13 @@
       if (event.target.closest("[data-save-profile]")) {
         if (profileState.saving) return;
 
-        profileState.saving = true;
         profileState.saveError = "";
+        if (!validateRequiredProfileFields()) {
+          renderFormActions();
+          return;
+        }
+
+        profileState.saving = true;
         renderFormActions();
 
         const saved = await saveProfile();
@@ -679,6 +737,7 @@
           profileState.editing = false;
           profileState.datePickerOpen = false;
           profileState.periodPicker = null;
+          profileState.validationErrors.clear();
         } else {
           profileState.saveError = "DB 저장에 실패했습니다. 다시 저장해주세요.";
         }
@@ -735,6 +794,8 @@
 
       const salarySelect = event.target.closest("[data-salary-select]");
       if (salarySelect) profileState.preferences.salary = salarySelect.value;
+
+      clearResolvedValidationErrors();
     });
 
     document.addEventListener("input", (event) => {
@@ -755,6 +816,8 @@
         const fieldName = eduInput.dataset.eduField;
         if (profileState.educations[index]) profileState.educations[index][fieldName] = eduInput.value;
       }
+
+      clearResolvedValidationErrors();
     });
 
     async function initProfilePage() {
