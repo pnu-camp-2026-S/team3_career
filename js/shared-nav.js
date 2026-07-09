@@ -30,7 +30,7 @@
           <div class="profile-menu">
             <span class="profile-name-card" data-profile-name-card hidden></span>
             <button class="user-chip" type="button" data-profile-toggle aria-label="프로필 메뉴 열기" aria-haspopup="menu" aria-expanded="false">
-              <span class="avatar"></span>
+              <span class="avatar" data-profile-avatar></span>
             </button>
             <div class="profile-dropdown" data-profile-menu role="menu">
               <a href="mypage.html" role="menuitem">마이페이지</a>

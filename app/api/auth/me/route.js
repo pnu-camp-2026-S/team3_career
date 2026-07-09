@@ -18,13 +18,21 @@ export async function GET() {
       .eq('id', user.id)
       .maybeSingle();
 
+    const { data: mypageProfile } = await supabase
+      .from('user_profiles')
+      .select('preferences')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    const uploadedPhoto = mypageProfile?.preferences?.profilePhoto || null;
+
     return Response.json({
       authenticated: true,
       user: {
         id: user.id,
         email: user.email,
         name: profile?.name || user.user_metadata?.full_name || user.user_metadata?.name || user.email,
-        avatarUrl: profile?.avatar_url || user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
+        avatarUrl: uploadedPhoto || profile?.avatar_url || user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
         provider: profile?.provider || user.app_metadata?.provider || null,
       },
       profile,

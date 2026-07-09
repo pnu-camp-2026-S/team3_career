@@ -339,6 +339,11 @@ assert.match(
 );
 assert.match(
   sharedNavJs,
+  /class="avatar" data-profile-avatar/,
+  'shared navigation should expose the avatar element for persisted profile photos'
+);
+assert.match(
+  sharedNavJs,
   /data-profile-name-card/,
   'shared navigation should render a passive user name card next to the profile icon'
 );
@@ -373,6 +378,11 @@ assert.match(
   authNavJs,
   /function\s+wireProfileMenus/,
   'auth navigation should wire profile dropdown menus'
+);
+assert.match(
+  authNavJs,
+  /function\s+renderProfileAvatars\(account\)[\s\S]*account\?\.avatarUrl[\s\S]*<img src="\$\{escapeAttribute\(photo\)\}" alt="프로필 사진" \/>[\s\S]*classList\.toggle\('has-photo'/,
+  'auth navigation should render the saved profile photo inside the shared avatar'
 );
 assert.match(
   authNavJs,
@@ -592,6 +602,11 @@ assert.match(
   'profile API should load the current user mypage profile from Supabase'
 );
 assert.match(
+  authMeRoute,
+  /\.from\('user_profiles'\)[\s\S]*\.select\('preferences'\)[\s\S]*uploadedPhoto[\s\S]*avatarUrl:\s*uploadedPhoto\s*\|\|\s*profile\?\.avatar_url/,
+  'auth me API should prefer the persisted mypage photo for the shared avatar'
+);
+assert.match(
   authWithdrawRoute,
   /async function getCurrentUser\(supabase\)[\s\S]*supabase\.auth\.getUser\(\)[\s\S]*export async function POST\(\)[\s\S]*getCurrentUser\(supabase\)[\s\S]*createSupabaseAdminClient\(\)/,
   'withdrawal API should authenticate the current Supabase user and use the server admin client'
@@ -628,8 +643,23 @@ assert.match(
 );
 assert.match(
   userProfileRoute,
-  /user_id:\s*user\.id[\s\S]*birth_date:[\s\S]*educations:[\s\S]*preferences:[\s\S]*chips:/,
+  /user_id:\s*user\.id[\s\S]*birth_date:[\s\S]*educations:[\s\S]*preferences[:,][\s\S]*chips:/,
   'profile API should map mypage fields into the user_profiles table'
+);
+assert.match(
+  userProfileRoute,
+  /function\s+normalizePhoto\(value\)[\s\S]*startsWith\('data:image\/'\)/,
+  'profile API should validate persisted mypage profile photos'
+);
+assert.match(
+  userProfileRoute,
+  /photo:\s*normalizePhoto\(normalizeObject\(row\.preferences\)\.profilePhoto\)/,
+  'profile API should return the persisted mypage profile photo to the client'
+);
+assert.match(
+  userProfileRoute,
+  /preferences\.profilePhoto\s*=\s*normalizePhoto\(payload\.photo\)/,
+  'profile API should persist and return the mypage profile photo through preferences.profilePhoto'
 );
 assert.match(
   userProfilesSchema,
@@ -1380,6 +1410,16 @@ assert.match(
 );
 assert.match(
   mypageHtml,
+  /Object\.hasOwn\(profile,\s*"photo"\)[\s\S]*profileState\.photo\s*=\s*profile\.photo\s*\|\|\s*""[\s\S]*localStorage\.setItem\("myfitfolioPhoto",\s*profileState\.photo\)/,
+  'mypage should hydrate the photo preview from the persisted DB profile photo'
+);
+assert.match(
+  mypageHtml,
+  /photo:\s*profileState\.photo[\s\S]*const savedProfile\s*=\s*result\.profile\s*\|\|\s*payload[\s\S]*localStorage\.setItem\("myfitfolioPhoto",\s*profileState\.photo\)/,
+  'mypage should save the selected photo through the profile API before caching it locally'
+);
+assert.match(
+  mypageHtml,
   /Object\.hasOwn\(profile,\s*"name"\)[\s\S]*profile\.name\s*\|\|\s*""[\s\S]*Object\.hasOwn\(profile,\s*"email"\)[\s\S]*profile\.email\s*\|\|\s*""/,
   'mypage should apply empty social profile fields so seed values do not remain visible'
 );
@@ -1771,6 +1811,11 @@ assert.match(
   fitfolioCss,
   /\.profile-menu\s+\.user-chip\s*\{[^}]*width:\s*42px;[^}]*height:\s*42px;[^}]*aspect-ratio:\s*1\s*\/\s*1;[^}]*border-radius:\s*50%;/s,
   'shared profile button should stay perfectly circular'
+);
+assert.match(
+  fitfolioCss,
+  /\.avatar\s+img\s*\{[^}]*width:\s*100%;[^}]*height:\s*100%;[^}]*object-fit:\s*cover;/s,
+  'shared avatar should crop uploaded profile photos inside the circular icon'
 );
 assert.match(
   fitfolioCss,
