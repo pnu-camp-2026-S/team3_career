@@ -100,13 +100,15 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin: 20px 0 10px;
+  margin: 18px 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
 }
 
 .manager-folder-section-head h3 {
   margin: 0;
-  color: #526077;
-  font-size: 13px;
+  color: var(--ink);
+  font-size: 15px;
   font-weight: 900;
 }
 
@@ -114,6 +116,71 @@
   color: var(--muted);
   font-size: 12px;
   font-weight: 800;
+}
+
+.manager-folder-type-list {
+  display: grid;
+  gap: 12px;
+}
+
+.manager-folder-type {
+  display: grid;
+  gap: 8px;
+}
+
+.manager-folder-type-head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 28px;
+  border: 0;
+  border-radius: 8px;
+  padding: 4px 8px;
+  background: transparent;
+  color: #526077;
+  font-size: 13px;
+  font-weight: 900;
+  text-align: left;
+  cursor: pointer;
+}
+
+.manager-folder-type-head:hover,
+.manager-folder-type-head:focus-visible {
+  background: #f4f7ff;
+  color: var(--brand);
+  outline: none;
+}
+
+.folder-type-chevron {
+  width: 16px;
+  display: inline-grid;
+  place-items: center;
+  color: inherit;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.folder-type-title {
+  min-width: 0;
+  flex: 1;
+}
+
+.folder-type-count,
+.manager-folder-empty {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.manager-folder-empty {
+  min-height: 38px;
+  display: grid;
+  align-items: center;
+  padding: 0 12px;
+  border: 1px dashed #d8deee;
+  border-radius: 8px;
+  background: #fbfcff;
 }
 
 .manager-folder-item {

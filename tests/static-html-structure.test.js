@@ -1785,8 +1785,32 @@ assert.match(
 );
 assert.match(
   createHtml,
-  /FolderStore\.FOLDER_TYPES\.map[\s\S]*folder\.type\s*===\s*type\.key[\s\S]*manager-folder-section-head/,
-  'file management should group the left folder list by activity type (#227)'
+  /FolderStore\.FOLDER_GROUPS\.map[\s\S]*folder\.group\s*===\s*group\.key[\s\S]*manager-folder-section-head[\s\S]*FolderStore\.FOLDER_TYPES\.map[\s\S]*folder\.type\s*===\s*type\.key[\s\S]*data-folder-type-toggle/,
+  'file management should group the left folder list by status and then activity type'
+);
+assert.match(
+  createHtml,
+  /function\s+getProjectStatusLabel[\s\S]*완료된 프로젝트[\s\S]*진행 중인 프로젝트/,
+  'file management should show completed and in-progress project status buckets'
+);
+assert.match(
+  createHtml,
+  /function\s+getProjectTypeLabel[\s\S]*개인프로젝트[\s\S]*팀프로젝트/,
+  'file management should show the requested activity type buckets inside each status'
+);
+assert.ok(
+  createHtml.includes('등록된 프로젝트 없음'),
+  'file management should keep empty activity type buckets visible'
+);
+assert.match(
+  createHtml,
+  /collapsedFolderTypes\[typeKey\]\s*\?\?\s*typeFolders\.length\s*===\s*0[\s\S]*aria-expanded="\$\{String\(!isCollapsed\)\}"/,
+  'file management should collapse empty activity type buckets by default'
+);
+assert.match(
+  createHtml,
+  /data-folder-type-toggle[\s\S]*collapsedFolderTypes\[typeKey\]\s*=\s*!collapsedFolderTypes\[typeKey\]/,
+  'file management should let users expand and collapse activity type buckets'
 );
 assert.ok(
   !createHtml.includes("key: 'ready'") && !createHtml.includes('준비된 활동 폴더'),

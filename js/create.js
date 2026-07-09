@@ -14,6 +14,7 @@
     let selectedSubfolderId = null;
     let nextFileId = 1;
     let toastTimer = null;
+    const collapsedFolderTypes = {};
 
     let folders = FolderStore.loadFolders();
 
@@ -58,32 +59,48 @@
     function renderFolderGroups() {
       const container = document.getElementById('fileManagerFolderGroups');
       const folderList = Object.values(folders);
-      container.innerHTML = FolderStore.FOLDER_TYPES.map((type) => {
-        const typeFolders = folderList.filter((folder) => folder.type === type.key);
-        if (typeFolders.length === 0) return '';
+      container.innerHTML = FolderStore.FOLDER_GROUPS.map((group) => {
+        const groupFolders = folderList.filter((folder) => folder.group === group.key);
         return `
           <section class="manager-folder-section">
             <div class="manager-folder-section-head">
-              <h3>${escapeHtml(type.label)}</h3>
-              <span>${typeFolders.length}개</span>
+              <h3>${escapeHtml(getProjectStatusLabel(group.key))}</h3>
+              <span>${groupFolders.length}개 프로젝트</span>
             </div>
-            <div class="manager-folder-list">
-              ${typeFolders.map((folder) => `
-                <button class="manager-folder-item ${folder.id === selectedFolderId ? 'active' : ''}" type="button" data-folder-id="${escapeHtml(folder.id)}">
-                  <span class="mini-folder" aria-hidden="true"></span>
-                  <span class="manager-folder-copy">
-                    <strong>${escapeHtml(folder.label)}</strong>
-                    <small>${escapeHtml(getGroupLabel(folder.group))} · ${FolderStore.getFolderFiles(folder).length}개 자료</small>
-                  </span>
-                </button>
-              `).join('')}
+            <div class="manager-folder-type-list">
+              ${FolderStore.FOLDER_TYPES.map((type) => {
+                const typeFolders = groupFolders.filter((folder) => folder.type === type.key);
+                const typeKey = folderTypeStateKey(group.key, type.key);
+                const isCollapsed = collapsedFolderTypes[typeKey] ?? typeFolders.length === 0;
+                return `
+                  <div class="manager-folder-type">
+                    <button class="manager-folder-type-head" type="button" data-folder-type-toggle="${escapeHtml(typeKey)}" aria-expanded="${String(!isCollapsed)}">
+                      <span class="folder-type-chevron" aria-hidden="true">${isCollapsed ? '›' : '⌄'}</span>
+                      <span class="folder-type-title">${escapeHtml(getProjectTypeLabel(type))}</span>
+                      <span class="folder-type-count">${typeFolders.length}개</span>
+                    </button>
+                    ${isCollapsed ? '' : `
+                      <div class="manager-folder-list">
+                        ${typeFolders.length
+                          ? typeFolders.map((folder) => `
+                            <button class="manager-folder-item ${folder.id === selectedFolderId ? 'active' : ''}" type="button" data-folder-id="${escapeHtml(folder.id)}">
+                              <span class="mini-folder" aria-hidden="true"></span>
+                              <span class="manager-folder-copy">
+                                <strong>${escapeHtml(folder.label)}</strong>
+                                <small>${FolderStore.getFolderFiles(folder).length}개 자료</small>
+                              </span>
+                            </button>
+                          `).join('')
+                          : '<div class="manager-folder-empty">등록된 프로젝트 없음</div>'}
+                      </div>
+                    `}
+                  </div>
+                `;
+              }).join('')}
             </div>
           </section>
         `;
       }).join('');
-      if (!container.innerHTML.trim()) {
-        container.innerHTML = '<div class="manager-empty compact-empty"><strong>아직 폴더가 없습니다.</strong><span>폴더 추가 버튼으로 첫 활동을 등록해보세요.</span></div>';
-      }
     }
 
     function renderFilePanel() {
@@ -548,8 +565,8 @@
           </label>
           <label class="repo-field"><span>그룹</span>
             <select id="newFolderGroup">
-              <option value="completed">완료된 활동 폴더</option>
-              <option value="inProgress">진행중인 활동 폴더</option>
+              <option value="completed">완료된 프로젝트</option>
+              <option value="inProgress">진행 중인 프로젝트</option>
             </select>
           </label>
           <p class="panel-note" id="subfolderPreview"></p>
@@ -615,6 +632,22 @@
       return FolderStore.FOLDER_GROUPS.find((group) => group.key === groupKey)?.label || '활동 폴더';
     }
 
+    function getProjectStatusLabel(groupKey) {
+      if (groupKey === 'completed') return '완료된 프로젝트';
+      if (groupKey === 'inProgress') return '진행 중인 프로젝트';
+      return getGroupLabel(groupKey);
+    }
+
+    function getProjectTypeLabel(type) {
+      if (type.key === 'personal') return '개인프로젝트';
+      if (type.key === 'team') return '팀프로젝트';
+      return type.label;
+    }
+
+    function folderTypeStateKey(groupKey, typeKey) {
+      return `${groupKey}:${typeKey}`;
+    }
+
     function getStatusClass(status) {
       if (status === '분석완료' || status === '작성완료') return 'done';
       if (status === '분석대기') return 'ready';
@@ -632,6 +665,14 @@
     }
 
     document.addEventListener('click', (event) => {
+      const typeToggleButton = event.target.closest('[data-folder-type-toggle]');
+      if (typeToggleButton) {
+        const typeKey = typeToggleButton.dataset.folderTypeToggle;
+        collapsedFolderTypes[typeKey] = !collapsedFolderTypes[typeKey];
+        renderFolderGroups();
+        return;
+      }
+
       const folderButton = event.target.closest('[data-folder-id]');
       if (folderButton) {
         selectedFolderId = folderButton.dataset.folderId;
