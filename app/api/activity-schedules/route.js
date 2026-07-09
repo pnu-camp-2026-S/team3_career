@@ -1,6 +1,7 @@
 import { createSupabaseServerClient } from '../../../lib/supabase-server';
 
 const ACTIVITY_SCHEDULE_COLUMNS = 'activity_id, title, note, schedule_date, created_at, updated_at';
+const PROFILE_SCHEDULE_KEY = 'savedActivitySchedules';
 
 function normalizeSchedule(row) {
   return {
@@ -26,6 +27,19 @@ function normalizePayloadSchedule(item) {
   };
 }
 
+function normalizeProfileSchedule(item) {
+  return normalizePayloadSchedule(item);
+}
+
+function toClientSchedules(schedules) {
+  return schedules.map((schedule) => ({
+    id: Number(schedule.activity_id),
+    title: schedule.title || '',
+    note: schedule.note || '',
+    date: schedule.schedule_date || '',
+  }));
+}
+
 async function getCurrentUser(supabase) {
   const {
     data: { user },
@@ -34,6 +48,52 @@ async function getCurrentUser(supabase) {
 
   if (error || !user) return null;
   return user;
+}
+
+async function loadProfileScheduleFallback(supabase, userId) {
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .select('preferences')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (error) return { schedules: [], error };
+
+  const schedules = (Array.isArray(data?.preferences?.[PROFILE_SCHEDULE_KEY])
+    ? data.preferences[PROFILE_SCHEDULE_KEY]
+    : [])
+    .map(normalizeProfileSchedule)
+    .filter(Boolean);
+
+  return { schedules: toClientSchedules(schedules), error: null };
+}
+
+async function saveProfileScheduleFallback(supabase, userId, schedules) {
+  const { data, error: readError } = await supabase
+    .from('user_profiles')
+    .select('preferences')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (readError) return { error: readError };
+
+  const preferences = {
+    ...(data?.preferences && typeof data.preferences === 'object' ? data.preferences : {}),
+    [PROFILE_SCHEDULE_KEY]: toClientSchedules(schedules),
+  };
+
+  const { error } = await supabase
+    .from('user_profiles')
+    .upsert(
+      {
+        user_id: userId,
+        preferences,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'user_id' }
+    );
+
+  return { error };
 }
 
 export async function GET() {
@@ -50,9 +110,19 @@ export async function GET() {
       .order('schedule_date', { ascending: true })
       .order('created_at', { ascending: true });
 
-    if (error) return Response.json({ message: error.message }, { status: 500 });
+    if (error) {
+      const fallback = await loadProfileScheduleFallback(supabase, user.id);
+      if (!fallback.error) return Response.json({ schedules: fallback.schedules });
+      return Response.json({ message: error.message }, { status: 500 });
+    }
 
-    return Response.json({ schedules: (data || []).map(normalizeSchedule) });
+    const schedules = (data || []).map(normalizeSchedule);
+    if (schedules.length) return Response.json({ schedules });
+
+    const fallback = await loadProfileScheduleFallback(supabase, user.id);
+    if (!fallback.error && fallback.schedules.length) return Response.json({ schedules: fallback.schedules });
+
+    return Response.json({ schedules });
   } catch (error) {
     return Response.json({ message: error.message || 'Unable to load activity schedules' }, { status: 500 });
   }
@@ -70,12 +140,17 @@ export async function PUT(request) {
       .map(normalizePayloadSchedule)
       .filter(Boolean);
 
+    const fallback = await saveProfileScheduleFallback(supabase, user.id, schedules);
+
     const { error: deleteError } = await supabase
       .from('activity_schedules')
       .delete()
       .eq('user_id', user.id);
 
-    if (deleteError) return Response.json({ message: deleteError.message }, { status: 500 });
+    if (deleteError) {
+      if (!fallback.error) return Response.json({ schedules: toClientSchedules(schedules) });
+      return Response.json({ message: deleteError.message }, { status: 500 });
+    }
 
     if (!schedules.length) return Response.json({ schedules: [] });
 
@@ -91,7 +166,10 @@ export async function PUT(request) {
       .insert(rows)
       .select(ACTIVITY_SCHEDULE_COLUMNS);
 
-    if (error) return Response.json({ message: error.message }, { status: 500 });
+    if (error) {
+      if (!fallback.error) return Response.json({ schedules: toClientSchedules(schedules) });
+      return Response.json({ message: error.message }, { status: 500 });
+    }
 
     return Response.json({ schedules: (data || []).map(normalizeSchedule) });
   } catch (error) {
