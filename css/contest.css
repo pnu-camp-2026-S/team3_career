@@ -237,7 +237,6 @@ button {
   gap: 24px;
 }
 
-.eyebrow,
 .panel-label {
   margin: 0 0 6px;
   color: var(--accent);

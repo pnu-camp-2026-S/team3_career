@@ -1310,6 +1310,11 @@ assert.ok(
 );
 
 const mypageHtml = readPageSource('mypage.html');
+assert.match(
+  mypageHtml,
+  /<h1 class="page-title">내 정보를 관리하세요<\/h1>[\s\S]*<p class="page-subtitle">기본 정보와 목표 조건을 채워 맞춤 추천과 포트폴리오 생성에 활용하세요\.<\/p>/,
+  'mypage should use the unified two-line page header copy'
+);
 for (const text of [
   '경영지원',
   '광고/브랜드',
@@ -1628,6 +1633,15 @@ assert.match(
   'file management should use the shared top navigation mount'
 );
 assert.match(
+  createHtml,
+  /<h1 class="page-title">프로젝트 자료를 한곳에서 정리하세요<\/h1>[\s\S]*<p class="page-subtitle">업로드한 활동 자료를 폴더별로 확인하고, AI 분석에 사용할 경험 데이터를 관리합니다\.<\/p>/,
+  'file management should use the unified two-line page header copy'
+);
+assert.ok(
+  !createHtml.includes('class="section-kicker"') && !createCss.includes('.section-kicker'),
+  'file management should remove the small kicker line from the page header'
+);
+assert.match(
   sharedNavJs,
   /\{\s*key:\s*'create',\s*href:\s*'create\.html',\s*label:\s*'파일 관리'\s*\}/,
   'file management should keep the shared file management nav link'
@@ -1924,8 +1938,12 @@ assert.ok(
 );
 assert.match(
   contestHtml,
-  /<h1>[\s\S]*<span class="recommend-count" id="recommendCount">추천 활동 0개<\/span>[\s\S]*<\/h1>/,
-  'contest page should show the dynamic recommendation count next to the title'
+  /<section class="page-title">[\s\S]*<h1>부족한 역량을 보완할 활동을 추천해드려요<\/h1>[\s\S]*<p>저장된 프로필과 포트폴리오 경험을 기준으로 지금 필요한 활동을 선별했습니다\.<\/p>[\s\S]*<span class="recommend-count" id="recommendCount" hidden>추천 활동 0개<\/span>/,
+  'contest page should use the shared two-line page header while keeping a hidden count target'
+);
+assert.ok(
+  !contestHtml.includes('class="eyebrow"'),
+  'contest page should remove the eyebrow line from the page header'
 );
 assert.match(
   contestHtml,
@@ -2524,6 +2542,11 @@ assert.ok(
   'portfolio_create should remove the redundant page heading above the setup panel'
 );
 assert.match(
+  portfolioCreateHtml,
+  /<h1 class="page-title">포트폴리오 초안을 생성하세요<\/h1>[\s\S]*<p class="page-subtitle">경험 데이터와 목표에 맞는 형식을 선택해 제출용 포트폴리오 초안을 만듭니다\.<\/p>/,
+  'portfolio_create should use the unified two-line page header copy inside the setup panel'
+);
+assert.match(
   sharedNavJs,
   /\{\s*key:\s*'portfolio_create',\s*href:\s*'portfolio_create\.html',\s*label:\s*'포트폴리오 생성'\s*\}/,
   'portfolio_create should keep the shared portfolio create nav link'
@@ -2916,6 +2939,11 @@ assert.match(
   portfolioManageHtml,
   /class="portfolio-library-page"/,
   'portfolio_manage should use the uploaded portfolio library page shell'
+);
+assert.match(
+  portfolioManageHtml,
+  /<h1 class="page-title">생성한 포트폴리오를 관리하세요<\/h1>[\s\S]*<p class="page-subtitle">저장된 포트폴리오를 확인하고 필요할 때 바로 열람·수정·다운로드하세요\.<\/p>/,
+  'portfolio_manage should use the unified two-line page header copy'
 );
 assert.match(
   portfolioManageHtml,

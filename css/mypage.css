@@ -26,8 +26,11 @@
 }
 
 .mypage .page-subtitle {
-  margin: 10px 0 18px;
-  font-size: 12px;
+  margin: 8px 0 18px;
+  color: #697586;
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.6;
 }
 
 .profile-section {
