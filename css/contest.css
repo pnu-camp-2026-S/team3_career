@@ -367,11 +367,10 @@ button {
   margin-bottom: 16px;
 }
 
-.activity-header-actions {
+.activity-sort-row {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 12px;
+  justify-content: flex-end;
+  margin: -4px 0 16px;
 }
 
 .panel h2 {
@@ -898,8 +897,8 @@ button {
     align-items: stretch;
   }
 
-  .activity-header-actions {
-    align-items: stretch;
+  .activity-sort-row {
+    justify-content: stretch;
   }
 
   .sort-controls {
