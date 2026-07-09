@@ -14,6 +14,7 @@ export async function POST(request) {
       purpose,
       major,
       experiences = [],
+      experienceProjects = [],
       keywords = [],
       myPageInfo = {},
     } = await request.json();
@@ -25,7 +26,7 @@ export async function POST(request) {
       );
     }
 
-    const context = { format, purpose, major, experiences, keywords, myPageInfo };
+    const context = { format, purpose, major, experiences, experienceProjects, keywords, myPageInfo };
     if (isAnalysisMockEnabled()) {
       return Response.json({
         success: true,

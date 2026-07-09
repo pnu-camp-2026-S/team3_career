@@ -2804,8 +2804,8 @@ assert.match(
 );
 assert.match(
   portfolioCreateHtml,
-  /id="experienceDataList"[\s\S]*업로드한 경험 데이터를 불러오는 중입니다\./,
-  'portfolio_create should render the experience list container for uploaded user files'
+  /id="experienceDataList"[\s\S]*프로젝트 폴더를 불러오는 중입니다\./,
+  'portfolio_create should render the project folder selection container'
 );
 assert.ok(
   !portfolioCreateHtml.includes('data-purpose-option') && !portfolioCreateHtml.includes('data-major-option'),
@@ -2827,13 +2827,8 @@ assert.match(
 );
 assert.match(
   portfolioCreateHtml,
-  /const\s+ACTIVITY_FILES_ENDPOINT\s*=\s*'\/api\/activity-files'/,
-  'portfolio_create should define the uploaded activity file API endpoint'
-);
-assert.match(
-  portfolioCreateHtml,
-  /const\s+KEYWORD_RECOMMEND_ENDPOINT\s*=\s*'\/api\/portfolio\/keywords'/,
-  'portfolio_create should define the contextual portfolio keyword recommendation API endpoint'
+  /const\s+PORTFOLIO_SOURCE_ENDPOINT\s*=\s*'\/api\/portfolio\/source-data'/,
+  'portfolio_create should define the portfolio source data API endpoint'
 );
 assert.match(
   portfolioCreateHtml,
@@ -2842,18 +2837,18 @@ assert.match(
 );
 assert.match(
   portfolioCreateHtml,
-  /async function\s+loadExperienceData\(\)[\s\S]*fetch\(ACTIVITY_FILES_ENDPOINT,[\s\S]*activityFiles\s*=\s*Array\.isArray\(result\.files\)\s*\?\s*result\.files\s*:\s*\[\]/,
-  'portfolio_create should load uploaded files as selectable experience data'
+  /async function\s+loadExperienceData\(\)[\s\S]*fetch\(PORTFOLIO_SOURCE_ENDPOINT,[\s\S]*portfolioSourceFolders\s*=\s*Array\.isArray\(result\.folders\)\s*\?\s*result\.folders\s*:\s*\[\]/,
+  'portfolio_create should load project folders as selectable portfolio source data'
 );
 assert.match(
   portfolioCreateHtml,
-  /function\s+getExperienceKeywordRecommendations\(selectedFiles\s*=\s*getSelectedExperienceFiles\(\)\)[\s\S]*experienceKeywordRules[\s\S]*analysis\?\.summaryMd/,
-  'portfolio_create should recommend keyword chips from selected experience files and analysis summaries'
+  /function\s+getFolderSummaryKeywords\(folder\)[\s\S]*projectAnalysis\?\.summaryKeywords[\s\S]*function\s+renderKeywordPool\(\)[\s\S]*summaryKeywords\s*=\s*selectedFolders\.flatMap\(getFolderSummaryKeywords\)/,
+  'portfolio_create should render keyword chips from selected project summary.md keywords'
 );
 assert.match(
   portfolioCreateHtml,
-  /async function\s+requestKeywordRecommendations\(selectedFiles,\s*fallbackKeywords\)[\s\S]*fetch\(KEYWORD_RECOMMEND_ENDPOINT,[\s\S]*experiences:\s*selectedFiles\.map\(compactExperienceForKeywords\)/,
-  'portfolio_create should ask the server for major and experience-aware keyword recommendations'
+  /function\s+getSelectedExperienceProjects\(\)[\s\S]*projectId:\s*folder\.id[\s\S]*summaryMd:\s*folder\.projectAnalysis\.summaryMd[\s\S]*summaryKeywords:\s*getFolderSummaryKeywords\(folder\)/,
+  'portfolio_create should build selected project analysis context for portfolio generation'
 );
 assert.match(
   portfolioCreateHtml,
@@ -2909,6 +2904,11 @@ assert.match(
   portfolioCreateHtml,
   /async function\s+requestPortfolioGeneration\(\{[\s\S]*fetch\('\/api\/portfolio\/generate'/,
   'portfolio_create should request OpenAI portfolio generation through the server API'
+);
+assert.match(
+  portfolioCreateHtml,
+  /requestPortfolioGeneration\(\{[\s\S]*experienceProjects[\s\S]*body:\s*JSON\.stringify\(\{[\s\S]*experienceProjects/,
+  'portfolio_create should send selected project summary context to the generation API'
 );
 assert.match(
   portfolioCreateHtml,
@@ -2968,10 +2968,9 @@ assert.match(
   /function\s+renderDeckPortfolio\(raw\)[\s\S]*chunkItems\(slides,\s*4\)[\s\S]*renderDraftPageViewer\(pages\)/,
   'portfolio_create should paginate PPT draft preview cards four slides at a time'
 );
-assert.match(
-  portfolioCreateHtml,
-  /const\s+commonKeywords[\s\S]*const\s+majorKeywordMap[\s\S]*const\s+experienceKeywordRules[\s\S]*buildLocalKeywordRecommendations/,
-  'portfolio_create should keep local keyword fallback options from common, major, and selected-experience rules'
+assert.ok(
+  !/fetch\(KEYWORD_RECOMMEND_ENDPOINT/.test(portfolioCreateHtml),
+  'portfolio_create should not depend on the legacy keyword recommendation API in the folder-based flow'
 );
 assert.match(
   portfolioCreateHtml,
@@ -2987,12 +2986,16 @@ assert.match(
 const portfolioExportPptxRoutePath = path.join(appDir, 'api', 'portfolio', 'export-pptx', 'route.js');
 const portfolioGenerateRoutePath = path.join(appDir, 'api', 'portfolio', 'generate', 'route.js');
 const portfolioKeywordsRoutePath = path.join(appDir, 'api', 'portfolio', 'keywords', 'route.js');
+const portfolioSourceDataRoutePath = path.join(appDir, 'api', 'portfolio', 'source-data', 'route.js');
 const portfolioReviseRoutePath = path.join(appDir, 'api', 'portfolio', 'revise', 'route.js');
 const portfolioGenerateRoute = fs.existsSync(portfolioGenerateRoutePath)
   ? fs.readFileSync(portfolioGenerateRoutePath, 'utf8')
   : '';
 const portfolioKeywordsRoute = fs.existsSync(portfolioKeywordsRoutePath)
   ? fs.readFileSync(portfolioKeywordsRoutePath, 'utf8')
+  : '';
+const portfolioSourceDataRoute = fs.existsSync(portfolioSourceDataRoutePath)
+  ? fs.readFileSync(portfolioSourceDataRoutePath, 'utf8')
   : '';
 const portfolioReviseRoute = fs.existsSync(portfolioReviseRoutePath)
   ? fs.readFileSync(portfolioReviseRoutePath, 'utf8')
@@ -3006,9 +3009,28 @@ assert.match(
   'portfolio generation API should return mock portfolio data when ANALYSIS_MOCK=1'
 );
 assert.match(
+  portfolioGenerateRoute,
+  /experienceProjects\s*=\s*\[\][\s\S]*const context = \{[\s\S]*experienceProjects/,
+  'portfolio generation API should accept selected project summary context'
+);
+assert.match(
   portfolioReviseRoute,
   /isAnalysisMockEnabled\(\)[\s\S]*buildMockPortfolioRevision/,
   'portfolio revision API should return mock revision data when ANALYSIS_MOCK=1'
+);
+assert.ok(
+  fs.existsSync(portfolioSourceDataRoutePath),
+  'portfolio source data API should live in app/api/portfolio/source-data/route.js'
+);
+assert.match(
+  portfolioSourceDataRoute,
+  /\.from\('activity_folders'\)[\s\S]*\.from\('activity_files'\)[\s\S]*\.from\('project_analyses'\)[\s\S]*\.eq\('scope',\s*'project'\)/,
+  'portfolio source data API should combine folders, file counts, and project-scoped analyses'
+);
+assert.match(
+  portfolioSourceDataRoute,
+  /extractMarkdownListSection[\s\S]*summaryMd[\s\S]*포트폴리오.*키워드[\s\S]*강점.*키워드[\s\S]*portfolioKeywords[\s\S]*activityKeywords/,
+  'portfolio source data API should extract keywords from project summary.md before structured keyword fallbacks'
 );
 assert.ok(
   fs.existsSync(portfolioExportPptxRoutePath),
