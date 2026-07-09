@@ -11,6 +11,7 @@
     const STORAGE_KEY = 'careerfit_portfolios';
     const DELETED_PORTFOLIO_STORAGE_KEY = 'careerfit_deleted_portfolios';
     const PORTFOLIO_ENDPOINT = '/api/portfolios';
+    const downloadingPortfolioIds = new Set();
     const seedPortfolios = [
       {
         id: 'portfolio-data',
@@ -108,8 +109,10 @@
         format: item.format || fallback.format || '',
         blocks: Array.isArray(item.blocks) ? item.blocks : [],
         slides: Array.isArray(item.slides) ? item.slides : [],
+        updatedAt: item.updatedAt || item.updated_at || item.createdAt || fallback.createdAt,
         keywords: Array.isArray(item.keywords) ? item.keywords : [],
-        experiences: Array.isArray(item.experiences) ? item.experiences : []
+        experiences: Array.isArray(item.experiences) ? item.experiences : [],
+        source: item.source || 'local'
       };
     }
 
@@ -153,7 +156,9 @@
 
         if (response.ok) {
           const payload = await response.json();
-          const portfolios = Array.isArray(payload.portfolios) ? payload.portfolios.map(normalizePortfolio) : [];
+          const portfolios = Array.isArray(payload.portfolios)
+            ? payload.portfolios.map((item, index) => normalizePortfolio({ ...item, source: 'remote' }, index))
+            : [];
           localStorage.setItem(STORAGE_KEY, JSON.stringify(portfolios));
           return portfolios;
         }
@@ -195,19 +200,21 @@
       return `${value || 'portfolio'}`.replace(/[\\/:*?"<>|]/g, '_');
     }
 
-    function createPptxBlob(portfolio) {
-      const fakePptx = [
-        'Myfitfolio PPTX',
-        portfolio.title || '포트폴리오',
-        portfolio.purpose || '',
-        portfolio.summary || '',
-        portfolio.content || ''
-      ].join('\n\n');
-      return new Blob([fakePptx], { type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation' });
-    }
+    async function downloadPortfolioPpt(portfolio) {
+      const response = await fetch('/api/portfolio/export-pptx', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify(portfolio),
+      });
 
-    function downloadPortfolioPpt(portfolio) {
-      const url = URL.createObjectURL(createPptxBlob(portfolio));
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.message || payload.error || 'PPT 파일 생성에 실패했습니다.');
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
       link.download = `${safeFileName(portfolio.title)}.pptx`;
@@ -300,7 +307,7 @@
             </button>
             <a class="outline-button" href="portfolio_viewer.html?id=${encodeURIComponent(portfolio.id)}#viewerContent">열기</a>
             <a class="ghost-button" href="portfolio_create.html?edit=${encodeURIComponent(portfolio.id)}#pfWorkspaceScreen">수정</a>
-            <a class="ghost-button" href="#" data-action="ppt" data-id="${escapeHtml(portfolio.id)}" download="${safeFileName(portfolio.title)}.pptx">PPT 저장</a>
+            <button class="ghost-button" type="button" data-action="ppt" data-id="${escapeHtml(portfolio.id)}">PPT 저장</button>
             <button class="ghost-button delete-action" type="button" data-action="delete" data-id="${escapeHtml(portfolio.id)}">삭제</button>
           </div>
         </article>
@@ -310,6 +317,11 @@
     document.getElementById('portfolioList').addEventListener('click', async (event) => {
       const target = event.target.closest('[data-action]');
       if (!target) return;
+      if (target.dataset.action === 'ppt') {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+
       const portfolios = await readPortfolios();
       const portfolio = portfolios.find((item) => item.id === target.dataset.id);
       if (!portfolio) return;
@@ -329,8 +341,18 @@
       }
 
       if (target.dataset.action === 'ppt') {
-        event.preventDefault();
-        downloadPortfolioPpt(portfolio);
+        if (downloadingPortfolioIds.has(portfolio.id)) return;
+        downloadingPortfolioIds.add(portfolio.id);
+        target.disabled = true;
+        try {
+          await downloadPortfolioPpt(portfolio);
+        } catch (error) {
+          console.warn('Portfolio PPT export failed.', error);
+          window.alert('PPT 저장에 실패했습니다. 로그인 상태와 저장된 포트폴리오를 확인해 주세요.');
+        } finally {
+          downloadingPortfolioIds.delete(portfolio.id);
+          target.disabled = false;
+        }
         return;
       }
 

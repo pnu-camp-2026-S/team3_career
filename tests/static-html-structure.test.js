@@ -3047,6 +3047,11 @@ assert.match(
 );
 assert.match(
   portfolioCreateHtml,
+  /if \(action === 'save'\)[\s\S]*saveGeneratedPortfolio\(\{\s*requireRemote:\s*true\s*\}\)[\s\S]*DB 저장에 실패했습니다/,
+  'portfolio_create save action should require a successful DB save before leaving the editor'
+);
+assert.match(
+  portfolioCreateHtml,
   /async function\s+openPortfolioEditorFromQuery\(\)[\s\S]*fetch\(`\$\{PORTFOLIO_ENDPOINT\}\?id=/,
   'portfolio_create should load portfolio edits through the portfolio API'
 );
@@ -3369,6 +3374,30 @@ assert.match(
 );
 assert.match(
   portfolioManageHtml,
+  /async function\s+downloadPortfolioPpt\(portfolio\)[\s\S]*fetch\('\/api\/portfolio\/export-pptx'[\s\S]*JSON\.stringify\(portfolio\)[\s\S]*response\.blob\(\)/,
+  'portfolio_manage should download PPT files through the same server export API as the editor'
+);
+assert.match(
+  portfolioManageHtml,
+  /<button class="ghost-button" type="button" data-action="ppt" data-id="\$\{escapeHtml\(portfolio\.id\)\}">PPT 저장<\/button>/,
+  'portfolio_manage PPT action should be a button without href or download defaults'
+);
+assert.match(
+  portfolioManageHtml,
+  /if \(target\.dataset\.action === 'ppt'\) \{\s*event\.preventDefault\(\);\s*event\.stopPropagation\(\);\s*\}[\s\S]*const portfolios = await readPortfolios\(\)/,
+  'portfolio_manage should cancel the PPT action before any awaited work'
+);
+assert.match(
+  portfolioManageHtml,
+  /const downloadingPortfolioIds = new Set\(\)[\s\S]*downloadingPortfolioIds\.has\(portfolio\.id\)[\s\S]*target\.disabled = true[\s\S]*downloadingPortfolioIds\.delete\(portfolio\.id\)[\s\S]*target\.disabled = false/,
+  'portfolio_manage should guard against duplicate PPT downloads from repeated clicks'
+);
+assert.ok(
+  !portfolioManageHtml.includes('createPptxBlob'),
+  'portfolio_manage should not create fake PPTX blobs in the browser'
+);
+assert.match(
+  portfolioManageHtml,
   /data-action="like"/,
   'portfolio_manage should support liking saved portfolios'
 );
@@ -3461,8 +3490,18 @@ assert.match(
 );
 assert.match(
   portfolioViewerHtml,
+  /const\s+PORTFOLIO_ENDPOINT\s*=\s*'\/api\/portfolios'[\s\S]*async function\s+loadPortfolioById\(id\)[\s\S]*fetch\(`\$\{PORTFOLIO_ENDPOINT\}\?id=/,
+  'portfolio_viewer should load the selected portfolio directly from the portfolio API'
+);
+assert.match(
+  portfolioViewerHtml,
+  /function\s+normalizeBlocks\(portfolio\)[\s\S]*portfolio\.slides[\s\S]*portfolio\.blocks[\s\S]*function\s+createSlides\(portfolio\)/,
+  'portfolio_viewer should preview the same saved blocks and slides used for PPT export'
+);
+assert.match(
+  portfolioViewerHtml,
   /function\s+drawSlideImage/,
-  'portfolio_viewer should draw slide images from portfolio content'
+  'portfolio_viewer should draw slide images from saved portfolio data'
 );
 assert.match(
   portfolioViewerHtml,
