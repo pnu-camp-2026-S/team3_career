@@ -701,6 +701,16 @@ assert.match(
 );
 assert.match(
   activityFilesRoute,
+  /import\s+\{\s*inflateRawSync\s*\}\s+from\s+'node:zlib'[\s\S]*function\s+parseZipEntries\(arrayBuffer\)[\s\S]*inflateRawSync\(compressed\)/,
+  'activity file API should inspect Office Open XML zip entries without executing document content (#286)'
+);
+assert.match(
+  activityFilesRoute,
+  /async function\s+extractDocxPreview\(arrayBuffer\)[\s\S]*mammoth\.extractRawText[\s\S]*function\s+extractPptxPreview\(arrayBuffer\)[\s\S]*ppt\\\/slides\\\/slide\\d\+\\\.xml[\s\S]*function\s+extractXlsxPreview\(arrayBuffer\)[\s\S]*xl\\\/worksheets\\\/sheet\\d\+\\\.xml[\s\S]*if \(kind === 'office'\)/,
+  'activity file API should extract structured DOCX, PPTX, and XLSX previews (#286)'
+);
+assert.match(
+  activityFilesRoute,
   /file_analyses\(status, summary_md, index_draft, log_md\)[\s\S]*summaryMd[\s\S]*indexDraft[\s\S]*logMd/,
   'activity file API should return saved AI summary artifacts for file-management display'
 );
@@ -1736,10 +1746,23 @@ assert.match(
   /function\s+getPreviewKind\(file\)[\s\S]*application\/pdf[\s\S]*startsWith\('image\/'\)[\s\S]*\['txt',\s*'md',\s*'csv'\][\s\S]*function\s+renderFilePreviewContent\(file,\s*preview\s*=\s*\{\}\)[\s\S]*file-preview-image[\s\S]*file-preview-pdf[\s\S]*file-preview-text[\s\S]*loadFilePreview\(file\)/,
   'file management should render real previews for image, PDF, and text-like files (#285)'
 );
+assert.ok(
+  createHtml.includes("['docx', 'pptx', 'xlsx'].includes(extension)")
+    && createHtml.includes('function renderOfficePreview(preview = {})')
+    && createHtml.includes('file-preview-office-section')
+    && createHtml.includes('file-preview-table')
+    && createHtml.includes("if (kind === 'office' && preview.sections)"),
+  'file management should render structured office document previews for DOCX, PPTX, and XLSX (#286)'
+);
 assert.match(
   createCss,
   /\.file-preview-image[\s\S]*\.file-preview-pdf iframe[\s\S]*\.file-preview-text[\s\S]*\.file-preview-empty/,
   'file management should style image, PDF, text, and unavailable preview states (#285)'
+);
+assert.match(
+  createCss,
+  /\.file-preview-office[\s\S]*\.file-preview-office-section h3[\s\S]*\.file-preview-table-wrap[\s\S]*\.file-preview-table td/,
+  'file management should style structured office preview sections and sheet tables (#286)'
 );
 assert.match(
   createHtml,

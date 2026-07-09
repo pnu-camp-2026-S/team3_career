@@ -3,6 +3,7 @@ import {
   createSupabaseServerClient,
 } from '../../../lib/supabase-server';
 import { deriveFolderTree } from '../../../lib/folder-tree';
+import { inflateRawSync } from 'node:zlib';
 
 const ACTIVITY_FILE_BUCKET = 'activity-files';
 const ACTIVITY_FILE_COLUMNS = 'id, folder_id, folder_group, folder_type, folder_label, project_id, parent_folder_id, folder_path, folder_level, file_name, mime_type, size_bytes, storage_bucket, storage_path, created_at, file_analyses(status, summary_md, index_draft, log_md)';
@@ -10,6 +11,8 @@ const TEXT_PREVIEW_EXTENSIONS = new Set(['txt', 'md', 'csv']);
 const TEXT_PREVIEW_MIME_TYPES = new Set(['text/plain', 'text/markdown', 'text/csv']);
 const SIGNED_URL_EXPIRES_IN_SECONDS = 60 * 10;
 const TEXT_PREVIEW_MAX_BYTES = 512 * 1024;
+const OFFICE_PREVIEW_MAX_BYTES = 10 * 1024 * 1024;
+const OFFICE_XML_TEXT_LIMIT = 4000;
 
 function getStorageClient(supabase) {
   return createSupabaseAdminClient() || supabase;
@@ -76,7 +79,156 @@ function getPreviewKind(fileName, mimeType) {
   if (mimeType === 'application/pdf' || extension === 'pdf') return 'pdf';
   if (String(mimeType || '').startsWith('image/') || ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(extension)) return 'image';
   if (TEXT_PREVIEW_MIME_TYPES.has(mimeType) || TEXT_PREVIEW_EXTENSIONS.has(extension)) return 'text';
+  if (['docx', 'pptx', 'xlsx'].includes(extension)) return 'office';
   return 'unsupported';
+}
+
+function stripXmlTags(xml = '') {
+  return String(xml)
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function extractXmlText(xml = '') {
+  const textNodes = [...String(xml).matchAll(/<[^:>]*:?t\b[^>]*>([\s\S]*?)<\/[^:>]*:?t>/g)]
+    .map((match) => stripXmlTags(match[1]))
+    .filter(Boolean);
+  return textNodes.join(' ').replace(/\s+/g, ' ').trim();
+}
+
+function readUInt(buffer, offset, byteLength) {
+  let value = 0;
+  for (let index = 0; index < byteLength; index += 1) {
+    value += buffer[offset + index] << (index * 8);
+  }
+  return value;
+}
+
+function parseZipEntries(arrayBuffer) {
+  const buffer = Buffer.from(arrayBuffer);
+  const entries = {};
+  let offset = 0;
+
+  while (offset < buffer.length - 30) {
+    if (readUInt(buffer, offset, 4) !== 0x04034b50) {
+      offset += 1;
+      continue;
+    }
+
+    const compressionMethod = readUInt(buffer, offset + 8, 2);
+    const compressedSize = readUInt(buffer, offset + 18, 4);
+    const fileNameLength = readUInt(buffer, offset + 26, 2);
+    const extraLength = readUInt(buffer, offset + 28, 2);
+    const fileNameStart = offset + 30;
+    const dataStart = fileNameStart + fileNameLength + extraLength;
+    const dataEnd = dataStart + compressedSize;
+    const fileName = buffer.subarray(fileNameStart, fileNameStart + fileNameLength).toString('utf8');
+    const compressed = buffer.subarray(dataStart, dataEnd);
+
+    if (compressionMethod === 0) {
+      entries[fileName] = compressed.toString('utf8');
+    } else if (compressionMethod === 8) {
+      entries[fileName] = inflateRawSync(compressed).toString('utf8');
+    }
+
+    offset = dataEnd;
+  }
+
+  return entries;
+}
+
+async function extractDocxPreview(arrayBuffer) {
+  const mammoth = await import('mammoth');
+  const result = await mammoth.extractRawText({ arrayBuffer });
+  const text = String(result.value || '').trim();
+  return {
+    officeType: 'docx',
+    sections: [
+      {
+        title: '문서 텍스트',
+        text: text.slice(0, OFFICE_XML_TEXT_LIMIT) || '추출 가능한 문단 텍스트가 없습니다.',
+      },
+    ],
+    notice: text.length > OFFICE_XML_TEXT_LIMIT ? '문서가 길어 앞부분만 미리보기로 표시합니다.' : '',
+  };
+}
+
+function extractPptxPreview(arrayBuffer) {
+  const entries = parseZipEntries(arrayBuffer);
+  const slides = Object.entries(entries)
+    .filter(([name]) => /^ppt\/slides\/slide\d+\.xml$/.test(name))
+    .sort(([left], [right]) => Number(left.match(/slide(\d+)\.xml/)?.[1] || 0) - Number(right.match(/slide(\d+)\.xml/)?.[1] || 0))
+    .slice(0, 12)
+    .map(([name, xml]) => {
+      const slideNumber = name.match(/slide(\d+)\.xml/)?.[1] || '';
+      const text = extractXmlText(xml);
+      return {
+        title: `슬라이드 ${slideNumber}`,
+        text: text.slice(0, OFFICE_XML_TEXT_LIMIT) || '추출 가능한 슬라이드 텍스트가 없습니다.',
+      };
+    });
+
+  return {
+    officeType: 'pptx',
+    sections: slides.length ? slides : [{ title: '슬라이드', text: '추출 가능한 슬라이드 텍스트가 없습니다.' }],
+    notice: '슬라이드 텍스트만 추출한 구조화 미리보기입니다.',
+  };
+}
+
+function extractSharedStrings(entries) {
+  const sharedXml = entries['xl/sharedStrings.xml'];
+  if (!sharedXml) return [];
+  return [...sharedXml.matchAll(/<si\b[^>]*>([\s\S]*?)<\/si>/g)].map((match) => extractXmlText(match[1]));
+}
+
+function extractXlsxPreview(arrayBuffer) {
+  const entries = parseZipEntries(arrayBuffer);
+  const sharedStrings = extractSharedStrings(entries);
+  const sheets = Object.entries(entries)
+    .filter(([name]) => /^xl\/worksheets\/sheet\d+\.xml$/.test(name))
+    .sort(([left], [right]) => Number(left.match(/sheet(\d+)\.xml/)?.[1] || 0) - Number(right.match(/sheet(\d+)\.xml/)?.[1] || 0))
+    .slice(0, 6)
+    .map(([name, xml]) => {
+      const sheetNumber = name.match(/sheet(\d+)\.xml/)?.[1] || '';
+      const rows = [...xml.matchAll(/<row\b[^>]*>([\s\S]*?)<\/row>/g)]
+        .slice(0, 10)
+        .map((rowMatch) => [...rowMatch[1].matchAll(/<c\b([^>]*)>([\s\S]*?)<\/c>/g)]
+          .slice(0, 8)
+          .map((cellMatch) => {
+            const cellAttrs = cellMatch[1] || '';
+            const rawValue = cellMatch[2].match(/<v>([\s\S]*?)<\/v>/)?.[1] || '';
+            if (cellAttrs.includes('t="s"')) return sharedStrings[Number(rawValue)] || '';
+            return stripXmlTags(rawValue);
+          }));
+      return {
+        title: `시트 ${sheetNumber}`,
+        rows,
+        text: rows.length ? '' : '추출 가능한 시트 데이터가 없습니다.',
+      };
+    });
+
+  return {
+    officeType: 'xlsx',
+    sections: sheets.length ? sheets : [{ title: '시트', text: '추출 가능한 시트 데이터가 없습니다.' }],
+    notice: '시트별 앞부분 행과 열만 미리보기로 표시합니다.',
+  };
+}
+
+async function extractOfficePreview(arrayBuffer, fileName) {
+  const extension = getFileExtension(fileName);
+  if (extension === 'docx') return extractDocxPreview(arrayBuffer);
+  if (extension === 'pptx') return extractPptxPreview(arrayBuffer);
+  if (extension === 'xlsx') return extractXlsxPreview(arrayBuffer);
+  return {
+    officeType: extension || 'office',
+    sections: [{ title: '미지원 문서', text: '이 오피스 문서는 아직 구조화 미리보기를 지원하지 않습니다.' }],
+  };
 }
 
 async function createStorageSignedUrl(storage, bucket, path) {
@@ -131,6 +283,23 @@ async function buildActivityFilePreview({ storage, fileRow }) {
     return {
       ...basePreview,
       text: await data.text(),
+    };
+  }
+
+  if (kind === 'office') {
+    if (Number(fileRow.size_bytes || 0) > OFFICE_PREVIEW_MAX_BYTES) {
+      return {
+        ...basePreview,
+        signedUrl: await createStorageSignedUrl(storage, bucket, path),
+        message: '문서가 커서 구조화 미리보기 대신 원본 파일 열기로 안내합니다.',
+      };
+    }
+
+    const { data, error } = await storage.from(bucket).download(path);
+    if (error) throw error;
+    return {
+      ...basePreview,
+      ...(await extractOfficePreview(await data.arrayBuffer(), fileRow.file_name)),
     };
   }
 
