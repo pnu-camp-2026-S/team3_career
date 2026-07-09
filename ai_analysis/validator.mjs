@@ -28,6 +28,7 @@ export function validateAggregateResult(result) {
 
   if (!isNonEmptyString(result.headline)) errors.push('headline이 비어 있습니다.');
   if (!isNonEmptyString(result.description)) errors.push('description이 비어 있습니다.');
+  if (!isNonEmptyString(result.activityOverview)) errors.push('activityOverview가 비어 있습니다.');
   if (!isStringArray(result.activityKeywords, 1, 8)) {
     errors.push('activityKeywords는 1~8개의 문자열 배열이어야 합니다.');
   }

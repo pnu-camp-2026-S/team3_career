@@ -44,10 +44,14 @@ export class LocalAnalysisRepository {
     await fs.writeFile(path.join(dir, 'extracted-text.txt'), text, 'utf8');
   }
 
-  async saveAnalysisResult(result) {
+  async saveAnalysisResult(result, provider = null) {
     const dir = this.resultDir(result.analysisId);
     await fs.mkdir(dir, { recursive: true });
-    await fs.writeFile(path.join(dir, 'analysis-result.json'), JSON.stringify(result, null, 2), 'utf8');
+    await fs.writeFile(
+      path.join(dir, 'analysis-result.json'),
+      JSON.stringify({ ...result, provider: provider || result.provider || null }, null, 2),
+      'utf8'
+    );
   }
 
   async saveSummaryMarkdown(analysisId, markdown) {
@@ -134,11 +138,13 @@ export class LocalAnalysisRepository {
 
     const metadata = await readJson('metadata.json');
     if (!metadata) return null;
+    const analysisResult = await readJson('analysis-result.json');
 
     return {
       analysisId,
+      provider: analysisResult?.provider || null,
       metadata,
-      analysisResult: await readJson('analysis-result.json'),
+      analysisResult,
       summaryMarkdown: await readText('summary.md'),
       indexDraft: await readJson('index.json'),
       logMarkdown: await readText('log.md'),

@@ -107,6 +107,8 @@ const fitfolioCss = [commonCss, authCss, mainCss, createCss].join('\n');
 const sharedNavJsPath = path.join(jsDir, 'shared-nav.js');
 const authNavJsPath = path.join(jsDir, 'auth-nav.js');
 const folderStoreJsPath = path.join(jsDir, 'folder-store.js');
+const jsRoutePath = path.join(appDir, 'js', '[...file]', 'route.js');
+const cssRoutePath = path.join(appDir, 'css', '[...file]', 'route.js');
 const sharedNavPages = [
   ['main.html', 'main'],
   ['create.html', 'create'],
@@ -143,6 +145,16 @@ const authNavJs = fs.existsSync(authNavJsPath)
 assert.ok(
   fs.existsSync(folderStoreJsPath),
   'folder data store script should live in the js directory (Firebase-ready abstraction)'
+);
+assert.match(
+  fs.readFileSync(jsRoutePath, 'utf8'),
+  /dynamic\s*=\s*'force-dynamic'[\s\S]*path\.resolve\(jsDir/,
+  'js asset route should stay dynamic in dev and restrict reads to the js directory'
+);
+assert.match(
+  fs.readFileSync(cssRoutePath, 'utf8'),
+  /dynamic\s*=\s*'force-dynamic'[\s\S]*path\.resolve\(cssDir/,
+  'css asset route should stay dynamic in dev and restrict reads to the css directory'
 );
 const folderStoreJs = fs.readFileSync(folderStoreJsPath, 'utf8');
 assert.match(
@@ -836,8 +848,8 @@ assert.match(
 );
 assert.match(
   projectAnalysisRoute,
-  /function\s+isAnalysisCurrent\(fileRow,\s*analysisRow\)[\s\S]*analysisUpdatedAt >= fileUpdatedAt[\s\S]*pendingFiles = projectFiles\.filter\(\(row\) => !isAnalysisCurrent/,
-  'project analysis API should only analyze new or changed files'
+  /function\s+isAnalysisCurrent\(fileRow,\s*analysisRow\)[\s\S]*analysisUpdatedAt >= fileUpdatedAt[\s\S]*function\s+isMockAnalysisRow[\s\S]*currentProvider !== 'mock'[\s\S]*isMockAnalysisRow\(analysisRow\)/,
+  'project analysis API should analyze new, changed, or stale mock files'
 );
 assert.match(
   projectAnalysisRoute,
@@ -1287,8 +1299,13 @@ assert.match(
 );
 assert.match(
   mainHtml,
-  /function\s+renderAnalysisOverview[\s\S]*analysisOverviewText\.textContent/,
-  'main dashboard should render a simple AI analysis overview after analysis starts'
+  /function\s+renderAnalysisOverview[\s\S]*aggregateResult\?\.activityOverview[\s\S]*analysisOverviewText\.textContent = aiOverview\.trim\(\)/,
+  'main dashboard should render the AI-generated activity overview after analysis'
+);
+assert.match(
+  mainHtml,
+  /function\s+isMockAggregateResult\(result\)[\s\S]*function\s+shouldRunAggregateAnalysis\(\)[\s\S]*isMockAggregateResult\(aggregateResult\)/,
+  'main dashboard should rerun aggregate analysis when the saved overview is mock data'
 );
 assert.match(
   mainHtml,
@@ -1307,6 +1324,47 @@ assert.ok(
 assert.ok(
   !fs.existsSync(path.join(htmlDir, 'portfolio.html')),
   'old portfolio.html should be renamed to portfolio_create.html'
+);
+
+const aggregatePromptPath = path.join(rootDir, 'prompts', 'aggregate-analysis.md');
+const overviewPromptPath = path.join(rootDir, 'prompts', 'main-activity-overview.md');
+const aggregatePrompt = fs.readFileSync(aggregatePromptPath, 'utf8');
+const overviewPrompt = fs.readFileSync(overviewPromptPath, 'utf8');
+const aggregateClient = fs.readFileSync(path.join(rootDir, 'ai_analysis', 'ai-client.mjs'), 'utf8');
+const aggregateValidator = fs.readFileSync(path.join(rootDir, 'ai_analysis', 'validator.mjs'), 'utf8');
+assert.ok(
+  fs.existsSync(overviewPromptPath),
+  'main AI overview prompt should live in prompts/main-activity-overview.md'
+);
+assert.match(
+  aggregatePrompt,
+  /activityOverview[\s\S]*activityOverviewGuide/,
+  'aggregate prompt should include the dedicated main activity overview guide'
+);
+assert.match(
+  overviewPrompt,
+  /개인 프로젝트 3개[\s\S]*팀 프로젝트 2개[\s\S]*공모전 6개/,
+  'main activity overview prompt should guide the desired activity-flow summary format'
+);
+assert.match(
+  aggregateClient,
+  /MAIN_ACTIVITY_OVERVIEW_PROMPT_PATH[\s\S]*activityOverviewGuide:\s*activityOverviewGuide\.trim\(\)[\s\S]*activityStats:\s*JSON\.stringify\(buildAggregateActivityStats\(bundles\),\s*null,\s*2\)/,
+  'aggregate analysis should pass overview guide, activity type counts, and role signals to the AI prompt'
+);
+assert.match(
+  aggregateValidator,
+  /result\.activityOverview/,
+  'aggregate validator should require the AI activity overview field'
+);
+assert.match(
+  aggregateClient,
+  /isExplicitMockMode[\s\S]*assertRealProviderAvailable/,
+  'AI analysis should not silently fall back to mock unless mock mode is explicit'
+);
+assert.match(
+  aggregateClient,
+  /if\s*\(supportsCustomTemperature\(model\)\)[\s\S]*request\.temperature = 0\.2[\s\S]*function\s+supportsCustomTemperature\(model\)[\s\S]*gpt-5/,
+  'OpenAI analysis should omit custom temperature for GPT-5 style models'
 );
 
 const mypageHtml = readPageSource('mypage.html');
@@ -2746,13 +2804,38 @@ assert.match(
 );
 assert.match(
   portfolioCreateHtml,
-  /async function\s+saveGeneratedPortfolio\(\)[\s\S]*fetch\(PORTFOLIO_ENDPOINT,\s*\{[\s\S]*method:\s*'POST'/,
+  /async function\s+saveGeneratedPortfolio\([\s\S]*fetch\(PORTFOLIO_ENDPOINT,\s*\{[\s\S]*method:\s*'POST'/,
   'portfolio_create should save generated portfolios through the portfolio API'
+);
+assert.match(
+  portfolioCreateHtml,
+  /async function\s+saveGeneratedPortfolio\(\{\s*requireRemote\s*=\s*false\s*\}\s*=\s*\{\}\)[\s\S]*if \(requireRemote\)[\s\S]*throw error/,
+  'portfolio_create should be able to require real DB saving before PPT download'
 );
 assert.match(
   portfolioCreateHtml,
   /async function\s+openPortfolioEditorFromQuery\(\)[\s\S]*fetch\(`\$\{PORTFOLIO_ENDPOINT\}\?id=/,
   'portfolio_create should load portfolio edits through the portfolio API'
+);
+assert.match(
+  portfolioCreateHtml,
+  /const\s+editPortfolioId\s*=\s*new URLSearchParams\(window\.location\.search\)\.get\('edit'\)/,
+  'portfolio_create should detect portfolio edit mode from the URL before async loading'
+);
+assert.match(
+  portfolioCreateHtml,
+  /function\s+prepareEditorEntryScreen\(\)[\s\S]*editPortfolioId[\s\S]*pfSetupScreen'\)\.classList\.add\('hidden'\)[\s\S]*pfLoadingScreen'\)\.classList\.remove\('hidden'\)[\s\S]*prepareEditorEntryScreen\(\);[\s\S]*openPortfolioEditorFromQuery\(\);/,
+  'portfolio_create edit mode should hide the format setup screen before loading the saved draft'
+);
+assert.match(
+  portfolioCreateHtml,
+  /blocks:\s*Array\.isArray\(portfolio\.blocks\)\s*&&\s*portfolio\.blocks\.length\s*\?\s*portfolio\.blocks\s*:\s*fallbackBlocks[\s\S]*slides:\s*Array\.isArray\(portfolio\.slides\)\s*&&\s*portfolio\.slides\.length[\s\S]*\?\s*portfolio\.slides/,
+  'portfolio_create edit mode should reuse saved blocks and slides instead of regenerating the draft'
+);
+assert.match(
+  portfolioCreateHtml,
+  /renderPortfolioPreview\(\);[\s\S]*focusAssistantConversation\(\);[\s\S]*function\s+focusAssistantConversation\(\)[\s\S]*assistantInput\.focus\(\)/,
+  'portfolio_create edit mode should move directly to the AI conversation input'
 );
 assert.match(
   portfolioCreateHtml,
@@ -2829,8 +2912,8 @@ assert.match(
 );
 assert.match(
   portfolioCreateHtml,
-  /async function\s+downloadPptPreview\(\)[\s\S]*fetch\('\/api\/portfolio\/export-pptx'[\s\S]*JSON\.stringify\(currentPortfolio\)[\s\S]*response\.blob\(\)/,
-  'portfolio_create should download editable PowerPoint files through the server export API'
+  /async function\s+downloadPptPreview\(\)[\s\S]*saveGeneratedPortfolio\(\{\s*requireRemote:\s*true\s*\}\)[\s\S]*fetch\('\/api\/portfolio\/export-pptx'[\s\S]*JSON\.stringify\(currentPortfolio\)[\s\S]*response\.blob\(\)/,
+  'portfolio_create should save to the portfolio DB before downloading editable PowerPoint files'
 );
 
 const portfolioExportPptxRoutePath = path.join(appDir, 'api', 'portfolio', 'export-pptx', 'route.js');
@@ -2982,6 +3065,21 @@ assert.match(
 );
 assert.match(
   portfolioManageHtml,
+  /function\s+normalizePortfolio\(item,\s*index\s*=\s*0\)[\s\S]*blocks:\s*Array\.isArray\(item\.blocks\)[\s\S]*slides:\s*Array\.isArray\(item\.slides\)/,
+  'portfolio_manage should preserve saved slides and blocks for thumbnails'
+);
+assert.match(
+  portfolioManageHtml,
+  /function\s+getPortfolioFirstPage\(portfolio\)[\s\S]*normalizePreviewBlocks\(portfolio\.slides\)[\s\S]*normalizePreviewBlocks\(portfolio\.blocks\)[\s\S]*title:[\s\S]*summary:/,
+  'portfolio_manage should derive thumbnail content from the first saved page'
+);
+assert.match(
+  portfolioManageHtml,
+  /portfolio-library-first-page[\s\S]*<small>\$\{escapeHtml\(page\.kicker\)\}<\/small>[\s\S]*<h3>\$\{escapeHtml\(page\.title\)\}<\/h3>[\s\S]*<p>\$\{escapeHtml\(page\.summary\)\}<\/p>/,
+  'portfolio_manage should render first-page thumbnails instead of a generic icon'
+);
+assert.match(
+  portfolioManageHtml,
   /function\s+sortPortfolios/,
   'portfolio_manage should sort liked portfolios before recent portfolios'
 );
@@ -3057,6 +3155,9 @@ assert.ok(
 for (const cssPattern of [
   /\.portfolio-library-page\s*\{/,
   /\.portfolio-library-card\s*\{/,
+  /\.portfolio-library-first-page\s*\{/,
+  /\.portfolio-library-first-page\s+h3\s*\{/,
+  /\.portfolio-library-first-page\s+i\s*\{/,
   /\.portfolio-library-actions\s+\.like-action\.liked\s*\{/,
   /\.portfolio-library-actions\s+\.delete-action\s*\{/,
   /\.portfolio-web-viewer\s*\{/,

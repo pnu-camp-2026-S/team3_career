@@ -38,11 +38,12 @@ ESM(.mjs)으로 작성되어 Next 라우트에서 import되고, `node` 스크립
 | `ids.mjs` | `file_YYYYMMDD_xxxxxx` / `analysis_YYYYMMDD_xxxxxx` / `event_###` 형식의 id 생성기. |
 | `repository.mjs` | `LocalAnalysisRepository`. 원본 파일, metadata.json, analysis-result.json, summary.md, index.json, log.md를 `data/local-analysis/` 아래에 저장한다. **DB가 생기면 같은 메서드 시그니처의 `DbAnalysisRepository`로 이 파일만 교체**하면 되고, 서비스 코드는 수정하지 않는다. |
 | `extractor.mjs` | 파일 유형별 텍스트 추출. txt/md(그대로), csv(컬럼+앞부분), pdf(pdf-parse), docx(mammoth). 그 외 확장자는 경고와 함께 분석 실패 처리(업로드 자체는 실패 아님). 본문은 24,000자로 제한한다. |
-| `ai-client.mjs` | AI 제공자 선택과 호출. 우선순위: `GEMINI_API_KEY`(gemini_key.env) → Gemini, 없으면 `OPENAI_API_KEY`(key.env) → OpenAI, 둘 다 없거나 `ANALYSIS_MOCK=1`이면 mock 고정 응답. `prompts/single-file-analysis.md`를 읽어 `{{플레이스홀더}}`를 치환한 뒤 JSON-only 응답을 강제한다(Gemini `responseMimeType`, OpenAI `response_format`). |
+| `ai-client.mjs` | AI 제공자 선택과 호출. 우선순위: `ANALYSIS_MOCK=1`/`ANALYSIS_PROVIDER=mock` → mock, 아니면 `OPENAI_API_KEY`(key.env) → OpenAI, 없으면 `GEMINI_API_KEY`(gemini_key.env) → Gemini. 실제 키가 없으면 사용자 화면용 mock 결과를 조용히 만들지 않고 실패시킨다. `prompts/single-file-analysis.md`를 읽어 `{{플레이스홀더}}`를 치환한 뒤 JSON-only 응답을 강제한다(Gemini `responseMimeType`, OpenAI `response_format`). |
 | `validator.mjs` | AI 응답 검증. 필수 필드, 추천 하위 폴더가 허용 enum에 있는지, confidence 0~1 범위, `requiresUserConfirmation === true`, fileId/analysisId 일치를 확인한다. 실패 시 저장하지 않고 `analysisStatus: failed`. |
 | `templates.mjs` | `templates/`의 세 템플릿을 읽어 결정적으로(비 AI) 채우는 렌더러. index.json은 치환 후 `JSON.parse`로 유효성을 반드시 확인한다. |
 | `service.mjs` | 전체 오케스트레이션. 업로드 → 메타데이터 → 추출 → AI 분석 → 검증 → 산출물 생성 → 로그 기록. 계획 문서 §3의 [1]~[15] 흐름과 대응한다. |
-| `aggregate.mjs` | **종합 분석 오케스트레이션.** 저장된 모든 분석 번들을 모아 AI로 종합해 메인 키워드 개요(headline/description/activityKeywords)와 포트폴리오 강조 키워드(portfolioKeywords)를 생성·저장한다. 자료가 0건이면 `no_data`를 반환한다. |
+| `aggregate.mjs` | **종합 분석 오케스트레이션.** 저장된 모든 실제 분석 번들을 모아 AI로 종합해 메인 키워드 개요(headline/description/activityKeywords), 메인 AI 분석 개요(activityOverview), 포트폴리오 강조 키워드(portfolioKeywords)를 생성·저장한다. 자료가 0건이면 `no_data`, 저장된 mock 분석만 있으면 `mock_data`를 반환한다. |
+| `main-activity-overview.md` | 메인 `AI 분석 개요` 전용 프롬프트 조각. "당신은 개인 프로젝트 3개..."처럼 활동 유형별 개수, 역할, 역량 흐름을 근거 기반으로 쓰도록 안내한다. |
 
 ## 2. 산출물 템플릿 — `templates/`
 
@@ -102,7 +103,7 @@ Next.js App Router 핸들러. Express·multer 없이 동작한다.
 |---|---|
 | `key.env` | `OPENAI_API_KEY`, `OPENAI_MODEL` |
 | `gemini_key.env` | `GEMINI_API_KEY`, `GEMINI_MODEL` (기본 `gemini-flash-latest`) |
-| (환경 변수) | `ANALYSIS_MOCK=1` — 키 없이 mock으로 파이프라인 테스트 |
+| (환경 변수) | `ANALYSIS_MOCK=1` — 키 없이 mock으로 파이프라인 테스트. 사용자에게 실제 분석처럼 보여줄 때는 사용하지 않는다. |
 
 두 파일 모두 `.gitignore` 대상이며, 키 값은 로그·산출물에 노출하지 않는다.
 

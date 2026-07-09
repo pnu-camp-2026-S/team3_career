@@ -41,7 +41,7 @@ AI가 만든 내용에는 가능한 한 근거 파일, 추출 근거, 사용자 
 
 ### AI 제공자
 
-- 우선순위: `ANALYSIS_MOCK=1` → mock, 아니면 `key.env`의 `OPENAI_API_KEY`(모델 `OPENAI_MODEL` 또는 `gpt-4o-mini`) → `gemini_key.env`의 `GEMINI_API_KEY` → mock
+- 우선순위: `ANALYSIS_MOCK=1` 또는 `ANALYSIS_PROVIDER=mock` → mock, 아니면 `key.env`의 `OPENAI_API_KEY`(모델 `OPENAI_MODEL` 또는 `gpt-4o-mini`) → `gemini_key.env`의 `GEMINI_API_KEY`. 키가 없으면 사용자 화면에 mock 결과를 보여주지 않고 분석 실패로 처리한다.
 - `ANALYSIS_PROVIDER=openai|gemini|mock`으로 명시할 수 있다.
 - 키 값은 로그·산출물·DB에 남기지 않는다(제공자 이름 문자열만 저장).
 
@@ -62,5 +62,6 @@ AI가 만든 내용에는 가능한 한 근거 파일, 추출 근거, 사용자 
 
 - 파일 관리(`html/create.html`)의 상단 `분석하기` 버튼 → `POST /api/analysis/project`. 성공한 파일은 상태 pill이 `분석완료`로 바뀌고, 새로고침 후에도 `/api/activity-files`의 `analysisStatus`로 복원된다.
 - `/api/activity-files`는 `file_analyses.summary_md`, `index_draft`, `log_md`도 함께 내려준다. 화면은 이 값을 프로젝트 맨 오른쪽의 `AI 요약` 세부 폴더에 `원본명 AI 요약.md` 가상 파일로 보여준다.
-- 메인(`html/main.html`)의 `분석 시작` 버튼 → `POST /api/analysis/aggregate`. 키워드 개요(headline/description/activityKeywords)가 AI 결과로 채워지고, 결과 전체가 `localStorage.myfitfolioAiKeywords`에 저장되어 포트폴리오 생성 화면이 재사용할 수 있다.
+- 메인(`html/main.html`)은 분석 완료 파일 수가 저장된 종합 결과보다 많거나 저장된 결과가 mock이면 `POST /api/analysis/aggregate`를 실행한다. 키워드 개요(headline/description/activityKeywords)와 AI 분석 개요(activityOverview)가 AI 결과로 채워지고, 결과 전체가 `localStorage.myfitfolioAiKeywords`에 저장되어 포트폴리오 생성 화면이 재사용할 수 있다.
+- 메인 AI 분석 개요의 작성 방식은 `prompts/main-activity-overview.md`에 분리한다. 이 파일은 활동 유형별 개수, 맡은 역할, 반복 역량을 근거 기반 2~3문장으로 작성하도록 안내한다.
 - 분석 결과는 사용자가 확인하기 전까지 초안(`requiresUserConfirmation: true`, `reviewStatus: pending_review`)으로 취급한다.

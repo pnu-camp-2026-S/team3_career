@@ -10,13 +10,20 @@
 3. 여러 자료에 반복해서 나타나는 강점을 우선한다.
 4. headline은 사용자를 격려하는 자연스러운 한국어 한 문장으로 쓴다 (예: "꾸준한 실행력과 협업 경험이 드러나요").
 5. description은 어떤 자료들을 근거로 어떤 강점이 보이는지 2문장으로 쓴다.
-6. activityKeywords는 메인 화면 칩에 쓸 짧은 단어형 키워드 4~6개 (예: "문제 해결", "협업", "데이터 활용").
-7. portfolioKeywords는 포트폴리오에서 강조할 역량 문구형 키워드 5~8개 (예: "문제 해결 및 비판적 사고", "데이터 기반 프로세스 최적화").
-8. 근거가 부족하거나 자료가 적으면 warnings에 적는다.
-9. 출력은 반드시 JSON만 반환한다. Markdown, 코드블록, 사족을 출력하지 않는다.
-10. 모든 텍스트는 한국어로 쓴다.
+6. activityOverview는 아래 "메인 AI 분석 개요 작성 지침"을 따른다.
+7. activityKeywords는 메인 화면 칩에 쓸 짧은 단어형 키워드 4~6개 (예: "문제 해결", "협업", "데이터 활용").
+8. portfolioKeywords는 포트폴리오에서 강조할 역량 문구형 키워드 5~8개 (예: "문제 해결 및 비판적 사고", "데이터 기반 프로세스 최적화").
+9. 근거가 부족하거나 자료가 적으면 warnings에 적는다.
+10. 출력은 반드시 JSON만 반환한다. Markdown, 코드블록, 사족을 출력하지 않는다.
+11. 모든 텍스트는 한국어로 쓴다.
 
 입력 자료 수: {{documentCount}}개
+
+메인 AI 분석 개요 작성 지침:
+{{activityOverviewGuide}}
+
+활동 통계:
+{{activityStats}}
 
 자료 요약 목록:
 {{analysisSummaries}}
@@ -25,6 +32,7 @@
 {
   "headline": "string",
   "description": "string",
+  "activityOverview": "string",
   "activityKeywords": ["string"],
   "portfolioKeywords": ["string"],
   "basedOnCount": {{documentCount}},

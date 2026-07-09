@@ -2,13 +2,21 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { notFound } from 'next/navigation';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 const contentTypes = {
   '.css': 'text/css; charset=utf-8',
 };
 
 export async function GET(_request, context) {
   const params = await context.params;
-  const filePath = path.join(process.cwd(), 'css', ...(params.file || []));
+  const cssDir = path.join(process.cwd(), 'css');
+  const filePath = path.resolve(cssDir, ...(params.file || []));
+
+  if (!filePath.startsWith(`${cssDir}${path.sep}`)) {
+    notFound();
+  }
 
   try {
     const body = await readFile(filePath);
