@@ -502,10 +502,12 @@ const authLogoutRoutePath = path.join(appDir, 'api', 'auth', 'logout', 'route.js
 const authWithdrawRoutePath = path.join(appDir, 'api', 'auth', 'withdraw', 'route.js');
 const userProfileRoutePath = path.join(appDir, 'api', 'profile', 'route.js');
 const activityFilesRoutePath = path.join(appDir, 'api', 'activity-files', 'route.js');
+const activitySchedulesRoutePath = path.join(appDir, 'api', 'activity-schedules', 'route.js');
 const portfoliosRoutePath = path.join(appDir, 'api', 'portfolios', 'route.js');
 const profilesSchemaPath = path.join(rootDir, 'docs', 'supabase-profiles.sql');
 const userProfilesSchemaPath = path.join(rootDir, 'docs', 'supabase-user-profiles.sql');
 const activityFilesSchemaPath = path.join(rootDir, 'docs', 'supabase-activity-files.sql');
+const activitySchedulesSchemaPath = path.join(rootDir, 'docs', 'supabase-activity-schedules.sql');
 const portfoliosSchemaPath = path.join(rootDir, 'docs', 'supabase-portfolios.sql');
 assert.ok(fs.existsSync(supabaseServerPath), 'Supabase server helper should live in lib/supabase-server.js');
 assert.ok(fs.existsSync(socialAuthRoutePath), 'social login API should live in app/api/auth/social/route.js');
@@ -515,10 +517,12 @@ assert.ok(fs.existsSync(authLogoutRoutePath), 'logout API should live in app/api
 assert.ok(fs.existsSync(authWithdrawRoutePath), 'account withdrawal API should live in app/api/auth/withdraw/route.js');
 assert.ok(fs.existsSync(userProfileRoutePath), 'mypage profile API should live in app/api/profile/route.js');
 assert.ok(fs.existsSync(activityFilesRoutePath), 'activity file API should live in app/api/activity-files/route.js');
+assert.ok(fs.existsSync(activitySchedulesRoutePath), 'activity schedule API should live in app/api/activity-schedules/route.js');
 assert.ok(fs.existsSync(portfoliosRoutePath), 'portfolio API should live in app/api/portfolios/route.js');
 assert.ok(fs.existsSync(profilesSchemaPath), 'Supabase profiles schema should be documented for DB setup');
 assert.ok(fs.existsSync(userProfilesSchemaPath), 'Supabase user_profiles schema should be documented for mypage DB setup');
 assert.ok(fs.existsSync(activityFilesSchemaPath), 'Supabase activity_files schema should be documented for file DB setup');
+assert.ok(fs.existsSync(activitySchedulesSchemaPath), 'Supabase activity_schedules schema should be documented for recommendation calendar DB setup');
 assert.ok(fs.existsSync(portfoliosSchemaPath), 'Supabase portfolios schema should be documented for portfolio DB setup');
 const supabaseServer = fs.existsSync(supabaseServerPath) ? fs.readFileSync(supabaseServerPath, 'utf8') : '';
 const socialAuthRoute = fs.existsSync(socialAuthRoutePath) ? fs.readFileSync(socialAuthRoutePath, 'utf8') : '';
@@ -528,10 +532,12 @@ const authLogoutRoute = fs.existsSync(authLogoutRoutePath) ? fs.readFileSync(aut
 const authWithdrawRoute = fs.existsSync(authWithdrawRoutePath) ? fs.readFileSync(authWithdrawRoutePath, 'utf8') : '';
 const userProfileRoute = fs.existsSync(userProfileRoutePath) ? fs.readFileSync(userProfileRoutePath, 'utf8') : '';
 const activityFilesRoute = fs.existsSync(activityFilesRoutePath) ? fs.readFileSync(activityFilesRoutePath, 'utf8') : '';
+const activitySchedulesRoute = fs.existsSync(activitySchedulesRoutePath) ? fs.readFileSync(activitySchedulesRoutePath, 'utf8') : '';
 const portfoliosRoute = fs.existsSync(portfoliosRoutePath) ? fs.readFileSync(portfoliosRoutePath, 'utf8') : '';
 const profilesSchema = fs.existsSync(profilesSchemaPath) ? fs.readFileSync(profilesSchemaPath, 'utf8') : '';
 const userProfilesSchema = fs.existsSync(userProfilesSchemaPath) ? fs.readFileSync(userProfilesSchemaPath, 'utf8') : '';
 const activityFilesSchema = fs.existsSync(activityFilesSchemaPath) ? fs.readFileSync(activityFilesSchemaPath, 'utf8') : '';
+const activitySchedulesSchema = fs.existsSync(activitySchedulesSchemaPath) ? fs.readFileSync(activitySchedulesSchemaPath, 'utf8') : '';
 const portfoliosSchema = fs.existsSync(portfoliosSchemaPath) ? fs.readFileSync(portfoliosSchemaPath, 'utf8') : '';
 
 assert.match(
@@ -597,7 +603,7 @@ assert.match(
 );
 assert.match(
   authWithdrawRoute,
-  /USER_ROW_TARGETS[\s\S]*activity_files[\s\S]*portfolios[\s\S]*user_profiles[\s\S]*profiles[\s\S]*\.delete\(\)[\s\S]*\.eq\(target\.column, userId\)/,
+  /USER_ROW_TARGETS[\s\S]*activity_schedules[\s\S]*activity_files[\s\S]*portfolios[\s\S]*user_profiles[\s\S]*profiles[\s\S]*\.delete\(\)[\s\S]*\.eq\(target\.column, userId\)/,
   'withdrawal API should hard-delete app-owned rows for the withdrawing user'
 );
 assert.match(
@@ -661,6 +667,16 @@ assert.match(
   'activity file API should remove both Storage objects and activity_files rows'
 );
 assert.match(
+  activitySchedulesRoute,
+  /export async function GET\(\)[\s\S]*\.from\('activity_schedules'\)[\s\S]*\.eq\('user_id',\s*user\.id\)/,
+  'activity schedule API should list saved recommendation calendar items for the current user'
+);
+assert.match(
+  activitySchedulesRoute,
+  /export async function PUT\(request\)[\s\S]*\.from\('activity_schedules'\)[\s\S]*\.delete\(\)[\s\S]*\.insert\(rows\)/,
+  'activity schedule API should replace saved calendar items in Supabase'
+);
+assert.match(
   portfoliosRoute,
   /export async function GET\(request\)[\s\S]*\.from\('portfolios'\)[\s\S]*deleted_at/,
   'portfolio API should list non-deleted current user portfolios'
@@ -689,6 +705,16 @@ assert.match(
   activityFilesSchema,
   /insert into storage\.buckets[\s\S]*activity-files/,
   'activity_files schema should create the activity-files Storage bucket'
+);
+assert.match(
+  activitySchedulesSchema,
+  /create table if not exists public\.activity_schedules[\s\S]*user_id uuid not null references auth\.users\(id\) on delete cascade[\s\S]*primary key \(user_id, activity_id\)/,
+  'activity_schedules schema should store saved recommendation calendar items per user'
+);
+assert.match(
+  activitySchedulesSchema,
+  /alter table public\.activity_schedules enable row level security[\s\S]*auth\.uid\(\) = user_id/,
+  'activity_schedules schema should restrict saved calendar items to their owner'
 );
 
 // #167: 프로젝트-하위폴더 트리 구조 컬럼과 마이그레이션
@@ -2144,6 +2170,11 @@ assert.match(
 );
 assert.match(
   contestJs,
+  /activitySchedulesEndpoint\s*=\s*'\/api\/activity-schedules'/,
+  'contest should define the Supabase-backed activity schedule API endpoint'
+);
+assert.match(
+  contestJs,
   /function\s+loadSavedSchedules\(\)[\s\S]*localStorage\.getItem\(savedScheduleStorageKey\)/,
   'contest should restore saved activity schedules from localStorage'
 );
@@ -2154,7 +2185,17 @@ assert.match(
 );
 assert.match(
   contestJs,
-  /persistSavedSchedules\(\);[\s\S]*renderSchedule\(\);/,
+  /async function\s+loadSavedSchedulesFromServer\(\)[\s\S]*fetch\(activitySchedulesEndpoint,[\s\S]*method:\s*'GET'[\s\S]*savedSchedules\s*=\s*normalizeSavedScheduleList\(payload\.schedules\)/,
+  'contest should restore saved activity schedules from Supabase after login'
+);
+assert.match(
+  contestJs,
+  /async function\s+persistSavedSchedulesToServer\(\)[\s\S]*fetch\(activitySchedulesEndpoint,[\s\S]*method:\s*'PUT'[\s\S]*JSON\.stringify\(\{\s*schedules:\s*savedSchedules\s*\}\)/,
+  'contest should persist saved activity schedules to Supabase'
+);
+assert.match(
+  contestJs,
+  /persistSavedSchedules\(\);[\s\S]*renderSchedule\(\);[\s\S]*persistSavedSchedulesToServer\(\)/,
   'contest should persist schedule changes before re-rendering the saved schedule list'
 );
 assert.match(

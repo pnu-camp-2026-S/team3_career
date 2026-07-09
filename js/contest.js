@@ -289,6 +289,7 @@ const activitiesPerPage = 20;
 const visibleScheduleLimit = 5;
 const recommendationMatchThreshold = 85;
 const savedScheduleStorageKey = 'myfitfolioSavedActivitySchedules';
+const activitySchedulesEndpoint = '/api/activity-schedules';
 const profileStorageKeys = ['myfitfolioProfile', 'careerfit_mypage', 'myfitfolio_mypage', 'mypage_profile', 'userProfile'];
 let savedSchedules = loadSavedSchedules();
 
@@ -581,6 +582,68 @@ function loadSavedSchedules() {
 
 function persistSavedSchedules() {
   localStorage.setItem(savedScheduleStorageKey, JSON.stringify(savedSchedules));
+}
+
+function normalizeSavedSchedule(event) {
+  if (!event || !event.id || !event.title || !event.date) return null;
+
+  return {
+    id: Number(event.id),
+    title: String(event.title),
+    note: String(event.note || ''),
+    date: String(event.date)
+  };
+}
+
+function normalizeSavedScheduleList(events) {
+  return (Array.isArray(events) ? events : [])
+    .map(normalizeSavedSchedule)
+    .filter(Boolean);
+}
+
+async function loadSavedSchedulesFromServer() {
+  try {
+    const response = await fetch(activitySchedulesEndpoint, {
+      method: 'GET',
+      credentials: 'same-origin',
+      cache: 'no-store'
+    });
+
+    if (response.status === 401) return false;
+    if (!response.ok) throw new Error('Activity schedule load failed.');
+
+    const payload = await response.json();
+    savedSchedules = normalizeSavedScheduleList(payload.schedules);
+    persistSavedSchedules();
+    return true;
+  } catch (error) {
+    console.warn('Activity schedule API load failed.', error);
+    return false;
+  }
+}
+
+async function persistSavedSchedulesToServer() {
+  try {
+    const response = await fetch(activitySchedulesEndpoint, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ schedules: savedSchedules })
+    });
+
+    if (response.status === 401) return false;
+    if (!response.ok) throw new Error('Activity schedule save failed.');
+
+    const payload = await response.json().catch(() => ({}));
+    if (Array.isArray(payload.schedules)) {
+      savedSchedules = normalizeSavedScheduleList(payload.schedules);
+      persistSavedSchedules();
+    }
+    return true;
+  } catch (error) {
+    console.warn('Activity schedule API save failed.', error);
+    return false;
+  }
 }
 
 function renderActivities() {
@@ -973,7 +1036,7 @@ function moveCalendarMonth(offset) {
   animateCalendarTurn(offset > 0 ? 'next' : 'prev');
 }
 
-function toggleSaveToCalendar(item) {
+async function toggleSaveToCalendar(item) {
   const existingIndex = savedSchedules.findIndex((event) => event.id === item.id);
   const itemDate = scheduleDates[item.id] || '2026-07-21';
 
@@ -994,13 +1057,17 @@ function toggleSaveToCalendar(item) {
   renderSchedule();
   renderCalendarHighlight();
   updateSaveButton(item);
+  await persistSavedSchedulesToServer();
+  renderSchedule();
+  renderCalendarHighlight();
+  updateSaveButton(item);
 }
 
-function toggleBookmarkSave(id) {
+async function toggleBookmarkSave(id) {
   const item = activities.find((activity) => activity.id === Number(id));
   if (!item) return;
 
-  toggleSaveToCalendar(item);
+  await toggleSaveToCalendar(item);
 }
 
 function renderSchedule() {
@@ -1109,7 +1176,17 @@ scheduleList.addEventListener('click', (event) => {
 prevCalendarMonth.addEventListener('click', () => moveCalendarMonth(-1));
 nextCalendarMonth.addEventListener('click', () => moveCalendarMonth(1));
 
+async function initSavedSchedules() {
+  const loadedFromServer = await loadSavedSchedulesFromServer();
+  if (!loadedFromServer) return;
+
+  renderSchedule();
+  renderCalendarHighlight();
+  renderActivities();
+}
+
 renderCalendarMonth();
 renderSchedule();
 renderRecommendationCount();
 renderActivities();
+initSavedSchedules();
