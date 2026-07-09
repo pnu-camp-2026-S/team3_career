@@ -1832,8 +1832,8 @@ assert.match(
 );
 assert.match(
   contestHtml,
-  /id="keyword-search"/,
-  'contest page should include keyword search for activity recommendations'
+  /class="sort-controls"[\s\S]*data-sort="recommendation"[\s\S]*추천순 정렬[\s\S]*data-sort="deadline"[\s\S]*마감순 정렬/,
+  'contest page should provide recommendation and deadline sort options for activity recommendations'
 );
 assert.ok(
   !contestHtml.includes('class="stats-grid"'),
@@ -1846,8 +1846,8 @@ assert.match(
 );
 assert.match(
   contestHtml,
-  /<div class="filter-controls">[\s\S]*<select id="industry-filter"[\s\S]*<select id="level-filter"[\s\S]*<label class="search-box" for="keyword-search">[\s\S]*<input id="keyword-search"/,
-  'contest keyword search should sit at the far right after the job and difficulty filters'
+  /<div class="sort-controls" aria-label="활동 정렬 기준">[\s\S]*<button class="sort-option active"[\s\S]*aria-pressed="true"[\s\S]*추천순 정렬[\s\S]*<button class="sort-option"[\s\S]*aria-pressed="false"[\s\S]*마감순 정렬/,
+  'contest sort controls should default to recommendation order and expose deadline order'
 );
 assert.match(
   contestHtml,
@@ -1984,6 +1984,21 @@ assert.match(
   contestJs,
   /function\s+getSortedRecommendedActivities/,
   'contest activity list should sort all activities by recommendation score'
+);
+assert.match(
+  contestJs,
+  /let\s+activeActivitySort\s*=\s*'recommendation'/,
+  'contest activity sort should default to recommendation order'
+);
+assert.match(
+  contestJs,
+  /function\s+sortRecommendedActivities\(items\)[\s\S]*activeActivitySort\s*===\s*'deadline'[\s\S]*sortActivitiesByDeadline\(items\)[\s\S]*sortActivitiesByRecommendation\(items\)/,
+  'contest activity list should switch between recommendation and deadline sorting'
+);
+assert.match(
+  contestJs,
+  /sortOptions\.forEach\(\(option\)[\s\S]*activeActivitySort\s*=\s*option\.dataset\.sort[\s\S]*aria-pressed[\s\S]*renderActivities\(\)/,
+  'contest sort buttons should update selected state and rerender the activity list'
 );
 assert.match(
   contestJs,
@@ -2268,7 +2283,7 @@ assert.match(
 );
 assert.match(
   contestJs,
-  /return\s+activities[\s\S]*\.filter\(\(item\)\s*=>\s*getMatchScore\(item\)\s*>=\s*recommendationMatchThreshold\)/,
+  /return\s+sortRecommendedActivities\([\s\S]*activities\.filter\(\(item\)\s*=>\s*getMatchScore\(item\)\s*>=\s*recommendationMatchThreshold\)/,
   'contest activity list should show only activities over the match threshold'
 );
 assert.match(

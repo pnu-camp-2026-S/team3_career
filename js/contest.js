@@ -268,9 +268,7 @@ const activityPagination = document.getElementById('activityPagination');
 const detailPanel = document.getElementById('activity-detail');
 const scheduleList = document.getElementById('schedule-list');
 const tabs = Array.from(document.querySelectorAll('.tab'));
-const keywordInput = document.getElementById('keyword-search');
-const industryFilter = document.getElementById('industry-filter');
-const levelFilter = document.getElementById('level-filter');
+const sortOptions = Array.from(document.querySelectorAll('.sort-option'));
 const recommendCount = document.getElementById('recommendCount');
 const calendarMonthLabel = document.getElementById('calendarMonth');
 const calendarDays = document.getElementById('calendarDays');
@@ -278,6 +276,7 @@ const prevCalendarMonth = document.getElementById('prevCalendarMonth');
 const nextCalendarMonth = document.getElementById('nextCalendarMonth');
 
 let activeTab = 'all';
+let activeActivitySort = 'recommendation';
 let selectedActivityId = null;
 let activeDetailElement = null;
 let currentActivityPage = 1;
@@ -530,20 +529,9 @@ function clearExpandedDetail() {
 }
 
 function getFilteredActivities() {
-  const keyword = keywordInput.value.trim().toLowerCase();
-  const industry = industryFilter.value;
-  const level = levelFilter.value;
-
   return getSortedRecommendedActivities().filter((item) => {
     const matchesTab = activeTab === 'all' || item.type === activeTab;
-    const matchesKeyword =
-      !keyword ||
-      item.title.toLowerCase().includes(keyword) ||
-      item.reason.toLowerCase().includes(keyword);
-    const matchesIndustry = industry === 'all' || item.industry === industry;
-    const matchesLevel = level === 'all' || item.level === level;
-
-    return matchesTab && matchesKeyword && matchesIndustry && matchesLevel;
+    return matchesTab;
   });
 }
 
@@ -738,15 +726,40 @@ const activities = Array.isArray(window.activityRecommendationDataset)
   ? normalizeActivityDataset(window.activityRecommendationDataset)
   : fallbackActivities;
 
+function getActivityScheduleTime(item) {
+  const scheduleDate = scheduleDates[item.id] || formatDateFromDeadlineDays(item.deadlineDays);
+  const time = parseDateValue(scheduleDate).getTime();
+  return Number.isFinite(time) ? time : Number.MAX_SAFE_INTEGER;
+}
+
+function sortActivitiesByRecommendation(items) {
+  return [...items].sort(
+    (a, b) =>
+      getMatchScore(b) - getMatchScore(a) ||
+      getRecommendationScore(b) - getRecommendationScore(a) ||
+      a.id - b.id
+  );
+}
+
+function sortActivitiesByDeadline(items) {
+  return [...items].sort(
+    (a, b) =>
+      getActivityScheduleTime(a) - getActivityScheduleTime(b) ||
+      getMatchScore(b) - getMatchScore(a) ||
+      a.id - b.id
+  );
+}
+
+function sortRecommendedActivities(items) {
+  return activeActivitySort === 'deadline'
+    ? sortActivitiesByDeadline(items)
+    : sortActivitiesByRecommendation(items);
+}
+
 function getSortedRecommendedActivities() {
-  return activities
-    .filter((item) => getMatchScore(item) >= recommendationMatchThreshold)
-    .sort(
-      (a, b) =>
-        getMatchScore(b) - getMatchScore(a) ||
-        getRecommendationScore(b) - getRecommendationScore(a) ||
-        a.id - b.id
-    );
+  return sortRecommendedActivities(
+    activities.filter((item) => getMatchScore(item) >= recommendationMatchThreshold)
+  );
 }
 
 function getActivityPageCount(items) {
@@ -1132,13 +1145,14 @@ tabs.forEach((tab) => {
   });
 });
 
-[keywordInput, industryFilter, levelFilter].forEach((control) => {
-  control.addEventListener('input', () => {
-    currentActivityPage = 1;
-    renderActivities();
-    updateSelectedCard();
-  });
-  control.addEventListener('change', () => {
+sortOptions.forEach((option) => {
+  option.addEventListener('click', () => {
+    activeActivitySort = option.dataset.sort || 'recommendation';
+    sortOptions.forEach((button) => {
+      const isActive = button === option;
+      button.classList.toggle('active', isActive);
+      button.setAttribute('aria-pressed', String(isActive));
+    });
     currentActivityPage = 1;
     renderActivities();
     updateSelectedCard();

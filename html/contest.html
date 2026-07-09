@@ -33,23 +33,9 @@
             <button class="tab" data-filter="교육">교육</button>
           </div>
 
-          <div class="filter-controls">
-            <select id="industry-filter" aria-label="직무 필터">
-              <option value="all">전체 직무</option>
-              <option value="IT">IT</option>
-              <option value="디자인">디자인</option>
-              <option value="마케팅">마케팅</option>
-            </select>
-            <select id="level-filter" aria-label="난이도 필터">
-              <option value="all">전체 난이도</option>
-              <option value="하">하</option>
-              <option value="중">중</option>
-              <option value="상">상</option>
-            </select>
-            <label class="search-box" for="keyword-search">
-              <i class="fa-solid fa-magnifying-glass"></i>
-              <input id="keyword-search" type="search" placeholder="키워드 검색" />
-            </label>
+          <div class="sort-controls" aria-label="활동 정렬 기준">
+            <button class="sort-option active" type="button" data-sort="recommendation" aria-pressed="true">추천순 정렬</button>
+            <button class="sort-option" type="button" data-sort="deadline" aria-pressed="false">마감순 정렬</button>
           </div>
         </section>
 
