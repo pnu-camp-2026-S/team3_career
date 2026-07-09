@@ -398,19 +398,34 @@
       document.getElementById('analysisProgress').style.width = progress;
     }
 
+    function setAnalysisLoading(isLoading, folder) {
+      const overlay = document.getElementById('analysisLoading');
+      const button = document.getElementById('analyzeButton');
+      overlay.classList.toggle('hidden', !isLoading);
+      overlay.setAttribute('aria-hidden', String(!isLoading));
+      button.disabled = isLoading;
+      button.innerHTML = isLoading
+        ? '<span class="button-spinner" aria-hidden="true"></span> 분석 중'
+        : '<span aria-hidden="true">✦</span> 선택한 폴더 분석하기';
+      if (isLoading && folder) {
+        document.getElementById('analysisLoadingTitle').textContent = `${folder.label} 자료를 분석하고 있어요`;
+      }
+    }
+
     // 프로젝트 단위 AI 분석(#166-4). 서버(/api/analysis/project)가 이 프로젝트의
     // 미분석 자료만 새로 분석하고, 기존 결과와 합쳐 프로젝트 종합 요약을 생성한다.
     async function organizeProject() {
       const folder = getSelectedFolder();
       if (!folder || analysisInFlight) return;
 
-      await loadActivityFilesFromApi();
-      render();
-
       analysisInFlight = true;
+      setAnalysisLoading(true, folder);
       setAnalysisPanel('분석중', 'ready', `${folder.label} 프로젝트의 자료를 AI로 분석하고 있습니다. 잠시만 기다려주세요.`, '35%');
 
       try {
+        await loadActivityFilesFromApi();
+        render();
+
         const response = await fetch('/api/analysis/project', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -440,6 +455,7 @@
         setAnalysisPanel('분석실패', 'fail', '프로젝트 분석에 실패했습니다. 잠시 후 다시 시도해주세요.', '0%');
       } finally {
         analysisInFlight = false;
+        setAnalysisLoading(false);
       }
     }
 

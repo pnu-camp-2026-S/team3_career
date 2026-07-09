@@ -1478,6 +1478,11 @@ assert.match(
 );
 assert.match(
   createHtml,
+  /id="analyzeButton"[\s\S]*id="analysisLoading"[\s\S]*function\s+setAnalysisLoading\(isLoading,\s*folder\)/,
+  'file management should show a dedicated loading state while analysis runs (#226)'
+);
+assert.match(
+  createHtml,
   /mapAnalysisSummaryFile[\s\S]*name:\s*`\$\{getFileBaseName\(file\.name\)\} AI 요약\.md`[\s\S]*kind:\s*'analysis-summary'[\s\S]*FolderStore\.getAnalysisSubfolder\(projectFolder\)[\s\S]*analysisTarget\.files\.push\(summaryFile\)/,
   'file management should show saved AI analysis artifacts in the dedicated AI 요약 subfolder'
 );

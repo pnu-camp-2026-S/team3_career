@@ -23,7 +23,10 @@
         </div>
         <div class="file-manager-actions">
           <button class="outline-button" type="button" data-action="sync-github">GitHub 동기화</button>
-          <button class="primary-button" type="button" data-action="analyze">분석하기</button>
+          <button class="primary-button analyze-button" id="analyzeButton" type="button" data-action="analyze">
+            <span aria-hidden="true">✦</span>
+            선택한 폴더 분석하기
+          </button>
         </div>
       </section>
 
@@ -89,6 +92,19 @@
         </section>
       </section>
     </main>
+
+    <div class="analysis-loading hidden" id="analysisLoading" role="status" aria-live="polite" aria-hidden="true">
+      <div class="analysis-loading-card">
+        <div class="analysis-spinner" aria-hidden="true"></div>
+        <p class="section-kicker">AI 자료 분석</p>
+        <h2 id="analysisLoadingTitle">폴더 자료를 분석하고 있어요</h2>
+        <p>업로드한 자료에서 근거를 찾고 활동 내용을 정리하고 있습니다.</p>
+        <div class="analysis-loading-steps" aria-hidden="true">
+          <span class="active"></span><span></span><span></span>
+        </div>
+        <small>자료 수에 따라 잠시 시간이 걸릴 수 있습니다. 화면을 닫지 말고 기다려주세요.</small>
+      </div>
+    </div>
   </div>
 
   <div class="manager-toast" id="toast">완료되었습니다.</div>
