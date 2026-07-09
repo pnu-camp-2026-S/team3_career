@@ -120,6 +120,19 @@
   font-weight: 900;
 }
 
+.manager-folder-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: stretch;
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+.manager-folder-row:hover,
+.manager-folder-row.active {
+  background: #eef2ff;
+}
+
 .manager-folder-item {
   width: 100%;
   display: grid;
@@ -134,6 +147,28 @@
   color: #4e566a;
   font-weight: 850;
   text-align: left;
+}
+
+.manager-folder-row .manager-folder-item {
+  border-radius: 0;
+  background: transparent;
+}
+
+.folder-delete-button {
+  min-width: 52px;
+  border: 0;
+  border-left: 1px solid var(--line);
+  padding: 0 10px;
+  color: #c83b50;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.folder-delete-button:hover,
+.folder-delete-button:focus-visible {
+  background: #fff1f3;
 }
 
 .large-folder-groups .manager-folder-item {

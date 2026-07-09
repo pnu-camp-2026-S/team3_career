@@ -65,11 +65,14 @@
             <h3>${group.label}</h3>
             <div class="manager-folder-list">
               ${groupFolders.map((folder) => `
-                <button class="manager-folder-item ${folder.id === selectedFolderId ? 'active' : ''}" type="button" data-folder-id="${escapeHtml(folder.id)}">
-                  <span class="mini-folder" aria-hidden="true"></span>
-                  <span>${escapeHtml(folder.label)}</span>
-                  <strong>${FolderStore.getFolderFiles(folder).length}</strong>
-                </button>
+                <div class="manager-folder-row ${folder.id === selectedFolderId ? 'active' : ''}">
+                  <button class="manager-folder-item" type="button" data-folder-id="${escapeHtml(folder.id)}">
+                    <span class="mini-folder" aria-hidden="true"></span>
+                    <span>${escapeHtml(folder.label)}</span>
+                    <strong>${FolderStore.getFolderFiles(folder).length}</strong>
+                  </button>
+                  <button class="folder-delete-button" type="button" data-delete-folder-id="${escapeHtml(folder.id)}" aria-label="${escapeHtml(folder.label)} 폴더 삭제">삭제</button>
+                </div>
               `).join('')}
             </div>
           </section>
@@ -542,11 +545,11 @@
       showToast('프로젝트 이름을 변경했습니다.');
     }
 
-    // 프로젝트 삭제(사용자 요청). 폴더와 그 안의 자료가 함께 사라진다.
-    async function deleteProject() {
-      const folder = getSelectedFolder();
+    // 왼쪽 목록에서 선택한 폴더와 그 안의 자료를 함께 삭제한다.
+    async function deleteFolder(folderId) {
+      const folder = folders[folderId];
       if (!folder) return;
-      if (!window.confirm(`'${folder.label}' 프로젝트를 삭제할까요? 안의 세부 폴더와 자료도 함께 사라집니다.`)) return;
+      if (!window.confirm(`'${folder.label}' 폴더를 삭제할까요? 안의 세부 폴더와 자료도 함께 사라집니다.`)) return;
 
       const removedLabel = folder.label;
       try {
@@ -557,11 +560,13 @@
         return;
       }
       FolderStore.deleteFolder(folders, folder.id);
-      selectedFolderId = Object.keys(folders)[0] || null;
-      selectedSubfolderId = firstSubfolderId(folders[selectedFolderId]);
+      if (folder.id === selectedFolderId) {
+        selectedFolderId = Object.keys(folders)[0] || null;
+        selectedSubfolderId = firstSubfolderId(folders[selectedFolderId]);
+      }
       persistFolders();
       render();
-      showToast(`'${removedLabel}' 프로젝트를 삭제했습니다.`);
+      showToast(`'${removedLabel}' 폴더를 삭제했습니다.`);
     }
 
     // 프로젝트별 '대화로 내용 추가하기'(#137-5). 현재 선택한 세부 폴더에 md 자료를 추가한다.
@@ -729,6 +734,12 @@
     }
 
     document.addEventListener('click', (event) => {
+      const deleteFolderButton = event.target.closest('[data-delete-folder-id]');
+      if (deleteFolderButton) {
+        deleteFolder(deleteFolderButton.dataset.deleteFolderId);
+        return;
+      }
+
       const folderButton = event.target.closest('[data-folder-id]');
       if (folderButton) {
         selectedFolderId = folderButton.dataset.folderId;
@@ -761,7 +772,6 @@
       if (action === 'toggle-group') toggleProjectGroup();
       if (action === 'rename-project') openRenameModal();
       if (action === 'save-project-name') saveProjectName();
-      if (action === 'delete-project') deleteProject();
       if (action === 'add-conversation') openConversationModal();
       if (action === 'add-conversation-save') saveConversationContent();
       if (action === 'create-folder') createFolder();
