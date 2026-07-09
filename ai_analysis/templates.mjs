@@ -4,7 +4,7 @@
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { PROJECT_TYPE_LABELS, getSubfoldersForProjectType } from './subfolder-config.mjs';
+import { PROJECT_TYPE_LABELS } from './subfolder-config.mjs';
 
 const TEMPLATES_DIR = path.join(process.cwd(), 'templates');
 
@@ -34,10 +34,11 @@ function evidenceSuffix(evidence) {
   return `: ${first.summary} (${first.location})`;
 }
 
+// ── 파일 단위 산출물 ─────────────────────────────────────────────
+
 export async function buildSummaryMarkdown({ metadata, result, projectType }) {
   const template = await loadTemplate('summary.md');
   const summary = result.fileSummary || {};
-  const classification = result.classification || {};
   const signals = result.portfolioSignals || {};
 
   return fill(template, {
@@ -49,41 +50,11 @@ export async function buildSummaryMarkdown({ metadata, result, projectType }) {
     oneLine: summary.oneLine || '',
     detailed: summary.detailed || '',
     keyPointsList: markdownList(summary.keyPoints, (point) => point),
-    recommendedFolderName: classification.recommendedFolderName || '',
-    confidence: classification.confidence ?? '',
-    classificationReason: classification.reason || '',
     rolesList: markdownList(signals.roles, (role) => `${role.name}${evidenceSuffix(role.evidence)}`),
     skillsList: markdownList(signals.skills, (skill) => `${skill.name}${evidenceSuffix(skill.evidence)}`),
     impactList: markdownList(signals.impact, (impact) => `${impact.claim}${evidenceSuffix(impact.evidence)}`),
     warningsList: markdownList(result.warnings, (warning) => warning),
   });
-}
-
-export async function buildIndexDraft({ metadata, result, projectType, projectId, projectName }) {
-  const template = await loadTemplate('index.json');
-  const classification = result.classification || {};
-
-  const rendered = fill(template, {
-    projectId: jsonEscape(projectId),
-    projectName: jsonEscape(projectName),
-    projectType: jsonEscape(projectType),
-    foldersJson: JSON.stringify(getSubfoldersForProjectType(projectType)),
-    fileId: jsonEscape(metadata.fileId),
-    analysisId: jsonEscape(metadata.analysisId),
-    originalFileName: jsonEscape(metadata.originalFileName),
-    extension: jsonEscape(metadata.extension),
-    uploadStatus: jsonEscape(metadata.uploadStatus),
-    analysisStatus: jsonEscape(result.analysisStatus),
-    reviewStatus: jsonEscape(result.reviewStatus),
-    recommendedFolderId: jsonEscape(classification.recommendedFolderId),
-    recommendedFolderName: jsonEscape(classification.recommendedFolderName),
-    confidence: Number(classification.confidence) || 0,
-    recommendedPriority: Number(result.recommendedPriority?.value) || 1,
-    recommendedSummary: jsonEscape(result.fileSummary?.oneLine || ''),
-  });
-
-  // 치환 결과가 유효한 JSON인지 반드시 확인한다 (template-writing-guide 규칙).
-  return JSON.parse(rendered);
 }
 
 export async function buildLogEntry({ timestamp, eventId, action, fileId, analysisId, extra = {} }) {
@@ -100,4 +71,59 @@ export async function buildLogEntry({ timestamp, eventId, action, fileId, analys
     analysisId,
     extraLines,
   }).replace(/\n+$/, '\n');
+}
+
+// ── 프로젝트 단위 산출물 ─────────────────────────────────────────
+
+// index.json: 실제 세부 폴더/파일 구조를 결정적으로 채운다(AI 추천 없음).
+export async function buildProjectIndexJson({ project, subfolders, files, generatedAt }) {
+  const template = await loadTemplate('index.json');
+
+  const rendered = fill(template, {
+    projectId: jsonEscape(project.projectId),
+    projectName: jsonEscape(project.projectName),
+    projectType: jsonEscape(project.projectType),
+    subfoldersJson: JSON.stringify(subfolders || []),
+    filesJson: JSON.stringify(files || []),
+    generatedAt: jsonEscape(generatedAt),
+  });
+
+  // 치환 결과가 유효한 JSON인지 반드시 확인한다 (template-writing-guide 규칙).
+  return JSON.parse(rendered);
+}
+
+// summary.md: 프로젝트 종합 프롬프트 출력 + 결정적 목록을 조합한다.
+export async function buildProjectSummaryMarkdown({ project, ai, documentCount, generatedAt }) {
+  const template = await loadTemplate('project-summary.md');
+  const highlights = Array.isArray(ai.subfolderHighlights) ? ai.subfolderHighlights : [];
+
+  return fill(template, {
+    projectName: project.projectName,
+    projectTypeLabel: PROJECT_TYPE_LABELS[project.projectType] || project.projectType,
+    documentCount,
+    generatedAt,
+    headline: ai.headline || '',
+    description: ai.description || '',
+    subfolderHighlightsList: markdownList(highlights, (item) => `${item.folderLabel}: ${item.highlight}`),
+    activityKeywordsList: markdownList(ai.activityKeywords, (keyword) => keyword),
+    portfolioKeywordsList: markdownList(ai.portfolioKeywords, (keyword) => keyword),
+    warningsList: markdownList(ai.warnings, (warning) => warning),
+  });
+}
+
+// log.md: 분석 실행마다 아래 블록을 시간 순서로 append 한다.
+export function buildProjectLogHeader() {
+  return '# 프로젝트 분석 로그\n';
+}
+
+export function buildProjectLogEntry({ timestamp, documentCount, provider, headline }) {
+  return [
+    `## ${timestamp}`,
+    '',
+    '- action: project_analysis',
+    `- 분석 자료 수: ${documentCount}개`,
+    `- provider: ${provider}`,
+    `- headline: ${headline || ''}`,
+    '',
+  ].join('\n');
 }

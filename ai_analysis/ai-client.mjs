@@ -1,16 +1,17 @@
-// AI 분석 클라이언트. prompts/single-file-analysis.md를 로드해 플레이스홀더를 치환하고
+// AI 분석 클라이언트. prompts/*.md를 로드해 플레이스홀더를 치환하고
 // 제공자(OpenAI → Gemini → mock 순서, ANALYSIS_PROVIDER로 지정 가능)를 골라 구조화 JSON을 받아온다.
 // 키 값은 어떤 경우에도 로그나 산출물에 남기지 않는다.
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import dotenv from 'dotenv';
-import { PROJECT_TYPE_LABELS, getSubfoldersForProjectType } from './subfolder-config.mjs';
+import { PROJECT_TYPE_LABELS } from './subfolder-config.mjs';
 
 dotenv.config({ path: 'key.env' });
 dotenv.config({ path: 'gemini_key.env' });
 
 const PROMPT_PATH = path.join(process.cwd(), 'prompts', 'single-file-analysis.md');
+const PROJECT_PROMPT_PATH = path.join(process.cwd(), 'prompts', 'project-analysis.md');
 const AGGREGATE_PROMPT_PATH = path.join(process.cwd(), 'prompts', 'aggregate-analysis.md');
 const MAIN_ACTIVITY_OVERVIEW_PROMPT_PATH = path.join(process.cwd(), 'prompts', 'main-activity-overview.md');
 
@@ -45,17 +46,12 @@ function fillPlaceholders(template, vars) {
 
 export async function buildPrompt({ fileId, analysisId, projectType, fileMetadata, extractedContent }) {
   const template = await fs.readFile(PROMPT_PATH, 'utf8');
-  const subfolders = getSubfoldersForProjectType(projectType);
-  const allowedSubfolders = subfolders
-    .map((folder) => `- ${folder.folderId}: ${folder.folderName}`)
-    .join('\n');
 
   return fillPlaceholders(template, {
     fileId,
     analysisId,
     projectType,
     projectTypeLabel: PROJECT_TYPE_LABELS[projectType] || projectType,
-    allowedSubfolders,
     fileMetadata: JSON.stringify(fileMetadata, null, 2),
     extractedContent: JSON.stringify(
       {
@@ -100,6 +96,11 @@ async function callGemini(prompt) {
   return text;
 }
 
+export function supportsCustomTemperature(model) {
+  const normalized = String(model || '').trim().toLowerCase();
+  return !/^(gpt-5|o[1-9])(?:[.-]|$)/.test(normalized);
+}
+
 async function callOpenAI(prompt) {
   const { OpenAI } = await import('openai');
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -120,17 +121,13 @@ async function callOpenAI(prompt) {
   return text;
 }
 
-export function supportsCustomTemperature(model) {
-  const normalized = String(model || '').trim().toLowerCase();
-  return !/^(gpt-5|o[1-9])(?:[.-]|$)/.test(normalized);
+async function callProvider(provider, prompt) {
+  return provider === 'gemini' ? callGemini(prompt) : callOpenAI(prompt);
 }
 
-// 키 없이도 파이프라인을 검증할 수 있는 고정 응답.
-function buildMockResult({ fileId, analysisId, projectType, extractedContent }) {
-  const subfolders = getSubfoldersForProjectType(projectType);
-  const primary = subfolders[0];
-  const alternative = subfolders[1] || primary;
-
+// 키 없이도 파이프라인을 검증할 수 있는 고정 응답(단일 파일).
+function buildMockResult({ fileId, analysisId, extractedContent }) {
+  const characterCount = extractedContent?.contentStats?.characterCount || 0;
   return {
     schemaVersion: '1.0.0',
     fileId,
@@ -140,23 +137,9 @@ function buildMockResult({ fileId, analysisId, projectType, extractedContent }) 
     fileSummary: {
       title: '모의 분석 제목',
       oneLine: '모의 모드에서 생성된 한 줄 요약입니다.',
-      detailed: `모의 모드 상세 요약입니다. 추출된 본문 ${extractedContent.contentStats.characterCount}자를 기준으로 생성되었습니다.`,
+      detailed: `모의 모드 상세 요약입니다. 추출된 본문 ${characterCount}자를 기준으로 생성되었습니다.`,
       keyPoints: ['모의 핵심 포인트 1', '모의 핵심 포인트 2'],
       keywords: ['모의', '분석'],
-    },
-    classification: {
-      recommendedFolderId: primary.folderId,
-      recommendedFolderName: primary.folderName,
-      confidence: 0.5,
-      reason: '모의 모드에서는 프로젝트 유형의 첫 번째 하위 폴더를 추천합니다.',
-      alternatives: [
-        {
-          folderId: alternative.folderId,
-          folderName: alternative.folderName,
-          confidence: 0.3,
-          reason: '모의 대안 추천입니다.',
-        },
-      ],
     },
     portfolioSignals: {
       roles: [
@@ -189,29 +172,45 @@ export async function runAiAnalysis(context) {
   }
 
   const prompt = await buildPrompt(context);
-  const raw = provider === 'gemini' ? await callGemini(prompt) : await callOpenAI(prompt);
+  const raw = await callProvider(provider, prompt);
   return { provider, result: parseJsonResponse(raw) };
 }
 
-// 종합(aggregate) 분석: 여러 분석 번들 요약을 모아 메인 키워드 개요와
-// 포트폴리오 강조 키워드를 생성한다.
-function summarizeBundleForAggregate(bundle) {
-  const result = bundle.analysisResult || {};
-  const summary = result.fileSummary || {};
-  const signals = result.portfolioSignals || {};
+// 프로젝트 종합(한 프로젝트).
+function buildMockProjectResult(project, fileSummaries) {
+  const labels = [...new Set(fileSummaries.map((item) => item.folderLabel).filter(Boolean))];
   return {
-    fileName: bundle.metadata?.originalFileName || '',
-    projectType: bundle.metadata?.projectType || '',
-    projectTypeLabel: PROJECT_TYPE_LABELS[bundle.metadata?.projectType] || bundle.metadata?.projectType || '기타',
-    oneLine: summary.oneLine || '',
-    keyPoints: summary.keyPoints || [],
-    keywords: summary.keywords || [],
-    roles: (signals.roles || []).map((role) => role.name),
-    skills: (signals.skills || []).map((skill) => skill.name),
-    impact: (signals.impact || []).map((impact) => impact.claim),
+    headline: `모의 종합: ${project.projectName} 프로젝트의 활동이 정리되었습니다.`,
+    description: `모의 모드에서 ${fileSummaries.length}개 자료 요약을 기준으로 생성된 프로젝트 종합입니다. 실제 AI 분석이 아닙니다.`,
+    subfolderHighlights: labels.map((label) => ({ folderLabel: label, highlight: '모의 세부 폴더 요약입니다.' })),
+    activityKeywords: ['자료 정리', '문서화', '실행력', '협업'],
+    portfolioKeywords: ['체계적인 자료 구조화 역량', '기록 기반 커뮤니케이션', '꾸준한 실행 습관', '문서화 및 공유 역량', '자기주도적 정리 역량'],
+    warnings: ['모의(mock) 모드 결과입니다. 실제 AI 분석이 아닙니다.'],
   };
 }
 
+export async function runProjectAnalysis({ project, fileSummaries }) {
+  const provider = resolveProvider();
+
+  if (provider === 'mock') {
+    if (!isExplicitMockMode()) assertRealProviderAvailable(provider);
+    return { provider, result: buildMockProjectResult(project, fileSummaries) };
+  }
+
+  const template = await fs.readFile(PROJECT_PROMPT_PATH, 'utf8');
+  const prompt = fillPlaceholders(template, {
+    projectName: project.projectName,
+    projectType: project.projectType,
+    projectTypeLabel: PROJECT_TYPE_LABELS[project.projectType] || project.projectType,
+    documentCount: fileSummaries.length,
+    fileSummaries: JSON.stringify(fileSummaries, null, 2),
+  });
+
+  const raw = await callProvider(provider, prompt);
+  return { provider, result: parseJsonResponse(raw) };
+}
+
+// 메인 종합(모든 프로젝트).
 function incrementCount(map, key) {
   if (!key) return;
   map.set(key, (map.get(key) || 0) + 1);
@@ -224,63 +223,52 @@ function topCountItems(map, limit) {
     .map(([name, count]) => ({ name, count }));
 }
 
-function buildAggregateActivityStats(bundles) {
-  const activities = new Map();
-  const roles = new Map();
-  const skills = new Map();
+function buildAggregateActivityStats(projects) {
+  const types = new Map();
+  const activityKeywords = new Map();
+  const portfolioKeywords = new Map();
 
-  bundles.forEach((bundle) => {
-    const metadata = bundle.metadata || {};
-    const projectId = metadata.projectId || metadata.fileId || bundle.analysisId;
-    const projectType = metadata.projectType || 'other';
-    const projectTypeLabel = PROJECT_TYPE_LABELS[projectType] || projectType || '기타';
-
-    if (!activities.has(projectId)) {
-      activities.set(projectId, {
-        projectId,
-        projectType,
-        projectTypeLabel,
-        fileCount: 0,
-      });
-    }
-    activities.get(projectId).fileCount += 1;
-
-    const signals = bundle.analysisResult?.portfolioSignals || {};
-    (signals.roles || []).forEach((role) => incrementCount(roles, role.name));
-    (signals.skills || []).forEach((skill) => incrementCount(skills, skill.name));
+  projects.forEach((project) => {
+    const typeLabel = project.projectTypeLabel
+      || PROJECT_TYPE_LABELS[project.projectType]
+      || project.projectType
+      || '기타';
+    incrementCount(types, typeLabel);
+    (project.activityKeywords || []).forEach((keyword) => incrementCount(activityKeywords, keyword));
+    (project.portfolioKeywords || []).forEach((keyword) => incrementCount(portfolioKeywords, keyword));
   });
 
-  const typeCounts = new Map();
-  activities.forEach((activity) => incrementCount(typeCounts, activity.projectTypeLabel));
-
   return {
-    activityCountBasis: '같은 projectId를 가진 여러 파일은 하나의 활동으로 계산합니다.',
-    totalActivities: activities.size,
-    totalAnalyzedFiles: bundles.length,
-    typeCounts: topCountItems(typeCounts, 10).map(({ name, count }) => ({ label: name, count })),
-    frequentRoles: topCountItems(roles, 6),
-    frequentSkills: topCountItems(skills, 8),
+    activityCountBasis: '프로젝트 종합 1건을 활동 1건으로 계산합니다.',
+    totalProjects: projects.length,
+    typeCounts: topCountItems(types, 10).map(({ name, count }) => ({ label: name, count })),
+    frequentActivityKeywords: topCountItems(activityKeywords, 8),
+    frequentPortfolioKeywords: topCountItems(portfolioKeywords, 8),
   };
 }
 
-function buildMockAggregateResult(count) {
+function buildMockAggregateResult(projects) {
   return {
     headline: '모의 종합 분석: 자료 정리 습관이 드러나요',
-    description: `모의 모드에서 ${count}개 자료를 기준으로 생성된 종합 결과입니다. 실제 AI 분석이 아닙니다.`,
-    activityOverview: `당신은 분석된 활동 자료 ${count}개를 바탕으로 자료 정리와 문서화 흐름을 만들어가고 있어요. 반복해서 드러난 기록 기반 정리 역량을 중심으로 포트폴리오 강점을 확장할 수 있습니다.`,
+    description: `모의 모드에서 ${projects.length}개 프로젝트를 기준으로 생성된 종합 결과입니다. 실제 AI 분석이 아닙니다.`,
+    activityOverview: `당신은 분석된 프로젝트 ${projects.length}개를 바탕으로 자료 정리와 문서화 흐름을 만들어가고 있어요. 반복해서 드러난 기록 기반 정리 역량을 중심으로 포트폴리오 강점을 확장할 수 있습니다.`,
+    projects: projects.map((project) => ({
+      name: project.name || '프로젝트',
+      highlight: project.headline || '모의 프로젝트 하이라이트입니다.',
+    })),
     activityKeywords: ['자료 정리', '문서화', '꾸준함', '실행력'],
     portfolioKeywords: ['체계적인 자료 구조화 역량', '기록 기반 커뮤니케이션', '꾸준한 실행 습관', '문서화 및 공유 역량', '자기주도적 정리 역량'],
-    basedOnCount: count,
+    basedOnCount: projects.length,
     warnings: ['모의(mock) 모드 결과입니다. 실제 AI 분석이 아닙니다.'],
   };
 }
 
-export async function runAggregateAnalysis({ bundles }) {
+export async function runAggregateAnalysis({ projects }) {
   const provider = resolveProvider();
 
   if (provider === 'mock') {
     if (!isExplicitMockMode()) assertRealProviderAvailable(provider);
-    return { provider, result: buildMockAggregateResult(bundles.length) };
+    return { provider, result: buildMockAggregateResult(projects) };
   }
 
   const [template, activityOverviewGuide] = await Promise.all([
@@ -288,12 +276,12 @@ export async function runAggregateAnalysis({ bundles }) {
     fs.readFile(MAIN_ACTIVITY_OVERVIEW_PROMPT_PATH, 'utf8'),
   ]);
   const prompt = fillPlaceholders(template, {
-    documentCount: bundles.length,
+    projectCount: projects.length,
     activityOverviewGuide: activityOverviewGuide.trim(),
-    activityStats: JSON.stringify(buildAggregateActivityStats(bundles), null, 2),
-    analysisSummaries: JSON.stringify(bundles.map(summarizeBundleForAggregate), null, 2),
+    activityStats: JSON.stringify(buildAggregateActivityStats(projects), null, 2),
+    projectSummaries: JSON.stringify(projects, null, 2),
   });
 
-  const raw = provider === 'gemini' ? await callGemini(prompt) : await callOpenAI(prompt);
+  const raw = await callProvider(provider, prompt);
   return { provider, result: parseJsonResponse(raw) };
 }

@@ -60,12 +60,6 @@ export class LocalAnalysisRepository {
     await fs.writeFile(path.join(dir, 'summary.md'), markdown, 'utf8');
   }
 
-  async saveIndexDraft(analysisId, indexDraft) {
-    const dir = this.resultDir(analysisId);
-    await fs.mkdir(dir, { recursive: true });
-    await fs.writeFile(path.join(dir, 'index.json'), JSON.stringify(indexDraft, null, 2), 'utf8');
-  }
-
   async appendLog(analysisId, entryMarkdown) {
     const dir = this.resultDir(analysisId);
     await fs.mkdir(dir, { recursive: true });
@@ -115,6 +109,42 @@ export class LocalAnalysisRepository {
     } catch {
       return null;
     }
+  }
+
+  // 프로젝트 종합 산출물 한 개만 갱신하고 수정 플래그를 세운다(개별 수정).
+  async saveProjectArtifact({ artifact, content }) {
+    const current = (await this.getAggregateResult()) || {};
+    const key = artifact === 'summary' ? 'summaryMd' : artifact === 'index' ? 'indexJson' : 'logMd';
+    current[key] = content;
+    current.edited = { ...(current.edited || {}), [artifact]: true };
+    await this.saveAggregateResult(current);
+    return current;
+  }
+
+  // 저장된 모든 프로젝트 종합(scope='project')을 나열한다. 메인 개요의 입력이 된다.
+  async listProjectAggregates() {
+    let entries = [];
+    try {
+      entries = await fs.readdir(this.baseDir, { withFileTypes: true });
+    } catch {
+      return [];
+    }
+
+    const results = [];
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue;
+      try {
+        const raw = await fs.readFile(
+          path.join(this.baseDir, entry.name, 'aggregate', 'aggregate-result.json'),
+          'utf8'
+        );
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.scope === 'project') results.push(parsed);
+      } catch {
+        // 프로젝트 종합이 없는 폴더는 건너뛴다.
+      }
+    }
+    return results;
   }
 
   async getAnalysisBundle(analysisId) {

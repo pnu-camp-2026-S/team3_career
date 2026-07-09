@@ -118,6 +118,14 @@ export async function POST(request) {
       return Response.json({ message: 'folderId and files are required' }, { status: 400 });
     }
 
+    // 'AI 요약' 세부 폴더에는 원본 자료를 올릴 수 없다(요약 산출물 전용).
+    if (folderId.endsWith('::ai-summary')) {
+      return Response.json(
+        { message: 'AI 요약 폴더에는 자료를 직접 올릴 수 없습니다.' },
+        { status: 400 }
+      );
+    }
+
     const tree = deriveFolderTree(folderId, projectIdHint || null);
     const storage = getStorageClient(supabase).storage;
     const savedRows = [];

@@ -129,8 +129,7 @@
           getExperienceLabel(file),
           file.folderGroup,
           file.folderType,
-          file.analysis?.summaryMd,
-          JSON.stringify(file.analysis?.indexDraft || {})
+          file.analysis?.summaryMd
         ].filter(Boolean).join(' '))
         : getSelectedExperienceLabels();
       if (!selectedTexts.length) return [];
@@ -175,7 +174,6 @@
         folderLabel: file.folderLabel,
         analysisStatus: file.analysisStatus,
         analysisSummary: file.analysis?.summaryMd || '',
-        analysisIndex: file.analysis?.indexDraft || null,
       };
     }
 

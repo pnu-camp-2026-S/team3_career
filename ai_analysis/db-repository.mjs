@@ -87,10 +87,6 @@ export class DbAnalysisRepository {
     await this.updateFileAnalysis({ summary_md: markdown }, 'saveSummaryMarkdown');
   }
 
-  async saveIndexDraft(analysisId, indexDraft) {
-    await this.updateFileAnalysis({ index_draft: indexDraft }, 'saveIndexDraft');
-  }
-
   // 파일별 분석은 순차 실행이므로 읽고-이어붙여-저장해도 경합이 없다.
   async appendLog(analysisId, entryMarkdown) {
     const activityFile = this.requireActivityFile();
@@ -186,5 +182,26 @@ export class DbAnalysisRepository {
       .maybeSingle();
     throwIfError(error, 'getAggregateResult');
     return data?.result || null;
+  }
+
+  // 프로젝트 종합 산출물 한 개만 갱신하고 수정 플래그를 세운다(개별 수정).
+  async saveProjectArtifact({ artifact, content }) {
+    const current = (await this.getAggregateResult()) || {};
+    const key = artifact === 'summary' ? 'summaryMd' : artifact === 'index' ? 'indexJson' : 'logMd';
+    current[key] = content;
+    current.edited = { ...(current.edited || {}), [artifact]: true };
+    await this.saveAggregateResult(current);
+    return current;
+  }
+
+  // 저장된 모든 프로젝트 종합(scope='project')을 나열한다. 메인 개요의 입력이 된다.
+  async listProjectAggregates() {
+    const { data, error } = await this.supabase
+      .from('project_analyses')
+      .select('result')
+      .eq('user_id', this.userId)
+      .eq('scope', 'project');
+    throwIfError(error, 'listProjectAggregates');
+    return (data || []).map((row) => row.result).filter(Boolean);
   }
 }

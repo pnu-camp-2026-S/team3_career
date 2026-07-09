@@ -853,18 +853,18 @@ assert.match(
 );
 assert.match(
   projectAnalysisRoute,
-  /analyzeSingleFile\(\{[\s\S]*repository: fileRepository/,
-  'project analysis API should run the single-file pipeline against the DB repository'
+  /analyzeActivityFileRows\(\{[\s\S]*rows:\s*pendingFiles[\s\S]*resolveProject:/,
+  'project analysis API should run the shared file-level pipeline against the DB repository'
 );
 assert.match(
   projectAnalysisRoute,
-  /aggregateAnalyses\(\{ repository \}\)/,
-  'project analysis API should refresh the project-level aggregate after analyzing files'
+  /aggregateProjectAnalyses\(\{[\s\S]*repository[\s\S]*project:\s*\{ projectId, projectName, projectType \}[\s\S]*fileEntries/,
+  'project analysis API should refresh the project-level L2 aggregate after analyzing files'
 );
 assert.match(
   aggregateAnalysisRoute,
-  /projectId: null[\s\S]*aggregateAnalyses\(/,
-  'aggregate analysis API should aggregate across all of the current user analyses'
+  /projectId: null[\s\S]*aggregateMainOverview\(\{ repository, projectIds \}\)/,
+  'aggregate analysis API should aggregate saved project analyses into the user-level L3 overview'
 );
 assert.match(
   dbRepositorySource,
@@ -1200,8 +1200,8 @@ assert.match(
 );
 assert.match(
   mainHtml,
-  /function\s+getFolderFileTotal\(groupKey\)[\s\S]*folder\.group\s*===\s*groupKey[\s\S]*sum\s*\+\s*getUserActivityFiles\(folder\)\.length[\s\S]*function\s+getUserActivityFiles\(folder\)[\s\S]*file\.kind\s*!==\s*'analysis-summary'/,
-  'main dashboard should total analysis counts from user files inside each folder group'
+  /function\s+getFolderFileTotal\(groupKey\)[\s\S]*folder\.group\s*===\s*groupKey[\s\S]*sum\s*\+\s*getUserActivityFiles\(folder\)\.length[\s\S]*function\s+getUserActivityFiles\(folder\)[\s\S]*file\.kind\s*!==\s*'analysis-summary'[\s\S]*file\.kind\s*!==\s*'project-analysis-artifact'/,
+  'main dashboard should total analysis counts from user files inside each folder group, excluding AI artifacts'
 );
 assert.match(
   mainHtml,
@@ -1348,8 +1348,8 @@ assert.match(
 );
 assert.match(
   aggregateClient,
-  /MAIN_ACTIVITY_OVERVIEW_PROMPT_PATH[\s\S]*activityOverviewGuide:\s*activityOverviewGuide\.trim\(\)[\s\S]*activityStats:\s*JSON\.stringify\(buildAggregateActivityStats\(bundles\),\s*null,\s*2\)/,
-  'aggregate analysis should pass overview guide, activity type counts, and role signals to the AI prompt'
+  /MAIN_ACTIVITY_OVERVIEW_PROMPT_PATH[\s\S]*activityOverviewGuide:\s*activityOverviewGuide\.trim\(\)[\s\S]*activityStats:\s*JSON\.stringify\(buildAggregateActivityStats\(projects\),\s*null,\s*2\)[\s\S]*projectSummaries:\s*JSON\.stringify\(projects,\s*null,\s*2\)/,
+  'aggregate analysis should pass overview guide, project type counts, and project summaries to the AI prompt'
 );
 assert.match(
   aggregateValidator,
@@ -1363,7 +1363,7 @@ assert.match(
 );
 assert.match(
   aggregateClient,
-  /if\s*\(supportsCustomTemperature\(model\)\)[\s\S]*request\.temperature = 0\.2[\s\S]*function\s+supportsCustomTemperature\(model\)[\s\S]*gpt-5/,
+  /function\s+supportsCustomTemperature\(model\)[\s\S]*gpt-5[\s\S]*if\s*\(supportsCustomTemperature\(model\)\)[\s\S]*request\.temperature = 0\.2/,
   'OpenAI analysis should omit custom temperature for GPT-5 style models'
 );
 
@@ -1740,21 +1740,31 @@ assert.ok(
   !createHtml.includes('data-action="organize-project"'),
   'file management should not keep a duplicate project analysis button next to repo connect'
 );
-// 프로젝트 분석은 실제 분석 API를 호출하고, 미분석 자료만 새로 분석해 종합한다
+// 프로젝트 분석은 전체 프로젝트를 순회하며 실제 분석 API를 호출하고, 마지막에 전체 종합을 실행한다.
 assert.match(
   createHtml,
-  /async function\s+organizeProject\(\)[\s\S]*fetch\('\/api\/analysis\/project'[\s\S]*projectId:\s*folder\.id/,
-  'project analysis should call the real analysis API with the selected project'
+  /async function\s+organizeAllProjects\(\)[\s\S]*getAnalysisTargetFolders\(\)[\s\S]*for \(const folder of targetFolders\)[\s\S]*analyzeSingleProject\(folder\)[\s\S]*runAggregateAnalysisForProjects\(successProjectIds\)/,
+  'project analysis should sequentially analyze every completed/in-progress project and then run the aggregate API'
 );
 assert.match(
   createHtml,
-  /id="analyzeButton"[\s\S]*id="analysisLoading"[\s\S]*function\s+setAnalysisLoading\(isLoading,\s*folder\)/,
-  'file management should show a dedicated loading state while analysis runs (#226)'
+  /async function\s+analyzeSingleProject\(folder\)[\s\S]*fetch\(PROJECT_ANALYSIS_ENDPOINT[\s\S]*projectId:\s*folder\.id/,
+  'project analysis should call the real project analysis API for each project'
 );
 assert.match(
   createHtml,
-  /mapAnalysisSummaryFile[\s\S]*name:\s*`\$\{getFileBaseName\(file\.name\)\} AI 요약\.md`[\s\S]*kind:\s*'analysis-summary'[\s\S]*FolderStore\.getAnalysisSubfolder\(projectFolder\)[\s\S]*analysisTarget\.files\.push\(summaryFile\)/,
-  'file management should show saved AI analysis artifacts in the dedicated AI 요약 subfolder'
+  /async function\s+runAggregateAnalysisForProjects\(projectIds\)[\s\S]*fetch\(AGGREGATE_ANALYSIS_ENDPOINT[\s\S]*JSON\.stringify\(\{ projectIds \}\)/,
+  'project analysis should call the aggregate API after successful project analyses'
+);
+assert.match(
+  createHtml,
+  /id="analyzeButton"[\s\S]*id="analysisLoading"[\s\S]*id="analysisLoadingPercent"[\s\S]*id="analysisLoadingCount"[\s\S]*function\s+setAnalysisLoading\(isLoading,\s*state\s*=\s*\{\}\)[\s\S]*percentNode\.textContent\s*=\s*`\$\{percent\}%`[\s\S]*countNode\.textContent\s*=\s*`\$\{completed\} \/ \$\{total\}개 프로젝트 완료`/,
+  'file management should show a dedicated loading progress modal while all-project analysis runs (#226)'
+);
+assert.match(
+  createHtml,
+  /PROJECT_ANALYSIS_ARTIFACTS[\s\S]*summary\.md[\s\S]*index\.json[\s\S]*log\.md[\s\S]*function\s+buildProjectArtifactFiles[\s\S]*kind:\s*'project-analysis-artifact'[\s\S]*FolderStore\.getAnalysisSubfolder\(folder\)/,
+  'file management should show project summary.md/index.json/log.md artifacts in the dedicated AI 요약 subfolder'
 );
 assert.match(
   createHtml,
@@ -1763,7 +1773,7 @@ assert.match(
 );
 assert.match(
   createHtml,
-  /file\.analysisStatus\s*===\s*'completed'\s*\?\s*'분석완료'\s*:\s*'분석대기'/,
+  /function\s+mapAnalysisStatus\(status\)[\s\S]*status\s*===\s*'completed'[\s\S]*'분석완료'[\s\S]*status\s*===\s*'analyzing'[\s\S]*'요약 생성 중'[\s\S]*status\s*===\s*'failed'[\s\S]*'요약 실패'/,
   'file status pills should restore the saved analysis state after reload'
 );
 // #166-1: 완료 ↔ 진행중 양방향 이동
