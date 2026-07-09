@@ -970,16 +970,19 @@
       const summary = currentPortfolio.blocks[1]?.body || `${currentPortfolio.purpose}에 맞춰 생성한 포트폴리오입니다.`;
       const nextPortfolio = {
         id: currentPortfolio.id,
-        title: `${currentPortfolio.format} - ${currentPortfolio.purpose}`,
-        createdAt: new Date().toISOString(),
+        title: currentPortfolio.title || `${currentPortfolio.format} - ${currentPortfolio.purpose}`,
+        createdAt: currentPortfolio.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
         purpose: currentPortfolio.purpose,
         summary,
         status: 'done',
-        liked: false,
+        liked: Boolean(currentPortfolio.liked),
         content,
         format: currentPortfolio.format,
         experiences: currentPortfolio.experiences,
-        keywords: currentPortfolio.keywords
+        keywords: currentPortfolio.keywords,
+        blocks: currentPortfolio.blocks || [],
+        slides: currentPortfolio.slides || [],
       };
       const saved = readPortfolioStore().filter((item) => item.id !== nextPortfolio.id);
 
@@ -988,11 +991,7 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'same-origin',
-          body: JSON.stringify({
-            ...nextPortfolio,
-            blocks: currentPortfolio.blocks || [],
-            slides: currentPortfolio.slides || [],
-          }),
+          body: JSON.stringify(nextPortfolio),
         });
 
         if (!response.ok) throw new Error('Portfolio save failed.');
@@ -1063,6 +1062,8 @@
           : buildSlides(format, purpose, major, experiences, keywords),
         raw: portfolio.raw || null,
         sourceLabel: '저장본 편집',
+        liked: Boolean(portfolio.liked),
+        createdAt: portfolio.createdAt,
         updatedAt: portfolio.updatedAt || new Date().toISOString(),
       };
       currentDraftPageIndex = 0;
@@ -1078,11 +1079,16 @@
 
     async function handleMasterAction(action) {
       if (action === 'save') {
-        await saveGeneratedPortfolio();
-        showToast('마스터 저장이 완료되었습니다. 보관함으로 이동합니다.');
-        window.setTimeout(() => {
-          window.location.href = 'portfolio_manage.html';
-        }, 500);
+        try {
+          await saveGeneratedPortfolio({ requireRemote: true });
+          showToast('DB 저장이 완료되었습니다. 보관함으로 이동합니다.');
+          window.setTimeout(() => {
+            window.location.href = 'portfolio_manage.html';
+          }, 500);
+        } catch (error) {
+          console.warn('Portfolio DB save failed.', error);
+          showToast('DB 저장에 실패했습니다. 로그인 상태를 확인한 뒤 다시 저장해 주세요.');
+        }
         return;
       }
 
