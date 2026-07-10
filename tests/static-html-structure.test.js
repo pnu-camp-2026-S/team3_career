@@ -2802,6 +2802,16 @@ assert.match(
 );
 assert.match(
   contestJs,
+  /const\s+unmatchedEducationDirection\s*=\s*'__unmatched_education_direction__'[\s\S]*bestCandidate\.score\s*>\s*0\s*\?\s*bestCandidate\.department\s*:\s*unmatchedEducationDirection/,
+  'contest recommendations should not fall back to an unrelated major when no education candidate matches the selected direction'
+);
+assert.match(
+  contestJs,
+  /화공생명공학과:\s*\[[^\]]*'바이오'[^\]]*'반도체'[^\]]*'제조'/,
+  'contest education direction keywords should let chemical engineering match bio, semiconductor, and manufacturing directions'
+);
+assert.match(
+  contestJs,
   /function\s+isActivityInEducationDirection\(item,\s*gateDepartment\)[\s\S]*normalizeDepartmentName\(item\.primaryDepartment\)\s*===\s*gateDepartment/,
   'contest recommendations should validate activity fields against the selected education direction'
 );
