@@ -470,6 +470,24 @@
       if (modalRoot) modalRoot.innerHTML = "";
     }
 
+    function cacheSavedProfile(savedProfile, { localPreview = false } = {}) {
+      if (Object.hasOwn(savedProfile, "photo")) profileState.photo = savedProfile.photo || "";
+      if (profileState.photo) localStorage.setItem("myfitfolioPhoto", profileState.photo);
+      else localStorage.removeItem("myfitfolioPhoto");
+      localStorage.setItem("myfitfolioProfile", JSON.stringify(savedProfile));
+      localStorage.setItem("myfitfolioProfileUpdatedAt", String(Date.now()));
+      sessionStorage.setItem("myfitfolioProfileSaved", "true");
+
+      if (localPreview) sessionStorage.setItem("myfitfolioProfileLocalPreview", "true");
+      else sessionStorage.removeItem("myfitfolioProfileLocalPreview");
+    }
+
+    function canUseLocalProfilePreview(error) {
+      const message = String(error?.message || "");
+      const isLocalHost = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+      return isLocalHost && message.includes("NEXT_PUBLIC_SUPABASE_URL is required");
+    }
+
     async function saveProfile() {
       collectEducationValues();
       const payload = {
@@ -500,16 +518,16 @@
 
         const result = await response.json();
         window.MyfitfolioCache.invalidate(PROFILE_ENDPOINT);
-        const savedProfile = result.profile || payload;
-        if (Object.hasOwn(savedProfile, "photo")) profileState.photo = savedProfile.photo || "";
-        if (profileState.photo) localStorage.setItem("myfitfolioPhoto", profileState.photo);
-        else localStorage.removeItem("myfitfolioPhoto");
-        localStorage.setItem("myfitfolioProfile", JSON.stringify(savedProfile));
-        localStorage.setItem("myfitfolioProfileUpdatedAt", String(Date.now()));
-        sessionStorage.setItem("myfitfolioProfileSaved", "true");
+        cacheSavedProfile(result.profile || payload);
         return true;
       } catch (error) {
         console.warn("Profile API save failed.", error);
+
+        if (canUseLocalProfilePreview(error)) {
+          cacheSavedProfile(payload, { localPreview: true });
+          return true;
+        }
+
         sessionStorage.removeItem("myfitfolioProfileSaved");
         return false;
       }

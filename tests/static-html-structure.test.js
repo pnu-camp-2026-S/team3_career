@@ -1585,8 +1585,13 @@ assert.match(
 );
 assert.match(
   mypageHtml,
-  /localStorage\.setItem\("myfitfolioProfile",\s*JSON\.stringify\(savedProfile\)\)[\s\S]*localStorage\.setItem\("myfitfolioProfileUpdatedAt",\s*String\(Date\.now\(\)\)\)/,
+  /function\s+cacheSavedProfile\(savedProfile,[\s\S]*localStorage\.setItem\("myfitfolioProfile",\s*JSON\.stringify\(savedProfile\)\)[\s\S]*localStorage\.setItem\("myfitfolioProfileUpdatedAt",\s*String\(Date\.now\(\)\)\)/,
   'mypage should update a profile save timestamp so the recommendation page can show and refresh the latest local changes'
+);
+assert.match(
+  mypageHtml,
+  /function\s+canUseLocalProfilePreview\(error\)[\s\S]*\["localhost",\s*"127\.0\.0\.1"\]\.includes\(window\.location\.hostname\)[\s\S]*NEXT_PUBLIC_SUPABASE_URL is required/,
+  'mypage should only allow local profile preview saves when Supabase env is missing on localhost'
 );
 assert.match(
   mypageHtml,
@@ -1606,7 +1611,12 @@ assert.match(
 const saveProfileSource = (mypageHtml.match(/async function\s+saveProfile\(\)[\s\S]*?\n    function renderAllDynamicParts/) || [''])[0];
 assert.ok(
   !saveProfileSource.includes('localStorage.setItem("myfitfolioProfile", JSON.stringify(payload))'),
-  'mypage should not treat local cache fallback as a successful DB profile save'
+  'mypage should not use an unconditional local cache fallback as a successful DB profile save'
+);
+assert.match(
+  saveProfileSource,
+  /if\s*\(canUseLocalProfilePreview\(error\)\)\s*\{[\s\S]*cacheSavedProfile\(payload,\s*\{\s*localPreview:\s*true\s*\}\);[\s\S]*return true;/,
+  'mypage should allow local preview saves only for the explicit localhost Supabase-env fallback'
 );
 assert.match(
   saveProfileSource,
@@ -1630,7 +1640,7 @@ assert.match(
 );
 assert.match(
   mypageHtml,
-  /photo:\s*profileState\.photo[\s\S]*const savedProfile\s*=\s*result\.profile\s*\|\|\s*payload[\s\S]*localStorage\.setItem\("myfitfolioPhoto",\s*profileState\.photo\)/,
+  /function\s+cacheSavedProfile\(savedProfile,[\s\S]*localStorage\.setItem\("myfitfolioPhoto",\s*profileState\.photo\)[\s\S]*photo:\s*profileState\.photo[\s\S]*cacheSavedProfile\(result\.profile\s*\|\|\s*payload\)/,
   'mypage should save the selected photo through the profile API before caching it locally'
 );
 assert.match(
