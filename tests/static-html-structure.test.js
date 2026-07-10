@@ -591,6 +591,19 @@ assert.ok(packageJson.dependencies.react, 'project should depend on React');
 assert.ok(packageJson.dependencies['react-dom'], 'project should depend on React DOM');
 assert.ok(packageJson.dependencies['@supabase/supabase-js'], 'project should depend on the Supabase JavaScript client');
 assert.ok(packageJson.dependencies['@supabase/ssr'], 'project should depend on Supabase SSR helpers for Next.js auth cookies');
+assert.ok(packageJson.dependencies['pdfjs-dist'], '화면 내 PDF 미리보기를 위해 PDF.js를 직접 의존성으로 사용해야 한다');
+assert.strictEqual(packageJson.scripts['prepare:pdfjs'], 'node scripts/copy-pdfjs-assets.mjs', 'PDF.js 정적 자산 준비 명령을 제공해야 한다');
+assert.strictEqual(packageJson.scripts.predev, 'npm run prepare:pdfjs', '개발 서버 실행 전에 PDF.js 정적 자산을 준비해야 한다');
+assert.strictEqual(packageJson.scripts.prebuild, 'npm run prepare:pdfjs', '빌드 전에 PDF.js 정적 자산을 준비해야 한다');
+const copyPdfJsAssetsScriptPath = path.join(rootDir, 'scripts', 'copy-pdfjs-assets.mjs');
+assert.ok(fs.existsSync(copyPdfJsAssetsScriptPath), 'PDF.js 정적 자산 복사 스크립트가 있어야 한다');
+const copyPdfJsAssetsScript = fs.readFileSync(copyPdfJsAssetsScriptPath, 'utf8');
+assert.ok(
+  copyPdfJsAssetsScript.includes("'pdf.mjs'")
+    && copyPdfJsAssetsScript.includes("'pdf.worker.mjs'")
+    && copyPdfJsAssetsScript.includes("'public', 'vendor', 'pdfjs'"),
+  'PDF.js 본체와 워커 파일을 public/vendor/pdfjs에 복사해야 한다'
+);
 assert.ok(!packageJson.dependencies.express, 'project should no longer depend on Express after the Next.js migration');
 assert.ok(!fs.existsSync(path.join(rootDir, 'server.js')), 'legacy Express server.js should be removed after the Next.js migration');
 assert.match(
@@ -3521,6 +3534,10 @@ assert.match(
   /const\s+PORTFOLIO_PDF_PREVIEW_ENDPOINT\s*=\s*'\/api\/portfolio\/render-pdf'/,
   'portfolio_create should define the external-worker-backed PDF preview endpoint'
 );
+assert.ok(
+  portfolioCreateHtml.includes('portfolio_create.js?v=pdfjs-inline-preview'),
+  'PDF.js 미리보기 스크립트가 기존 브라우저 캐시와 구분되는 버전으로 로드되어야 한다'
+);
 assert.match(
   portfolioCreateHtml,
   /function\s+renderPortfolioPreview\(\)[\s\S]*workspaceBadge'\)\.textContent = '실제 PDF 미리보기'[\s\S]*renderActualPdfPreview\(\)/,
@@ -3533,18 +3550,29 @@ assert.match(
 );
 assert.match(
   portfolioCreateHtml,
-  /function\s+renderPdfPreviewFrame\(pdfUrl\)[\s\S]*class="portfolio-pdf-frame"[\s\S]*title="실제 변환 PDF 미리보기"/,
-  'portfolio_create should render the converted portfolio PDF as the draft preview'
+  /async function\s+loadPdfJsModule\(\)[\s\S]*import\(PDFJS_MODULE_URL\)[\s\S]*GlobalWorkerOptions\.workerSrc[\s\S]*async function\s+renderPdfPreviewDocument\(source, requestId\)[\s\S]*pdfjs\.getDocument\(source\)[\s\S]*pdfDocument\.numPages[\s\S]*page\.render\(/,
+  '포트폴리오 생성 화면은 PDF.js로 실제 변환 PDF의 모든 페이지를 렌더링해야 한다'
+);
+assert.ok(
+  !portfolioCreateHtml.includes('portfolio-pdf-frame')
+    && !portfolioCreateHtml.includes('<iframe'),
+  '포트폴리오 PDF 미리보기는 브라우저 내장 iframe PDF 뷰어에 의존하지 않아야 한다'
 );
 assert.match(
   portfolioCreateHtml,
-  /function\s+cancelPdfPreviewRequest\(\)[\s\S]*pdfPreviewController\.abort\(\)[\s\S]*revokePdfPreviewObjectUrl\(\)/,
-  'portfolio_create should cancel stale PDF preview requests when the draft changes'
+  /function\s+cancelPdfPreviewRequest\(\)[\s\S]*pdfPreviewRequestId \+= 1[\s\S]*pdfPreviewController\.abort\(\)/,
+  '포트폴리오 초안이 바뀌면 진행 중인 PDF 요청과 오래된 렌더링을 취소해야 한다'
 );
 assert.match(
   portfolioCreateHtml,
-  /function\s+renderPptxMatchedPreview\(\)[\s\S]*revokePdfPreviewObjectUrl\(\)[\s\S]*class="pptx-preview-canvas"/,
+  /function\s+renderPptxMatchedPreview\(\)[\s\S]*class="pptx-preview-canvas"/,
   'portfolio_create should keep the PPTX-matched canvas renderer as a safe fallback'
+);
+assert.ok(
+  portfolioCreateHtml.includes('function renderPdfPreviewError(message)')
+    && portfolioCreateHtml.includes('data-pdf-preview-retry')
+    && portfolioCreateHtml.includes('PDF 미리보기를 표시하지 못했습니다.'),
+  'PDF.js 렌더링 실패 시 한국어 오류 안내와 다시 시도 버튼을 제공해야 한다'
 );
 assert.match(
   portfolioCreateHtml,
@@ -3783,6 +3811,13 @@ assert.ok(
   fs.existsSync(portfolioRenderPdfRoutePath),
   'portfolio PDF render API should live in app/api/portfolio/render-pdf/route.js'
 );
+assert.ok(
+  portfolioRenderPdfRoute.includes("import dotenv from 'dotenv'")
+    && portfolioRenderPdfRoute.includes("import path from 'path'")
+    && portfolioRenderPdfRoute.includes("path.join(process.cwd(), 'key.env')")
+    && portfolioRenderPdfRoute.includes('dotenv.config({ path: envPath, override: false, quiet: true })'),
+  '포트폴리오 PDF 변환 API는 배포 환경변수를 유지하면서 로컬 key.env를 불러와야 한다'
+);
 assert.match(
   portfolioRenderPdfRoute,
   /import\s+\{\s*POST as exportPortfolioPptx\s*\}\s+from '..\/export-pptx\/route'[\s\S]*PORTFOLIO_CONVERTER_URL/,
@@ -3997,8 +4032,10 @@ for (const cssPattern of [
   /\.ppt-preview-wrap\s*\{/,
   /\.ppt-slide\s*\{/,
   /\.portfolio-pdf-preview\s*\{/,
-  /\.portfolio-pdf-frame\s*\{/,
+  /\.portfolio-pdf-pages\s*\{/,
+  /\.portfolio-pdf-page-canvas\s*\{/,
   /\.portfolio-pdf-preview-state\s*\{/,
+  /\.portfolio-pdf-retry-button\s*\{/,
   /\.portfolio-pdf-spinner\s*\{/,
   /\.slide-arrow\s*\{/,
   /\.draft-page-viewer\s*\{/,

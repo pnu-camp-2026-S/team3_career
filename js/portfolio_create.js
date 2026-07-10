@@ -11,6 +11,8 @@
     const PORTFOLIO_STORAGE_KEY = 'careerfit_portfolios';
     const PORTFOLIO_ENDPOINT = '/api/portfolios';
     const PORTFOLIO_PDF_PREVIEW_ENDPOINT = '/api/portfolio/render-pdf';
+    const PDFJS_MODULE_URL = '/vendor/pdfjs/pdf.mjs';
+    const PDFJS_WORKER_URL = '/vendor/pdfjs/pdf.worker.mjs';
     const PROFILE_ENDPOINT = '/api/profile';
     const PORTFOLIO_SOURCE_ENDPOINT = '/api/portfolio/source-data';
     const majorKeywordMap = {
@@ -49,8 +51,8 @@
     let isPortfolioRevising = false;
     let pdfPreviewController = null;
     let pdfPreviewRequestId = 0;
-    let pdfPreviewObjectUrl = '';
     let pdfPreviewUnavailable = false;
+    let pdfJsModulePromise = null;
 
     const formatSelect = document.getElementById('pfFormatSelect');
     const purposeSelect = document.getElementById('pfPurposeSelect');
@@ -78,6 +80,13 @@
       await handleMasterAction(actionButton.dataset.masterAction);
     });
     document.getElementById('workspaceContent').addEventListener('click', (event) => {
+      const pdfRetryButton = event.target.closest('[data-pdf-preview-retry]');
+      if (pdfRetryButton) {
+        pdfPreviewUnavailable = false;
+        renderActualPdfPreview();
+        return;
+      }
+
       const draftPageButton = event.target.closest('[data-draft-page-direction]');
       if (draftPageButton) {
         if (draftPageButton.disabled) return;
@@ -807,7 +816,6 @@
     }
 
     function renderPptxMatchedPreview() {
-      revokePdfPreviewObjectUrl();
       const slides = createPptxMatchedPreviewSlides(currentPortfolio);
       const pages = slides.map((slide, index) => `
         <article class="pptx-preview-page ${slide.type === 'onepage' ? 'portrait' : ''}" aria-label="PPT 슬라이드 ${index + 1} 미리보기">
@@ -823,19 +831,12 @@
       drawPptxPreviewCanvases(slides);
     }
 
-    function revokePdfPreviewObjectUrl() {
-      if (!pdfPreviewObjectUrl) return;
-      URL.revokeObjectURL(pdfPreviewObjectUrl);
-      pdfPreviewObjectUrl = '';
-    }
-
     function cancelPdfPreviewRequest() {
       pdfPreviewRequestId += 1;
       if (pdfPreviewController) {
         pdfPreviewController.abort();
         pdfPreviewController = null;
       }
-      revokePdfPreviewObjectUrl();
     }
 
     function createPdfPreviewPayload(portfolio) {
@@ -865,16 +866,76 @@
       `;
     }
 
-    function renderPdfPreviewFrame(pdfUrl) {
+    function renderPdfPreviewError(message) {
       document.getElementById('workspaceContent').innerHTML = `
-        <div class="portfolio-pdf-preview">
-          <iframe
-            class="portfolio-pdf-frame"
-            src="${escapeHtml(pdfUrl)}"
-            title="실제 변환 PDF 미리보기"
-          ></iframe>
+        <div class="portfolio-pdf-preview-state is-error" role="alert">
+          <strong>PDF 미리보기를 표시하지 못했습니다.</strong>
+          <p>${escapeHtml(message || '잠시 후 다시 시도해 주세요.')}</p>
+          <button type="button" class="portfolio-pdf-retry-button" data-pdf-preview-retry>
+            다시 시도
+          </button>
         </div>
       `;
+    }
+
+    async function loadPdfJsModule() {
+      if (!pdfJsModulePromise) {
+        pdfJsModulePromise = import(PDFJS_MODULE_URL).then((pdfjs) => {
+          pdfjs.GlobalWorkerOptions.workerSrc = PDFJS_WORKER_URL;
+          return pdfjs;
+        }).catch((error) => {
+          pdfJsModulePromise = null;
+          throw error;
+        });
+      }
+      return pdfJsModulePromise;
+    }
+
+    async function renderPdfPreviewDocument(source, requestId) {
+      const pdfjs = await loadPdfJsModule();
+      if (requestId !== pdfPreviewRequestId) return;
+
+      const loadingTask = pdfjs.getDocument(source);
+      const pdfDocument = await loadingTask.promise;
+
+      try {
+        if (requestId !== pdfPreviewRequestId) return;
+        document.getElementById('workspaceContent').innerHTML = `
+          <div class="portfolio-pdf-preview" aria-label="실제 변환 PDF 미리보기">
+            <div class="portfolio-pdf-pages" role="list"></div>
+          </div>
+        `;
+
+        const pagesContainer = document.querySelector('.portfolio-pdf-pages');
+        for (let pageNumber = 1; pageNumber <= pdfDocument.numPages; pageNumber += 1) {
+          if (requestId !== pdfPreviewRequestId) return;
+
+          const page = await pdfDocument.getPage(pageNumber);
+          const viewport = page.getViewport({ scale: 1.35 });
+          const outputScale = Math.min(window.devicePixelRatio || 1, 2);
+          const pageElement = document.createElement('article');
+          const canvas = document.createElement('canvas');
+          const context = canvas.getContext('2d', { alpha: false });
+
+          pageElement.className = 'portfolio-pdf-page';
+          pageElement.setAttribute('role', 'listitem');
+          pageElement.setAttribute('aria-label', `PDF ${pageNumber}페이지`);
+          canvas.className = 'portfolio-pdf-page-canvas';
+          canvas.width = Math.floor(viewport.width * outputScale);
+          canvas.height = Math.floor(viewport.height * outputScale);
+          canvas.style.aspectRatio = `${viewport.width} / ${viewport.height}`;
+          pageElement.appendChild(canvas);
+          pagesContainer.appendChild(pageElement);
+
+          await page.render({
+            canvasContext: context,
+            viewport,
+            transform: outputScale === 1 ? null : [outputScale, 0, 0, outputScale, 0, 0],
+          }).promise;
+        }
+      } finally {
+        await pdfDocument.destroy();
+      }
     }
 
     async function renderActualPdfPreview() {
@@ -902,7 +963,8 @@
         if (requestId !== pdfPreviewRequestId) return;
         if (response.status === 503) {
           pdfPreviewUnavailable = true;
-          throw new Error('PDF preview converter is not configured.');
+          renderPptxMatchedPreview();
+          return;
         }
         if (!response.ok) {
           const payload = await response.json().catch(() => ({}));
@@ -913,20 +975,17 @@
         if (contentType.includes('application/json')) {
           const payload = await response.json().catch(() => ({}));
           if (!payload.pdfUrl) throw new Error('PDF preview URL is missing.');
-          revokePdfPreviewObjectUrl();
-          renderPdfPreviewFrame(payload.pdfUrl);
+          await renderPdfPreviewDocument({ url: payload.pdfUrl }, requestId);
           return;
         }
 
-        const blob = await response.blob();
-        if (!blob.size) throw new Error('PDF preview response is empty.');
-        revokePdfPreviewObjectUrl();
-        pdfPreviewObjectUrl = URL.createObjectURL(blob);
-        renderPdfPreviewFrame(pdfPreviewObjectUrl);
+        const pdfBuffer = await response.arrayBuffer();
+        if (!pdfBuffer.byteLength) throw new Error('PDF preview response is empty.');
+        await renderPdfPreviewDocument({ data: new Uint8Array(pdfBuffer) }, requestId);
       } catch (error) {
         if (error.name === 'AbortError') return;
-        console.warn('Portfolio PDF preview fell back to canvas preview.', error);
-        renderPptxMatchedPreview();
+        console.warn('Portfolio PDF preview could not be displayed.', error);
+        renderPdfPreviewError(error.message);
       } finally {
         if (requestId === pdfPreviewRequestId) pdfPreviewController = null;
       }

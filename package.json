@@ -2,7 +2,10 @@
   "name": "demo",
   "version": "1.0.0",
   "scripts": {
+    "prepare:pdfjs": "node scripts/copy-pdfjs-assets.mjs",
+    "predev": "npm run prepare:pdfjs",
     "dev": "next dev --webpack",
+    "prebuild": "npm run prepare:pdfjs",
     "build": "next build",
     "test": "node tests/single-file-analysis.test.js && node --input-type=commonjs < tests/static-html-structure.test.js",
     "start": "next start"
@@ -20,6 +23,7 @@
     "next": "^16.2.10",
     "openai": "^6.45.0",
     "pdf-parse": "^2.4.5",
+    "pdfjs-dist": "^5.4.296",
     "pptxgenjs": "^4.0.1",
     "react": "^19.2.7",
     "react-dom": "^19.2.7"

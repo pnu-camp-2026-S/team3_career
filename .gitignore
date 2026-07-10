@@ -10,3 +10,4 @@ gemini_key.env
 .claude
 .mcp.json
 data/local-analysis/
+public/vendor/pdfjs/

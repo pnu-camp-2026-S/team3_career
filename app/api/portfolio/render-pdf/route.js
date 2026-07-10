@@ -1,4 +1,9 @@
+import dotenv from 'dotenv';
+import path from 'path';
 import { POST as exportPortfolioPptx } from '../export-pptx/route';
+
+const envPath = path.join(process.cwd(), 'key.env');
+dotenv.config({ path: envPath, override: false, quiet: true });
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
