@@ -60,6 +60,13 @@
   gap: 12px;
 }
 
+.withdraw-actions .outline-button,
+.withdraw-actions .danger-button {
+  box-sizing: border-box;
+  width: 112px;
+  height: 48px;
+}
+
 .withdraw-message {
   min-height: 22px;
   margin: 0;
@@ -103,5 +110,10 @@
   .withdraw-actions {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .withdraw-actions .outline-button,
+  .withdraw-actions .danger-button {
+    width: 100%;
   }
 }
