@@ -36,24 +36,41 @@ function trackGlobalListeners() {
 export default function LegacyScripts({ pageKey, scripts }) {
   useEffect(() => {
     const restoreGlobalListeners = trackGlobalListeners();
+    const mountedScripts = [];
+    let isMounted = true;
 
-    const mountedScripts = scripts.map((script) => {
-      const element = document.createElement('script');
-      element.dataset.legacyPage = pageKey;
+    // 외부 스크립트도 IIFE로 감싸 실행해야 재마운트 때 전역 const/let 재선언 오류가 나지 않는다.
+    async function mountScriptsInOrder() {
+      for (const script of scripts) {
+        if (!isMounted) return;
 
-      if (script.src) {
-        element.src = script.src;
-        // 다운로드는 병렬로 진행하되 실행 순서는 추가된 순서(DOM 순서)대로 보장한다.
-        element.async = false;
-      } else {
-        element.text = wrapInlineScript(script.content || '');
+        const element = document.createElement('script');
+        element.dataset.legacyPage = pageKey;
+
+        if (script.src) {
+          const response = await fetch(script.src, { cache: 'no-store' });
+          if (!response.ok) {
+            throw new Error(`Failed to load legacy script: ${script.src}`);
+          }
+
+          const content = await response.text();
+          if (!isMounted) return;
+          element.text = wrapInlineScript(`${content}\n//# sourceURL=${script.src}`);
+        } else {
+          element.text = wrapInlineScript(script.content || '');
+        }
+
+        document.body.appendChild(element);
+        mountedScripts.push(element);
       }
+    }
 
-      document.body.appendChild(element);
-      return element;
+    mountScriptsInOrder().catch((error) => {
+      console.error(error);
     });
 
     return () => {
+      isMounted = false;
       restoreGlobalListeners();
       mountedScripts.forEach((script) => script.remove());
     };
