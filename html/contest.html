@@ -4,8 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Myfitfolio - 활동 추천</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link rel="stylesheet" href="../css/common.css" />
   <link rel="stylesheet" href="../css/contest.css" />
 </head>
@@ -13,6 +11,7 @@
   <div class="app-shell">
     <div data-shared-nav data-active="contest"></div>
     <script src="../js/shared-nav.js"></script>
+    <script src="../js/session-cache.js"></script>
     <script src="../js/auth-nav.js"></script>
     <main class="content-area">
       <div class="main-container">
@@ -63,11 +62,11 @@
               </div>
               <div class="calendar-controls" aria-label="캘린더 월 이동">
                 <button id="prevCalendarMonth" class="calendar-nav" type="button" aria-label="이전 달">
-                  <i class="fa-solid fa-chevron-left"></i>
+                  <span aria-hidden="true">‹</span>
                 </button>
                 <span id="calendarMonth" class="calendar-month">2026.07</span>
                 <button id="nextCalendarMonth" class="calendar-nav" type="button" aria-label="다음 달">
-                  <i class="fa-solid fa-chevron-right"></i>
+                  <span aria-hidden="true">›</span>
                 </button>
               </div>
             </div>

@@ -3,6 +3,39 @@ import { createSupabaseServerClient } from '../../../../lib/supabase-server';
 const FOLDER_COLUMNS = 'id, group_key, type_key, label, created_at';
 const PROJECT_ANALYSIS_COLUMNS = 'project_id, result, provider, based_on_count, updated_at';
 
+const KEYWORD_COMPACT_RULES = [
+  { pattern: /환경\s*문제\s*리서치|환경\s*문제\s*조사|환경.*리서치|환경.*조사/, keyword: '환경 리서치' },
+  { pattern: /비교\s*분석/, keyword: '비교 분석' },
+  { pattern: /문제\s*정의/, keyword: '문제 정의' },
+  { pattern: /문제\s*규모\s*분석|규모\s*분석/, keyword: '규모 분석' },
+  { pattern: /한계\s*분석/, keyword: '한계 분석' },
+  { pattern: /영향\s*정리/, keyword: '영향 정리' },
+  { pattern: /항목\s*구조화|구조화/, keyword: '항목 구조화' },
+  { pattern: /가정\s*설정/, keyword: '가정 설정' },
+  { pattern: /주제\s*기획/, keyword: '주제 기획' },
+  { pattern: /소재\s*제안/, keyword: '소재 제안' },
+  { pattern: /아이디어\s*도출/, keyword: '아이디어 도출' },
+  { pattern: /자료\s*분석|데이터\s*분석/, keyword: '데이터 분석' },
+  { pattern: /공정\s*최적화/, keyword: '공정 최적화' },
+  { pattern: /문제\s*해결/, keyword: '문제 해결' },
+];
+
+const KEYWORD_STOP_WORDS = new Set([
+  '기반',
+  '관점',
+  '관점의',
+  '방식',
+  '방식의',
+  '기존',
+  '사용',
+  '활용',
+  '대한',
+  '관련',
+  '중심',
+  '위한',
+  '통한',
+]);
+
 async function getCurrentUser(supabase) {
   const {
     data: { user },
@@ -13,57 +46,47 @@ async function getCurrentUser(supabase) {
   return user;
 }
 
+function hasBlockedKeywordText(item) {
+  return /\uC870\uC0AC/.test(String(item || ''));
+}
+
+function stripTrailingPostposition(text) {
+  return String(text || '')
+    .replace(/(\S+\s+\S+)\s+(?:과|와|은|는|이|가|을|를|의|에|로|으로|도|만|까지|부터|처럼|보다|에게|께|한테|랑|이랑|하고)$/u, '$1')
+    .replace(/(\S+\s+\S+)(?:과|와|은|는|이|가|을|를|의|에|로|으로|도|만|까지|부터|처럼|보다|에게|께|한테|랑|이랑|하고)$/u, '$1')
+    .trim();
+}
+
+function compactKeyword(item) {
+  const text = stripTrailingPostposition(String(item || '')
+    .replace(/[·ㆍ,;/|+]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim());
+  if (!text) return '';
+  if (hasBlockedKeywordText(text)) return '';
+
+  const matchedRule = KEYWORD_COMPACT_RULES.find((rule) => rule.pattern.test(text));
+  if (matchedRule) return hasBlockedKeywordText(matchedRule.keyword) ? '' : matchedRule.keyword;
+
+  const words = text.split(' ')
+    .map((word) => word.replace(/의$/, ''))
+    .filter((word) => word && !KEYWORD_STOP_WORDS.has(word));
+  const compacted = words.slice(0, 2).join(' ');
+  return compacted.length > 14 ? compacted.slice(0, 14).trim() : compacted;
+}
+
 function normalizeKeywordList(items) {
   return [...new Set((Array.isArray(items) ? items : [])
     .map((item) => String(item || '')
       .replace(/^[\s\-*•\d.)]+/, '')
       .replace(/^["'`]+|["'`]+$/g, '')
       .trim())
-    .filter((item) => item && item !== '-' && item.length <= 80))]
+    .map(compactKeyword)
+    .filter((item) => item && item !== '-' && !hasBlockedKeywordText(item)))]
     .slice(0, 12);
 }
 
-function extractMarkdownListSection(markdown, headingMatchers) {
-  const lines = String(markdown || '').split(/\r?\n/);
-  const startIndex = lines.findIndex((line) => {
-    if (!/^##\s+/.test(line)) return false;
-    return headingMatchers.some((matcher) => matcher.test(line));
-  });
-
-  if (startIndex < 0) return [];
-
-  const sectionLines = [];
-  for (let index = startIndex + 1; index < lines.length; index += 1) {
-    const line = lines[index];
-    if (/^##\s+/.test(line)) break;
-    sectionLines.push(line);
-  }
-
-  return normalizeKeywordList(
-    sectionLines
-      .map((line) => line.match(/^\s*[-*]\s+(.+?)\s*$/)?.[1] || '')
-      .filter(Boolean)
-  );
-}
-
 function buildSummaryKeywords(result) {
-  const summaryMd = result?.summaryMd || '';
-  const portfolioSummaryKeywords = extractMarkdownListSection(summaryMd, [
-    /포트폴리오.*키워드/,
-    /portfolio.*keyword/i,
-  ]);
-  if (portfolioSummaryKeywords.length) {
-    return { keywords: portfolioSummaryKeywords, source: 'summary_portfolio' };
-  }
-
-  const activitySummaryKeywords = extractMarkdownListSection(summaryMd, [
-    /강점.*키워드/,
-    /activity.*keyword/i,
-  ]);
-  if (activitySummaryKeywords.length) {
-    return { keywords: activitySummaryKeywords, source: 'summary_activity' };
-  }
-
   const portfolioKeywords = normalizeKeywordList(result?.portfolioKeywords);
   if (portfolioKeywords.length) {
     return { keywords: portfolioKeywords, source: 'portfolioKeywords' };
@@ -75,22 +98,6 @@ function buildSummaryKeywords(result) {
   }
 
   return { keywords: [], source: 'none' };
-}
-
-function projectIdFromFileRow(row) {
-  const projectId = String(row.project_id || '').trim();
-  if (projectId) return projectId;
-  return String(row.folder_id || '').split('::')[0] || '';
-}
-
-function countFilesByProject(files) {
-  const counts = new Map();
-  (files || []).forEach((file) => {
-    const projectId = projectIdFromFileRow(file);
-    if (!projectId) return;
-    counts.set(projectId, (counts.get(projectId) || 0) + 1);
-  });
-  return counts;
 }
 
 function mapProjectAnalysis(row, folder) {
@@ -115,7 +122,7 @@ function mapProjectAnalysis(row, folder) {
   };
 }
 
-function mapFolder(row, fileCounts, analysisByProjectId) {
+function mapFolder(row, analysisByProjectId) {
   const analysisRow = analysisByProjectId.get(row.id) || null;
   const projectAnalysis = mapProjectAnalysis(analysisRow, row);
 
@@ -124,7 +131,6 @@ function mapFolder(row, fileCounts, analysisByProjectId) {
     label: row.label,
     group: row.group_key,
     type: row.type_key,
-    fileCount: fileCounts.get(row.id) || 0,
     analysisStatus: projectAnalysis ? 'completed' : 'missing',
     projectAnalysis,
   };
@@ -139,7 +145,6 @@ export async function GET() {
 
     const [
       { data: folders, error: foldersError },
-      { data: files, error: filesError },
       { data: analyses, error: analysesError },
     ] = await Promise.all([
       supabase
@@ -148,10 +153,6 @@ export async function GET() {
         .eq('user_id', user.id)
         .order('created_at', { ascending: true }),
       supabase
-        .from('activity_files')
-        .select('project_id, folder_id')
-        .eq('user_id', user.id),
-      supabase
         .from('project_analyses')
         .select(PROJECT_ANALYSIS_COLUMNS)
         .eq('user_id', user.id)
@@ -159,14 +160,12 @@ export async function GET() {
     ]);
 
     if (foldersError) return Response.json({ message: foldersError.message }, { status: 500 });
-    if (filesError) return Response.json({ message: filesError.message }, { status: 500 });
     if (analysesError) return Response.json({ message: analysesError.message }, { status: 500 });
 
-    const fileCounts = countFilesByProject(files || []);
     const analysisByProjectId = new Map((analyses || []).map((row) => [row.project_id, row]));
 
     return Response.json({
-      folders: (folders || []).map((folder) => mapFolder(folder, fileCounts, analysisByProjectId)),
+      folders: (folders || []).map((folder) => mapFolder(folder, analysisByProjectId)),
     });
   } catch (error) {
     return Response.json(

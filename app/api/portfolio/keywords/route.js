@@ -86,6 +86,7 @@ function collectExperienceText(experiences) {
 }
 
 const KEYWORD_COMPACT_RULES = [
+  { pattern: /환경\s*문제\s*리서치|환경\s*문제\s*조사|환경.*리서치|환경.*조사/, keyword: '환경 리서치' },
   { pattern: /비교\s*분석/, keyword: '비교 분석' },
   { pattern: /문제\s*정의/, keyword: '문제 정의' },
   { pattern: /문제\s*규모\s*분석|규모\s*분석/, keyword: '규모 분석' },
@@ -117,15 +118,27 @@ const KEYWORD_STOP_WORDS = new Set([
   '통한',
 ]);
 
+function hasBlockedKeywordText(item) {
+  return /\uC870\uC0AC/.test(String(item || ''));
+}
+
+function stripTrailingPostposition(text) {
+  return String(text || '')
+    .replace(/(\S+\s+\S+)\s+(?:과|와|은|는|이|가|을|를|의|에|로|으로|도|만|까지|부터|처럼|보다|에게|께|한테|랑|이랑|하고)$/u, '$1')
+    .replace(/(\S+\s+\S+)(?:과|와|은|는|이|가|을|를|의|에|로|으로|도|만|까지|부터|처럼|보다|에게|께|한테|랑|이랑|하고)$/u, '$1')
+    .trim();
+}
+
 function compactKeyword(item) {
-  const text = String(item || '')
+  const text = stripTrailingPostposition(String(item || '')
     .replace(/[·ㆍ,;/|+]+/g, ' ')
     .replace(/\s+/g, ' ')
-    .trim();
+    .trim());
   if (!text) return '';
+  if (hasBlockedKeywordText(text)) return '';
 
   const matchedRule = KEYWORD_COMPACT_RULES.find((rule) => rule.pattern.test(text));
-  if (matchedRule) return matchedRule.keyword;
+  if (matchedRule) return hasBlockedKeywordText(matchedRule.keyword) ? '' : matchedRule.keyword;
 
   const words = text.split(' ')
     .map((word) => word.replace(/의$/, ''))
@@ -137,7 +150,7 @@ function compactKeyword(item) {
 function uniqueKeywords(items) {
   return [...new Set((items || [])
     .map(compactKeyword)
-    .filter(Boolean))]
+    .filter((item) => item && !hasBlockedKeywordText(item)))]
     .slice(0, 12);
 }
 

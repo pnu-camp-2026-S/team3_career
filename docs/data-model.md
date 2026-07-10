@@ -182,6 +182,9 @@ Supabase Auth 사용자와 앱 프로필을 잇는다. `auth.users`에 사용자
 | `status` | text `'done'` | 상태 |
 | `liked` | boolean | 즐겨찾기 |
 | `experiences` / `keywords` / `blocks` / `slides` / `cover_lines` | jsonb `[]` | 구조화 콘텐츠 |
+| `experience_projects` | jsonb `[]` | 생성 시 선택한 프로젝트 폴더별 근거(`projectId`, `headline`, `description`, `summaryMd`, `summaryKeywords`) |
+| `raw` | jsonb | AI 생성 응답 원본(재편집·PPT 재생성 시 사용) |
+| `template_values` | jsonb | "1페이지 요약본" PPT 템플릿에 채운 값(`portfolio_summary_template.pptxgen.v2.json` 매핑용) |
 | `created_at` / `updated_at` | timestamptz | 생성/수정 시각 |
 | `deleted_at` | timestamptz | soft delete 시각(있으면 목록에서 제외) |
 
@@ -212,7 +215,7 @@ API는 DB의 snake_case를 클라이언트 camelCase로 바꿔 주고받는다. 
 
 - 프로필: `birth_date` ↔ `birthDate`, 나머지는 이름 동일. `gender`/`birthDate`는 서버에서 정규화(`female`→`여성`, `2026.07.08`→`2026-07-08`). 저장된 값이 비면 소셜 로그인 메타데이터로 기본값을 채운다.
 - 파일: `file_name` ↔ `name`, `mime_type` ↔ `mimeType`, `size_bytes` ↔ `size`, `storage_path` ↔ `storagePath`, `folder_*` ↔ `folder*`.
-- 포트폴리오: `cover_lines` ↔ `coverLines`, `created_at`/`updated_at` ↔ `createdAt`/`updatedAt`.
+- 포트폴리오: `cover_lines` ↔ `coverLines`, `experience_projects` ↔ `experienceProjects`, `template_values` ↔ `templateValues`, `raw`는 이름 동일, `created_at`/`updated_at` ↔ `createdAt`/`updatedAt`.
 
 ## 5. 데이터 흐름 요약
 

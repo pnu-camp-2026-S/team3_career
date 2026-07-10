@@ -4,10 +4,7 @@
 
   async function getCurrentAccount() {
     try {
-      const response = await fetch(AUTH_ME_ENDPOINT, {
-        credentials: 'same-origin',
-        cache: 'no-store',
-      });
+      const response = await window.MyfitfolioCache.cachedGet(AUTH_ME_ENDPOINT, { ttlMs: 20000 });
 
       if (!response.ok) return null;
 

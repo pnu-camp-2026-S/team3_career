@@ -16,6 +16,7 @@ const openaiPortfolioLibPath = path.join(libDir, 'openai-portfolio.js');
 const openaiPortfolioLib = fs.readFileSync(openaiPortfolioLibPath, 'utf8');
 const coverletterV2LibPath = path.join(libDir, 'portfolio-coverletter-v2.js');
 const coverletterV2Lib = fs.readFileSync(coverletterV2LibPath, 'utf8');
+const workersDir = path.join(rootDir, 'workers');
 
 function readHtml(fileName) {
   return fs.readFileSync(path.join(htmlDir, fileName), 'utf8');
@@ -51,8 +52,8 @@ for (const file of linkedHtmlFiles) {
 }
 
 const pageCssFiles = {
-  'index.html': 'index.css',
-  'login.html': 'login.css',
+  'index.html': 'auth.css',
+  'login.html': 'auth.css',
   'main.html': 'main.css',
   'mypage.html': 'mypage.css',
   'create.html': 'create.css',
@@ -135,6 +136,14 @@ assert.match(
   /portfolioCoverLetterV2Schema[\s\S]*cover\.applicantLine[\s\S]*competencyEvidence[\s\S]*contributionPlan[\s\S]*normalizePortfolioCoverLetterV2/,
   'OpenAI coverletter v2 helper should define every PPT binding group and normalize raw data for previews'
 );
+assert.ok(
+  !fs.existsSync(path.join(cssDir, 'index.css')) && !fs.existsSync(path.join(cssDir, 'login.css')),
+  '인증 화면은 auth.css를 다시 불러오는 빈 중간 CSS 파일을 남기지 않아야 한다'
+);
+for (const cssFile of fs.readdirSync(cssDir).filter((name) => name.endsWith('.css'))) {
+  const css = fs.readFileSync(path.join(cssDir, cssFile), 'utf8');
+  assert.ok(!/@import\b/.test(css), `${cssFile}은 렌더링을 지연시키는 CSS @import를 사용하지 않아야 한다`);
+}
 
 for (const [htmlFile, cssFile] of Object.entries(pageCssFiles)) {
   assert.ok(
@@ -204,16 +213,41 @@ assert.ok(
   fs.existsSync(folderStoreJsPath),
   'folder data store script should live in the js directory (Firebase-ready abstraction)'
 );
-assert.match(
-  fs.readFileSync(jsRoutePath, 'utf8'),
-  /dynamic\s*=\s*'force-dynamic'[\s\S]*path\.resolve\(jsDir/,
-  'js asset route should stay dynamic in dev and restrict reads to the js directory'
-);
-assert.match(
-  fs.readFileSync(cssRoutePath, 'utf8'),
-  /dynamic\s*=\s*'force-dynamic'[\s\S]*path\.resolve\(cssDir/,
-  'css asset route should stay dynamic in dev and restrict reads to the css directory'
-);
+for (const [label, routePath, sourceDirName] of [
+  ['JavaScript', jsRoutePath, 'jsDir'],
+  ['CSS', cssRoutePath, 'cssDir'],
+]) {
+  const route = fs.readFileSync(routePath, 'utf8');
+  assert.match(
+    route,
+    /dynamic\s*=\s*'force-static'/,
+    `${label} 자산 경로는 Vercel CDN이 제공할 수 있도록 정적 생성해야 한다`
+  );
+  assert.match(
+    route,
+    /dynamicParams\s*=\s*false/,
+    `${label} 자산 경로는 빌드 때 등록되지 않은 파일을 동적으로 실행하지 않아야 한다`
+  );
+  assert.match(
+    route,
+    /readdir\([\s\S]*async function\s+generateStaticParams\(\)[\s\S]*return files\.map\(\(file\) => \(\{ file \}\)\)/,
+    `${label} 자산 경로는 원본 디렉터리의 파일 목록을 빌드 경로로 등록해야 한다`
+  );
+  assert.match(
+    route,
+    new RegExp(`path\\.resolve\\(${sourceDirName}`),
+    `${label} 자산 경로는 허용된 원본 디렉터리 밖을 읽지 못하게 해야 한다`
+  );
+  assert.match(
+    route,
+    /s-maxage=31536000/,
+    `${label} 자산 응답은 Vercel 공유 캐시를 사용해야 한다`
+  );
+  assert.ok(
+    !/force-dynamic|request\.headers|cache:\s*'no-store'/.test(route),
+    `${label} 자산 경로는 요청마다 서버 함수를 실행하거나 캐시를 우회하지 않아야 한다`
+  );
+}
 const folderStoreJs = fs.readFileSync(folderStoreJsPath, 'utf8');
 assert.match(
   folderStoreJs,
@@ -567,6 +601,11 @@ assert.match(
 
 const nextLegacyPage = fs.readFileSync(path.join(appDir, '[[...slug]]', 'page.js'), 'utf8');
 const nextLegacyScripts = fs.readFileSync(path.join(appDir, 'LegacyScripts.jsx'), 'utf8');
+const nextLegacyNavigation = fs.readFileSync(path.join(appDir, 'LegacyNavigation.jsx'), 'utf8');
+const nextLegacyStyleGatePath = path.join(appDir, 'LegacyStyleGate.jsx');
+const nextLegacyStyleGate = fs.existsSync(nextLegacyStyleGatePath)
+  ? fs.readFileSync(nextLegacyStyleGatePath, 'utf8')
+  : '';
 const nextLegacyLib = fs.readFileSync(path.join(libDir, 'legacy-page.js'), 'utf8');
 const nextCssRoute = fs.readFileSync(path.join(appDir, 'css', '[...file]', 'route.js'), 'utf8');
 const nextJsRoute = fs.readFileSync(path.join(appDir, 'js', '[...file]', 'route.js'), 'utf8');
@@ -623,6 +662,40 @@ assert.match(
   /const resolvedParams = await params;[\s\S]*getLegacyPage\(resolvedParams\?\.slug \|\| \[\]\)/,
   'Next catch-all route should render the existing html pages'
 );
+assert.ok(
+  fs.existsSync(nextLegacyStyleGatePath),
+  'CSS 준비 전 레거시 HTML을 숨기는 스타일 게이트 컴포넌트가 있어야 한다'
+);
+assert.match(
+  nextLegacyStyleGate,
+  /'use client';[\s\S]*useLayoutEffect[\s\S]*useState\(false\)[\s\S]*visibility:\s*isReady \? 'visible' : 'hidden'/,
+  '스타일 게이트는 첫 렌더링을 숨기고 레이아웃 효과에서 CSS 준비 상태를 확인해야 한다'
+);
+assert.match(
+  nextLegacyStyleGate,
+  /querySelectorAll\('link\[data-legacy-style-page\]'\)[\s\S]*dataset\.legacyStylePage === pageKey[\s\S]*link\.sheet/,
+  '스타일 게이트는 현재 페이지에 속한 실제 스타일시트의 로드 상태를 확인해야 한다'
+);
+assert.match(
+  nextLegacyStyleGate,
+  /addEventListener\('load',\s*settleLink[\s\S]*addEventListener\('error',\s*settleLink[\s\S]*removeEventListener\('load'[\s\S]*removeEventListener\('error'/,
+  '스타일 게이트는 CSS 성공과 실패를 모두 처리하고 이벤트를 정리해야 한다'
+);
+assert.match(
+  nextLegacyStyleGate,
+  /new MutationObserver\([\s\S]*observer\.observe\(document\.documentElement,[\s\S]*observer\?\.disconnect\(\)/,
+  '스타일 링크가 늦게 추가되는 경우 DOM을 감시하고 완료 후 감시를 해제해야 한다'
+);
+assert.match(
+  nextLegacyStyleGate,
+  /STYLE_READY_TIMEOUT_MS\s*=\s*3000[\s\S]*setTimeout\(revealPage,[\s\S]*clearTimeout\(timeoutId\)/,
+  'CSS 이벤트가 누락되어도 3초 후 화면을 공개하고 타이머를 정리해야 한다'
+);
+assert.match(
+  nextLegacyPage,
+  /data-legacy-style-page=\{page\.fileName\}[\s\S]*<noscript[\s\S]*visibility:visible!important[\s\S]*<LegacyStyleGate[\s\S]*key=\{page\.fileName\}[\s\S]*styleCount=\{page\.styles\.length\}[\s\S]*<LegacyScripts/,
+  '레거시 페이지는 CSS 링크를 식별하고 JavaScript 없이도 공개 가능한 페이지별 스타일 게이트를 사용해야 한다'
+);
 assert.match(
   nextLegacyScripts,
   /document\.createElement\('script'\)[\s\S]*document\.body\.appendChild\(element\)/,
@@ -630,8 +703,31 @@ assert.match(
 );
 assert.match(
   nextLegacyScripts,
-  /function\s+wrapInlineScript\(content\)[\s\S]*element\.text\s*=\s*wrapInlineScript\(script\.content \|\| ''\)/,
+  /function\s+wrapInlineScript\(content\)[\s\S]*element\.text\s*=\s*wrapInlineScript\(prepared\.content\)/,
   'Next legacy script loader should wrap inline scripts so repeated mounts do not redeclare top-level const bindings'
+);
+assert.match(
+  nextLegacyScripts,
+  /const preparedScripts = scripts\.map\([\s\S]*for \(let index = 0; index < scripts\.length; index \+= 1\)[\s\S]*await preparedScripts\[index\]/,
+  '레거시 스크립트는 다운로드를 동시에 시작하고 HTML 선언 순서대로 실행해야 한다'
+);
+assert.ok(
+  !/cache:\s*'no-store'/.test(nextLegacyScripts),
+  '레거시 스크립트 다운로드는 브라우저와 CDN 캐시를 우회하지 않아야 한다'
+);
+assert.match(
+  nextLegacyScripts,
+  /new AbortController\(\)[\s\S]*abortController\.abort\(\)/,
+  '페이지를 떠날 때 완료되지 않은 레거시 스크립트 다운로드를 취소해야 한다'
+);
+assert.ok(
+  !/LEGACY_PATHS_TO_PREFETCH|\.forEach\(\(path\)[\s\S]*\.prefetch\(path\)/.test(nextLegacyNavigation),
+  '첫 화면 진입 시 방문하지 않은 모든 레거시 페이지를 미리 불러오지 않아야 한다'
+);
+assert.match(
+  nextLegacyNavigation,
+  /useRef\(new Set\(\)\)[\s\S]*handleNavigationIntent[\s\S]*prefetch\(href\)[\s\S]*'pointerover'[\s\S]*'focusin'/,
+  '내부 링크는 사용자 이동 의도가 있을 때만 경로별 한 번 사전 로딩해야 한다'
 );
 assert.match(
   nextLegacyLib,
@@ -646,12 +742,12 @@ assert.ok(
 );
 assert.match(
   nextCssRoute,
-  /const params = await context\.params;[\s\S]*path\.join\(process\.cwd\(\), 'css'/,
+  /path\.join\(process\.cwd\(\), 'css'\)[\s\S]*const params = await context\.params;/,
   'Next route handler should serve existing css assets'
 );
 assert.match(
   nextJsRoute,
-  /const params = await context\.params;[\s\S]*path\.join\(process\.cwd\(\), 'js'/,
+  /path\.join\(process\.cwd\(\), 'js'\)[\s\S]*const params = await context\.params;/,
   'Next route handler should serve existing js assets'
 );
 assert.match(
@@ -831,6 +927,21 @@ assert.match(
 );
 assert.match(
   portfoliosRoute,
+  /const PORTFOLIO_COLUMNS = '[^']*experience_projects[^']*raw[^']*template_values[^']*'/,
+  'portfolio API should select the experience_projects/raw/template_values columns'
+);
+assert.match(
+  portfoliosRoute,
+  /experienceProjects:\s*normalizeArray\(row\.experience_projects\)[\s\S]*raw:\s*row\.raw \|\| null[\s\S]*templateValues:\s*row\.template_values \|\| null/,
+  'portfolio API should map experience_projects/raw/template_values back to camelCase for clients'
+);
+assert.match(
+  portfoliosRoute,
+  /experience_projects:\s*normalizeArray\(payload\.experienceProjects\)[\s\S]*raw:\s*normalizeObjectOrNull\(payload\.raw\)[\s\S]*template_values:\s*normalizeObjectOrNull\(payload\.templateValues\)/,
+  'portfolio API should persist experienceProjects/raw/templateValues from the save payload'
+);
+assert.match(
+  portfoliosRoute,
   /export async function PATCH\(request\)[\s\S]*liked[\s\S]*updated_at/,
   'portfolio API should update portfolio state such as liked'
 );
@@ -953,6 +1064,11 @@ assert.match(
   'project analysis API should refresh the project-level L2 aggregate after analyzing files'
 );
 assert.match(
+  projectAnalysisRoute,
+  /pendingFiles\.length === 0[\s\S]*from\('project_analyses'\)[\s\S]*latestFileAnalysisAt[\s\S]*aggregateUpdatedAt >= latestFileAnalysisAt[\s\S]*unchanged: true/,
+  'project analysis API should skip L2 re-analysis when no file summary changed since the last aggregate (#268)'
+);
+assert.match(
   aggregateAnalysisRoute,
   /projectId: null[\s\S]*aggregateMainOverview\(\{ repository, projectIds \}\)/,
   'aggregate analysis API should aggregate saved project analyses into the user-level L3 overview'
@@ -1040,8 +1156,25 @@ assert.match(
 );
 assert.match(
   portfoliosSchema,
+  /experience_projects jsonb not null default '\[\]'::jsonb[\s\S]*raw jsonb[\s\S]*template_values jsonb/,
+  'portfolios schema should store project selection evidence, the raw AI draft, and one-page PPT template values'
+);
+assert.match(
+  portfoliosSchema,
   /alter table public\.portfolios enable row level security[\s\S]*auth\.uid\(\) = user_id/,
   'portfolios schema should restrict portfolio rows to their owner'
+);
+
+const portfoliosRawMigrationPath = path.join(rootDir, 'docs', 'supabase-portfolios-raw-migration.sql');
+assert.ok(
+  fs.existsSync(portfoliosRawMigrationPath),
+  'a migration script should add experience_projects/raw/template_values to existing portfolios installs'
+);
+const portfoliosRawMigration = fs.readFileSync(portfoliosRawMigrationPath, 'utf8');
+assert.match(
+  portfoliosRawMigration,
+  /alter table public\.portfolios[\s\S]*add column if not exists experience_projects jsonb[\s\S]*add column if not exists raw jsonb[\s\S]*add column if not exists template_values jsonb/,
+  'portfolios raw migration should add the three new columns idempotently'
 );
 
 const mainHtml = readPageSource('main.html');
@@ -1080,7 +1213,7 @@ assert.match(
 );
 assert.match(
   mainHtml,
-  /const isProfileSaved = await hasSavedDatabaseProfile\(\);[\s\S]*initializeTutorialPanel\(isProfileSaved\);[\s\S]*await renderFolders\(isProfileSaved\);/,
+  /const profilePromise = hasSavedDatabaseProfile\(\);[\s\S]*const isProfileSaved = await profilePromise;[\s\S]*initializeTutorialPanel\(isProfileSaved\);[\s\S]*await renderFolders\(isProfileSaved\);/,
   'main dashboard should decide the tutorial collapsed state after checking the saved database profile'
 );
 assert.ok(
@@ -1124,6 +1257,16 @@ assert.match(
   mainHtml,
   /<li class="tutorial-substep"><strong>3\. 원하는 형식 선택<\/strong><span>[\s\S]*<figure class="tutorial-image-slot">[\s\S]*src="\/images\/tutorial\/portfolio_format\.png"[\s\S]*<li class="tutorial-substep"><strong>4\. AI 대화창에서 내용 수정<\/strong><span>[\s\S]*<figure class="tutorial-image-slot">[\s\S]*src="\/images\/tutorial\/portfolio_modify\.png"/,
   'main tutorial should keep portfolio creation screenshots under each matching step'
+);
+assert.match(
+  mainHtml,
+  /<img(?=[^>]*src="\/images\/tutorial\/portfolio_format\.png")(?=[^>]*loading="lazy")(?=[^>]*decoding="async")(?=[^>]*width="1165")(?=[^>]*height="483")[^>]*>/,
+  '메인 튜토리얼의 포트폴리오 형식 이미지는 필요한 시점에 지연 로딩해야 한다'
+);
+assert.match(
+  mainHtml,
+  /<img(?=[^>]*src="\/images\/tutorial\/portfolio_modify\.png")(?=[^>]*loading="lazy")(?=[^>]*decoding="async")(?=[^>]*width="722")(?=[^>]*height="451")[^>]*>/,
+  '메인 튜토리얼의 포트폴리오 수정 이미지는 필요한 시점에 지연 로딩해야 한다'
 );
 assert.match(
   folderStoreJs,
@@ -1194,6 +1337,16 @@ assert.match(
   /async function\s+loadActivityFilesFromApi\(\)[\s\S]*fetch\(ACTIVITY_FILES_ENDPOINT/,
   'main dashboard should load existing uploaded files from the activity file API'
 );
+assert.match(
+  mainHtml,
+  /const profilePromise = hasSavedDatabaseProfile\(\);[\s\S]*const storedAggregateResultPromise = requestStoredAggregateResult\(\);[\s\S]*folders = await FolderStore\.loadFoldersFromApi\(\);[\s\S]*await restoreAggregateResult\(storedAggregateResultPromise\)/,
+  '메인 화면은 프로필과 저장된 분석 조회를 폴더·파일 로딩과 동시에 시작해야 한다'
+);
+assert.match(
+  mainHtml,
+  /async function\s+requestStoredAggregateResult\(\)[\s\S]*return payload\.result \|\| null;[\s\S]*async function\s+restoreAggregateResult\(storedResultPromise[\s\S]*applyAggregateResult\(storedResult\)/,
+  '메인 화면은 병렬 조회한 종합 분석 결과를 폴더·파일 상태가 준비된 뒤 적용해야 한다'
+);
 assert.ok(
   !mainHtml.includes('FolderStore.FOLDER_GROUPS'),
   'main page should not render sidebar folder groups'
@@ -1225,8 +1378,8 @@ assert.match(
 );
 assert.match(
   mainHtml,
-  /fetch\(PROFILE_ENDPOINT,\s*\{[\s\S]*credentials:\s*'same-origin'[\s\S]*cache:\s*'no-store'/,
-  'main dashboard should request the current user profile without using a stale cache'
+  /window\.MyfitfolioCache\.cachedGet\(PROFILE_ENDPOINT,\s*\{\s*ttlMs:\s*20000\s*\}\)/,
+  'main dashboard should request the current user profile through the shared short-TTL cache'
 );
 assert.match(
   mainHtml,
@@ -1545,8 +1698,8 @@ for (const text of ['전기공학과', '정보컴퓨터공학과', '화공생명
 }
 assert.match(
   mypageHtml,
-  /<div data-shared-nav data-active="mypage"><\/div>\s*<script src="\.\.\/js\/shared-nav\.js"><\/script>\s*<script src="\.\.\/js\/auth-nav\.js"><\/script>/,
-  'mypage should keep the shared nav and auth-nav scripts when applying the attachment'
+  /<div data-shared-nav data-active="mypage"><\/div>\s*<script src="\.\.\/js\/shared-nav\.js"><\/script>\s*<script src="\.\.\/js\/session-cache\.js"><\/script>\s*<script src="\.\.\/js\/auth-nav\.js"><\/script>/,
+  'mypage should keep the shared nav, session cache and auth-nav scripts when applying the attachment'
 );
 assert.match(
   mypageHtml,
@@ -1592,13 +1745,18 @@ assert.match(
 );
 assert.match(
   mypageHtml,
-  /async function\s+loadSavedProfile\(\)[\s\S]*fetch\(PROFILE_ENDPOINT,\s*\{[\s\S]*method:\s*"GET"[\s\S]*credentials:\s*"same-origin"/,
-  'mypage should load saved profile values from the Supabase profile API'
+  /async function\s+loadSavedProfile\(\)[\s\S]*window\.MyfitfolioCache\.cachedGet\(PROFILE_ENDPOINT,\s*\{\s*ttlMs:\s*20000\s*\}\)/,
+  'mypage should load saved profile values from the Supabase profile API through the shared short-TTL cache'
 );
 assert.match(
   mypageHtml,
   /async function\s+saveProfile\(\)[\s\S]*fetch\(PROFILE_ENDPOINT,\s*\{[\s\S]*method:\s*"PUT"[\s\S]*body:\s*JSON\.stringify\(payload\)/,
   'mypage should save edited profile values through the Supabase profile API'
+);
+assert.match(
+  mypageHtml,
+  /async function\s+saveProfile\(\)[\s\S]*window\.MyfitfolioCache\.invalidate\(PROFILE_ENDPOINT\)/,
+  'mypage should invalidate the cached profile after saving so other pages see the update immediately'
 );
 assert.match(
   mypageHtml,
@@ -1876,6 +2034,10 @@ assert.match(
   /class="folder-delete-button file-delete-button"[\s\S]*data-action="delete-file"[\s\S]*🗑[\s\S]*class="folder-delete-button subfolder-delete-button"[\s\S]*data-action="delete-subfolder"[\s\S]*🗑/,
   'file and subfolder delete actions should use the same trash icon style as the left project delete button'
 );
+assert.ok(
+  !createHtml.includes('메인 사이드바와 같은 폴더 형식입니다'),
+  'file management should remove the stale main-sidebar comparison note under the folder list'
+);
 assert.match(
   createHtml,
   /data-shared-nav data-active="create"/,
@@ -1941,6 +2103,12 @@ assert.match(
   createHtml,
   /async function\s+runAggregateAnalysisForProjects\(projectIds\)[\s\S]*fetch\(AGGREGATE_ANALYSIS_ENDPOINT[\s\S]*JSON\.stringify\(\{ projectIds \}\)/,
   'project analysis should call the aggregate API after successful project analyses'
+);
+// 변경 없는 프로젝트는 기존 L2 산출물을 유지하고 결과 안내에 구분해 보여준다(#268).
+assert.match(
+  createHtml,
+  /if \(payload\.unchanged\) unchangedCount \+= 1;[\s\S]*else refreshedCount \+= 1;[\s\S]*변경이 없는 \$\{unchangedCount\}개 프로젝트는 기존 산출물을 유지했습니다/,
+  'all-project analysis should report unchanged projects that kept their existing L2 outputs (#268)'
 );
 assert.match(
   createHtml,
@@ -2215,6 +2383,16 @@ assert.match(
   'file management should load uploaded files from the activity file API'
 );
 assert.match(
+  createHtml,
+  /PROJECT_ANALYSIS_LOAD_CONCURRENCY\s*=\s*4[\s\S]*async function\s+loadProjectAnalysesForFolders[\s\S]*workerCount[\s\S]*Promise\.all\(Array\.from/,
+  '파일 관리 화면은 프로젝트 분석 조회를 최대 4개 작업자로 제한해 병렬 처리해야 한다'
+);
+assert.match(
+  createHtml,
+  /async function\s+initFileManager\(\)[\s\S]*folders = await FolderStore\.loadFoldersFromApi\(\);[\s\S]*await Promise\.all\(\[[\s\S]*loadActivityFilesFromApi\(\)[\s\S]*loadProjectAnalysesForFolders\(\)[\s\S]*\]\);/,
+  '파일 관리 화면은 폴더 확보 후 활동 파일과 프로젝트 분석을 동시에 불러와야 한다'
+);
+assert.match(
   createCss,
   /\.visually-hidden\s*\{/,
   'file management stylesheet should define visually-hidden so the file input stays hidden (#132)'
@@ -2340,6 +2518,19 @@ assert.match(
   /href="\.\.\/css\/common\.css"/,
   'contest page should load the shared common stylesheet for the top navigation'
 );
+assert.ok(
+  !/<link[^>]+href="https?:\/\//i.test(contestHtml),
+  '활동 추천 화면은 외부 CDN CSS 때문에 첫 렌더링이 지연되지 않아야 한다'
+);
+assert.ok(
+  !/font-awesome|fa-chevron|fa-solid/i.test(contestHtml),
+  '활동 추천 화면은 달력 화살표 두 개를 위해 Font Awesome을 내려받지 않아야 한다'
+);
+assert.match(
+  contestHtml,
+  /id="prevCalendarMonth"[\s\S]*<span aria-hidden="true">‹<\/span>[\s\S]*id="nextCalendarMonth"[\s\S]*<span aria-hidden="true">›<\/span>/,
+  '활동 추천 달력은 외부 아이콘 글꼴 없이 접근 가능한 이전·다음 버튼을 제공해야 한다'
+);
 assert.match(
   contestHtml,
   /src="\.\.\/js\/contest\.js"/,
@@ -2402,6 +2593,10 @@ assert.ok(
 
 const contestJs = fs.readFileSync(path.join(jsDir, 'contest.js'), 'utf8');
 const contestCss = fs.readFileSync(path.join(cssDir, 'contest.css'), 'utf8');
+assert.ok(
+  !/body\s*\{[^}]*font-family:\s*"Pretendard",\s*sans-serif;/s.test(contestCss),
+  '활동 추천 화면은 외부 Pretendard 전용 글꼴 설정 대신 공통 시스템 글꼴을 사용해야 한다'
+);
 assert.ok(
   !contestJs.includes('savedCount'),
   'contest schedule count should not depend on removed summary cards'
@@ -2789,8 +2984,8 @@ assert.match(
 );
 assert.match(
   contestJs,
-  /function\s+getProfileFitBreakdown\([\s\S]*profile\.desiredJobs[\s\S]*profile\.desiredIndustries[\s\S]*profile\.interestedIndustries[\s\S]*profile\.interestFields[\s\S]*profile\.interestedCompanies[\s\S]*educationSignal/,
-  'contest recommendations should prioritize desired job and desired industry, use interest inputs as boosts, and keep education as explanation'
+  /function\s+getProfileFitBreakdown\([\s\S]*profile\.desiredJobs[\s\S]*profile\.interestFields[\s\S]*profile\.desiredIndustries[\s\S]*profile\.interestedIndustries[\s\S]*profile\.interestedCompanies[\s\S]*directionEducationGate/,
+  'contest recommendations should prioritize desired job and industry direction, use interest inputs as boosts, and keep education as a direction gate'
 );
 assert.match(
   contestJs,
@@ -2804,8 +2999,28 @@ assert.match(
 );
 assert.match(
   contestJs,
-  /if\s*\(educationSignal\s*&&\s*!hasDirection\)[\s\S]*scoringSignals\.push\(\{\s*score:\s*educationScore/,
-  'contest recommendations should only use major, minor, and linked major for scoring when no direction inputs exist'
+  /function\s+getDirectionEducationGate\(profile\)[\s\S]*getProfileEducationCandidates\(profile\)[\s\S]*getDirectionPreferenceText\(profile\)[\s\S]*getDepartmentDirectionMatchScore/,
+  'contest recommendations should choose the closest major, minor, or linked major for the selected job and industry direction'
+);
+assert.match(
+  contestJs,
+  /const\s+unmatchedEducationDirection\s*=\s*'__unmatched_education_direction__'[\s\S]*bestCandidate\.score\s*>\s*0\s*\?\s*bestCandidate\.department\s*:\s*unmatchedEducationDirection/,
+  'contest recommendations should not fall back to an unrelated major when no education candidate matches the selected direction'
+);
+assert.match(
+  contestJs,
+  /화공생명공학과:\s*\[[^\]]*'바이오'[^\]]*'반도체'[^\]]*'제조'/,
+  'contest education direction keywords should let chemical engineering match bio, semiconductor, and manufacturing directions'
+);
+assert.match(
+  contestJs,
+  /function\s+isActivityInEducationDirection\(item,\s*gateDepartment\)[\s\S]*normalizeDepartmentName\(item\.primaryDepartment\)\s*===\s*gateDepartment/,
+  'contest recommendations should validate activity fields against the selected education direction'
+);
+assert.match(
+  contestJs,
+  /matchesEducationDirection\s*\?\s*weightedScore\s*:\s*Math\.min\(weightedScore,\s*69\)/,
+  'contest recommendations should cap activities outside the selected education direction below the recommendation threshold'
 );
 assert.match(
   contestJs,
@@ -2814,7 +3029,7 @@ assert.match(
 );
 assert.match(
   contestJs,
-  /jobMatch\.hasInput\s*&&\s*!jobMatch\.matched\s*\?\s*Math\.min\(weightedScore,\s*69\)/,
+  /jobMatch\.hasInput\s*&&\s*!jobMatch\.matched\s*\?\s*Math\.min\(directionCappedScore,\s*69\)/,
   'contest recommendations should cap job-mismatched activities below the recommendation threshold'
 );
 assert.match(
@@ -2854,8 +3069,8 @@ assert.match(
 );
 assert.match(
   contestJs,
-  /async function\s+loadRecommendationProfileFromServer\(\)[\s\S]*fetch\('\/api\/profile'[\s\S]*localStorage\.setItem\('myfitfolioProfile'/,
-  'contest should refresh recommendations from the latest saved mypage profile API'
+  /async function\s+loadRecommendationProfileFromServer\(\)[\s\S]*window\.MyfitfolioCache\.cachedGet\('\/api\/profile',\s*\{\s*ttlMs:\s*20000\s*\}\)[\s\S]*localStorage\.setItem\('myfitfolioProfile'/,
+  'contest should refresh recommendations from the latest saved mypage profile API through the shared short-TTL cache'
 );
 assert.match(
   contestJs,
@@ -2986,6 +3201,21 @@ assert.match(
   portfolioCreateHtml,
   /<h1 class="page-title">포트폴리오 초안을 생성하세요<\/h1>[\s\S]*<p class="page-subtitle">경험 데이터와 목표에 맞는 형식을 선택해 제출용 포트폴리오 초안을 만듭니다\.<\/p>/,
   'portfolio_create should use the unified two-line page header copy inside the setup panel'
+);
+assert.match(
+  portfolioCreateHtml,
+  /<button(?=[^>]*class="format-card")(?=[^>]*data-format="PPT 발표 스펙")(?=[^>]*aria-disabled="true")(?=[^>]*disabled)[^>]*>[\s\S]*?<strong>PPT 발표 스펙 \(미구현\)<\/strong>/,
+  'PPT 발표 스펙 카드는 미구현 상태를 표시하고 선택할 수 없어야 한다'
+);
+assert.match(
+  portfolioCreateHtml,
+  /querySelectorAll\('\.format-card:not\(:disabled\)'\)\.forEach/,
+  '포트폴리오 형식 선택 이벤트는 비활성 카드를 제외하고 연결해야 한다'
+);
+assert.match(
+  portfolioCreateCss,
+  /\.format-card:disabled,[\s\S]*cursor:\s*not-allowed;[\s\S]*opacity:\s*0\.62;[\s\S]*\.format-card:disabled \.format-visual[\s\S]*filter:\s*grayscale\(1\);/,
+  '미구현 포트폴리오 형식 카드는 비활성 상태를 시각적으로 구분해야 한다'
 );
 assert.match(
   sharedNavJs,
@@ -3142,8 +3372,8 @@ assert.match(
 );
 assert.match(
   portfolioCreateHtml,
-  /async function\s+loadProfileMajor\(\)[\s\S]*fetch\(PROFILE_ENDPOINT,[\s\S]*profileMajor\s*=\s*educations\.find\(\(education\)\s*=>\s*education\?\.major\)\?\.major/,
-  'portfolio_create should load the displayed major from mypage education data'
+  /async function\s+loadProfileMajor\(\)[\s\S]*window\.MyfitfolioCache\.cachedGet\(PROFILE_ENDPOINT,\s*\{\s*ttlMs:\s*20000\s*\}\)[\s\S]*profileMajor\s*=\s*educations\.find\(\(education\)\s*=>\s*education\?\.major\)\?\.major/,
+  'portfolio_create should load the displayed major from mypage education data through the shared short-TTL cache'
 );
 assert.match(
   portfolioCreateHtml,
@@ -3153,12 +3383,21 @@ assert.match(
 assert.match(
   portfolioCreateHtml,
   /function\s+getFolderSummaryKeywords\(folder\)[\s\S]*projectAnalysis\?\.summaryKeywords[\s\S]*function\s+renderKeywordPool\(\)[\s\S]*summaryKeywords\s*=\s*selectedFolders\.flatMap\(getFolderSummaryKeywords\)/,
-  'portfolio_create should render keyword chips from selected project summary.md keywords'
+  'portfolio_create should render keyword chips from selected project portfolio keywords'
 );
 assert.match(
   portfolioCreateHtml,
-  /function\s+getSelectedExperienceProjects\(\)[\s\S]*projectId:\s*folder\.id[\s\S]*summaryMd:\s*folder\.projectAnalysis\.summaryMd[\s\S]*summaryKeywords:\s*getFolderSummaryKeywords\(folder\)/,
-  'portfolio_create should build selected project analysis context for portfolio generation'
+  /function\s+hasBlockedKeywordText\(keyword\)[\s\S]*\\uC870\\uC0AC[\s\S]*function\s+stripTrailingPostposition\(text\)[\s\S]*function\s+compactKeyword\(keyword\)[\s\S]*stripTrailingPostposition[\s\S]*function\s+normalizeKeywordList\(keywords\)[\s\S]*function\s+renderKeywordTags/,
+  'portfolio_create should remove trailing Korean particles and hide blocked keyword chips'
+);
+assert.match(
+  portfolioCreateHtml,
+  /function\s+getSelectedExperienceProjects\(\)[\s\S]*projectId:\s*folder\.id[\s\S]*summaryMd:\s*folder\.projectAnalysis\.summaryMd[\s\S]*summaryKeywords:\s*getFolderSummaryKeywords\(folder\)[\s\S]*function\s+getFolderMeta[\s\S]*포트폴리오 키워드 사용/,
+  'portfolio_create should build selected project summary context and label portfolio keyword availability'
+);
+assert.ok(
+  !/fileCount:\s*folder\.fileCount/.test(portfolioCreateHtml),
+  'portfolio_create should not send project file counts with selected summary context'
 );
 assert.match(
   portfolioCreateHtml,
@@ -3195,6 +3434,18 @@ assert.match(
   /async function\s+openPortfolioEditorFromQuery\(\)[\s\S]*fetch\(`\$\{PORTFOLIO_ENDPOINT\}\?id=/,
   'portfolio_create should load portfolio edits through the portfolio API'
 );
+// 생성 시 선택한 프로젝트 근거(experienceProjects)와 AI 원본(raw)·PPT 템플릿 값(templateValues)을
+// coverLines에 우회 저장하지 않고 전용 필드로 저장·복원한다(#316).
+assert.match(
+  portfolioCreateHtml,
+  /experienceProjects:\s*currentPortfolio\.experienceProjects \|\| \[\][\s\S]*coverLines:\s*currentPortfolio\.coverLines \|\| \[\][\s\S]*raw:\s*currentPortfolio\.raw \|\| null[\s\S]*templateValues:\s*currentPortfolio\.raw\?\.template_values \|\| currentPortfolio\.templateValues \|\| null/,
+  'portfolio_create should persist experienceProjects/raw/templateValues as dedicated fields instead of stuffing template_values into coverLines'
+);
+assert.match(
+  portfolioCreateHtml,
+  /experienceProjects:\s*Array\.isArray\(portfolio\.experienceProjects\)[\s\S]*coverLines:\s*Array\.isArray\(portfolio\.coverLines\)[\s\S]*raw:\s*portfolio\.raw \|\| null[\s\S]*templateValues:\s*portfolio\.templateValues \|\| null/,
+  'portfolio_create should restore experienceProjects/coverLines/raw/templateValues when reopening a saved portfolio for editing'
+);
 assert.match(
   portfolioCreateHtml,
   /const\s+editPortfolioId\s*=\s*new URLSearchParams\(window\.location\.search\)\.get\('edit'\)/,
@@ -3212,13 +3463,28 @@ assert.match(
 );
 assert.match(
   portfolioCreateHtml,
-  /function\s+prepareEditorEntryScreen\(\)[\s\S]*editPortfolioId[\s\S]*pfSetupScreen'\)\.classList\.add\('hidden'\)[\s\S]*pfLoadingScreen'\)\.classList\.remove\('hidden'\)[\s\S]*async function\s+initializePortfolioCreatePage\(\)[\s\S]*if \(editPortfolioId\)[\s\S]*prepareEditorEntryScreen\(\);[\s\S]*await openPortfolioEditorFromQuery\(\);/,
-  'portfolio_create edit mode should hide the format setup screen before loading the saved draft'
+  /function\s+prepareEditorEntryScreen\(\)[\s\S]*editPortfolioId[\s\S]*pfSetupScreen'\)\.classList\.add\('hidden'\)[\s\S]*pfWorkspaceScreen'\)\.classList\.add\('hidden'\)[\s\S]*pfLoadingScreen'\)\.classList\.add\('hidden'\)[\s\S]*async function\s+initializePortfolioCreatePage\(\)[\s\S]*if \(editPortfolioId\)[\s\S]*prepareEditorEntryScreen\(\);[\s\S]*await openPortfolioEditorFromQuery\(\);/,
+  'portfolio_create edit mode should hide setup and loading while loading the saved draft'
 );
 assert.match(
   portfolioCreateCss,
-  /html\.portfolio-edit-entry #pfSetupScreen\s*\{[^}]*display:\s*none\s*!important;[\s\S]*html\.portfolio-edit-entry #pfLoadingScreen\.hidden\s*\{[^}]*display:\s*grid\s*!important;/,
-  'portfolio_create edit mode should hide setup and show loading through CSS before deferred scripts finish'
+  /html\.portfolio-edit-entry #pfSetupScreen\s*\{[^}]*display:\s*none\s*!important;[\s\S]*html\.portfolio-edit-entry #pfLoadingScreen,\s*html\.portfolio-edit-entry #pfWorkspaceScreen\s*\{[^}]*display:\s*none\s*!important;/,
+  'portfolio_create edit mode should hide setup, loading, and workspace through CSS before deferred scripts finish'
+);
+assert.match(
+  portfolioCreateCss,
+  /html:not\(\.portfolio-create-ready\) #pfSetupScreen\s*\{[^}]*display:\s*none\s*!important;/,
+  'portfolio_create should keep the setup form hidden until page mode initialization is ready'
+);
+assert.match(
+  portfolioCreateHtml,
+  /function\s+prepareEditorEntryScreen\(\)[\s\S]*document\.documentElement\.classList\.add\('portfolio-create-ready'\)[\s\S]*pfSetupScreen'\)\.classList\.add\('hidden'\)[\s\S]*pfLoadingScreen'\)\.classList\.add\('hidden'\)/,
+  'portfolio_create edit mode should mark the page ready while keeping setup and loading hidden'
+);
+assert.match(
+  portfolioCreateHtml,
+  /document\.getElementById\('pfWorkspaceScreen'\)\.classList\.remove\('hidden'\);[\s\S]*document\.documentElement\.classList\.add\('portfolio-create-ready'\);[\s\S]*document\.documentElement\.classList\.remove\('portfolio-edit-entry'\);/,
+  'portfolio_create edit mode should only remove the early edit class after the workspace is visible'
 );
 assert.match(
   portfolioCreateHtml,
@@ -3249,6 +3515,56 @@ assert.match(
   portfolioCreateHtml,
   /function\s+renderPortfolioImagePreview\(\)[\s\S]*renderCaseStudyPortfolio/,
   'portfolio_create should render ChatGPT JSON as visual portfolio previews'
+);
+assert.match(
+  portfolioCreateHtml,
+  /const\s+PORTFOLIO_PDF_PREVIEW_ENDPOINT\s*=\s*'\/api\/portfolio\/render-pdf'/,
+  'portfolio_create should define the external-worker-backed PDF preview endpoint'
+);
+assert.match(
+  portfolioCreateHtml,
+  /function\s+renderPortfolioPreview\(\)[\s\S]*workspaceBadge'\)\.textContent = '실제 PDF 미리보기'[\s\S]*renderActualPdfPreview\(\)/,
+  'portfolio_create should prefer the real converted PDF preview for the left draft'
+);
+assert.match(
+  portfolioCreateHtml,
+  /async function\s+renderActualPdfPreview\(\)[\s\S]*fetch\(PORTFOLIO_PDF_PREVIEW_ENDPOINT[\s\S]*response\.status\s*===\s*503[\s\S]*renderPptxMatchedPreview\(\)/,
+  'portfolio_create should fall back to the PPTX-matched canvas preview when the PDF worker is unavailable'
+);
+assert.match(
+  portfolioCreateHtml,
+  /function\s+renderPdfPreviewFrame\(pdfUrl\)[\s\S]*class="portfolio-pdf-frame"[\s\S]*title="실제 변환 PDF 미리보기"/,
+  'portfolio_create should render the converted portfolio PDF as the draft preview'
+);
+assert.match(
+  portfolioCreateHtml,
+  /function\s+cancelPdfPreviewRequest\(\)[\s\S]*pdfPreviewController\.abort\(\)[\s\S]*revokePdfPreviewObjectUrl\(\)/,
+  'portfolio_create should cancel stale PDF preview requests when the draft changes'
+);
+assert.match(
+  portfolioCreateHtml,
+  /function\s+renderPptxMatchedPreview\(\)[\s\S]*revokePdfPreviewObjectUrl\(\)[\s\S]*class="pptx-preview-canvas"/,
+  'portfolio_create should keep the PPTX-matched canvas renderer as a safe fallback'
+);
+assert.match(
+  portfolioCreateHtml,
+  /function\s+createPptxMatchedPreviewSlides\(portfolio\)[\s\S]*type:\s*'overview'[\s\S]*type:\s*'detail'/,
+  'portfolio_create should build the same overview and detail slide structure used by PPTX export'
+);
+assert.match(
+  portfolioCreateHtml,
+  /function\s+renderPptxMatchedPreview\(\)[\s\S]*class="pptx-preview-canvas"[\s\S]*data-pptx-preview-index/,
+  'portfolio_create should show generated portfolio drafts as slide canvases'
+);
+assert.match(
+  portfolioCreateHtml,
+  /function\s+createOnePagePptxPreviewSlide\(portfolio\)[\s\S]*PORTFOLIO SUMMARY/,
+  'portfolio_create should use a portrait PPT-style preview for one-page summary portfolios'
+);
+assert.match(
+  portfolioCreateCss,
+  /\.pptx-preview-page\s*\{[\s\S]*\.pptx-preview-page\.portrait[\s\S]*\.pptx-preview-canvas\s*\{/,
+  'portfolio_create stylesheet should size PPTX-matched preview canvases'
 );
 assert.match(
   portfolioCreateHtml,
@@ -3309,16 +3625,28 @@ assert.match(
 );
 assert.match(
   portfolioCreateHtml,
-  /async function\s+downloadPptPreview\(\)[\s\S]*saveGeneratedPortfolio\(\{\s*requireRemote:\s*true\s*\}\)[\s\S]*fetch\('\/api\/portfolio\/export-pptx'[\s\S]*JSON\.stringify\(currentPortfolio\)[\s\S]*response\.blob\(\)/,
-  'portfolio_create should save to the portfolio DB before downloading editable PowerPoint files'
+  /async function\s+downloadPptPreview\(\)[\s\S]*fetch\('\/api\/portfolio\/export-pptx'[\s\S]*JSON\.stringify\(currentPortfolio\)[\s\S]*response\.blob\(\)/,
+  'portfolio_create should download editable PowerPoint files from the current draft'
 );
 
 const portfolioExportPptxRoutePath = path.join(appDir, 'api', 'portfolio', 'export-pptx', 'route.js');
+const portfolioRenderPdfRoutePath = path.join(appDir, 'api', 'portfolio', 'render-pdf', 'route.js');
+const portfolioConverterWorkerDir = path.join(workersDir, 'portfolio-converter');
+const portfolioConverterWorkerServerPath = path.join(portfolioConverterWorkerDir, 'server.js');
+const portfolioConverterWorkerDockerfilePath = path.join(portfolioConverterWorkerDir, 'Dockerfile');
+const portfolioConverterWorkerReadmePath = path.join(portfolioConverterWorkerDir, 'README.md');
 const portfolioGenerateRoutePath = path.join(appDir, 'api', 'portfolio', 'generate', 'route.js');
 const portfolioKeywordsRoutePath = path.join(appDir, 'api', 'portfolio', 'keywords', 'route.js');
 const portfolioSourceDataRoutePath = path.join(appDir, 'api', 'portfolio', 'source-data', 'route.js');
 const portfolioReviseRoutePath = path.join(appDir, 'api', 'portfolio', 'revise', 'route.js');
 const portfolioOnePageLibPath = path.join(libDir, 'portfolio-onepage.js');
+const portfolioSummaryPptxLibPath = path.join(libDir, 'portfolio-summary-pptx.js');
+const portfolioSummaryTemplateV2Path = path.join(
+  rootDir,
+  'portfolio_design',
+  'portfolio-summary',
+  'portfolio_summary_template.pptxgen.v2.json'
+);
 const portfolioGenerateRoute = fs.existsSync(portfolioGenerateRoutePath)
   ? fs.readFileSync(portfolioGenerateRoutePath, 'utf8')
   : '';
@@ -3334,8 +3662,26 @@ const portfolioReviseRoute = fs.existsSync(portfolioReviseRoutePath)
 const portfolioExportPptxRoute = fs.existsSync(portfolioExportPptxRoutePath)
   ? fs.readFileSync(portfolioExportPptxRoutePath, 'utf8')
   : '';
+const portfolioRenderPdfRoute = fs.existsSync(portfolioRenderPdfRoutePath)
+  ? fs.readFileSync(portfolioRenderPdfRoutePath, 'utf8')
+  : '';
+const portfolioConverterWorkerServer = fs.existsSync(portfolioConverterWorkerServerPath)
+  ? fs.readFileSync(portfolioConverterWorkerServerPath, 'utf8')
+  : '';
+const portfolioConverterWorkerDockerfile = fs.existsSync(portfolioConverterWorkerDockerfilePath)
+  ? fs.readFileSync(portfolioConverterWorkerDockerfilePath, 'utf8')
+  : '';
+const portfolioConverterWorkerReadme = fs.existsSync(portfolioConverterWorkerReadmePath)
+  ? fs.readFileSync(portfolioConverterWorkerReadmePath, 'utf8')
+  : '';
 const portfolioOnePageLib = fs.existsSync(portfolioOnePageLibPath)
   ? fs.readFileSync(portfolioOnePageLibPath, 'utf8')
+  : '';
+const portfolioSummaryPptxLib = fs.existsSync(portfolioSummaryPptxLibPath)
+  ? fs.readFileSync(portfolioSummaryPptxLibPath, 'utf8')
+  : '';
+const portfolioSummaryTemplateV2 = fs.existsSync(portfolioSummaryTemplateV2Path)
+  ? fs.readFileSync(portfolioSummaryTemplateV2Path, 'utf8')
   : '';
 assert.match(
   portfolioGenerateRoute,
@@ -3348,13 +3694,13 @@ assert.ok(
 );
 assert.match(
   portfolioOnePageLib,
-  /portfolioOnePageSchema[\s\S]*template_version[\s\S]*profile[\s\S]*target_fit[\s\S]*representative_experiences[\s\S]*differentiator/,
-  'one-page summary helper should define the vertical summary schema from the starter kit'
+  /portfolioOnePageSchema[\s\S]*template_version[\s\S]*profile[\s\S]*target_fit[\s\S]*representative_experiences[\s\S]*template_values[\s\S]*differentiator/,
+  'one-page summary helper should define the preview schema and PPTX template_values schema'
 );
 assert.match(
   portfolioOnePageLib,
-  /const INFO_MISSING = '제공된 정보 부족'[\s\S]*buildPortfolioOnePageUserPrompt[\s\S]*마이페이지 기본 정보[\s\S]*사용자가 승인한 활동 요약[\s\S]*정보가 없으면 '\$\{INFO_MISSING\}'/,
-  'one-page summary prompt should send mypage data and approved evidence with missing-info rules'
+  /const INFO_MISSING = '제공된 정보 부족'[\s\S]*template_values[\s\S]*project_or_activity[\s\S]*verified_skills[\s\S]*technologies[\s\S]*education_or_certificates[\s\S]*buildPortfolioOnePageUserPrompt[\s\S]*마이페이지 기본 정보[\s\S]*핵심 프로젝트\/경험 목록[\s\S]*정보가 없으면 '\$\{INFO_MISSING\}'/,
+  'one-page summary prompt should send mypage data, selected projects, and PPTX v2 template value rules'
 );
 assert.match(
   portfolioCreateHtml,
@@ -3372,6 +3718,20 @@ assert.match(
   'portfolio generation API should accept selected project summary context'
 );
 assert.match(
+  portfolioGenerateRoute,
+  /loadServerPortfolioContext[\s\S]*\.from\('user_profiles'\)[\s\S]*\.from\('project_analyses'\)[\s\S]*\.eq\('scope',\s*'project'\)/,
+  'portfolio generation API should reload mypage data and selected project summary data from Supabase before prompting OpenAI'
+);
+assert.match(
+  portfolioGenerateRoute,
+  /function\s+mapProjectAnalysis[\s\S]*summaryMd:\s*result\.summaryMd/,
+  'portfolio generation API should map Supabase project summaryMd into OpenAI project context'
+);
+assert.ok(
+  !/loadFolderFileSummariesForUser|folderFileSummaries|file_analyses|activity_files/.test(portfolioGenerateRoute),
+  'portfolio generation API should not load selected project files or file-level summaries'
+);
+assert.match(
   portfolioReviseRoute,
   /isAnalysisMockEnabled\(\)[\s\S]*buildMockPortfolioRevision/,
   'portfolio revision API should return mock revision data when ANALYSIS_MOCK=1'
@@ -3382,22 +3742,111 @@ assert.ok(
 );
 assert.match(
   portfolioSourceDataRoute,
-  /\.from\('activity_folders'\)[\s\S]*\.from\('activity_files'\)[\s\S]*\.from\('project_analyses'\)[\s\S]*\.eq\('scope',\s*'project'\)/,
-  'portfolio source data API should combine folders, file counts, and project-scoped analyses'
+  /\.from\('activity_folders'\)[\s\S]*\.from\('project_analyses'\)[\s\S]*\.eq\('scope',\s*'project'\)/,
+  'portfolio source data API should combine folders and project-scoped summary analyses'
+);
+assert.ok(
+  !/\.from\('activity_files'\)|fileCount|countFilesByProject/.test(portfolioSourceDataRoute),
+  'portfolio source data API should not load project files for the portfolio selection list'
 );
 assert.match(
   portfolioSourceDataRoute,
-  /extractMarkdownListSection[\s\S]*summaryMd[\s\S]*포트폴리오.*키워드[\s\S]*강점.*키워드[\s\S]*portfolioKeywords[\s\S]*activityKeywords/,
-  'portfolio source data API should extract keywords from project summary.md before structured keyword fallbacks'
+  /function\s+buildSummaryKeywords\(result\)[\s\S]*result\?\.portfolioKeywords[\s\S]*source:\s*'portfolioKeywords'[\s\S]*result\?\.activityKeywords[\s\S]*source:\s*'activityKeywords'/,
+  'portfolio source data API should prefer project JSON portfolioKeywords before activityKeywords'
+);
+assert.ok(
+  !/extractMarkdownListSection|포트폴리오\.\*키워드|강점\.\*키워드/.test(portfolioSourceDataRoute),
+  'portfolio source data API should not parse summary.md keyword sections for selection chips'
 );
 assert.ok(
   fs.existsSync(portfolioExportPptxRoutePath),
   'portfolio PPTX export API should live in app/api/portfolio/export-pptx/route.js'
 );
+assert.ok(
+  fs.existsSync(portfolioRenderPdfRoutePath),
+  'portfolio PDF render API should live in app/api/portfolio/render-pdf/route.js'
+);
+assert.match(
+  portfolioRenderPdfRoute,
+  /import\s+\{\s*POST as exportPortfolioPptx\s*\}\s+from '..\/export-pptx\/route'[\s\S]*PORTFOLIO_CONVERTER_URL/,
+  'portfolio PDF render API should reuse PPTX export and delegate conversion to an external worker URL'
+);
+assert.match(
+  portfolioRenderPdfRoute,
+  /new FormData\(\)[\s\S]*formData\.append\('file',\s*new Blob\(\[pptxBuffer\]/,
+  'portfolio PDF render API should send the generated PPTX to the worker as multipart form data'
+);
+assert.match(
+  portfolioRenderPdfRoute,
+  /PORTFOLIO_CONVERTER_TOKEN[\s\S]*headers\.Authorization\s*=\s*`Bearer/,
+  'portfolio PDF render API should support an optional bearer token for the external converter worker'
+);
+assert.match(
+  portfolioRenderPdfRoute,
+  /contentType\.includes\('application\/json'\)[\s\S]*pdfUrl[\s\S]*Content-Type': PDF_MIME_TYPE/,
+  'portfolio PDF render API should accept either a returned PDF file or a worker-hosted PDF URL'
+);
+assert.ok(
+  fs.existsSync(portfolioConverterWorkerServerPath),
+  'portfolio converter worker server should live in workers/portfolio-converter/server.js'
+);
+assert.ok(
+  fs.existsSync(portfolioConverterWorkerDockerfilePath),
+  'portfolio converter worker should include a Dockerfile for Render or Railway deployment'
+);
+assert.ok(
+  fs.existsSync(portfolioConverterWorkerReadmePath),
+  'portfolio converter worker should document deployment steps'
+);
+assert.match(
+  portfolioConverterWorkerServer,
+  /app\.post\('\/convert\/pptx-to-pdf'[\s\S]*upload\.single\('file'\)[\s\S]*runLibreOffice[\s\S]*Content-Type',\s*'application\/pdf'/,
+  'portfolio converter worker should expose a PPTX-to-PDF multipart endpoint'
+);
+assert.match(
+  portfolioConverterWorkerServer,
+  /CONVERTER_TOKEN[\s\S]*authorization[\s\S]*Bearer[\s\S]*Unauthorized converter request/,
+  'portfolio converter worker should protect conversion requests with an optional bearer token'
+);
+assert.match(
+  portfolioConverterWorkerDockerfile,
+  /apt-get install -y[\s\S]*libreoffice[\s\S]*fonts-noto-cjk[\s\S]*CMD \["npm", "start"\]/,
+  'portfolio converter worker Dockerfile should install LibreOffice and Korean fonts'
+);
+assert.match(
+  portfolioConverterWorkerReadme,
+  /Root Directory[\s\S]*workers\/portfolio-converter[\s\S]*PORTFOLIO_CONVERTER_URL/,
+  'portfolio converter worker README should explain Render registration and Vercel wiring'
+);
+assert.ok(
+  fs.existsSync(portfolioSummaryPptxLibPath),
+  'portfolio summary PPTX renderer should live in lib/portfolio-summary-pptx.js'
+);
+assert.ok(
+  fs.existsSync(portfolioSummaryTemplateV2Path),
+  'portfolio summary PPTX v2 template JSON should exist'
+);
+assert.match(
+  portfolioSummaryTemplateV2,
+  /"project_or_activity_1"[\s\S]*"role_1"[\s\S]*"impact_1"[\s\S]*"skill_1"[\s\S]*"technology_1"[\s\S]*"education_or_certificate_1"/,
+  'portfolio summary PPTX v2 template should split repeated placeholders into numbered fields'
+);
 assert.match(
   portfolioExportPptxRoute,
-  /isOnePageSummary[\s\S]*MYFIT_A4_PORTRAIT_SAFE[\s\S]*addOnePageSummarySlide\(pptx,\s*portfolio\)/,
-  'portfolio PPTX export should render 1페이지 요약본 with the vertical one-page summary template'
+  /isOnePageSummary[\s\S]*renderPortfolioSummaryTemplate\(pptx,\s*portfolio\)/,
+  'portfolio PPTX export should render 1페이지 요약본 from the pptxgenjs JSON template'
+);
+assert.match(
+  portfolioSummaryPptxLib,
+  /portfolio_summary_template\.pptxgen\.v2\.json[\s\S]*buildPlaceholderMap[\s\S]*project_or_activity_\$\{number\}[\s\S]*technology_\$\{number\}[\s\S]*skill_\$\{index \+ 1\}[\s\S]*slide\.addText/,
+  'portfolio summary PPTX renderer should replace v2 placeholders in the template JSON'
+);
+// template_values는 이제 portfolios.template_values(및 raw.template_values) 전용 컬럼으로 저장되므로,
+// coverLines 우회 파싱(parseCoverLineTemplateValues)은 마이그레이션 전 구버전 데이터 호환용 폴백으로만 남는다(#316).
+assert.match(
+  portfolioSummaryPptxLib,
+  /export function getPortfolioSummaryTemplateValues\(portfolio = \{\}\)[\s\S]*return portfolio\.templateValues[\s\S]*\|\|\s*portfolio\.raw\?\.template_values[\s\S]*\|\|\s*parseCoverLineTemplateValues\(portfolio\)[\s\S]*\|\|\s*fallbackTemplateValues\(portfolio\)/,
+  'getPortfolioSummaryTemplateValues should prefer the dedicated templateValues field before legacy coverLines parsing'
 );
 assert.ok(
   fs.existsSync(portfolioKeywordsRoutePath),
@@ -3417,6 +3866,16 @@ assert.match(
   portfolioKeywordsRoute,
   /analysisSummary[\s\S]*analysisIndex[\s\S]*collectExperienceText/,
   'portfolio keyword API should consider uploaded file analysis summaries and index drafts'
+);
+assert.match(
+  portfolioKeywordsRoute,
+  /function\s+hasBlockedKeywordText\(item\)[\s\S]*\\uC870\\uC0AC[\s\S]*function\s+stripTrailingPostposition\(text\)[\s\S]*function\s+compactKeyword\(item\)[\s\S]*stripTrailingPostposition[\s\S]*function\s+uniqueKeywords\(items\)[\s\S]*hasBlockedKeywordText\(item\)/,
+  'portfolio keyword API should remove trailing Korean particles and blocked keyword text'
+);
+assert.match(
+  portfolioSourceDataRoute,
+  /function\s+hasBlockedKeywordText\(item\)[\s\S]*\\uC870\\uC0AC[\s\S]*function\s+stripTrailingPostposition\(text\)[\s\S]*function\s+compactKeyword\(item\)[\s\S]*stripTrailingPostposition[\s\S]*function\s+normalizeKeywordList\(items\)[\s\S]*hasBlockedKeywordText\(item\)/,
+  'portfolio source data API should remove trailing Korean particles and blocked keyword text'
 );
 assert.match(
   portfolioExportPptxRoute,
@@ -3468,6 +3927,10 @@ for (const cssPattern of [
   /\.experience-checkbox-group\s*\{[\s\S]*max-height:\s*214px;[\s\S]*overflow-y:\s*auto;/,
   /\.ppt-preview-wrap\s*\{/,
   /\.ppt-slide\s*\{/,
+  /\.portfolio-pdf-preview\s*\{/,
+  /\.portfolio-pdf-frame\s*\{/,
+  /\.portfolio-pdf-preview-state\s*\{/,
+  /\.portfolio-pdf-spinner\s*\{/,
   /\.slide-arrow\s*\{/,
   /\.draft-page-viewer\s*\{/,
   /\.draft-page-arrow\s*\{/,

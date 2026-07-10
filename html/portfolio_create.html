@@ -12,6 +12,7 @@
   <div class="app-shell">
     <div data-shared-nav data-active="portfolio_create"></div>
     <script src="../js/shared-nav.js"></script>
+    <script src="../js/session-cache.js"></script>
     <script src="../js/auth-nav.js"></script>
 
     <main class="page-shell portfolio-create-page">
@@ -79,7 +80,7 @@
                       프로젝트 과정, 기여도, 결과를 깊게 정리
                     </span>
                   </button>
-                  <button class="format-card" type="button" role="radio" aria-checked="false" data-format="PPT 발표 스펙">
+                  <button class="format-card" type="button" role="radio" aria-checked="false" aria-disabled="true" data-format="PPT 발표 스펙" disabled>
                     <span class="format-visual ppt" aria-hidden="true">
                       <span class="ppt-deck">
                         <span class="ppt-slide-mini">
@@ -100,7 +101,7 @@
                       </span>
                     </span>
                     <span>
-                      <strong>PPT 발표 스펙</strong>
+                      <strong>PPT 발표 스펙 (미구현)</strong>
                       슬라이드별 발표 흐름으로 보여주는 프리뷰
                     </span>
                   </button>

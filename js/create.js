@@ -12,6 +12,7 @@
     const FILE_ANALYSIS_ENDPOINT = '/api/analysis/file';
     const PROJECT_ANALYSIS_ENDPOINT = '/api/analysis/project';
     const AGGREGATE_ANALYSIS_ENDPOINT = '/api/analysis/aggregate';
+    const PROJECT_ANALYSIS_LOAD_CONCURRENCY = 4;
     const PROJECT_ANALYSIS_ARTIFACTS = [
       { key: 'summary', name: 'summary.md', type: 'MD', contentKey: 'summaryMd' },
       { key: 'index', name: 'index.json', type: 'JSON', contentKey: 'indexJson' },
@@ -366,9 +367,21 @@
     }
 
     async function loadProjectAnalysesForFolders(targetFolders = Object.values(folders)) {
-      for (const folder of targetFolders) {
-        await loadProjectAnalysis(folder);
+      const folderQueue = Array.from(targetFolders).filter((folder) => folder?.id);
+      let nextFolderIndex = 0;
+
+      // 프로젝트가 많아도 Vercel 함수와 Supabase에 요청이 한꺼번에 몰리지 않도록
+      // 최대 4개의 작업자만 동시에 프로젝트 분석을 조회한다.
+      async function loadNextProjectAnalysis() {
+        while (nextFolderIndex < folderQueue.length) {
+          const folderIndex = nextFolderIndex;
+          nextFolderIndex += 1;
+          await loadProjectAnalysis(folderQueue[folderIndex]);
+        }
       }
+
+      const workerCount = Math.min(PROJECT_ANALYSIS_LOAD_CONCURRENCY, folderQueue.length);
+      await Promise.all(Array.from({ length: workerCount }, () => loadNextProjectAnalysis()));
       populateAllAnalysisSubfolders();
       persistFolders();
     }
@@ -1003,6 +1016,8 @@
       };
       const failures = [];
       const successProjectIds = [];
+      let refreshedCount = 0;
+      let unchangedCount = 0;
       setAnalysisLoading(true, progressState);
       showToast('전체 프로젝트 분석을 시작했습니다.');
 
@@ -1020,7 +1035,10 @@
             markProjectFileResults(folder, payload);
 
             if (payload.project) {
+              // 변경 없음(#268): 서버가 기존 L2를 유지한 프로젝트도 전체 종합 입력에는 포함한다.
               successProjectIds.push(folder.id);
+              if (payload.unchanged) unchangedCount += 1;
+              else refreshedCount += 1;
             } else if (payload.ok === false && payload.reason === 'no_data') {
               // 파일 없는 프로젝트는 진행률에는 포함하되 실패로 보지 않는다.
             } else if (payload.projectReason && payload.projectReason !== 'no_data') {
@@ -1067,7 +1085,7 @@
         showModal('전체 프로젝트 분석 결과', `
           <div class="manager-preview">
             <strong>${targetFolders.length}개 프로젝트 처리 완료</strong>
-            <p>${successProjectIds.length}개 프로젝트의 AI 요약 산출물을 갱신했습니다. 파일이 없는 프로젝트는 건너뛰었습니다.</p>
+            <p>${refreshedCount}개 프로젝트의 AI 요약 산출물을 갱신했습니다.${unchangedCount > 0 ? ` 변경이 없는 ${unchangedCount}개 프로젝트는 기존 산출물을 유지했습니다.` : ''} 파일이 없는 프로젝트는 건너뛰었습니다.</p>
             ${aggregateResult ? `<p><strong>${escapeHtml(aggregateResult.headline || '')}</strong></p><p>${escapeHtml(aggregateResult.description || '')}</p>` : '<p>성공한 프로젝트가 없어 전체 종합은 실행하지 않았습니다.</p>'}
             ${failureHtml}
           </div>
@@ -1482,8 +1500,10 @@
     async function initFileManager() {
       folders = await FolderStore.loadFoldersFromApi();
       ensureSelectedFolder();
-      await loadActivityFilesFromApi();
-      await loadProjectAnalysesForFolders();
+      await Promise.all([
+        loadActivityFilesFromApi(),
+        loadProjectAnalysesForFolders(),
+      ]);
       render();
     }
 

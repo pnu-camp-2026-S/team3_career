@@ -91,10 +91,7 @@
 
     async function hasSavedDatabaseProfile() {
       try {
-        const response = await fetch(PROFILE_ENDPOINT, {
-          credentials: 'same-origin',
-          cache: 'no-store',
-        });
+        const response = await window.MyfitfolioCache.cachedGet(PROFILE_ENDPOINT, { ttlMs: 20000 });
 
         if (!response.ok) return hasSavedProfile();
 
@@ -444,23 +441,30 @@
       }
     }
 
-    // 저장된 종합 결과가 있으면 새로고침 후에도 분석 상태를 복원한다.
-    async function restoreAggregateResult() {
+    // 저장된 종합 결과 조회는 폴더·파일 조회와 독립적이므로 먼저 시작할 수 있다.
+    // 다만 조회 결과를 화면에 적용하는 시점은 폴더·파일 상태가 준비된 뒤로 미룬다.
+    async function requestStoredAggregateResult() {
       try {
         const response = await fetch(AGGREGATE_ENDPOINT, {
           credentials: 'same-origin',
           cache: 'no-store',
         });
-        if (!response.ok) return false;
+        if (!response.ok) return null;
         const payload = await response.json();
-        if (payload.result) {
-          applyAggregateResult(payload.result);
-          return true;
-        }
+        return payload.result || null;
       } catch (error) {
         console.warn('Saved aggregate result could not be restored.', error);
+        return null;
       }
-      return false;
+    }
+
+    // 저장된 종합 결과가 있으면 새로고침 후에도 분석 상태를 복원한다.
+    async function restoreAggregateResult(storedResultPromise = requestStoredAggregateResult()) {
+      const storedResult = await storedResultPromise;
+      if (!storedResult) return false;
+
+      applyAggregateResult(storedResult);
+      return true;
     }
 
     async function renderDashboardState(profileSaved = null) {
@@ -480,12 +484,15 @@
 
 
     async function initMainDashboard() {
+      const profilePromise = hasSavedDatabaseProfile();
+      const storedAggregateResultPromise = requestStoredAggregateResult();
+
       folders = await FolderStore.loadFoldersFromApi();
       await loadActivityFilesFromApi();
-      const isProfileSaved = await hasSavedDatabaseProfile();
+      const isProfileSaved = await profilePromise;
       initializeTutorialPanel(isProfileSaved);
       await renderFolders(isProfileSaved);
-      await restoreAggregateResult();
+      await restoreAggregateResult(storedAggregateResultPromise);
       if (shouldRunAggregateAnalysis()) await runAnalysis();
     }
 

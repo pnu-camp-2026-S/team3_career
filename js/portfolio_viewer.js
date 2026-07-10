@@ -17,6 +17,20 @@
       return String(value || '').replace(/\s+/g, ' ').trim();
     }
 
+    function stripTrailingPostposition(text) {
+      return String(text || '')
+        .replace(/(\S+\s+\S+)\s+(?:과|와|은|는|이|가|을|를|의|에|로|으로|도|만|까지|부터|처럼|보다|에게|께|한테|랑|이랑|하고)$/u, '$1')
+        .replace(/(\S+\s+\S+)(?:과|와|은|는|이|가|을|를|의|에|로|으로|도|만|까지|부터|처럼|보다|에게|께|한테|랑|이랑|하고)$/u, '$1')
+        .trim();
+    }
+
+    function normalizeKeywordList(keywords) {
+      return [...new Set((Array.isArray(keywords) ? keywords : [])
+        .map((keyword) => stripTrailingPostposition(keyword))
+        .filter(Boolean))]
+        .slice(0, 12);
+    }
+
     function normalizeBlocks(portfolio) {
       const isPptFormat = String(portfolio.format || '').includes('PPT');
       const source = isPptFormat && Array.isArray(portfolio.slides) && portfolio.slides.length
@@ -49,7 +63,7 @@
 
     function createSlides(portfolio) {
       const blocks = normalizeBlocks(portfolio);
-      const keywords = Array.isArray(portfolio.keywords) ? portfolio.keywords.filter(Boolean).slice(0, 3) : [];
+      const keywords = normalizeKeywordList(portfolio.keywords).slice(0, 3);
       return [
         {
           type: 'overview',

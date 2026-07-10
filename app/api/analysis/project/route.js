@@ -1,6 +1,7 @@
 // 프로젝트 단위 AI 분석 라우트.
 // POST: 프로젝트의 미분석 파일만 파일별 요약(L1)을 보강하고, 프로젝트 종합(L2)으로
 //       summary.md/index.json/log.md 3종 산출물을 각각 생성해 project_analyses(scope='project')에 저장.
+//       마지막 L2 이후 새로 생성·수정된 L1이 없으면 재분석 없이 기존 산출물을 반환한다(unchanged: true).
 // GET: 저장된 프로젝트 종합(3종 + 수정 플래그)과 파일별 분석 상태를 반환한다(화면 복원용).
 // PATCH: 프로젝트 산출물(summary|index|log) 한 개만 수정하고 수정 플래그를 세운다(개별 수정·수정본 보존).
 
@@ -115,6 +116,46 @@ export async function POST(request) {
       if (currentProvider !== 'mock' && isMockAnalysisRow(analysisRow)) return true;
       return !isAnalysisCurrent(row, analysisRow);
     });
+
+    // 변경 감지(#268): 새로 요약할 파일이 없고, 마지막 프로젝트 종합(L2) 이후 수정된
+    // 파일 요약(L1)도 없으면 기존 L2 산출물을 그대로 유지하고 AI 재분석을 건너뛴다.
+    if (pendingFiles.length === 0) {
+      const { data: aggregateRow, error: aggregateError } = await supabase
+        .from('project_analyses')
+        .select('result, updated_at')
+        .eq('user_id', user.id)
+        .eq('scope', 'project')
+        .eq('project_id', projectId)
+        .maybeSingle();
+      if (aggregateError) return Response.json({ message: aggregateError.message }, { status: 500 });
+
+      const latestFileAnalysisAt = (analysisRows || []).reduce((latest, row) => {
+        const updatedAt = row.updated_at ? new Date(row.updated_at).getTime() : 0;
+        return Math.max(latest, updatedAt);
+      }, 0);
+      const aggregateUpdatedAt = aggregateRow?.updated_at
+        ? new Date(aggregateRow.updated_at).getTime()
+        : 0;
+      const aggregateIsStaleMock =
+        currentProvider !== 'mock' && aggregateRow?.result?.provider === 'mock';
+      const unchanged = Boolean(aggregateRow?.result)
+        && !aggregateIsStaleMock
+        && aggregateUpdatedAt >= latestFileAnalysisAt;
+
+      if (unchanged) {
+        return Response.json({
+          ok: true,
+          unchanged: true,
+          analyzedCount: 0,
+          failedCount: 0,
+          skippedCount: projectFiles.length,
+          files: [],
+          project: aggregateRow.result,
+          projectReason: null,
+          errors: [],
+        });
+      }
+    }
 
     const repository = new DbAnalysisRepository({ supabase, userId: user.id, projectId });
     const storage = (createSupabaseAdminClient() || supabase).storage;
