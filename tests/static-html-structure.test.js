@@ -542,6 +542,10 @@ assert.match(
 const nextLegacyPage = fs.readFileSync(path.join(appDir, '[[...slug]]', 'page.js'), 'utf8');
 const nextLegacyScripts = fs.readFileSync(path.join(appDir, 'LegacyScripts.jsx'), 'utf8');
 const nextLegacyNavigation = fs.readFileSync(path.join(appDir, 'LegacyNavigation.jsx'), 'utf8');
+const nextLegacyStyleGatePath = path.join(appDir, 'LegacyStyleGate.jsx');
+const nextLegacyStyleGate = fs.existsSync(nextLegacyStyleGatePath)
+  ? fs.readFileSync(nextLegacyStyleGatePath, 'utf8')
+  : '';
 const nextLegacyLib = fs.readFileSync(path.join(libDir, 'legacy-page.js'), 'utf8');
 const nextCssRoute = fs.readFileSync(path.join(appDir, 'css', '[...file]', 'route.js'), 'utf8');
 const nextJsRoute = fs.readFileSync(path.join(appDir, 'js', '[...file]', 'route.js'), 'utf8');
@@ -597,6 +601,40 @@ assert.match(
   nextLegacyPage,
   /const resolvedParams = await params;[\s\S]*getLegacyPage\(resolvedParams\?\.slug \|\| \[\]\)/,
   'Next catch-all route should render the existing html pages'
+);
+assert.ok(
+  fs.existsSync(nextLegacyStyleGatePath),
+  'CSS 준비 전 레거시 HTML을 숨기는 스타일 게이트 컴포넌트가 있어야 한다'
+);
+assert.match(
+  nextLegacyStyleGate,
+  /'use client';[\s\S]*useLayoutEffect[\s\S]*useState\(false\)[\s\S]*visibility:\s*isReady \? 'visible' : 'hidden'/,
+  '스타일 게이트는 첫 렌더링을 숨기고 레이아웃 효과에서 CSS 준비 상태를 확인해야 한다'
+);
+assert.match(
+  nextLegacyStyleGate,
+  /querySelectorAll\('link\[data-legacy-style-page\]'\)[\s\S]*dataset\.legacyStylePage === pageKey[\s\S]*link\.sheet/,
+  '스타일 게이트는 현재 페이지에 속한 실제 스타일시트의 로드 상태를 확인해야 한다'
+);
+assert.match(
+  nextLegacyStyleGate,
+  /addEventListener\('load',\s*settleLink[\s\S]*addEventListener\('error',\s*settleLink[\s\S]*removeEventListener\('load'[\s\S]*removeEventListener\('error'/,
+  '스타일 게이트는 CSS 성공과 실패를 모두 처리하고 이벤트를 정리해야 한다'
+);
+assert.match(
+  nextLegacyStyleGate,
+  /new MutationObserver\([\s\S]*observer\.observe\(document\.documentElement,[\s\S]*observer\?\.disconnect\(\)/,
+  '스타일 링크가 늦게 추가되는 경우 DOM을 감시하고 완료 후 감시를 해제해야 한다'
+);
+assert.match(
+  nextLegacyStyleGate,
+  /STYLE_READY_TIMEOUT_MS\s*=\s*3000[\s\S]*setTimeout\(revealPage,[\s\S]*clearTimeout\(timeoutId\)/,
+  'CSS 이벤트가 누락되어도 3초 후 화면을 공개하고 타이머를 정리해야 한다'
+);
+assert.match(
+  nextLegacyPage,
+  /data-legacy-style-page=\{page\.fileName\}[\s\S]*<noscript[\s\S]*visibility:visible!important[\s\S]*<LegacyStyleGate[\s\S]*key=\{page\.fileName\}[\s\S]*styleCount=\{page\.styles\.length\}[\s\S]*<LegacyScripts/,
+  '레거시 페이지는 CSS 링크를 식별하고 JavaScript 없이도 공개 가능한 페이지별 스타일 게이트를 사용해야 한다'
 );
 assert.match(
   nextLegacyScripts,
