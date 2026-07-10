@@ -2340,11 +2340,6 @@ assert.match(
 );
 assert.match(
   contestHtml,
-  /id="recommendationProfileSummary"[\s\S]*id="recommendationProfileChips"[\s\S]*id="recommendationProfileUpdatedAt"/,
-  'contest page should show the currently applied mypage recommendation profile summary'
-);
-assert.match(
-  contestHtml,
   /href="\.\.\/css\/contest\.css"/,
   'contest page should use the recommendation-specific stylesheet'
 );
@@ -2789,16 +2784,6 @@ assert.match(
   contestJs,
   /function\s+rebuildActivitiesForProfile\(profile\)[\s\S]*activities\s*=\s*normalizeActivityDataset\(baseActivities,\s*recommendationProfile\)[\s\S]*function\s+refreshRecommendationsFromProfile\([\s\S]*renderRecommendationCount\(\)[\s\S]*renderActivities\(\)/,
   'contest activity list should recalculate recommendations when mypage profile data changes'
-);
-assert.match(
-  contestJs,
-  /function\s+renderRecommendationProfileSummary\(profile\s*=\s*recommendationProfile\)[\s\S]*전공[\s\S]*희망 직무[\s\S]*관심 산업[\s\S]*recommendationProfileUpdatedAt\.textContent/,
-  'contest page should render the active mypage inputs used by recommendation scoring'
-);
-assert.match(
-  contestJs,
-  /const\s+profileUpdatedStorageKey\s*=\s*'myfitfolioProfileUpdatedAt'[\s\S]*event\.key\s*===\s*profileUpdatedStorageKey[\s\S]*refreshRecommendationsFromProfile\(\)/,
-  'contest page should refresh recommendations when mypage save timestamp changes in another tab'
 );
 assert.match(
   contestJs,

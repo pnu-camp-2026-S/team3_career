@@ -274,8 +274,6 @@ const calendarMonthLabel = document.getElementById('calendarMonth');
 const calendarDays = document.getElementById('calendarDays');
 const prevCalendarMonth = document.getElementById('prevCalendarMonth');
 const nextCalendarMonth = document.getElementById('nextCalendarMonth');
-const recommendationProfileChips = document.getElementById('recommendationProfileChips');
-const recommendationProfileUpdatedAt = document.getElementById('recommendationProfileUpdatedAt');
 
 let activeTab = 'all';
 let activeActivitySort = 'recommendation';
@@ -292,7 +290,6 @@ const standardRecommendationThreshold = 80;
 const exploratoryRecommendationThreshold = 70;
 const visibleScheduleLimit = 5;
 const savedScheduleStorageKey = 'myfitfolioSavedActivitySchedules';
-const profileUpdatedStorageKey = 'myfitfolioProfileUpdatedAt';
 const activitySchedulesEndpoint = '/api/activity-schedules';
 const profileStorageKeys = ['myfitfolioProfile', 'careerfit_mypage', 'myfitfolio_mypage', 'mypage_profile', 'userProfile'];
 let savedSchedules = loadSavedSchedules();
@@ -364,46 +361,6 @@ function readRecommendationProfile() {
 
 function getRecommendationProfileSignature(profile) {
   return JSON.stringify(profile || {});
-}
-
-function formatProfileList(values, emptyText = '없음') {
-  const list = normalizePreferenceList(values);
-  return list.length ? list.join(', ') : emptyText;
-}
-
-function getProfileUpdatedTimeText() {
-  const savedAt = Number(localStorage.getItem(profileUpdatedStorageKey) || 0);
-  if (!savedAt) return '마이페이지 저장 후 자동 반영됩니다.';
-
-  const date = new Date(savedAt);
-  if (Number.isNaN(date.getTime())) return '마이페이지 저장 후 자동 반영됩니다.';
-
-  return `마지막 반영 ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-}
-
-function renderRecommendationProfileSummary(profile = recommendationProfile) {
-  if (!recommendationProfileChips) return;
-
-  const chips = [
-    ['전공', normalizeDepartmentName(profile.major) || '없음'],
-    ['부전공/연계', normalizeDepartmentName(profile.minor) || normalizeDepartmentName(profile.linkedMajor) || '없음'],
-    ['희망 직무', formatProfileList(profile.desiredJobs)],
-    ['희망 업종', formatProfileList(profile.desiredIndustries)],
-    ['관심 산업', formatProfileList(profile.interestedIndustries)],
-    ['관심 분야', formatProfileList(profile.interestFields)],
-    ['관심 기업', formatProfileList(profile.interestedCompanies)]
-  ];
-
-  recommendationProfileChips.innerHTML = chips
-    .map(([label, value]) => {
-      const isEmpty = value === '없음';
-      return `<span class="profile-sync-chip ${isEmpty ? 'is-empty' : ''}">${label}: ${value}</span>`;
-    })
-    .join('');
-
-  if (recommendationProfileUpdatedAt) {
-    recommendationProfileUpdatedAt.textContent = getProfileUpdatedTimeText();
-  }
 }
 
 function hasProfileInput(profile) {
@@ -981,16 +938,12 @@ function rebuildActivitiesForProfile(profile) {
 
 function refreshRecommendationsFromProfile(profile = readRecommendationProfile(), options = {}) {
   const nextSignature = getRecommendationProfileSignature(profile);
-  if (!options.force && nextSignature === recommendationProfileSignature) {
-    renderRecommendationProfileSummary(profile);
-    return false;
-  }
+  if (!options.force && nextSignature === recommendationProfileSignature) return false;
 
   rebuildActivitiesForProfile(profile);
   clearExpandedDetail();
   selectedActivityId = null;
   currentActivityPage = 1;
-  renderRecommendationProfileSummary(profile);
   renderRecommendationCount();
   renderActivities();
   return true;
@@ -1523,7 +1476,7 @@ window.addEventListener('focus', () => {
 });
 
 window.addEventListener('storage', (event) => {
-  if (profileStorageKeys.includes(event.key) || event.key === profileUpdatedStorageKey) {
+  if (profileStorageKeys.includes(event.key)) {
     refreshRecommendationsFromProfile();
   }
 });
@@ -1539,7 +1492,6 @@ async function initSavedSchedules() {
 
 renderCalendarMonth();
 renderSchedule();
-renderRecommendationProfileSummary();
 renderRecommendationCount();
 renderActivities();
 loadRecommendationProfileFromServer();
