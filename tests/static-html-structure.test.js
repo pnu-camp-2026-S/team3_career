@@ -772,6 +772,21 @@ assert.match(
 );
 assert.match(
   portfoliosRoute,
+  /const PORTFOLIO_COLUMNS = '[^']*experience_projects[^']*raw[^']*template_values[^']*'/,
+  'portfolio API should select the experience_projects/raw/template_values columns'
+);
+assert.match(
+  portfoliosRoute,
+  /experienceProjects:\s*normalizeArray\(row\.experience_projects\)[\s\S]*raw:\s*row\.raw \|\| null[\s\S]*templateValues:\s*row\.template_values \|\| null/,
+  'portfolio API should map experience_projects/raw/template_values back to camelCase for clients'
+);
+assert.match(
+  portfoliosRoute,
+  /experience_projects:\s*normalizeArray\(payload\.experienceProjects\)[\s\S]*raw:\s*normalizeObjectOrNull\(payload\.raw\)[\s\S]*template_values:\s*normalizeObjectOrNull\(payload\.templateValues\)/,
+  'portfolio API should persist experienceProjects/raw/templateValues from the save payload'
+);
+assert.match(
+  portfoliosRoute,
   /export async function PATCH\(request\)[\s\S]*liked[\s\S]*updated_at/,
   'portfolio API should update portfolio state such as liked'
 );
@@ -986,8 +1001,25 @@ assert.match(
 );
 assert.match(
   portfoliosSchema,
+  /experience_projects jsonb not null default '\[\]'::jsonb[\s\S]*raw jsonb[\s\S]*template_values jsonb/,
+  'portfolios schema should store project selection evidence, the raw AI draft, and one-page PPT template values'
+);
+assert.match(
+  portfoliosSchema,
   /alter table public\.portfolios enable row level security[\s\S]*auth\.uid\(\) = user_id/,
   'portfolios schema should restrict portfolio rows to their owner'
+);
+
+const portfoliosRawMigrationPath = path.join(rootDir, 'docs', 'supabase-portfolios-raw-migration.sql');
+assert.ok(
+  fs.existsSync(portfoliosRawMigrationPath),
+  'a migration script should add experience_projects/raw/template_values to existing portfolios installs'
+);
+const portfoliosRawMigration = fs.readFileSync(portfoliosRawMigrationPath, 'utf8');
+assert.match(
+  portfoliosRawMigration,
+  /alter table public\.portfolios[\s\S]*add column if not exists experience_projects jsonb[\s\S]*add column if not exists raw jsonb[\s\S]*add column if not exists template_values jsonb/,
+  'portfolios raw migration should add the three new columns idempotently'
 );
 
 const mainHtml = readPageSource('main.html');
@@ -3155,6 +3187,18 @@ assert.match(
   /async function\s+openPortfolioEditorFromQuery\(\)[\s\S]*fetch\(`\$\{PORTFOLIO_ENDPOINT\}\?id=/,
   'portfolio_create should load portfolio edits through the portfolio API'
 );
+// 생성 시 선택한 프로젝트 근거(experienceProjects)와 AI 원본(raw)·PPT 템플릿 값(templateValues)을
+// coverLines에 우회 저장하지 않고 전용 필드로 저장·복원한다(#316).
+assert.match(
+  portfolioCreateHtml,
+  /experienceProjects:\s*currentPortfolio\.experienceProjects \|\| \[\][\s\S]*coverLines:\s*currentPortfolio\.coverLines \|\| \[\][\s\S]*raw:\s*currentPortfolio\.raw \|\| null[\s\S]*templateValues:\s*currentPortfolio\.raw\?\.template_values \|\| currentPortfolio\.templateValues \|\| null/,
+  'portfolio_create should persist experienceProjects/raw/templateValues as dedicated fields instead of stuffing template_values into coverLines'
+);
+assert.match(
+  portfolioCreateHtml,
+  /experienceProjects:\s*Array\.isArray\(portfolio\.experienceProjects\)[\s\S]*coverLines:\s*Array\.isArray\(portfolio\.coverLines\)[\s\S]*raw:\s*portfolio\.raw \|\| null[\s\S]*templateValues:\s*portfolio\.templateValues \|\| null/,
+  'portfolio_create should restore experienceProjects/coverLines/raw/templateValues when reopening a saved portfolio for editing'
+);
 assert.match(
   portfolioCreateHtml,
   /const\s+editPortfolioId\s*=\s*new URLSearchParams\(window\.location\.search\)\.get\('edit'\)/,
@@ -3549,6 +3593,13 @@ assert.match(
   portfolioSummaryPptxLib,
   /portfolio_summary_template\.pptxgen\.v2\.json[\s\S]*buildPlaceholderMap[\s\S]*project_or_activity_\$\{number\}[\s\S]*technology_\$\{number\}[\s\S]*skill_\$\{index \+ 1\}[\s\S]*slide\.addText/,
   'portfolio summary PPTX renderer should replace v2 placeholders in the template JSON'
+);
+// template_values는 이제 portfolios.template_values(및 raw.template_values) 전용 컬럼으로 저장되므로,
+// coverLines 우회 파싱(parseCoverLineTemplateValues)은 마이그레이션 전 구버전 데이터 호환용 폴백으로만 남는다(#316).
+assert.match(
+  portfolioSummaryPptxLib,
+  /export function getPortfolioSummaryTemplateValues\(portfolio = \{\}\)[\s\S]*return portfolio\.templateValues[\s\S]*\|\|\s*portfolio\.raw\?\.template_values[\s\S]*\|\|\s*parseCoverLineTemplateValues\(portfolio\)[\s\S]*\|\|\s*fallbackTemplateValues\(portfolio\)/,
+  'getPortfolioSummaryTemplateValues should prefer the dedicated templateValues field before legacy coverLines parsing'
 );
 assert.ok(
   fs.existsSync(portfolioKeywordsRoutePath),

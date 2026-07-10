@@ -8,37 +8,23 @@ function wrapInlineScript(content) {
 
 export default function LegacyScripts({ pageKey, scripts }) {
   useEffect(() => {
-    let cancelled = false;
-    const mountedScripts = [];
+    const mountedScripts = scripts.map((script) => {
+      const element = document.createElement('script');
+      element.dataset.legacyPage = pageKey;
 
-    async function mountScriptsInOrder() {
-      for (const script of scripts) {
-        if (cancelled) return;
-
-        await new Promise((resolve) => {
-          const element = document.createElement('script');
-          element.dataset.legacyPage = pageKey;
-
-          if (script.src) {
-            element.src = script.src;
-            element.onload = resolve;
-            element.onerror = resolve;
-          } else {
-            element.text = wrapInlineScript(script.content || '');
-          }
-
-          document.body.appendChild(element);
-          mountedScripts.push(element);
-
-          if (!script.src) resolve();
-        });
+      if (script.src) {
+        element.src = script.src;
+        // 다운로드는 병렬로 진행하되 실행 순서는 추가된 순서(DOM 순서)대로 보장한다.
+        element.async = false;
+      } else {
+        element.text = wrapInlineScript(script.content || '');
       }
-    }
 
-    mountScriptsInOrder();
+      document.body.appendChild(element);
+      return element;
+    });
 
     return () => {
-      cancelled = true;
       mountedScripts.forEach((script) => script.remove());
     };
   }, [pageKey, scripts]);
