@@ -7,7 +7,7 @@ const COVERLETTER_TEMPLATE_PATH = path.join(
   process.cwd(),
   'portfolio_design',
   'portfolio-coverletter',
-  'coverletter_ppt_template.json'
+  'coverletter_ppt_template_v2.json'
 );
 const coverletterTemplate = JSON.parse(fs.readFileSync(COVERLETTER_TEMPLATE_PATH, 'utf8'));
 
@@ -580,6 +580,41 @@ function getBinding(data, binding) {
     .reduce((source, key) => (source && source[key] !== undefined ? source[key] : undefined), data);
 }
 
+function normalizeTemplateText(value) {
+  if (Array.isArray(value)) {
+    return value.map((item) => normalizeTemplateText(item)).filter(Boolean).join(' · ');
+  }
+  if (value && typeof value === 'object') {
+    return Object.values(value).map((item) => normalizeTemplateText(item)).filter(Boolean).join(' · ');
+  }
+  return String(value || '')
+    .replace(/\r\n/g, '\n')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+function maxRuleForBinding(template, binding) {
+  const rules = template.generationContract?.maxTextRules || {};
+  if (!binding) return undefined;
+  if (rules[binding]) return rules[binding];
+
+  const bindingParts = String(binding).split('.');
+  for (const [pattern, value] of Object.entries(rules)) {
+    const patternParts = pattern.split('.');
+    if (patternParts.length !== bindingParts.length) continue;
+    const matches = patternParts.every((part, index) => part === '*' || part === bindingParts[index]);
+    if (matches) return value;
+  }
+  return undefined;
+}
+
+function clipTemplateText(value, maxLength) {
+  const text = normalizeTemplateText(value);
+  if (!maxLength || text.length <= maxLength) return text;
+  return `${text.slice(0, Math.max(0, maxLength - 1)).trim()}…`;
+}
+
 function colorValue(value) {
   return String(value || '').replace(/^#/, '');
 }
@@ -660,8 +695,11 @@ function addTemplateMaster(slide, template, pageNumber) {
 }
 
 function addTemplateText(slide, template, element, data) {
-  const rawText = element.text ?? getBinding(data, element.binding) ?? '';
-  const text = Array.isArray(rawText) ? rawText.filter(Boolean).join(' · ') : normalizeText(rawText);
+  const rawText = element.binding
+    ? getBinding(data, element.binding)
+    : element.text ?? element.defaultText ?? '';
+  const maxLength = element.maxLength || maxRuleForBinding(template, element.binding);
+  const text = clipTemplateText(rawText, maxLength);
   slide.addText(text || ' ', toTextOptions(element, resolveStyle(template, element)));
 }
 
@@ -948,6 +986,9 @@ function isCoverLetterPortfolio(portfolio) {
     format === COVERLETTER_FORMAT
     || format.includes('자기소개')
     || portfolio?.raw?.templateId === coverletterTemplate.templateId
+    || Boolean(portfolio?.raw?.cover)
+    || Boolean(portfolio?.raw?.positioning)
+    || Boolean(portfolio?.raw?.competencyEvidence)
     || Boolean(portfolio?.raw?.motivation)
     || Boolean(portfolio?.raw?.representativeExperience)
   );
@@ -1758,6 +1799,157 @@ function renderCoverLetterTemplatePptx(pptx, portfolio) {
   });
 }
 
+function firstCoverLetterText(...values) {
+  return values.find((value) => normalizeTemplateText(value)) || '';
+}
+
+function padCoverLetterItems(items, length, factory) {
+  const next = Array.isArray(items) ? items.filter(Boolean).slice(0, length) : [];
+  while (next.length < length) {
+    next.push(factory(next.length));
+  }
+  return next;
+}
+
+function normalizeCoverLetterTemplateV2Data(portfolio) {
+  const raw = portfolio.raw || {};
+  const legacy = normalizeCoverLetterData(portfolio);
+  const applicantSource = {
+    ...(legacy.applicant || {}),
+    ...(raw.applicant || {}),
+  };
+  const name = firstCoverLetterText(applicantSource.name, raw.name, portfolio.myPageInfo?.name, '지원자');
+  const targetRole = firstCoverLetterText(
+    applicantSource.targetRole,
+    portfolio.purpose,
+    portfolio.myPageInfo?.desiredRole,
+    portfolio.myPageInfo?.preferences?.detailJob,
+    '희망 직무'
+  );
+  const schoolMajor = firstCoverLetterText(
+    applicantSource.schoolMajor,
+    applicantSource.major,
+    portfolio.major,
+    portfolio.myPageInfo?.major,
+    '전공 미입력'
+  );
+  const contactBlock = [
+    firstCoverLetterText(applicantSource.email, portfolio.myPageInfo?.email),
+    firstCoverLetterText(applicantSource.phone, portfolio.myPageInfo?.phone),
+    schoolMajor,
+    targetRole,
+  ].filter(Boolean).join('\n');
+  const keywords = Array.isArray(portfolio.keywords) ? portfolio.keywords : [];
+  const experiences = Array.isArray(portfolio.experiences) ? portfolio.experiences : [];
+  const tags = padCoverLetterItems(
+    raw.cover?.tags || raw.coverChips || legacy.coverChips || [schoolMajor, ...keywords],
+    3,
+    (index) => ['직무 이해', '문제 해결', '협업 실행'][index]
+  ).map((item) => clipTemplateText(item, 12));
+  const legacyCompetencies = safeList(raw.competencies || legacy.competencies).map((item) => ({
+    name: item.name,
+    description: item.evidence,
+    evidence: item.lesson || item.evidence,
+  }));
+  const strengths = padCoverLetterItems(raw.strengths?.length ? raw.strengths : legacyCompetencies, 3, (index) => ({
+    name: keywords[index] || ['문제 해결', '기술 이해', '소통 협업'][index],
+    description: `${keywords[index] || ['문제 해결', '기술 이해', '소통 협업'][index]} 역량을 경험 근거로 설명합니다.`,
+    evidence: experiences[index] || legacy.representativeExperience?.title || '경험 보완 필요',
+  })).map((item) => ({
+    name: clipTemplateText(item.name, 12),
+    description: clipTemplateText(item.description, 52),
+    evidence: clipTemplateText(item.evidence, 34),
+  }));
+  const representativeExperience = raw.representativeExperience || legacy.representativeExperience || {};
+  const firstExperience = raw.experiences?.[0] || {};
+  const secondExperience = raw.experiences?.[1] || {};
+  const processSource = secondExperience.process
+    || safeList(legacy.workStyle?.process).concat(safeList(legacy.workStyle?.collaboration)).map((item) => ({ answer: `${item.label}: ${item.text}` }));
+  const contributionSource = raw.contributionPlan?.length ? raw.contributionPlan : legacy.contributionPlan;
+
+  return {
+    templateId: coverletterTemplate.templateId,
+    format: raw.format || '자기소개서형 포트폴리오',
+    applicant: {
+      name: clipTemplateText(name, 24),
+      targetRole: clipTemplateText(targetRole, 30),
+      email: clipTemplateText(firstCoverLetterText(applicantSource.email, portfolio.myPageInfo?.email), 42),
+      phone: clipTemplateText(firstCoverLetterText(applicantSource.phone, portfolio.myPageInfo?.phone), 24),
+      schoolMajor: clipTemplateText(schoolMajor, 42),
+    },
+    cover: {
+      applicantLine: clipTemplateText(raw.cover?.applicantLine || raw.title || legacy.title || `${name} | ${targetRole}`, 42),
+      contactBlock: clipTemplateText(raw.cover?.contactBlock || contactBlock, 90),
+      tags,
+      headline: clipTemplateText(raw.cover?.headline || raw.headline || legacy.headline || portfolio.summary, 95),
+    },
+    positioning: {
+      statement: clipTemplateText(raw.positioning?.statement || raw.coverSummary || legacy.coverSummary || portfolio.summary, 105),
+      jobInterest: clipTemplateText(raw.positioning?.jobInterest || legacy.motivation?.subtitle || '직무 관심 보완 필요', 95),
+      coreExperience: clipTemplateText(raw.positioning?.coreExperience || representativeExperience.title || experiences[0] || '대표 경험 보완 필요', 95),
+      contributionDirection: clipTemplateText(raw.positioning?.contributionDirection || '선택 경험을 실무 기여 방향으로 연결합니다.', 95),
+    },
+    motivation: {
+      companyUnderstanding: clipTemplateText(raw.motivation?.companyUnderstanding || legacy.motivation?.subtitle || '지원 회사 또는 산업 이해 보완 필요', 95),
+      roleUnderstanding: clipTemplateText(raw.motivation?.roleUnderstanding || `${targetRole}에 필요한 역할과 역량을 경험 근거로 정리합니다.`, 95),
+      personalConnection: clipTemplateText(raw.motivation?.personalConnection || legacy.motivation?.narrative || '경험과 직무 관심의 연결 보완 필요', 95),
+      finalSentence: clipTemplateText(raw.motivation?.finalSentence || legacy.motivation?.narrative || '이 경험을 바탕으로 직무에 필요한 문제 해결에 기여하겠습니다.', 110),
+    },
+    strengths,
+    experiences: [
+      {
+        title: clipTemplateText(firstExperience.title || representativeExperience.title || experiences[0] || '대표 경험', 32),
+        meta: clipTemplateText(firstExperience.meta || '기간/역할/활동 유형 보완 필요', 45),
+        keywordsText: clipTemplateText(firstExperience.keywordsText || tags.map((item) => `#${item}`).join(' '), 40),
+        summary: clipTemplateText(firstExperience.summary || representativeExperience.narrative || portfolio.summary, 75),
+        star: {
+          situation: clipTemplateText(firstExperience.star?.situation || representativeExperience.star?.[0]?.text || '상황 보완 필요', 65),
+          task: clipTemplateText(firstExperience.star?.task || representativeExperience.star?.[1]?.text || '과제 보완 필요', 65),
+          action: clipTemplateText(firstExperience.star?.action || representativeExperience.star?.[2]?.text || '행동 보완 필요', 65),
+          result: clipTemplateText(firstExperience.star?.result || representativeExperience.star?.[3]?.text || '결과 보완 필요', 65),
+        },
+      },
+      {
+        process: padCoverLetterItems(processSource, 4, (index) => ({
+          answer: ['문제 발견 보완 필요', '역할 분담 보완 필요', '실행 과정 보완 필요', '결과 정리 보완 필요'][index],
+        })).map((item) => ({ answer: clipTemplateText(item.answer || item.text, 48) })),
+        resultSentence: clipTemplateText(secondExperience.resultSentence || '협업과 실행 과정을 통해 직무에 필요한 역량을 확인했습니다.', 95),
+      },
+    ],
+    competencyEvidence: padCoverLetterItems(raw.competencyEvidence, 4, (index) => ({
+      competency: strengths[index % strengths.length]?.name || ['문제 해결', '기술 이해', '소통 협업', '성장 태도'][index],
+      experience: experiences[index] || representativeExperience.title || '경험 보완 필요',
+      outcome: strengths[index % strengths.length]?.evidence || '성과 보완 필요',
+      question: ['지원동기', '직무역량', '협업경험', '성장과정'][index],
+    })).map((item) => ({
+      competency: clipTemplateText(item.competency, 12),
+      experience: clipTemplateText(item.experience, 22),
+      outcome: clipTemplateText(item.outcome, 28),
+      question: clipTemplateText(item.question, 16),
+    })),
+    contributionPlan: padCoverLetterItems(contributionSource, 3, (index) => ({
+      period: ['30일', '90일', '180일'][index],
+      title: ['직무 이해', '실무 기여', '확장 성장'][index],
+      plan: ['업무와 서비스 구조를 빠르게 학습합니다.', '경험 기반 문제 해결을 실무에 적용합니다.', '장기적으로 개선안을 제안하며 성장합니다.'][index],
+    })).map((item, index) => ({
+      period: clipTemplateText(item.period, 8),
+      title: clipTemplateText(item.title || ['직무 이해', '실무 기여', '확장 성장'][index], 10),
+      plan: clipTemplateText(item.plan || item.evidence, 42),
+    })),
+    closingSentence: clipTemplateText(raw.closingSentence || '근거 있는 경험을 바탕으로 직무에 필요한 가치를 만들어가겠습니다.', 90),
+    missingFields: safeList(raw.missingFields || raw.missing_fields || legacy.missingFields),
+  };
+}
+
+function renderCoverLetterTemplateV2Pptx(pptx, portfolio) {
+  const data = normalizeCoverLetterTemplateV2Data(portfolio);
+  coverletterTemplate.slides.forEach((templateSlide) => {
+    const slide = pptx.addSlide();
+    slide.background = { color: coverletterTemplate.theme?.colors?.background || 'FFFEFA' };
+    templateSlide.elements.forEach((element) => addTemplateElement(slide, coverletterTemplate, element, data));
+  });
+}
+
 function configurePptx(pptx, portfolio, template = null) {
   pptx.layout = template?.pptx?.layout || 'LAYOUT_WIDE';
   pptx.author = 'Myfitfolio';
@@ -1798,7 +1990,7 @@ export async function POST(request) {
     );
 
     if (isCoverLetter) {
-      renderCoverLetterTemplatePptx(pptx, portfolio);
+      renderCoverLetterTemplateV2Pptx(pptx, portfolio);
     } else if (isOnePageSummary) {
       addOnePageSummarySlide(pptx, portfolio);
     } else {

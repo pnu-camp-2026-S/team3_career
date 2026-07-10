@@ -1,0 +1,7172 @@
+{
+  "templateId": "coverletter_ppt_v2",
+  "templateName": "자기소개서형 포트폴리오 템플릿 MyFitfolio v2",
+  "sourcePptx": "자기소개서형_포트폴리오_템플릿_MyFitfolio_v2.pptx",
+  "engine": "PptxGenJS",
+  "version": "2.0.0",
+  "pptx": {
+    "layout": "LAYOUT_WIDE",
+    "width": 13.333,
+    "height": 7.5,
+    "unit": "inch",
+    "author": "Myfitfolio",
+    "company": "Myfitfolio",
+    "language": "ko-KR"
+  },
+  "theme": {
+    "fontFace": "Malgun Gothic",
+    "colors": {
+      "background": "FFFEFA",
+      "ink": "1E2A3A",
+      "muted": "5F6B7A",
+      "primary": "315C9B",
+      "line": "DDE4EE",
+      "blueSoft": "E8F0FA",
+      "greenSoft": "EAF4EC",
+      "purpleSoft": "EEEAF8",
+      "orangeSoft": "F8E9E1",
+      "white": "FFFFFF"
+    }
+  },
+  "generationContract": {
+    "purpose": "OpenAI는 이 템플릿의 binding 값만 생성하고, PptxGenJS 렌더러는 좌표와 스타일을 그대로 사용해 PPTX를 생성합니다.",
+    "dataRoot": "coverletterPortfolio",
+    "rules": [
+      "사용자가 제공한 경험, 마이페이지 정보, 업로드 파일 분석 결과에 근거한 내용만 작성합니다.",
+      "확인되지 않은 성과 수치, 회사명, 수상 이력, 자격 취득 여부를 만들지 않습니다.",
+      "모르는 내용은 빈 문자열 또는 보완 필요 문구로 남깁니다.",
+      "각 binding은 maxTextRules를 넘지 않게 짧고 발표자료에 맞는 문장으로 작성합니다.",
+      "같은 경험이라도 자기소개서 문항 흐름에 맞게 지원동기, 강점, 경험, 기여 계획으로 강조점을 나눕니다."
+    ],
+    "requiredDataKeys": [
+      "applicant",
+      "cover",
+      "positioning",
+      "motivation",
+      "strengths",
+      "experiences",
+      "competencyEvidence",
+      "contributionPlan",
+      "closingSentence"
+    ],
+    "maxTextRules": {
+      "cover.applicantLine": 42,
+      "cover.contactBlock": 90,
+      "cover.headline": 95,
+      "positioning.statement": 105,
+      "motivation.companyUnderstanding": 95,
+      "motivation.roleUnderstanding": 95,
+      "motivation.personalConnection": 95,
+      "motivation.finalSentence": 110,
+      "strengths.*.name": 12,
+      "strengths.*.description": 52,
+      "strengths.*.evidence": 34,
+      "experiences.*.title": 32,
+      "experiences.*.meta": 45,
+      "experiences.*.keywordsText": 40,
+      "experiences.*.summary": 75,
+      "experiences.*.star.*": 65,
+      "experiences.1.process.*.answer": 48,
+      "experiences.1.resultSentence": 95,
+      "competencyEvidence.*.competency": 12,
+      "competencyEvidence.*.experience": 22,
+      "competencyEvidence.*.outcome": 28,
+      "competencyEvidence.*.question": 16,
+      "contributionPlan.*.period": 8,
+      "contributionPlan.*.title": 10,
+      "contributionPlan.*.plan": 42,
+      "closingSentence": 90
+    }
+  },
+  "openAiOutputSchema": {
+    "applicant": {
+      "name": "지원자 이름",
+      "targetRole": "희망 직무",
+      "email": "이메일",
+      "phone": "전화번호",
+      "schoolMajor": "학교 / 전공"
+    },
+    "cover": {
+      "applicantLine": "지원자명 | 희망 직무",
+      "contactBlock": "이메일 · 전화번호\\n학교 / 전공\\n지원 회사 / 직무",
+      "tags": [
+        "핵심역량1",
+        "핵심역량2",
+        "핵심역량3"
+      ],
+      "headline": "직무와 연결되는 핵심 강점 한 문장"
+    },
+    "positioning": {
+      "statement": "지원자 포지셔닝 한 문장",
+      "jobInterest": "직무 관심 요약",
+      "coreExperience": "핵심 경험 요약",
+      "contributionDirection": "기여 방향 요약"
+    },
+    "motivation": {
+      "companyUnderstanding": "회사/기관 이해",
+      "roleUnderstanding": "직무 이해",
+      "personalConnection": "나의 경험 연결",
+      "finalSentence": "지원동기 완성 문장"
+    },
+    "strengths": [
+      {
+        "name": "강점명",
+        "description": "강점 설명",
+        "evidence": "증명 경험"
+      },
+      {
+        "name": "강점명",
+        "description": "강점 설명",
+        "evidence": "증명 경험"
+      },
+      {
+        "name": "강점명",
+        "description": "강점 설명",
+        "evidence": "증명 경험"
+      }
+    ],
+    "experiences": [
+      {
+        "title": "대표 경험명",
+        "meta": "기간 | 역할 | 활동 유형",
+        "keywordsText": "#키워드 #키워드 #키워드",
+        "summary": "경험 요약 문장",
+        "star": {
+          "situation": "상황",
+          "task": "과제",
+          "action": "행동",
+          "result": "결과"
+        }
+      },
+      {
+        "process": [
+          {
+            "answer": "문제 발견 내용"
+          },
+          {
+            "answer": "역할 분담 내용"
+          },
+          {
+            "answer": "실행 과정 내용"
+          },
+          {
+            "answer": "결과 정리 내용"
+          }
+        ],
+        "resultSentence": "협업/실행 경험의 성과 문장"
+      }
+    ],
+    "competencyEvidence": [
+      {
+        "competency": "역량",
+        "experience": "근거 경험",
+        "outcome": "성과/수치",
+        "question": "활용 문항"
+      }
+    ],
+    "contributionPlan": [
+      {
+        "period": "30일",
+        "title": "입사 초기",
+        "plan": "기여 계획"
+      },
+      {
+        "period": "90일",
+        "title": "성장 단계",
+        "plan": "기여 계획"
+      },
+      {
+        "period": "180일",
+        "title": "장기 기여",
+        "plan": "기여 계획"
+      }
+    ],
+    "closingSentence": "마무리 문장",
+    "missingFields": [
+      "보완이 필요한 정보 목록"
+    ]
+  },
+  "slides": [
+    {
+      "id": "cover",
+      "sourceSlide": 1,
+      "title": "자기소개서형 포트폴리오",
+      "sectionLabel": "Cover",
+      "description": "경험을 나열하는 대신, 자기소개서 문항처럼 “왜 나인가”를 설득하는 포트폴리오 템플릿",
+      "elements": [
+        {
+          "sourceId": "2",
+          "sourceName": "Text 0",
+          "shape": "rect",
+          "x": 0.85,
+          "y": 1.65,
+          "w": 5.9,
+          "h": 1.25,
+          "type": "text",
+          "text": "자기소개서형\n포트폴리오",
+          "defaultText": "자기소개서형\n포트폴리오",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 36.0,
+            "bold": true,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 0.85,
+              "y": 1.65,
+              "w": 5.9,
+              "h": 1.25
+            }
+          }
+        },
+        {
+          "sourceId": "3",
+          "sourceName": "Text 1",
+          "shape": "rect",
+          "x": 0.9,
+          "y": 3.1,
+          "w": 4.7,
+          "h": 0.28,
+          "type": "text",
+          "text": "[지원자명]  |  [희망 직무]",
+          "defaultText": "[지원자명]  |  [희망 직무]",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 13.0,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 0.9,
+              "y": 3.1,
+              "w": 4.7,
+              "h": 0.28
+            }
+          },
+          "binding": "cover.applicantLine",
+          "maxLength": 42,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{cover.applicantLine}}"
+        },
+        {
+          "sourceId": "4",
+          "sourceName": "Text 2",
+          "shape": "rect",
+          "x": 0.9,
+          "y": 3.55,
+          "w": 5.0,
+          "h": 0.65,
+          "type": "text",
+          "text": "경험을 나열하는 대신, 자기소개서 문항처럼\n“왜 나인가”를 설득하는 포트폴리오 템플릿",
+          "defaultText": "경험을 나열하는 대신, 자기소개서 문항처럼\n“왜 나인가”를 설득하는 포트폴리오 템플릿",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 14.0,
+            "color": "5F6B7A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 0.9,
+              "y": 3.55,
+              "w": 5.0,
+              "h": 0.65
+            }
+          }
+        },
+        {
+          "sourceId": "5",
+          "sourceName": "Shape 3",
+          "shape": "line",
+          "x": 0.93,
+          "y": 4.55,
+          "w": 2.1,
+          "h": 0.0,
+          "type": "shape",
+          "style": {
+            "line": "315C9B"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "line",
+            "position": {
+              "x": 0.93,
+              "y": 4.55,
+              "w": 2.1,
+              "h": 0.0
+            }
+          }
+        },
+        {
+          "sourceId": "6",
+          "sourceName": "Text 4",
+          "shape": "rect",
+          "x": 0.9,
+          "y": 4.9,
+          "w": 2.0,
+          "h": 0.3,
+          "type": "text",
+          "text": "MyFitfolio",
+          "defaultText": "MyFitfolio",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 14.0,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 0.9,
+              "y": 4.9,
+              "w": 2.0,
+              "h": 0.3
+            }
+          }
+        },
+        {
+          "sourceId": "7",
+          "sourceName": "Shape 5",
+          "shape": "roundRect",
+          "x": 7.45,
+          "y": 1.35,
+          "w": 4.6,
+          "h": 4.7,
+          "type": "shape",
+          "style": {
+            "fill": "FFFEFA",
+            "line": "DDE4EE",
+            "rectRadius": 0.08
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "roundRect",
+            "position": {
+              "x": 7.45,
+              "y": 1.35,
+              "w": 4.6,
+              "h": 4.7
+            }
+          }
+        },
+        {
+          "sourceId": "8",
+          "sourceName": "Shape 6",
+          "shape": "ellipse",
+          "x": 8.2,
+          "y": 1.93,
+          "w": 1.25,
+          "h": 1.25,
+          "type": "shape",
+          "style": {
+            "fill": "E8F0FA",
+            "line": "E8F0FA"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "ellipse",
+            "position": {
+              "x": 8.2,
+              "y": 1.93,
+              "w": 1.25,
+              "h": 1.25
+            }
+          }
+        },
+        {
+          "sourceId": "9",
+          "sourceName": "Text 7",
+          "shape": "rect",
+          "x": 8.54,
+          "y": 2.42,
+          "w": 0.55,
+          "h": 0.16,
+          "type": "text",
+          "text": "사진",
+          "defaultText": "사진",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "color": "5F6B7A",
+            "align": "center",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 8.54,
+              "y": 2.42,
+              "w": 0.55,
+              "h": 0.16
+            }
+          }
+        },
+        {
+          "sourceId": "10",
+          "sourceName": "Text 8",
+          "shape": "rect",
+          "x": 9.65,
+          "y": 1.94,
+          "w": 1.6,
+          "h": 0.38,
+          "type": "text",
+          "text": "[이름]",
+          "defaultText": "[이름]",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 24.0,
+            "bold": true,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 9.65,
+              "y": 1.94,
+              "w": 1.6,
+              "h": 0.38
+            }
+          },
+          "binding": "applicant.name",
+          "maxLength": null,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{applicant.name}}"
+        },
+        {
+          "sourceId": "11",
+          "sourceName": "Text 9",
+          "shape": "rect",
+          "x": 9.65,
+          "y": 2.45,
+          "w": 1.9,
+          "h": 0.75,
+          "type": "text",
+          "text": "[이메일]  ·  [전화번호]\n[학교 / 전공]\n[지원 회사 / 직무]",
+          "defaultText": "[이메일]  ·  [전화번호]\n[학교 / 전공]\n[지원 회사 / 직무]",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 9.5,
+            "color": "5F6B7A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 9.65,
+              "y": 2.45,
+              "w": 1.9,
+              "h": 0.75
+            }
+          },
+          "binding": "cover.contactBlock",
+          "maxLength": 90,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{cover.contactBlock}}"
+        },
+        {
+          "sourceId": "12",
+          "sourceName": "Shape 10",
+          "shape": "roundRect",
+          "x": 8.0,
+          "y": 3.72,
+          "w": 0.95,
+          "h": 0.34,
+          "type": "shape",
+          "style": {
+            "fill": "E8F0FA",
+            "line": "E8F0FA",
+            "rectRadius": 0.08
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "roundRect",
+            "position": {
+              "x": 8.0,
+              "y": 3.72,
+              "w": 0.95,
+              "h": 0.34
+            }
+          }
+        },
+        {
+          "sourceId": "13",
+          "sourceName": "Text 11",
+          "shape": "rect",
+          "x": 8.07,
+          "y": 3.79,
+          "w": 0.81,
+          "h": 0.15,
+          "type": "text",
+          "text": "문제 해결",
+          "defaultText": "문제 해결",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "bold": true,
+            "color": "315C9B",
+            "align": "center",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 8.07,
+              "y": 3.79,
+              "w": 0.81,
+              "h": 0.15
+            }
+          },
+          "binding": "cover.tags.0",
+          "maxLength": null,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{cover.tags.0}}"
+        },
+        {
+          "sourceId": "14",
+          "sourceName": "Shape 12",
+          "shape": "roundRect",
+          "x": 9.05,
+          "y": 3.72,
+          "w": 0.7,
+          "h": 0.34,
+          "type": "shape",
+          "style": {
+            "fill": "EAF4EC",
+            "line": "EAF4EC",
+            "rectRadius": 0.08
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "roundRect",
+            "position": {
+              "x": 9.05,
+              "y": 3.72,
+              "w": 0.7,
+              "h": 0.34
+            }
+          }
+        },
+        {
+          "sourceId": "15",
+          "sourceName": "Text 13",
+          "shape": "rect",
+          "x": 9.12,
+          "y": 3.79,
+          "w": 0.56,
+          "h": 0.15,
+          "type": "text",
+          "text": "협업",
+          "defaultText": "협업",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "bold": true,
+            "color": "2E6B4A",
+            "align": "center",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 9.12,
+              "y": 3.79,
+              "w": 0.56,
+              "h": 0.15
+            }
+          },
+          "binding": "cover.tags.1",
+          "maxLength": null,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{cover.tags.1}}"
+        },
+        {
+          "sourceId": "16",
+          "sourceName": "Shape 14",
+          "shape": "roundRect",
+          "x": 9.85,
+          "y": 3.72,
+          "w": 0.82,
+          "h": 0.34,
+          "type": "shape",
+          "style": {
+            "fill": "EEEAF8",
+            "line": "EEEAF8",
+            "rectRadius": 0.08
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "roundRect",
+            "position": {
+              "x": 9.85,
+              "y": 3.72,
+              "w": 0.82,
+              "h": 0.34
+            }
+          }
+        },
+        {
+          "sourceId": "17",
+          "sourceName": "Text 15",
+          "shape": "rect",
+          "x": 9.92,
+          "y": 3.79,
+          "w": 0.68,
+          "h": 0.15,
+          "type": "text",
+          "text": "실행력",
+          "defaultText": "실행력",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "bold": true,
+            "color": "6B5CB6",
+            "align": "center",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 9.92,
+              "y": 3.79,
+              "w": 0.68,
+              "h": 0.15
+            }
+          },
+          "binding": "cover.tags.2",
+          "maxLength": null,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{cover.tags.2}}"
+        },
+        {
+          "sourceId": "18",
+          "sourceName": "Text 16",
+          "shape": "rect",
+          "x": 8.0,
+          "y": 4.5,
+          "w": 1.2,
+          "h": 0.2,
+          "type": "text",
+          "text": "한 줄 소개",
+          "defaultText": "한 줄 소개",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 9.0,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 8.0,
+              "y": 4.5,
+              "w": 1.2,
+              "h": 0.2
+            }
+          }
+        },
+        {
+          "sourceId": "19",
+          "sourceName": "Text 17",
+          "shape": "rect",
+          "x": 8.0,
+          "y": 4.78,
+          "w": 3.35,
+          "h": 0.65,
+          "type": "text",
+          "text": "[직무와 연결되는 나의 핵심 강점 한 문장]\n예: 데이터로 문제를 정의하고, 실행 가능한 서비스 개선으로 연결하는 사람",
+          "defaultText": "[직무와 연결되는 나의 핵심 강점 한 문장]\n예: 데이터로 문제를 정의하고, 실행 가능한 서비스 개선으로 연결하는 사람",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.0,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 8.0,
+              "y": 4.78,
+              "w": 3.35,
+              "h": 0.65
+            }
+          },
+          "binding": "cover.headline",
+          "maxLength": 95,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{cover.headline}}"
+        },
+        {
+          "sourceId": "20",
+          "sourceName": "Text 18",
+          "shape": "rect",
+          "x": 0.58,
+          "y": 6.94,
+          "w": 0.3,
+          "h": 0.18,
+          "type": "text",
+          "text": "01",
+          "defaultText": "01",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 0.58,
+              "y": 6.94,
+              "w": 0.3,
+              "h": 0.18
+            }
+          }
+        },
+        {
+          "sourceId": "21",
+          "sourceName": "Shape 19",
+          "shape": "line",
+          "x": 0.95,
+          "y": 7.03,
+          "w": 1.2,
+          "h": 0.0,
+          "type": "shape",
+          "style": {
+            "line": "315C9B"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "line",
+            "position": {
+              "x": 0.95,
+              "y": 7.03,
+              "w": 1.2,
+              "h": 0.0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "positioning",
+      "sourceSlide": 2,
+      "title": "나를 한 문장으로 설명합니다",
+      "sectionLabel": "Positioning",
+      "description": "자기소개서 첫 문단처럼 지원자의 방향성과 강점을 먼저 보여줍니다.",
+      "elements": [
+        {
+          "sourceId": "2",
+          "sourceName": "Text 0",
+          "shape": "rect",
+          "x": 0.55,
+          "y": 0.32,
+          "w": 1.8,
+          "h": 0.28,
+          "type": "text",
+          "text": "MyFitfolio",
+          "defaultText": "MyFitfolio",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 15.0,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 0.55,
+              "y": 0.32,
+              "w": 1.8,
+              "h": 0.28
+            }
+          }
+        },
+        {
+          "sourceId": "3",
+          "sourceName": "Text 1",
+          "shape": "rect",
+          "x": 10.35,
+          "y": 0.34,
+          "w": 2.35,
+          "h": 0.25,
+          "type": "text",
+          "text": "Positioning",
+          "defaultText": "Positioning",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.5,
+            "color": "5F6B7A",
+            "align": "right",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 10.35,
+              "y": 0.34,
+              "w": 2.35,
+              "h": 0.25
+            }
+          }
+        },
+        {
+          "sourceId": "4",
+          "sourceName": "Shape 2",
+          "shape": "line",
+          "x": 0.5,
+          "y": 0.72,
+          "w": 12.35,
+          "h": 0.0,
+          "type": "shape",
+          "style": {
+            "line": "DDE4EE"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "line",
+            "position": {
+              "x": 0.5,
+              "y": 0.72,
+              "w": 12.35,
+              "h": 0.0
+            }
+          }
+        },
+        {
+          "sourceId": "5",
+          "sourceName": "Text 3",
+          "shape": "rect",
+          "x": 0.75,
+          "y": 1.0,
+          "w": 5.7,
+          "h": 0.45,
+          "type": "text",
+          "text": "나를 한 문장으로 설명합니다",
+          "defaultText": "나를 한 문장으로 설명합니다",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 27.0,
+            "bold": true,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 0.75,
+              "y": 1.0,
+              "w": 5.7,
+              "h": 0.45
+            }
+          }
+        },
+        {
+          "sourceId": "6",
+          "sourceName": "Text 4",
+          "shape": "rect",
+          "x": 0.77,
+          "y": 1.52,
+          "w": 7.0,
+          "h": 0.28,
+          "type": "text",
+          "text": "자기소개서 첫 문단처럼 지원자의 방향성과 강점을 먼저 보여줍니다.",
+          "defaultText": "자기소개서 첫 문단처럼 지원자의 방향성과 강점을 먼저 보여줍니다.",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.5,
+            "color": "5F6B7A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 0.77,
+              "y": 1.52,
+              "w": 7.0,
+              "h": 0.28
+            }
+          }
+        },
+        {
+          "sourceId": "7",
+          "sourceName": "Shape 5",
+          "shape": "roundRect",
+          "x": 0.8,
+          "y": 2.05,
+          "w": 11.75,
+          "h": 3.95,
+          "type": "shape",
+          "style": {
+            "fill": "FFFEFA",
+            "line": "DDE4EE",
+            "rectRadius": 0.08
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "roundRect",
+            "position": {
+              "x": 0.8,
+              "y": 2.05,
+              "w": 11.75,
+              "h": 3.95
+            }
+          }
+        },
+        {
+          "sourceId": "8",
+          "sourceName": "Text 6",
+          "shape": "rect",
+          "x": 1.15,
+          "y": 2.36,
+          "w": 1.4,
+          "h": 0.22,
+          "type": "text",
+          "text": "나의 포지셔닝 문장",
+          "defaultText": "나의 포지셔닝 문장",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.5,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 1.15,
+              "y": 2.36,
+              "w": 1.4,
+              "h": 0.22
+            }
+          }
+        },
+        {
+          "sourceId": "9",
+          "sourceName": "Text 7",
+          "shape": "rect",
+          "x": 1.15,
+          "y": 2.78,
+          "w": 10.7,
+          "h": 0.55,
+          "type": "text",
+          "text": "“[직무]에서 [나의 강점]을 바탕으로 [지원 회사/조직]의 [기여 방향]을 만들어가는 사람”",
+          "defaultText": "“[직무]에서 [나의 강점]을 바탕으로 [지원 회사/조직]의 [기여 방향]을 만들어가는 사람”",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 20.0,
+            "bold": true,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 1.15,
+              "y": 2.78,
+              "w": 10.7,
+              "h": 0.55
+            }
+          },
+          "binding": "positioning.statement",
+          "maxLength": 105,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{positioning.statement}}"
+        },
+        {
+          "sourceId": "10",
+          "sourceName": "Shape 8",
+          "shape": "roundRect",
+          "x": 1.15,
+          "y": 3.65,
+          "w": 3.1,
+          "h": 1.55,
+          "type": "shape",
+          "style": {
+            "fill": "FFFFFF",
+            "line": "E8F0FA",
+            "rectRadius": 0.08
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "roundRect",
+            "position": {
+              "x": 1.15,
+              "y": 3.65,
+              "w": 3.1,
+              "h": 1.55
+            }
+          }
+        },
+        {
+          "sourceId": "11",
+          "sourceName": "Shape 9",
+          "shape": "roundRect",
+          "x": 1.35,
+          "y": 3.9,
+          "w": 1.0,
+          "h": 0.34,
+          "type": "shape",
+          "style": {
+            "fill": "E8F0FA",
+            "line": "E8F0FA",
+            "rectRadius": 0.08
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "roundRect",
+            "position": {
+              "x": 1.35,
+              "y": 3.9,
+              "w": 1.0,
+              "h": 0.34
+            }
+          }
+        },
+        {
+          "sourceId": "12",
+          "sourceName": "Text 10",
+          "shape": "rect",
+          "x": 1.42,
+          "y": 3.97,
+          "w": 0.86,
+          "h": 0.15,
+          "type": "text",
+          "text": "직무 관심",
+          "defaultText": "직무 관심",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "bold": true,
+            "color": "315C9B",
+            "align": "center",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 1.42,
+              "y": 3.97,
+              "w": 0.86,
+              "h": 0.15
+            }
+          }
+        },
+        {
+          "sourceId": "13",
+          "sourceName": "Text 11",
+          "shape": "rect",
+          "x": 1.4,
+          "y": 4.35,
+          "w": 2.5,
+          "h": 0.55,
+          "type": "text",
+          "text": "[내용 입력]\n- 관심 분야\n- 연결 경험\n- 보여줄 역량",
+          "defaultText": "[내용 입력]\n- 관심 분야\n- 연결 경험\n- 보여줄 역량",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 9.0,
+            "color": "5F6B7A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 1.4,
+              "y": 4.35,
+              "w": 2.5,
+              "h": 0.55
+            }
+          },
+          "binding": "positioning.jobInterest",
+          "maxLength": null,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{positioning.jobInterest}}"
+        },
+        {
+          "sourceId": "14",
+          "sourceName": "Shape 12",
+          "shape": "roundRect",
+          "x": 4.75,
+          "y": 3.65,
+          "w": 3.1,
+          "h": 1.55,
+          "type": "shape",
+          "style": {
+            "fill": "FFFFFF",
+            "line": "EAF4EC",
+            "rectRadius": 0.08
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "roundRect",
+            "position": {
+              "x": 4.75,
+              "y": 3.65,
+              "w": 3.1,
+              "h": 1.55
+            }
+          }
+        },
+        {
+          "sourceId": "15",
+          "sourceName": "Shape 13",
+          "shape": "roundRect",
+          "x": 4.95,
+          "y": 3.9,
+          "w": 1.0,
+          "h": 0.34,
+          "type": "shape",
+          "style": {
+            "fill": "EAF4EC",
+            "line": "EAF4EC",
+            "rectRadius": 0.08
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "roundRect",
+            "position": {
+              "x": 4.95,
+              "y": 3.9,
+              "w": 1.0,
+              "h": 0.34
+            }
+          }
+        },
+        {
+          "sourceId": "16",
+          "sourceName": "Text 14",
+          "shape": "rect",
+          "x": 5.02,
+          "y": 3.97,
+          "w": 0.86,
+          "h": 0.15,
+          "type": "text",
+          "text": "핵심 경험",
+          "defaultText": "핵심 경험",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "bold": true,
+            "color": "2E6B4A",
+            "align": "center",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 5.02,
+              "y": 3.97,
+              "w": 0.86,
+              "h": 0.15
+            }
+          }
+        },
+        {
+          "sourceId": "17",
+          "sourceName": "Text 15",
+          "shape": "rect",
+          "x": 5.0,
+          "y": 4.35,
+          "w": 2.5,
+          "h": 0.55,
+          "type": "text",
+          "text": "[내용 입력]\n- 관심 분야\n- 연결 경험\n- 보여줄 역량",
+          "defaultText": "[내용 입력]\n- 관심 분야\n- 연결 경험\n- 보여줄 역량",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 9.0,
+            "color": "5F6B7A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 5.0,
+              "y": 4.35,
+              "w": 2.5,
+              "h": 0.55
+            }
+          },
+          "binding": "positioning.coreExperience",
+          "maxLength": null,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{positioning.coreExperience}}"
+        },
+        {
+          "sourceId": "18",
+          "sourceName": "Shape 16",
+          "shape": "roundRect",
+          "x": 8.35,
+          "y": 3.65,
+          "w": 3.1,
+          "h": 1.55,
+          "type": "shape",
+          "style": {
+            "fill": "FFFFFF",
+            "line": "EEEAF8",
+            "rectRadius": 0.08
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "roundRect",
+            "position": {
+              "x": 8.35,
+              "y": 3.65,
+              "w": 3.1,
+              "h": 1.55
+            }
+          }
+        },
+        {
+          "sourceId": "19",
+          "sourceName": "Shape 17",
+          "shape": "roundRect",
+          "x": 8.55,
+          "y": 3.9,
+          "w": 1.0,
+          "h": 0.34,
+          "type": "shape",
+          "style": {
+            "fill": "EEEAF8",
+            "line": "EEEAF8",
+            "rectRadius": 0.08
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "roundRect",
+            "position": {
+              "x": 8.55,
+              "y": 3.9,
+              "w": 1.0,
+              "h": 0.34
+            }
+          }
+        },
+        {
+          "sourceId": "20",
+          "sourceName": "Text 18",
+          "shape": "rect",
+          "x": 8.62,
+          "y": 3.97,
+          "w": 0.86,
+          "h": 0.15,
+          "type": "text",
+          "text": "기여 방향",
+          "defaultText": "기여 방향",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "bold": true,
+            "color": "6B5CB6",
+            "align": "center",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 8.62,
+              "y": 3.97,
+              "w": 0.86,
+              "h": 0.15
+            }
+          }
+        },
+        {
+          "sourceId": "21",
+          "sourceName": "Text 19",
+          "shape": "rect",
+          "x": 8.6,
+          "y": 4.35,
+          "w": 2.5,
+          "h": 0.55,
+          "type": "text",
+          "text": "[내용 입력]\n- 관심 분야\n- 연결 경험\n- 보여줄 역량",
+          "defaultText": "[내용 입력]\n- 관심 분야\n- 연결 경험\n- 보여줄 역량",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 9.0,
+            "color": "5F6B7A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 8.6,
+              "y": 4.35,
+              "w": 2.5,
+              "h": 0.55
+            }
+          },
+          "binding": "positioning.contributionDirection",
+          "maxLength": null,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{positioning.contributionDirection}}"
+        },
+        {
+          "sourceId": "22",
+          "sourceName": "Shape 20",
+          "shape": "roundRect",
+          "x": 1.15,
+          "y": 5.55,
+          "w": 5.5,
+          "h": 0.42,
+          "type": "shape",
+          "style": {
+            "fill": "E8F0FA",
+            "line": "E8F0FA",
+            "rectRadius": 0.08
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "roundRect",
+            "position": {
+              "x": 1.15,
+              "y": 5.55,
+              "w": 5.5,
+              "h": 0.42
+            }
+          }
+        },
+        {
+          "sourceId": "23",
+          "sourceName": "Text 21",
+          "shape": "rect",
+          "x": 1.31,
+          "y": 5.65,
+          "w": 5.18,
+          "h": 0.18,
+          "type": "text",
+          "text": "작성 질문: 나는 어떤 문제를 해결하고 싶은 사람인가?",
+          "defaultText": "작성 질문: 나는 어떤 문제를 해결하고 싶은 사람인가?",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 9.5,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 1.31,
+              "y": 5.65,
+              "w": 5.18,
+              "h": 0.18
+            }
+          }
+        },
+        {
+          "sourceId": "24",
+          "sourceName": "Shape 22",
+          "shape": "roundRect",
+          "x": 6.85,
+          "y": 5.55,
+          "w": 5.5,
+          "h": 0.42,
+          "type": "shape",
+          "style": {
+            "fill": "E8F0FA",
+            "line": "E8F0FA",
+            "rectRadius": 0.08
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "roundRect",
+            "position": {
+              "x": 6.85,
+              "y": 5.55,
+              "w": 5.5,
+              "h": 0.42
+            }
+          }
+        },
+        {
+          "sourceId": "25",
+          "sourceName": "Text 23",
+          "shape": "rect",
+          "x": 7.01,
+          "y": 5.65,
+          "w": 5.18,
+          "h": 0.18,
+          "type": "text",
+          "text": "작성 질문: 이 직무에서 내가 증명할 수 있는 경험은 무엇인가?",
+          "defaultText": "작성 질문: 이 직무에서 내가 증명할 수 있는 경험은 무엇인가?",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 9.5,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 7.01,
+              "y": 5.65,
+              "w": 5.18,
+              "h": 0.18
+            }
+          }
+        },
+        {
+          "sourceId": "26",
+          "sourceName": "Text 24",
+          "shape": "rect",
+          "x": 0.58,
+          "y": 6.94,
+          "w": 0.3,
+          "h": 0.18,
+          "type": "text",
+          "text": "02",
+          "defaultText": "02",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 0.58,
+              "y": 6.94,
+              "w": 0.3,
+              "h": 0.18
+            }
+          }
+        },
+        {
+          "sourceId": "27",
+          "sourceName": "Shape 25",
+          "shape": "line",
+          "x": 0.95,
+          "y": 7.03,
+          "w": 1.2,
+          "h": 0.0,
+          "type": "shape",
+          "style": {
+            "line": "315C9B"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "line",
+            "position": {
+              "x": 0.95,
+              "y": 7.03,
+              "w": 1.2,
+              "h": 0.0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "motivation",
+      "sourceSlide": 3,
+      "title": "지원동기",
+      "sectionLabel": "Motivation",
+      "description": "회사와 직무를 이해한 뒤, 나의 경험과 자연스럽게 연결합니다.",
+      "elements": [
+        {
+          "sourceId": "2",
+          "sourceName": "Text 0",
+          "shape": "rect",
+          "x": 0.55,
+          "y": 0.32,
+          "w": 1.8,
+          "h": 0.28,
+          "type": "text",
+          "text": "MyFitfolio",
+          "defaultText": "MyFitfolio",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 15.0,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 0.55,
+              "y": 0.32,
+              "w": 1.8,
+              "h": 0.28
+            }
+          }
+        },
+        {
+          "sourceId": "3",
+          "sourceName": "Text 1",
+          "shape": "rect",
+          "x": 10.35,
+          "y": 0.34,
+          "w": 2.35,
+          "h": 0.25,
+          "type": "text",
+          "text": "Motivation",
+          "defaultText": "Motivation",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.5,
+            "color": "5F6B7A",
+            "align": "right",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 10.35,
+              "y": 0.34,
+              "w": 2.35,
+              "h": 0.25
+            }
+          }
+        },
+        {
+          "sourceId": "4",
+          "sourceName": "Shape 2",
+          "shape": "line",
+          "x": 0.5,
+          "y": 0.72,
+          "w": 12.35,
+          "h": 0.0,
+          "type": "shape",
+          "style": {
+            "line": "DDE4EE"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "line",
+            "position": {
+              "x": 0.5,
+              "y": 0.72,
+              "w": 12.35,
+              "h": 0.0
+            }
+          }
+        },
+        {
+          "sourceId": "5",
+          "sourceName": "Text 3",
+          "shape": "rect",
+          "x": 0.75,
+          "y": 1.0,
+          "w": 5.7,
+          "h": 0.45,
+          "type": "text",
+          "text": "지원동기",
+          "defaultText": "지원동기",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 27.0,
+            "bold": true,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 0.75,
+              "y": 1.0,
+              "w": 5.7,
+              "h": 0.45
+            }
+          }
+        },
+        {
+          "sourceId": "6",
+          "sourceName": "Text 4",
+          "shape": "rect",
+          "x": 0.77,
+          "y": 1.52,
+          "w": 7.0,
+          "h": 0.28,
+          "type": "text",
+          "text": "회사와 직무를 이해한 뒤, 나의 경험과 자연스럽게 연결합니다.",
+          "defaultText": "회사와 직무를 이해한 뒤, 나의 경험과 자연스럽게 연결합니다.",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.5,
+            "color": "5F6B7A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 0.77,
+              "y": 1.52,
+              "w": 7.0,
+              "h": 0.28
+            }
+          }
+        },
+        {
+          "sourceId": "7",
+          "sourceName": "Shape 5",
+          "shape": "roundRect",
+          "x": 0.95,
+          "y": 2.1,
+          "w": 3.5,
+          "h": 3.05,
+          "type": "shape",
+          "style": {
+            "fill": "FFFEFA",
+            "line": "DDE4EE",
+            "rectRadius": 0.08
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "roundRect",
+            "position": {
+              "x": 0.95,
+              "y": 2.1,
+              "w": 3.5,
+              "h": 3.05
+            }
+          }
+        },
+        {
+          "sourceId": "8",
+          "sourceName": "Text 6",
+          "shape": "rect",
+          "x": 1.2,
+          "y": 2.35,
+          "w": 0.45,
+          "h": 0.24,
+          "type": "text",
+          "text": "01",
+          "defaultText": "01",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 13.0,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 1.2,
+              "y": 2.35,
+              "w": 0.45,
+              "h": 0.24
+            }
+          }
+        },
+        {
+          "sourceId": "9",
+          "sourceName": "Text 7",
+          "shape": "rect",
+          "x": 1.2,
+          "y": 2.75,
+          "w": 2.8,
+          "h": 0.3,
+          "type": "text",
+          "text": "회사 이해",
+          "defaultText": "회사 이해",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 18.0,
+            "bold": true,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 1.2,
+              "y": 2.75,
+              "w": 2.8,
+              "h": 0.3
+            }
+          }
+        },
+        {
+          "sourceId": "10",
+          "sourceName": "Shape 8",
+          "shape": "line",
+          "x": 1.2,
+          "y": 3.2,
+          "w": 2.9,
+          "h": 0.0,
+          "type": "shape",
+          "style": {
+            "line": "DDE4EE"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "line",
+            "position": {
+              "x": 1.2,
+              "y": 3.2,
+              "w": 2.9,
+              "h": 0.0
+            }
+          }
+        },
+        {
+          "sourceId": "11",
+          "sourceName": "Text 9",
+          "shape": "rect",
+          "x": 1.2,
+          "y": 3.45,
+          "w": 2.85,
+          "h": 1.15,
+          "type": "text",
+          "text": "[회사/기관의 방향성]\n[서비스·산업·고객 문제]",
+          "defaultText": "[회사/기관의 방향성]\n[서비스·산업·고객 문제]",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 11.0,
+            "color": "5F6B7A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 1.2,
+              "y": 3.45,
+              "w": 2.85,
+              "h": 1.15
+            }
+          },
+          "binding": "motivation.companyUnderstanding",
+          "maxLength": 95,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{motivation.companyUnderstanding}}"
+        },
+        {
+          "sourceId": "12",
+          "sourceName": "Shape 10",
+          "shape": "roundRect",
+          "x": 5.0,
+          "y": 2.1,
+          "w": 3.5,
+          "h": 3.05,
+          "type": "shape",
+          "style": {
+            "fill": "FFFEFA",
+            "line": "DDE4EE",
+            "rectRadius": 0.08
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "roundRect",
+            "position": {
+              "x": 5.0,
+              "y": 2.1,
+              "w": 3.5,
+              "h": 3.05
+            }
+          }
+        },
+        {
+          "sourceId": "13",
+          "sourceName": "Text 11",
+          "shape": "rect",
+          "x": 5.25,
+          "y": 2.35,
+          "w": 0.45,
+          "h": 0.24,
+          "type": "text",
+          "text": "02",
+          "defaultText": "02",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 13.0,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 5.25,
+              "y": 2.35,
+              "w": 0.45,
+              "h": 0.24
+            }
+          }
+        },
+        {
+          "sourceId": "14",
+          "sourceName": "Text 12",
+          "shape": "rect",
+          "x": 5.25,
+          "y": 2.75,
+          "w": 2.8,
+          "h": 0.3,
+          "type": "text",
+          "text": "직무 이해",
+          "defaultText": "직무 이해",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 18.0,
+            "bold": true,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 5.25,
+              "y": 2.75,
+              "w": 2.8,
+              "h": 0.3
+            }
+          }
+        },
+        {
+          "sourceId": "15",
+          "sourceName": "Shape 13",
+          "shape": "line",
+          "x": 5.25,
+          "y": 3.2,
+          "w": 2.9,
+          "h": 0.0,
+          "type": "shape",
+          "style": {
+            "line": "DDE4EE"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "line",
+            "position": {
+              "x": 5.25,
+              "y": 3.2,
+              "w": 2.9,
+              "h": 0.0
+            }
+          }
+        },
+        {
+          "sourceId": "16",
+          "sourceName": "Text 14",
+          "shape": "rect",
+          "x": 5.25,
+          "y": 3.45,
+          "w": 2.85,
+          "h": 1.15,
+          "type": "text",
+          "text": "[직무가 해결하는 문제]\n[필요 역량·기술·태도]",
+          "defaultText": "[직무가 해결하는 문제]\n[필요 역량·기술·태도]",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 11.0,
+            "color": "5F6B7A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 5.25,
+              "y": 3.45,
+              "w": 2.85,
+              "h": 1.15
+            }
+          },
+          "binding": "motivation.roleUnderstanding",
+          "maxLength": 95,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{motivation.roleUnderstanding}}"
+        },
+        {
+          "sourceId": "17",
+          "sourceName": "Shape 15",
+          "shape": "roundRect",
+          "x": 9.05,
+          "y": 2.1,
+          "w": 3.5,
+          "h": 3.05,
+          "type": "shape",
+          "style": {
+            "fill": "FFFEFA",
+            "line": "DDE4EE",
+            "rectRadius": 0.08
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "roundRect",
+            "position": {
+              "x": 9.05,
+              "y": 2.1,
+              "w": 3.5,
+              "h": 3.05
+            }
+          }
+        },
+        {
+          "sourceId": "18",
+          "sourceName": "Text 16",
+          "shape": "rect",
+          "x": 9.3,
+          "y": 2.35,
+          "w": 0.45,
+          "h": 0.24,
+          "type": "text",
+          "text": "03",
+          "defaultText": "03",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 13.0,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 9.3,
+              "y": 2.35,
+              "w": 0.45,
+              "h": 0.24
+            }
+          }
+        },
+        {
+          "sourceId": "19",
+          "sourceName": "Text 17",
+          "shape": "rect",
+          "x": 9.3,
+          "y": 2.75,
+          "w": 2.8,
+          "h": 0.3,
+          "type": "text",
+          "text": "나의 연결",
+          "defaultText": "나의 연결",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 18.0,
+            "bold": true,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 9.3,
+              "y": 2.75,
+              "w": 2.8,
+              "h": 0.3
+            }
+          }
+        },
+        {
+          "sourceId": "20",
+          "sourceName": "Shape 18",
+          "shape": "line",
+          "x": 9.3,
+          "y": 3.2,
+          "w": 2.9,
+          "h": 0.0,
+          "type": "shape",
+          "style": {
+            "line": "DDE4EE"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "line",
+            "position": {
+              "x": 9.3,
+              "y": 3.2,
+              "w": 2.9,
+              "h": 0.0
+            }
+          }
+        },
+        {
+          "sourceId": "21",
+          "sourceName": "Text 19",
+          "shape": "rect",
+          "x": 9.3,
+          "y": 3.45,
+          "w": 2.85,
+          "h": 1.15,
+          "type": "text",
+          "text": "[내 경험·프로젝트]\n[강점·성과·배운 점]",
+          "defaultText": "[내 경험·프로젝트]\n[강점·성과·배운 점]",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 11.0,
+            "color": "5F6B7A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 9.3,
+              "y": 3.45,
+              "w": 2.85,
+              "h": 1.15
+            }
+          },
+          "binding": "motivation.personalConnection",
+          "maxLength": 95,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{motivation.personalConnection}}"
+        },
+        {
+          "sourceId": "22",
+          "sourceName": "Shape 20",
+          "shape": "roundRect",
+          "x": 0.95,
+          "y": 5.55,
+          "w": 11.55,
+          "h": 0.82,
+          "type": "shape",
+          "style": {
+            "fill": "E8F0FA",
+            "line": "E8F0FA",
+            "rectRadius": 0.08
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "roundRect",
+            "position": {
+              "x": 0.95,
+              "y": 5.55,
+              "w": 11.55,
+              "h": 0.82
+            }
+          }
+        },
+        {
+          "sourceId": "23",
+          "sourceName": "Text 21",
+          "shape": "rect",
+          "x": 1.15,
+          "y": 5.78,
+          "w": 1.5,
+          "h": 0.18,
+          "type": "text",
+          "text": "지원동기 완성 문장",
+          "defaultText": "지원동기 완성 문장",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 9.0,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 1.15,
+              "y": 5.78,
+              "w": 1.5,
+              "h": 0.18
+            }
+          }
+        },
+        {
+          "sourceId": "24",
+          "sourceName": "Text 22",
+          "shape": "rect",
+          "x": 2.85,
+          "y": 5.74,
+          "w": 8.9,
+          "h": 0.25,
+          "type": "text",
+          "text": "[회사 이해]와 [직무 이해]를 바탕으로, [나의 경험]을 통해 [기여 방향]을 실현하고 싶습니다.",
+          "defaultText": "[회사 이해]와 [직무 이해]를 바탕으로, [나의 경험]을 통해 [기여 방향]을 실현하고 싶습니다.",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 12.0,
+            "bold": true,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 2.85,
+              "y": 5.74,
+              "w": 8.9,
+              "h": 0.25
+            }
+          },
+          "binding": "motivation.finalSentence",
+          "maxLength": 110,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{motivation.finalSentence}}"
+        },
+        {
+          "sourceId": "25",
+          "sourceName": "Text 23",
+          "shape": "rect",
+          "x": 0.58,
+          "y": 6.94,
+          "w": 0.3,
+          "h": 0.18,
+          "type": "text",
+          "text": "03",
+          "defaultText": "03",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 0.58,
+              "y": 6.94,
+              "w": 0.3,
+              "h": 0.18
+            }
+          }
+        },
+        {
+          "sourceId": "26",
+          "sourceName": "Shape 24",
+          "shape": "line",
+          "x": 0.95,
+          "y": 7.03,
+          "w": 1.2,
+          "h": 0.0,
+          "type": "shape",
+          "style": {
+            "line": "315C9B"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "line",
+            "position": {
+              "x": 0.95,
+              "y": 7.03,
+              "w": 1.2,
+              "h": 0.0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "strengths",
+      "sourceSlide": 4,
+      "title": "핵심 강점 3가지",
+      "sectionLabel": "Strengths",
+      "description": "자기소개서 전체에서 반복해서 어필할 키워드를 정리합니다.",
+      "elements": [
+        {
+          "sourceId": "2",
+          "sourceName": "Text 0",
+          "shape": "rect",
+          "x": 0.55,
+          "y": 0.32,
+          "w": 1.8,
+          "h": 0.28,
+          "type": "text",
+          "text": "MyFitfolio",
+          "defaultText": "MyFitfolio",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 15.0,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 0.55,
+              "y": 0.32,
+              "w": 1.8,
+              "h": 0.28
+            }
+          }
+        },
+        {
+          "sourceId": "3",
+          "sourceName": "Text 1",
+          "shape": "rect",
+          "x": 10.35,
+          "y": 0.34,
+          "w": 2.35,
+          "h": 0.25,
+          "type": "text",
+          "text": "Strengths",
+          "defaultText": "Strengths",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.5,
+            "color": "5F6B7A",
+            "align": "right",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 10.35,
+              "y": 0.34,
+              "w": 2.35,
+              "h": 0.25
+            }
+          }
+        },
+        {
+          "sourceId": "4",
+          "sourceName": "Shape 2",
+          "shape": "line",
+          "x": 0.5,
+          "y": 0.72,
+          "w": 12.35,
+          "h": 0.0,
+          "type": "shape",
+          "style": {
+            "line": "DDE4EE"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "line",
+            "position": {
+              "x": 0.5,
+              "y": 0.72,
+              "w": 12.35,
+              "h": 0.0
+            }
+          }
+        },
+        {
+          "sourceId": "5",
+          "sourceName": "Text 3",
+          "shape": "rect",
+          "x": 0.75,
+          "y": 1.0,
+          "w": 5.7,
+          "h": 0.45,
+          "type": "text",
+          "text": "핵심 강점 3가지",
+          "defaultText": "핵심 강점 3가지",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 27.0,
+            "bold": true,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 0.75,
+              "y": 1.0,
+              "w": 5.7,
+              "h": 0.45
+            }
+          }
+        },
+        {
+          "sourceId": "6",
+          "sourceName": "Text 4",
+          "shape": "rect",
+          "x": 0.77,
+          "y": 1.52,
+          "w": 7.0,
+          "h": 0.28,
+          "type": "text",
+          "text": "자기소개서 전체에서 반복해서 어필할 키워드를 정리합니다.",
+          "defaultText": "자기소개서 전체에서 반복해서 어필할 키워드를 정리합니다.",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.5,
+            "color": "5F6B7A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 0.77,
+              "y": 1.52,
+              "w": 7.0,
+              "h": 0.28
+            }
+          }
+        },
+        {
+          "sourceId": "7",
+          "sourceName": "Shape 5",
+          "shape": "roundRect",
+          "x": 0.85,
+          "y": 2.0,
+          "w": 3.65,
+          "h": 4.35,
+          "type": "shape",
+          "style": {
+            "fill": "FFFEFA",
+            "line": "DDE4EE",
+            "rectRadius": 0.08
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "roundRect",
+            "position": {
+              "x": 0.85,
+              "y": 2.0,
+              "w": 3.65,
+              "h": 4.35
+            }
+          }
+        },
+        {
+          "sourceId": "8",
+          "sourceName": "Shape 6",
+          "shape": "ellipse",
+          "x": 1.2,
+          "y": 2.38,
+          "w": 0.72,
+          "h": 0.72,
+          "type": "shape",
+          "style": {
+            "fill": "E8F0FA",
+            "line": "E8F0FA"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "ellipse",
+            "position": {
+              "x": 1.2,
+              "y": 2.38,
+              "w": 0.72,
+              "h": 0.72
+            }
+          }
+        },
+        {
+          "sourceId": "9",
+          "sourceName": "Text 7",
+          "shape": "rect",
+          "x": 1.43,
+          "y": 2.57,
+          "w": 0.18,
+          "h": 0.12,
+          "type": "text",
+          "text": "1",
+          "defaultText": "1",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 11.0,
+            "bold": true,
+            "color": "315C9B",
+            "align": "center",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 1.43,
+              "y": 2.57,
+              "w": 0.18,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "sourceId": "10",
+          "sourceName": "Text 8",
+          "shape": "rect",
+          "x": 1.2,
+          "y": 3.35,
+          "w": 2.3,
+          "h": 0.36,
+          "type": "text",
+          "text": "문제 해결",
+          "defaultText": "문제 해결",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 21.0,
+            "bold": true,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 1.2,
+              "y": 3.35,
+              "w": 2.3,
+              "h": 0.36
+            }
+          },
+          "binding": "strengths.0.name",
+          "maxLength": 12,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{strengths.0.name}}"
+        },
+        {
+          "sourceId": "11",
+          "sourceName": "Shape 9",
+          "shape": "line",
+          "x": 1.2,
+          "y": 3.93,
+          "w": 2.9,
+          "h": 0.0,
+          "type": "shape",
+          "style": {
+            "line": "DDE4EE"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "line",
+            "position": {
+              "x": 1.2,
+              "y": 3.93,
+              "w": 2.9,
+              "h": 0.0
+            }
+          }
+        },
+        {
+          "sourceId": "12",
+          "sourceName": "Text 10",
+          "shape": "rect",
+          "x": 1.2,
+          "y": 4.18,
+          "w": 2.9,
+          "h": 0.75,
+          "type": "text",
+          "text": "불편을 발견하고 원인을 구조화해 개선안을 제안합니다.",
+          "defaultText": "불편을 발견하고 원인을 구조화해 개선안을 제안합니다.",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 11.0,
+            "color": "5F6B7A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 1.2,
+              "y": 4.18,
+              "w": 2.9,
+              "h": 0.75
+            }
+          },
+          "binding": "strengths.0.description",
+          "maxLength": 52,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{strengths.0.description}}"
+        },
+        {
+          "sourceId": "13",
+          "sourceName": "Text 11",
+          "shape": "rect",
+          "x": 1.2,
+          "y": 5.25,
+          "w": 0.9,
+          "h": 0.22,
+          "type": "text",
+          "text": "증명 경험",
+          "defaultText": "증명 경험",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.5,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 1.2,
+              "y": 5.25,
+              "w": 0.9,
+              "h": 0.22
+            }
+          }
+        },
+        {
+          "sourceId": "14",
+          "sourceName": "Text 12",
+          "shape": "rect",
+          "x": 1.2,
+          "y": 5.55,
+          "w": 2.9,
+          "h": 0.35,
+          "type": "text",
+          "text": "근거 경험 1 · 근거 경험 2",
+          "defaultText": "근거 경험 1 · 근거 경험 2",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.5,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 1.2,
+              "y": 5.55,
+              "w": 2.9,
+              "h": 0.35
+            }
+          },
+          "binding": "strengths.0.evidence",
+          "maxLength": 34,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{strengths.0.evidence}}"
+        },
+        {
+          "sourceId": "15",
+          "sourceName": "Shape 13",
+          "shape": "roundRect",
+          "x": 4.97,
+          "y": 2.0,
+          "w": 3.65,
+          "h": 4.35,
+          "type": "shape",
+          "style": {
+            "fill": "FFFEFA",
+            "line": "DDE4EE",
+            "rectRadius": 0.08
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "roundRect",
+            "position": {
+              "x": 4.97,
+              "y": 2.0,
+              "w": 3.65,
+              "h": 4.35
+            }
+          }
+        },
+        {
+          "sourceId": "16",
+          "sourceName": "Shape 14",
+          "shape": "ellipse",
+          "x": 5.32,
+          "y": 2.38,
+          "w": 0.72,
+          "h": 0.72,
+          "type": "shape",
+          "style": {
+            "fill": "EAF4EC",
+            "line": "EAF4EC"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "ellipse",
+            "position": {
+              "x": 5.32,
+              "y": 2.38,
+              "w": 0.72,
+              "h": 0.72
+            }
+          }
+        },
+        {
+          "sourceId": "17",
+          "sourceName": "Text 15",
+          "shape": "rect",
+          "x": 5.55,
+          "y": 2.57,
+          "w": 0.18,
+          "h": 0.12,
+          "type": "text",
+          "text": "2",
+          "defaultText": "2",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 11.0,
+            "bold": true,
+            "color": "2E6B4A",
+            "align": "center",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 5.55,
+              "y": 2.57,
+              "w": 0.18,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "sourceId": "18",
+          "sourceName": "Text 16",
+          "shape": "rect",
+          "x": 5.32,
+          "y": 3.35,
+          "w": 2.3,
+          "h": 0.36,
+          "type": "text",
+          "text": "꾸준함",
+          "defaultText": "꾸준함",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 21.0,
+            "bold": true,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 5.32,
+              "y": 3.35,
+              "w": 2.3,
+              "h": 0.36
+            }
+          },
+          "binding": "strengths.1.name",
+          "maxLength": 12,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{strengths.1.name}}"
+        },
+        {
+          "sourceId": "19",
+          "sourceName": "Shape 17",
+          "shape": "line",
+          "x": 5.32,
+          "y": 3.93,
+          "w": 2.9,
+          "h": 0.0,
+          "type": "shape",
+          "style": {
+            "line": "DDE4EE"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "line",
+            "position": {
+              "x": 5.32,
+              "y": 3.93,
+              "w": 2.9,
+              "h": 0.0
+            }
+          }
+        },
+        {
+          "sourceId": "20",
+          "sourceName": "Text 18",
+          "shape": "rect",
+          "x": 5.32,
+          "y": 4.18,
+          "w": 2.9,
+          "h": 0.75,
+          "type": "text",
+          "text": "장기 활동과 학습 기록을 통해 성장 과정을 보여줍니다.",
+          "defaultText": "장기 활동과 학습 기록을 통해 성장 과정을 보여줍니다.",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 11.0,
+            "color": "5F6B7A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 5.32,
+              "y": 4.18,
+              "w": 2.9,
+              "h": 0.75
+            }
+          },
+          "binding": "strengths.1.description",
+          "maxLength": 52,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{strengths.1.description}}"
+        },
+        {
+          "sourceId": "21",
+          "sourceName": "Text 19",
+          "shape": "rect",
+          "x": 5.32,
+          "y": 5.25,
+          "w": 0.9,
+          "h": 0.22,
+          "type": "text",
+          "text": "증명 경험",
+          "defaultText": "증명 경험",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.5,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 5.32,
+              "y": 5.25,
+              "w": 0.9,
+              "h": 0.22
+            }
+          }
+        },
+        {
+          "sourceId": "22",
+          "sourceName": "Text 20",
+          "shape": "rect",
+          "x": 5.32,
+          "y": 5.55,
+          "w": 2.9,
+          "h": 0.35,
+          "type": "text",
+          "text": "교육 · 자격증 · 프로젝트",
+          "defaultText": "교육 · 자격증 · 프로젝트",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.5,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 5.32,
+              "y": 5.55,
+              "w": 2.9,
+              "h": 0.35
+            }
+          },
+          "binding": "strengths.1.evidence",
+          "maxLength": 34,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{strengths.1.evidence}}"
+        },
+        {
+          "sourceId": "23",
+          "sourceName": "Shape 21",
+          "shape": "roundRect",
+          "x": 9.09,
+          "y": 2.0,
+          "w": 3.65,
+          "h": 4.35,
+          "type": "shape",
+          "style": {
+            "fill": "FFFEFA",
+            "line": "DDE4EE",
+            "rectRadius": 0.08
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "roundRect",
+            "position": {
+              "x": 9.09,
+              "y": 2.0,
+              "w": 3.65,
+              "h": 4.35
+            }
+          }
+        },
+        {
+          "sourceId": "24",
+          "sourceName": "Shape 22",
+          "shape": "ellipse",
+          "x": 9.44,
+          "y": 2.38,
+          "w": 0.72,
+          "h": 0.72,
+          "type": "shape",
+          "style": {
+            "fill": "EEEAF8",
+            "line": "EEEAF8"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "ellipse",
+            "position": {
+              "x": 9.44,
+              "y": 2.38,
+              "w": 0.72,
+              "h": 0.72
+            }
+          }
+        },
+        {
+          "sourceId": "25",
+          "sourceName": "Text 23",
+          "shape": "rect",
+          "x": 9.67,
+          "y": 2.57,
+          "w": 0.18,
+          "h": 0.12,
+          "type": "text",
+          "text": "3",
+          "defaultText": "3",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 11.0,
+            "bold": true,
+            "color": "6B5CB6",
+            "align": "center",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 9.67,
+              "y": 2.57,
+              "w": 0.18,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "sourceId": "26",
+          "sourceName": "Text 24",
+          "shape": "rect",
+          "x": 9.44,
+          "y": 3.35,
+          "w": 2.3,
+          "h": 0.36,
+          "type": "text",
+          "text": "실행력",
+          "defaultText": "실행력",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 21.0,
+            "bold": true,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 9.44,
+              "y": 3.35,
+              "w": 2.3,
+              "h": 0.36
+            }
+          },
+          "binding": "strengths.2.name",
+          "maxLength": 12,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{strengths.2.name}}"
+        },
+        {
+          "sourceId": "27",
+          "sourceName": "Shape 25",
+          "shape": "line",
+          "x": 9.44,
+          "y": 3.93,
+          "w": 2.9,
+          "h": 0.0,
+          "type": "shape",
+          "style": {
+            "line": "DDE4EE"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "line",
+            "position": {
+              "x": 9.44,
+              "y": 3.93,
+              "w": 2.9,
+              "h": 0.0
+            }
+          }
+        },
+        {
+          "sourceId": "28",
+          "sourceName": "Text 26",
+          "shape": "rect",
+          "x": 9.44,
+          "y": 4.18,
+          "w": 2.9,
+          "h": 0.75,
+          "type": "text",
+          "text": "아이디어를 결과물과 성과로 연결합니다.",
+          "defaultText": "아이디어를 결과물과 성과로 연결합니다.",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 11.0,
+            "color": "5F6B7A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 9.44,
+              "y": 4.18,
+              "w": 2.9,
+              "h": 0.75
+            }
+          },
+          "binding": "strengths.2.description",
+          "maxLength": 52,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{strengths.2.description}}"
+        },
+        {
+          "sourceId": "29",
+          "sourceName": "Text 27",
+          "shape": "rect",
+          "x": 9.44,
+          "y": 5.25,
+          "w": 0.9,
+          "h": 0.22,
+          "type": "text",
+          "text": "증명 경험",
+          "defaultText": "증명 경험",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.5,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 9.44,
+              "y": 5.25,
+              "w": 0.9,
+              "h": 0.22
+            }
+          }
+        },
+        {
+          "sourceId": "30",
+          "sourceName": "Text 28",
+          "shape": "rect",
+          "x": 9.44,
+          "y": 5.55,
+          "w": 2.9,
+          "h": 0.35,
+          "type": "text",
+          "text": "공모전 · 배포 · 발표",
+          "defaultText": "공모전 · 배포 · 발표",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.5,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 9.44,
+              "y": 5.55,
+              "w": 2.9,
+              "h": 0.35
+            }
+          },
+          "binding": "strengths.2.evidence",
+          "maxLength": 34,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{strengths.2.evidence}}"
+        },
+        {
+          "sourceId": "31",
+          "sourceName": "Text 29",
+          "shape": "rect",
+          "x": 0.58,
+          "y": 6.94,
+          "w": 0.3,
+          "h": 0.18,
+          "type": "text",
+          "text": "04",
+          "defaultText": "04",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 0.58,
+              "y": 6.94,
+              "w": 0.3,
+              "h": 0.18
+            }
+          }
+        },
+        {
+          "sourceId": "32",
+          "sourceName": "Shape 30",
+          "shape": "line",
+          "x": 0.95,
+          "y": 7.03,
+          "w": 1.2,
+          "h": 0.0,
+          "type": "shape",
+          "style": {
+            "line": "315C9B"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "line",
+            "position": {
+              "x": 0.95,
+              "y": 7.03,
+              "w": 1.2,
+              "h": 0.0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "experience_problem",
+      "sourceSlide": 5,
+      "title": "문제 해결 경험",
+      "sectionLabel": "Experience 01",
+      "description": "상황 → 과제 → 행동 → 결과 흐름으로 경험을 설득력 있게 보여줍니다.",
+      "elements": [
+        {
+          "sourceId": "2",
+          "sourceName": "Text 0",
+          "shape": "rect",
+          "x": 0.55,
+          "y": 0.32,
+          "w": 1.8,
+          "h": 0.28,
+          "type": "text",
+          "text": "MyFitfolio",
+          "defaultText": "MyFitfolio",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 15.0,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 0.55,
+              "y": 0.32,
+              "w": 1.8,
+              "h": 0.28
+            }
+          }
+        },
+        {
+          "sourceId": "3",
+          "sourceName": "Text 1",
+          "shape": "rect",
+          "x": 10.35,
+          "y": 0.34,
+          "w": 2.35,
+          "h": 0.25,
+          "type": "text",
+          "text": "Experience 01",
+          "defaultText": "Experience 01",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.5,
+            "color": "5F6B7A",
+            "align": "right",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 10.35,
+              "y": 0.34,
+              "w": 2.35,
+              "h": 0.25
+            }
+          }
+        },
+        {
+          "sourceId": "4",
+          "sourceName": "Shape 2",
+          "shape": "line",
+          "x": 0.5,
+          "y": 0.72,
+          "w": 12.35,
+          "h": 0.0,
+          "type": "shape",
+          "style": {
+            "line": "DDE4EE"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "line",
+            "position": {
+              "x": 0.5,
+              "y": 0.72,
+              "w": 12.35,
+              "h": 0.0
+            }
+          }
+        },
+        {
+          "sourceId": "5",
+          "sourceName": "Text 3",
+          "shape": "rect",
+          "x": 0.75,
+          "y": 1.0,
+          "w": 5.7,
+          "h": 0.45,
+          "type": "text",
+          "text": "문제 해결 경험",
+          "defaultText": "문제 해결 경험",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 27.0,
+            "bold": true,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 0.75,
+              "y": 1.0,
+              "w": 5.7,
+              "h": 0.45
+            }
+          }
+        },
+        {
+          "sourceId": "6",
+          "sourceName": "Text 4",
+          "shape": "rect",
+          "x": 0.77,
+          "y": 1.52,
+          "w": 7.0,
+          "h": 0.28,
+          "type": "text",
+          "text": "상황 → 과제 → 행동 → 결과 흐름으로 경험을 설득력 있게 보여줍니다.",
+          "defaultText": "상황 → 과제 → 행동 → 결과 흐름으로 경험을 설득력 있게 보여줍니다.",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.5,
+            "color": "5F6B7A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 0.77,
+              "y": 1.52,
+              "w": 7.0,
+              "h": 0.28
+            }
+          }
+        },
+        {
+          "sourceId": "7",
+          "sourceName": "Shape 5",
+          "shape": "roundRect",
+          "x": 0.85,
+          "y": 2.0,
+          "w": 4.15,
+          "h": 4.45,
+          "type": "shape",
+          "style": {
+            "fill": "FFFFFF",
+            "line": "DDE4EE",
+            "rectRadius": 0.08
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "roundRect",
+            "position": {
+              "x": 0.85,
+              "y": 2.0,
+              "w": 4.15,
+              "h": 4.45
+            }
+          }
+        },
+        {
+          "sourceId": "8",
+          "sourceName": "Text 6",
+          "shape": "rect",
+          "x": 1.15,
+          "y": 2.35,
+          "w": 3.0,
+          "h": 0.35,
+          "type": "text",
+          "text": "[경험명 입력]",
+          "defaultText": "[경험명 입력]",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 22.0,
+            "bold": true,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 1.15,
+              "y": 2.35,
+              "w": 3.0,
+              "h": 0.35
+            }
+          },
+          "binding": "experiences.0.title",
+          "maxLength": 32,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{experiences.0.title}}"
+        },
+        {
+          "sourceId": "9",
+          "sourceName": "Text 7",
+          "shape": "rect",
+          "x": 1.15,
+          "y": 2.84,
+          "w": 3.3,
+          "h": 0.22,
+          "type": "text",
+          "text": "[기간]  |  [역할]  |  [활동 유형]",
+          "defaultText": "[기간]  |  [역할]  |  [활동 유형]",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 9.5,
+            "color": "5F6B7A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 1.15,
+              "y": 2.84,
+              "w": 3.3,
+              "h": 0.22
+            }
+          },
+          "binding": "experiences.0.meta",
+          "maxLength": 45,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{experiences.0.meta}}"
+        },
+        {
+          "sourceId": "10",
+          "sourceName": "Shape 8",
+          "shape": "roundRect",
+          "x": 1.15,
+          "y": 3.25,
+          "w": 1.05,
+          "h": 0.34,
+          "type": "shape",
+          "style": {
+            "fill": "E8F0FA",
+            "line": "E8F0FA",
+            "rectRadius": 0.08
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "roundRect",
+            "position": {
+              "x": 1.15,
+              "y": 3.25,
+              "w": 1.05,
+              "h": 0.34
+            }
+          }
+        },
+        {
+          "sourceId": "11",
+          "sourceName": "Text 9",
+          "shape": "rect",
+          "x": 1.22,
+          "y": 3.32,
+          "w": 0.91,
+          "h": 0.15,
+          "type": "text",
+          "text": "핵심 키워드",
+          "defaultText": "핵심 키워드",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "bold": true,
+            "color": "315C9B",
+            "align": "center",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 1.22,
+              "y": 3.32,
+              "w": 0.91,
+              "h": 0.15
+            }
+          }
+        },
+        {
+          "sourceId": "12",
+          "sourceName": "Text 10",
+          "shape": "rect",
+          "x": 1.15,
+          "y": 3.75,
+          "w": 3.1,
+          "h": 0.22,
+          "type": "text",
+          "text": "#문제정의  #데이터분석  #개선제안",
+          "defaultText": "#문제정의  #데이터분석  #개선제안",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 9.5,
+            "color": "5F6B7A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 1.15,
+              "y": 3.75,
+              "w": 3.1,
+              "h": 0.22
+            }
+          },
+          "binding": "experiences.0.keywordsText",
+          "maxLength": 40,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{experiences.0.keywordsText}}"
+        },
+        {
+          "sourceId": "13",
+          "sourceName": "Shape 11",
+          "shape": "line",
+          "x": 1.15,
+          "y": 4.25,
+          "w": 3.35,
+          "h": 0.0,
+          "type": "shape",
+          "style": {
+            "line": "DDE4EE"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "line",
+            "position": {
+              "x": 1.15,
+              "y": 4.25,
+              "w": 3.35,
+              "h": 0.0
+            }
+          }
+        },
+        {
+          "sourceId": "14",
+          "sourceName": "Text 12",
+          "shape": "rect",
+          "x": 1.15,
+          "y": 4.58,
+          "w": 0.9,
+          "h": 0.18,
+          "type": "text",
+          "text": "요약 문장",
+          "defaultText": "요약 문장",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 9.0,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 1.15,
+              "y": 4.58,
+              "w": 0.9,
+              "h": 0.18
+            }
+          }
+        },
+        {
+          "sourceId": "15",
+          "sourceName": "Text 13",
+          "shape": "rect",
+          "x": 1.15,
+          "y": 4.88,
+          "w": 3.25,
+          "h": 0.58,
+          "type": "text",
+          "text": "[문제 상황]을 발견하고 [내 행동]을 통해 [성과]를 만든 경험입니다.",
+          "defaultText": "[문제 상황]을 발견하고 [내 행동]을 통해 [성과]를 만든 경험입니다.",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 13.0,
+            "bold": true,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 1.15,
+              "y": 4.88,
+              "w": 3.25,
+              "h": 0.58
+            }
+          },
+          "binding": "experiences.0.summary",
+          "maxLength": 75,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{experiences.0.summary}}"
+        },
+        {
+          "sourceId": "16",
+          "sourceName": "Shape 14",
+          "shape": "roundRect",
+          "x": 5.35,
+          "y": 2.0,
+          "w": 3.35,
+          "h": 1.85,
+          "type": "shape",
+          "style": {
+            "fill": "E8F0FA",
+            "line": "DDE4EE",
+            "rectRadius": 0.08
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "roundRect",
+            "position": {
+              "x": 5.35,
+              "y": 2.0,
+              "w": 3.35,
+              "h": 1.85
+            }
+          }
+        },
+        {
+          "sourceId": "17",
+          "sourceName": "Text 15",
+          "shape": "rect",
+          "x": 5.57,
+          "y": 2.24,
+          "w": 1.0,
+          "h": 0.24,
+          "type": "text",
+          "text": "S 상황",
+          "defaultText": "S 상황",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 13.0,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 5.57,
+              "y": 2.24,
+              "w": 1.0,
+              "h": 0.24
+            }
+          }
+        },
+        {
+          "sourceId": "18",
+          "sourceName": "Text 16",
+          "shape": "rect",
+          "x": 5.57,
+          "y": 2.67,
+          "w": 2.75,
+          "h": 0.25,
+          "type": "text",
+          "text": "어떤 문제·배경이 있었는가",
+          "defaultText": "어떤 문제·배경이 있었는가",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.0,
+            "color": "5F6B7A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 5.57,
+              "y": 2.67,
+              "w": 2.75,
+              "h": 0.25
+            }
+          }
+        },
+        {
+          "sourceId": "19",
+          "sourceName": "Text 17",
+          "shape": "rect",
+          "x": 5.57,
+          "y": 3.07,
+          "w": 2.65,
+          "h": 0.4,
+          "type": "text",
+          "text": "[내용 입력]",
+          "defaultText": "[내용 입력]",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 11.0,
+            "bold": true,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 5.57,
+              "y": 3.07,
+              "w": 2.65,
+              "h": 0.4
+            }
+          },
+          "binding": "experiences.0.star.situation",
+          "maxLength": 65,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{experiences.0.star.situation}}"
+        },
+        {
+          "sourceId": "20",
+          "sourceName": "Shape 18",
+          "shape": "roundRect",
+          "x": 9.0,
+          "y": 2.0,
+          "w": 3.35,
+          "h": 1.85,
+          "type": "shape",
+          "style": {
+            "fill": "F8FAFD",
+            "line": "DDE4EE",
+            "rectRadius": 0.08
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "roundRect",
+            "position": {
+              "x": 9.0,
+              "y": 2.0,
+              "w": 3.35,
+              "h": 1.85
+            }
+          }
+        },
+        {
+          "sourceId": "21",
+          "sourceName": "Text 19",
+          "shape": "rect",
+          "x": 9.22,
+          "y": 2.24,
+          "w": 1.0,
+          "h": 0.24,
+          "type": "text",
+          "text": "T 과제",
+          "defaultText": "T 과제",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 13.0,
+            "bold": true,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 9.22,
+              "y": 2.24,
+              "w": 1.0,
+              "h": 0.24
+            }
+          }
+        },
+        {
+          "sourceId": "22",
+          "sourceName": "Text 20",
+          "shape": "rect",
+          "x": 9.22,
+          "y": 2.67,
+          "w": 2.75,
+          "h": 0.25,
+          "type": "text",
+          "text": "내가 해결해야 했던 목표는 무엇인가",
+          "defaultText": "내가 해결해야 했던 목표는 무엇인가",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.0,
+            "color": "5F6B7A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 9.22,
+              "y": 2.67,
+              "w": 2.75,
+              "h": 0.25
+            }
+          }
+        },
+        {
+          "sourceId": "23",
+          "sourceName": "Text 21",
+          "shape": "rect",
+          "x": 9.22,
+          "y": 3.07,
+          "w": 2.65,
+          "h": 0.4,
+          "type": "text",
+          "text": "[내용 입력]",
+          "defaultText": "[내용 입력]",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 11.0,
+            "bold": true,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 9.22,
+              "y": 3.07,
+              "w": 2.65,
+              "h": 0.4
+            }
+          },
+          "binding": "experiences.0.star.task",
+          "maxLength": 65,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{experiences.0.star.task}}"
+        },
+        {
+          "sourceId": "24",
+          "sourceName": "Shape 22",
+          "shape": "roundRect",
+          "x": 5.35,
+          "y": 4.25,
+          "w": 3.35,
+          "h": 1.85,
+          "type": "shape",
+          "style": {
+            "fill": "EAF4EC",
+            "line": "DDE4EE",
+            "rectRadius": 0.08
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "roundRect",
+            "position": {
+              "x": 5.35,
+              "y": 4.25,
+              "w": 3.35,
+              "h": 1.85
+            }
+          }
+        },
+        {
+          "sourceId": "25",
+          "sourceName": "Text 23",
+          "shape": "rect",
+          "x": 5.57,
+          "y": 4.49,
+          "w": 1.0,
+          "h": 0.24,
+          "type": "text",
+          "text": "A 행동",
+          "defaultText": "A 행동",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 13.0,
+            "bold": true,
+            "color": "2E6B4A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 5.57,
+              "y": 4.49,
+              "w": 1.0,
+              "h": 0.24
+            }
+          }
+        },
+        {
+          "sourceId": "26",
+          "sourceName": "Text 24",
+          "shape": "rect",
+          "x": 5.57,
+          "y": 4.92,
+          "w": 2.75,
+          "h": 0.25,
+          "type": "text",
+          "text": "내가 실제로 한 행동과 판단은 무엇인가",
+          "defaultText": "내가 실제로 한 행동과 판단은 무엇인가",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.0,
+            "color": "5F6B7A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 5.57,
+              "y": 4.92,
+              "w": 2.75,
+              "h": 0.25
+            }
+          }
+        },
+        {
+          "sourceId": "27",
+          "sourceName": "Text 25",
+          "shape": "rect",
+          "x": 5.57,
+          "y": 5.32,
+          "w": 2.65,
+          "h": 0.4,
+          "type": "text",
+          "text": "[내용 입력]",
+          "defaultText": "[내용 입력]",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 11.0,
+            "bold": true,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 5.57,
+              "y": 5.32,
+              "w": 2.65,
+              "h": 0.4
+            }
+          },
+          "binding": "experiences.0.star.action",
+          "maxLength": 65,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{experiences.0.star.action}}"
+        },
+        {
+          "sourceId": "28",
+          "sourceName": "Shape 26",
+          "shape": "roundRect",
+          "x": 9.0,
+          "y": 4.25,
+          "w": 3.35,
+          "h": 1.85,
+          "type": "shape",
+          "style": {
+            "fill": "FBF4EC",
+            "line": "DDE4EE",
+            "rectRadius": 0.08
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "roundRect",
+            "position": {
+              "x": 9.0,
+              "y": 4.25,
+              "w": 3.35,
+              "h": 1.85
+            }
+          }
+        },
+        {
+          "sourceId": "29",
+          "sourceName": "Text 27",
+          "shape": "rect",
+          "x": 9.22,
+          "y": 4.49,
+          "w": 1.0,
+          "h": 0.24,
+          "type": "text",
+          "text": "R 결과",
+          "defaultText": "R 결과",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 13.0,
+            "bold": true,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 9.22,
+              "y": 4.49,
+              "w": 1.0,
+              "h": 0.24
+            }
+          }
+        },
+        {
+          "sourceId": "30",
+          "sourceName": "Text 28",
+          "shape": "rect",
+          "x": 9.22,
+          "y": 4.92,
+          "w": 2.75,
+          "h": 0.25,
+          "type": "text",
+          "text": "수치·결과·배운 점은 무엇인가",
+          "defaultText": "수치·결과·배운 점은 무엇인가",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.0,
+            "color": "5F6B7A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 9.22,
+              "y": 4.92,
+              "w": 2.75,
+              "h": 0.25
+            }
+          }
+        },
+        {
+          "sourceId": "31",
+          "sourceName": "Text 29",
+          "shape": "rect",
+          "x": 9.22,
+          "y": 5.32,
+          "w": 2.65,
+          "h": 0.4,
+          "type": "text",
+          "text": "[내용 입력]",
+          "defaultText": "[내용 입력]",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 11.0,
+            "bold": true,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 9.22,
+              "y": 5.32,
+              "w": 2.65,
+              "h": 0.4
+            }
+          },
+          "binding": "experiences.0.star.result",
+          "maxLength": 65,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{experiences.0.star.result}}"
+        },
+        {
+          "sourceId": "32",
+          "sourceName": "Text 30",
+          "shape": "rect",
+          "x": 0.58,
+          "y": 6.94,
+          "w": 0.3,
+          "h": 0.18,
+          "type": "text",
+          "text": "05",
+          "defaultText": "05",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 0.58,
+              "y": 6.94,
+              "w": 0.3,
+              "h": 0.18
+            }
+          }
+        },
+        {
+          "sourceId": "33",
+          "sourceName": "Shape 31",
+          "shape": "line",
+          "x": 0.95,
+          "y": 7.03,
+          "w": 1.2,
+          "h": 0.0,
+          "type": "shape",
+          "style": {
+            "line": "315C9B"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "line",
+            "position": {
+              "x": 0.95,
+              "y": 7.03,
+              "w": 1.2,
+              "h": 0.0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "experience_collaboration",
+      "sourceSlide": 6,
+      "title": "협업과 실행 경험",
+      "sectionLabel": "Experience 02",
+      "description": "팀 안에서 맡은 역할과 결과물을 중심으로 실행력을 보여줍니다.",
+      "elements": [
+        {
+          "sourceId": "2",
+          "sourceName": "Text 0",
+          "shape": "rect",
+          "x": 0.55,
+          "y": 0.32,
+          "w": 1.8,
+          "h": 0.28,
+          "type": "text",
+          "text": "MyFitfolio",
+          "defaultText": "MyFitfolio",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 15.0,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 0.55,
+              "y": 0.32,
+              "w": 1.8,
+              "h": 0.28
+            }
+          }
+        },
+        {
+          "sourceId": "3",
+          "sourceName": "Text 1",
+          "shape": "rect",
+          "x": 10.35,
+          "y": 0.34,
+          "w": 2.35,
+          "h": 0.25,
+          "type": "text",
+          "text": "Experience 02",
+          "defaultText": "Experience 02",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.5,
+            "color": "5F6B7A",
+            "align": "right",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 10.35,
+              "y": 0.34,
+              "w": 2.35,
+              "h": 0.25
+            }
+          }
+        },
+        {
+          "sourceId": "4",
+          "sourceName": "Shape 2",
+          "shape": "line",
+          "x": 0.5,
+          "y": 0.72,
+          "w": 12.35,
+          "h": 0.0,
+          "type": "shape",
+          "style": {
+            "line": "DDE4EE"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "line",
+            "position": {
+              "x": 0.5,
+              "y": 0.72,
+              "w": 12.35,
+              "h": 0.0
+            }
+          }
+        },
+        {
+          "sourceId": "5",
+          "sourceName": "Text 3",
+          "shape": "rect",
+          "x": 0.75,
+          "y": 1.0,
+          "w": 5.7,
+          "h": 0.45,
+          "type": "text",
+          "text": "협업과 실행 경험",
+          "defaultText": "협업과 실행 경험",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 27.0,
+            "bold": true,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 0.75,
+              "y": 1.0,
+              "w": 5.7,
+              "h": 0.45
+            }
+          }
+        },
+        {
+          "sourceId": "6",
+          "sourceName": "Text 4",
+          "shape": "rect",
+          "x": 0.77,
+          "y": 1.52,
+          "w": 7.0,
+          "h": 0.28,
+          "type": "text",
+          "text": "팀 안에서 맡은 역할과 결과물을 중심으로 실행력을 보여줍니다.",
+          "defaultText": "팀 안에서 맡은 역할과 결과물을 중심으로 실행력을 보여줍니다.",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.5,
+            "color": "5F6B7A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 0.77,
+              "y": 1.52,
+              "w": 7.0,
+              "h": 0.28
+            }
+          }
+        },
+        {
+          "sourceId": "7",
+          "sourceName": "Shape 5",
+          "shape": "ellipse",
+          "x": 1.15,
+          "y": 2.44,
+          "w": 0.34,
+          "h": 0.34,
+          "type": "shape",
+          "style": {
+            "fill": "315C9B",
+            "line": "315C9B"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "ellipse",
+            "position": {
+              "x": 1.15,
+              "y": 2.44,
+              "w": 0.34,
+              "h": 0.34
+            }
+          }
+        },
+        {
+          "sourceId": "8",
+          "sourceName": "Shape 6",
+          "shape": "line",
+          "x": 1.32,
+          "y": 2.78,
+          "w": 0.0,
+          "h": 0.43,
+          "type": "shape",
+          "style": {
+            "line": "DDE4EE"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "line",
+            "position": {
+              "x": 1.32,
+              "y": 2.78,
+              "w": 0.0,
+              "h": 0.43
+            }
+          }
+        },
+        {
+          "sourceId": "9",
+          "sourceName": "Text 7",
+          "shape": "rect",
+          "x": 1.75,
+          "y": 2.42,
+          "w": 1.4,
+          "h": 0.22,
+          "type": "text",
+          "text": "문제 발견",
+          "defaultText": "문제 발견",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 12.0,
+            "bold": true,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 1.75,
+              "y": 2.42,
+              "w": 1.4,
+              "h": 0.22
+            }
+          }
+        },
+        {
+          "sourceId": "10",
+          "sourceName": "Text 8",
+          "shape": "rect",
+          "x": 3.15,
+          "y": 2.42,
+          "w": 4.2,
+          "h": 0.22,
+          "type": "text",
+          "text": "팀 또는 사용자가 겪은 불편을 파악",
+          "defaultText": "팀 또는 사용자가 겪은 불편을 파악",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.5,
+            "color": "5F6B7A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 3.15,
+              "y": 2.42,
+              "w": 4.2,
+              "h": 0.22
+            }
+          }
+        },
+        {
+          "sourceId": "11",
+          "sourceName": "Text 9",
+          "shape": "rect",
+          "x": 7.95,
+          "y": 2.39,
+          "w": 3.7,
+          "h": 0.28,
+          "type": "text",
+          "text": "[내용 입력]",
+          "defaultText": "[내용 입력]",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.5,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 7.95,
+              "y": 2.39,
+              "w": 3.7,
+              "h": 0.28
+            }
+          },
+          "binding": "experiences.1.process.0.answer",
+          "maxLength": 48,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{experiences.1.process.0.answer}}"
+        },
+        {
+          "sourceId": "12",
+          "sourceName": "Shape 10",
+          "shape": "ellipse",
+          "x": 1.15,
+          "y": 3.24,
+          "w": 0.34,
+          "h": 0.34,
+          "type": "shape",
+          "style": {
+            "fill": "315C9B",
+            "line": "315C9B"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "ellipse",
+            "position": {
+              "x": 1.15,
+              "y": 3.24,
+              "w": 0.34,
+              "h": 0.34
+            }
+          }
+        },
+        {
+          "sourceId": "13",
+          "sourceName": "Shape 11",
+          "shape": "line",
+          "x": 1.32,
+          "y": 3.58,
+          "w": 0.0,
+          "h": 0.43,
+          "type": "shape",
+          "style": {
+            "line": "DDE4EE"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "line",
+            "position": {
+              "x": 1.32,
+              "y": 3.58,
+              "w": 0.0,
+              "h": 0.43
+            }
+          }
+        },
+        {
+          "sourceId": "14",
+          "sourceName": "Text 12",
+          "shape": "rect",
+          "x": 1.75,
+          "y": 3.22,
+          "w": 1.4,
+          "h": 0.22,
+          "type": "text",
+          "text": "역할 분담",
+          "defaultText": "역할 분담",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 12.0,
+            "bold": true,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 1.75,
+              "y": 3.22,
+              "w": 1.4,
+              "h": 0.22
+            }
+          }
+        },
+        {
+          "sourceId": "15",
+          "sourceName": "Text 13",
+          "shape": "rect",
+          "x": 3.15,
+          "y": 3.22,
+          "w": 4.2,
+          "h": 0.22,
+          "type": "text",
+          "text": "내 역할과 책임 범위를 명확히 설정",
+          "defaultText": "내 역할과 책임 범위를 명확히 설정",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.5,
+            "color": "5F6B7A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 3.15,
+              "y": 3.22,
+              "w": 4.2,
+              "h": 0.22
+            }
+          }
+        },
+        {
+          "sourceId": "16",
+          "sourceName": "Text 14",
+          "shape": "rect",
+          "x": 7.95,
+          "y": 3.19,
+          "w": 3.7,
+          "h": 0.28,
+          "type": "text",
+          "text": "[내용 입력]",
+          "defaultText": "[내용 입력]",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.5,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 7.95,
+              "y": 3.19,
+              "w": 3.7,
+              "h": 0.28
+            }
+          },
+          "binding": "experiences.1.process.1.answer",
+          "maxLength": 48,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{experiences.1.process.1.answer}}"
+        },
+        {
+          "sourceId": "17",
+          "sourceName": "Shape 15",
+          "shape": "ellipse",
+          "x": 1.15,
+          "y": 4.04,
+          "w": 0.34,
+          "h": 0.34,
+          "type": "shape",
+          "style": {
+            "fill": "2E6B4A",
+            "line": "2E6B4A"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "ellipse",
+            "position": {
+              "x": 1.15,
+              "y": 4.04,
+              "w": 0.34,
+              "h": 0.34
+            }
+          }
+        },
+        {
+          "sourceId": "18",
+          "sourceName": "Shape 16",
+          "shape": "line",
+          "x": 1.32,
+          "y": 4.38,
+          "w": 0.0,
+          "h": 0.43,
+          "type": "shape",
+          "style": {
+            "line": "DDE4EE"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "line",
+            "position": {
+              "x": 1.32,
+              "y": 4.38,
+              "w": 0.0,
+              "h": 0.43
+            }
+          }
+        },
+        {
+          "sourceId": "19",
+          "sourceName": "Text 17",
+          "shape": "rect",
+          "x": 1.75,
+          "y": 4.02,
+          "w": 1.4,
+          "h": 0.22,
+          "type": "text",
+          "text": "실행 과정",
+          "defaultText": "실행 과정",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 12.0,
+            "bold": true,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 1.75,
+              "y": 4.02,
+              "w": 1.4,
+              "h": 0.22
+            }
+          }
+        },
+        {
+          "sourceId": "20",
+          "sourceName": "Text 18",
+          "shape": "rect",
+          "x": 3.15,
+          "y": 4.02,
+          "w": 4.2,
+          "h": 0.22,
+          "type": "text",
+          "text": "기획·개발·운영·발표 등 실제 행동 수행",
+          "defaultText": "기획·개발·운영·발표 등 실제 행동 수행",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.5,
+            "color": "5F6B7A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 3.15,
+              "y": 4.02,
+              "w": 4.2,
+              "h": 0.22
+            }
+          }
+        },
+        {
+          "sourceId": "21",
+          "sourceName": "Text 19",
+          "shape": "rect",
+          "x": 7.95,
+          "y": 3.99,
+          "w": 3.7,
+          "h": 0.28,
+          "type": "text",
+          "text": "[내용 입력]",
+          "defaultText": "[내용 입력]",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.5,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 7.95,
+              "y": 3.99,
+              "w": 3.7,
+              "h": 0.28
+            }
+          },
+          "binding": "experiences.1.process.2.answer",
+          "maxLength": 48,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{experiences.1.process.2.answer}}"
+        },
+        {
+          "sourceId": "22",
+          "sourceName": "Shape 20",
+          "shape": "ellipse",
+          "x": 1.15,
+          "y": 4.84,
+          "w": 0.34,
+          "h": 0.34,
+          "type": "shape",
+          "style": {
+            "fill": "2E6B4A",
+            "line": "2E6B4A"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "ellipse",
+            "position": {
+              "x": 1.15,
+              "y": 4.84,
+              "w": 0.34,
+              "h": 0.34
+            }
+          }
+        },
+        {
+          "sourceId": "23",
+          "sourceName": "Text 21",
+          "shape": "rect",
+          "x": 1.75,
+          "y": 4.82,
+          "w": 1.4,
+          "h": 0.22,
+          "type": "text",
+          "text": "결과 정리",
+          "defaultText": "결과 정리",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 12.0,
+            "bold": true,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 1.75,
+              "y": 4.82,
+              "w": 1.4,
+              "h": 0.22
+            }
+          }
+        },
+        {
+          "sourceId": "24",
+          "sourceName": "Text 22",
+          "shape": "rect",
+          "x": 3.15,
+          "y": 4.82,
+          "w": 4.2,
+          "h": 0.22,
+          "type": "text",
+          "text": "성과, 피드백, 배운 점을 포트폴리오 문장으로 정리",
+          "defaultText": "성과, 피드백, 배운 점을 포트폴리오 문장으로 정리",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.5,
+            "color": "5F6B7A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 3.15,
+              "y": 4.82,
+              "w": 4.2,
+              "h": 0.22
+            }
+          }
+        },
+        {
+          "sourceId": "25",
+          "sourceName": "Text 23",
+          "shape": "rect",
+          "x": 7.95,
+          "y": 4.79,
+          "w": 3.7,
+          "h": 0.28,
+          "type": "text",
+          "text": "[내용 입력]",
+          "defaultText": "[내용 입력]",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.5,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 7.95,
+              "y": 4.79,
+              "w": 3.7,
+              "h": 0.28
+            }
+          },
+          "binding": "experiences.1.process.3.answer",
+          "maxLength": 48,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{experiences.1.process.3.answer}}"
+        },
+        {
+          "sourceId": "26",
+          "sourceName": "Shape 24",
+          "shape": "roundRect",
+          "x": 1.15,
+          "y": 5.83,
+          "w": 10.65,
+          "h": 0.62,
+          "type": "shape",
+          "style": {
+            "fill": "E8F0FA",
+            "line": "E8F0FA",
+            "rectRadius": 0.08
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "roundRect",
+            "position": {
+              "x": 1.15,
+              "y": 5.83,
+              "w": 10.65,
+              "h": 0.62
+            }
+          }
+        },
+        {
+          "sourceId": "27",
+          "sourceName": "Text 25",
+          "shape": "rect",
+          "x": 1.38,
+          "y": 6.05,
+          "w": 0.9,
+          "h": 0.16,
+          "type": "text",
+          "text": "성과 문장",
+          "defaultText": "성과 문장",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.5,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 1.38,
+              "y": 6.05,
+              "w": 0.9,
+              "h": 0.16
+            }
+          }
+        },
+        {
+          "sourceId": "28",
+          "sourceName": "Text 26",
+          "shape": "rect",
+          "x": 2.28,
+          "y": 6.0,
+          "w": 8.2,
+          "h": 0.23,
+          "type": "text",
+          "text": "[협업 방식]을 통해 [결과물/성과]를 만들었고, [직무 역량]을 배웠습니다.",
+          "defaultText": "[협업 방식]을 통해 [결과물/성과]를 만들었고, [직무 역량]을 배웠습니다.",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 12.0,
+            "bold": true,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 2.28,
+              "y": 6.0,
+              "w": 8.2,
+              "h": 0.23
+            }
+          },
+          "binding": "experiences.1.resultSentence",
+          "maxLength": 95,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{experiences.1.resultSentence}}"
+        },
+        {
+          "sourceId": "29",
+          "sourceName": "Text 27",
+          "shape": "rect",
+          "x": 0.58,
+          "y": 6.94,
+          "w": 0.3,
+          "h": 0.18,
+          "type": "text",
+          "text": "06",
+          "defaultText": "06",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 0.58,
+              "y": 6.94,
+              "w": 0.3,
+              "h": 0.18
+            }
+          }
+        },
+        {
+          "sourceId": "30",
+          "sourceName": "Shape 28",
+          "shape": "line",
+          "x": 0.95,
+          "y": 7.03,
+          "w": 1.2,
+          "h": 0.0,
+          "type": "shape",
+          "style": {
+            "line": "315C9B"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "line",
+            "position": {
+              "x": 0.95,
+              "y": 7.03,
+              "w": 1.2,
+              "h": 0.0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "competency_evidence",
+      "sourceSlide": 7,
+      "title": "직무 역량 근거 정리",
+      "sectionLabel": "Competency Evidence",
+      "description": "자소서 문항마다 바로 가져다 쓸 수 있도록 역량과 근거를 한눈에 정리합니다.",
+      "elements": [
+        {
+          "sourceId": "2",
+          "sourceName": "Text 0",
+          "shape": "rect",
+          "x": 0.55,
+          "y": 0.32,
+          "w": 1.8,
+          "h": 0.28,
+          "type": "text",
+          "text": "MyFitfolio",
+          "defaultText": "MyFitfolio",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 15.0,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 0.55,
+              "y": 0.32,
+              "w": 1.8,
+              "h": 0.28
+            }
+          }
+        },
+        {
+          "sourceId": "3",
+          "sourceName": "Text 1",
+          "shape": "rect",
+          "x": 10.35,
+          "y": 0.34,
+          "w": 2.35,
+          "h": 0.25,
+          "type": "text",
+          "text": "Competency Evidence",
+          "defaultText": "Competency Evidence",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.5,
+            "color": "5F6B7A",
+            "align": "right",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 10.35,
+              "y": 0.34,
+              "w": 2.35,
+              "h": 0.25
+            }
+          }
+        },
+        {
+          "sourceId": "4",
+          "sourceName": "Shape 2",
+          "shape": "line",
+          "x": 0.5,
+          "y": 0.72,
+          "w": 12.35,
+          "h": 0.0,
+          "type": "shape",
+          "style": {
+            "line": "DDE4EE"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "line",
+            "position": {
+              "x": 0.5,
+              "y": 0.72,
+              "w": 12.35,
+              "h": 0.0
+            }
+          }
+        },
+        {
+          "sourceId": "5",
+          "sourceName": "Text 3",
+          "shape": "rect",
+          "x": 0.75,
+          "y": 1.0,
+          "w": 5.7,
+          "h": 0.45,
+          "type": "text",
+          "text": "직무 역량 근거 정리",
+          "defaultText": "직무 역량 근거 정리",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 27.0,
+            "bold": true,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 0.75,
+              "y": 1.0,
+              "w": 5.7,
+              "h": 0.45
+            }
+          }
+        },
+        {
+          "sourceId": "6",
+          "sourceName": "Text 4",
+          "shape": "rect",
+          "x": 0.77,
+          "y": 1.52,
+          "w": 7.0,
+          "h": 0.28,
+          "type": "text",
+          "text": "자소서 문항마다 바로 가져다 쓸 수 있도록 역량과 근거를 한눈에 정리합니다.",
+          "defaultText": "자소서 문항마다 바로 가져다 쓸 수 있도록 역량과 근거를 한눈에 정리합니다.",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.5,
+            "color": "5F6B7A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 0.77,
+              "y": 1.52,
+              "w": 7.0,
+              "h": 0.28
+            }
+          }
+        },
+        {
+          "sourceId": "7",
+          "sourceName": "Shape 5",
+          "shape": "roundRect",
+          "x": 0.85,
+          "y": 2.05,
+          "w": 11.7,
+          "h": 4.35,
+          "type": "shape",
+          "style": {
+            "fill": "FFFFFF",
+            "line": "DDE4EE",
+            "rectRadius": 0.08
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "roundRect",
+            "position": {
+              "x": 0.85,
+              "y": 2.05,
+              "w": 11.7,
+              "h": 4.35
+            }
+          }
+        },
+        {
+          "sourceId": "8",
+          "sourceName": "Text 6",
+          "shape": "rect",
+          "x": 1.25,
+          "y": 2.42,
+          "w": 1.6,
+          "h": 0.2,
+          "type": "text",
+          "text": "역량",
+          "defaultText": "역량",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.0,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 1.25,
+              "y": 2.42,
+              "w": 1.6,
+              "h": 0.2
+            }
+          }
+        },
+        {
+          "sourceId": "9",
+          "sourceName": "Text 7",
+          "shape": "rect",
+          "x": 3.65,
+          "y": 2.42,
+          "w": 1.6,
+          "h": 0.2,
+          "type": "text",
+          "text": "근거 경험",
+          "defaultText": "근거 경험",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.0,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 3.65,
+              "y": 2.42,
+              "w": 1.6,
+              "h": 0.2
+            }
+          }
+        },
+        {
+          "sourceId": "10",
+          "sourceName": "Text 8",
+          "shape": "rect",
+          "x": 7.45,
+          "y": 2.42,
+          "w": 1.3,
+          "h": 0.2,
+          "type": "text",
+          "text": "성과/수치",
+          "defaultText": "성과/수치",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.0,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 7.45,
+              "y": 2.42,
+              "w": 1.3,
+              "h": 0.2
+            }
+          }
+        },
+        {
+          "sourceId": "11",
+          "sourceName": "Text 9",
+          "shape": "rect",
+          "x": 10.35,
+          "y": 2.42,
+          "w": 1.6,
+          "h": 0.2,
+          "type": "text",
+          "text": "활용 문항",
+          "defaultText": "활용 문항",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.0,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 10.35,
+              "y": 2.42,
+              "w": 1.6,
+              "h": 0.2
+            }
+          }
+        },
+        {
+          "sourceId": "12",
+          "sourceName": "Shape 10",
+          "shape": "line",
+          "x": 1.1,
+          "y": 2.65,
+          "w": 10.8,
+          "h": 0.0,
+          "type": "shape",
+          "style": {
+            "line": "DDE4EE"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "line",
+            "position": {
+              "x": 1.1,
+              "y": 2.65,
+              "w": 10.8,
+              "h": 0.0
+            }
+          }
+        },
+        {
+          "sourceId": "13",
+          "sourceName": "Shape 11",
+          "shape": "roundRect",
+          "x": 1.22,
+          "y": 2.82,
+          "w": 1.2,
+          "h": 0.34,
+          "type": "shape",
+          "style": {
+            "fill": "E8F0FA",
+            "line": "E8F0FA",
+            "rectRadius": 0.08
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "roundRect",
+            "position": {
+              "x": 1.22,
+              "y": 2.82,
+              "w": 1.2,
+              "h": 0.34
+            }
+          }
+        },
+        {
+          "sourceId": "14",
+          "sourceName": "Text 12",
+          "shape": "rect",
+          "x": 1.29,
+          "y": 2.89,
+          "w": 1.06,
+          "h": 0.15,
+          "type": "text",
+          "text": "문제 해결",
+          "defaultText": "문제 해결",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "bold": true,
+            "color": "315C9B",
+            "align": "center",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 1.29,
+              "y": 2.89,
+              "w": 1.06,
+              "h": 0.15
+            }
+          },
+          "binding": "competencyEvidence.0.competency",
+          "maxLength": 12,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{competencyEvidence.0.competency}}"
+        },
+        {
+          "sourceId": "15",
+          "sourceName": "Text 13",
+          "shape": "rect",
+          "x": 3.65,
+          "y": 2.89,
+          "w": 2.9,
+          "h": 0.18,
+          "type": "text",
+          "text": "[프로젝트/공모전]",
+          "defaultText": "[프로젝트/공모전]",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.0,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 3.65,
+              "y": 2.89,
+              "w": 2.9,
+              "h": 0.18
+            }
+          },
+          "binding": "competencyEvidence.0.experience",
+          "maxLength": 22,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{competencyEvidence.0.experience}}"
+        },
+        {
+          "sourceId": "16",
+          "sourceName": "Text 14",
+          "shape": "rect",
+          "x": 7.45,
+          "y": 2.89,
+          "w": 2.2,
+          "h": 0.18,
+          "type": "text",
+          "text": "[정량 성과 또는 결과]",
+          "defaultText": "[정량 성과 또는 결과]",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.0,
+            "color": "5F6B7A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 7.45,
+              "y": 2.89,
+              "w": 2.2,
+              "h": 0.18
+            }
+          },
+          "binding": "competencyEvidence.0.outcome",
+          "maxLength": 28,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{competencyEvidence.0.outcome}}"
+        },
+        {
+          "sourceId": "17",
+          "sourceName": "Text 15",
+          "shape": "rect",
+          "x": 10.35,
+          "y": 2.89,
+          "w": 1.7,
+          "h": 0.18,
+          "type": "text",
+          "text": "지원동기 / 강점",
+          "defaultText": "지원동기 / 강점",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.0,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 10.35,
+              "y": 2.89,
+              "w": 1.7,
+              "h": 0.18
+            }
+          },
+          "binding": "competencyEvidence.0.question",
+          "maxLength": 16,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{competencyEvidence.0.question}}"
+        },
+        {
+          "sourceId": "18",
+          "sourceName": "Shape 16",
+          "shape": "line",
+          "x": 1.1,
+          "y": 3.43,
+          "w": 10.8,
+          "h": 0.0,
+          "type": "shape",
+          "style": {
+            "line": "DDE4EE"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "line",
+            "position": {
+              "x": 1.1,
+              "y": 3.43,
+              "w": 10.8,
+              "h": 0.0
+            }
+          }
+        },
+        {
+          "sourceId": "19",
+          "sourceName": "Shape 17",
+          "shape": "roundRect",
+          "x": 1.22,
+          "y": 3.6,
+          "w": 1.2,
+          "h": 0.34,
+          "type": "shape",
+          "style": {
+            "fill": "EAF4EC",
+            "line": "EAF4EC",
+            "rectRadius": 0.08
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "roundRect",
+            "position": {
+              "x": 1.22,
+              "y": 3.6,
+              "w": 1.2,
+              "h": 0.34
+            }
+          }
+        },
+        {
+          "sourceId": "20",
+          "sourceName": "Text 18",
+          "shape": "rect",
+          "x": 1.29,
+          "y": 3.67,
+          "w": 1.06,
+          "h": 0.15,
+          "type": "text",
+          "text": "협업",
+          "defaultText": "협업",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "bold": true,
+            "color": "2E6B4A",
+            "align": "center",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 1.29,
+              "y": 3.67,
+              "w": 1.06,
+              "h": 0.15
+            }
+          },
+          "binding": "competencyEvidence.1.competency",
+          "maxLength": 12,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{competencyEvidence.1.competency}}"
+        },
+        {
+          "sourceId": "21",
+          "sourceName": "Text 19",
+          "shape": "rect",
+          "x": 3.65,
+          "y": 3.67,
+          "w": 2.9,
+          "h": 0.18,
+          "type": "text",
+          "text": "[팀 활동/대외활동]",
+          "defaultText": "[팀 활동/대외활동]",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.0,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 3.65,
+              "y": 3.67,
+              "w": 2.9,
+              "h": 0.18
+            }
+          },
+          "binding": "competencyEvidence.1.experience",
+          "maxLength": 22,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{competencyEvidence.1.experience}}"
+        },
+        {
+          "sourceId": "22",
+          "sourceName": "Text 20",
+          "shape": "rect",
+          "x": 7.45,
+          "y": 3.67,
+          "w": 2.2,
+          "h": 0.18,
+          "type": "text",
+          "text": "[역할·기여도]",
+          "defaultText": "[역할·기여도]",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.0,
+            "color": "5F6B7A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 7.45,
+              "y": 3.67,
+              "w": 2.2,
+              "h": 0.18
+            }
+          },
+          "binding": "competencyEvidence.1.outcome",
+          "maxLength": 28,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{competencyEvidence.1.outcome}}"
+        },
+        {
+          "sourceId": "23",
+          "sourceName": "Text 21",
+          "shape": "rect",
+          "x": 10.35,
+          "y": 3.67,
+          "w": 1.7,
+          "h": 0.18,
+          "type": "text",
+          "text": "협업 경험",
+          "defaultText": "협업 경험",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.0,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 10.35,
+              "y": 3.67,
+              "w": 1.7,
+              "h": 0.18
+            }
+          },
+          "binding": "competencyEvidence.1.question",
+          "maxLength": 16,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{competencyEvidence.1.question}}"
+        },
+        {
+          "sourceId": "24",
+          "sourceName": "Shape 22",
+          "shape": "line",
+          "x": 1.1,
+          "y": 4.21,
+          "w": 10.8,
+          "h": 0.0,
+          "type": "shape",
+          "style": {
+            "line": "DDE4EE"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "line",
+            "position": {
+              "x": 1.1,
+              "y": 4.21,
+              "w": 10.8,
+              "h": 0.0
+            }
+          }
+        },
+        {
+          "sourceId": "25",
+          "sourceName": "Shape 23",
+          "shape": "roundRect",
+          "x": 1.22,
+          "y": 4.38,
+          "w": 1.2,
+          "h": 0.34,
+          "type": "shape",
+          "style": {
+            "fill": "EEEAF8",
+            "line": "EEEAF8",
+            "rectRadius": 0.08
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "roundRect",
+            "position": {
+              "x": 1.22,
+              "y": 4.38,
+              "w": 1.2,
+              "h": 0.34
+            }
+          }
+        },
+        {
+          "sourceId": "26",
+          "sourceName": "Text 24",
+          "shape": "rect",
+          "x": 1.29,
+          "y": 4.45,
+          "w": 1.06,
+          "h": 0.15,
+          "type": "text",
+          "text": "직무 전문성",
+          "defaultText": "직무 전문성",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "bold": true,
+            "color": "6B5CB6",
+            "align": "center",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 1.29,
+              "y": 4.45,
+              "w": 1.06,
+              "h": 0.15
+            }
+          },
+          "binding": "competencyEvidence.2.competency",
+          "maxLength": 12,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{competencyEvidence.2.competency}}"
+        },
+        {
+          "sourceId": "27",
+          "sourceName": "Text 25",
+          "shape": "rect",
+          "x": 3.65,
+          "y": 4.45,
+          "w": 2.9,
+          "h": 0.18,
+          "type": "text",
+          "text": "[교육/자격증/전공]",
+          "defaultText": "[교육/자격증/전공]",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.0,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 3.65,
+              "y": 4.45,
+              "w": 2.9,
+              "h": 0.18
+            }
+          },
+          "binding": "competencyEvidence.2.experience",
+          "maxLength": 22,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{competencyEvidence.2.experience}}"
+        },
+        {
+          "sourceId": "28",
+          "sourceName": "Text 26",
+          "shape": "rect",
+          "x": 7.45,
+          "y": 4.45,
+          "w": 2.2,
+          "h": 0.18,
+          "type": "text",
+          "text": "[학습 결과]",
+          "defaultText": "[학습 결과]",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.0,
+            "color": "5F6B7A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 7.45,
+              "y": 4.45,
+              "w": 2.2,
+              "h": 0.18
+            }
+          },
+          "binding": "competencyEvidence.2.outcome",
+          "maxLength": 28,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{competencyEvidence.2.outcome}}"
+        },
+        {
+          "sourceId": "29",
+          "sourceName": "Text 27",
+          "shape": "rect",
+          "x": 10.35,
+          "y": 4.45,
+          "w": 1.7,
+          "h": 0.18,
+          "type": "text",
+          "text": "직무 역량",
+          "defaultText": "직무 역량",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.0,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 10.35,
+              "y": 4.45,
+              "w": 1.7,
+              "h": 0.18
+            }
+          },
+          "binding": "competencyEvidence.2.question",
+          "maxLength": 16,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{competencyEvidence.2.question}}"
+        },
+        {
+          "sourceId": "30",
+          "sourceName": "Shape 28",
+          "shape": "line",
+          "x": 1.1,
+          "y": 4.99,
+          "w": 10.8,
+          "h": 0.0,
+          "type": "shape",
+          "style": {
+            "line": "DDE4EE"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "line",
+            "position": {
+              "x": 1.1,
+              "y": 4.99,
+              "w": 10.8,
+              "h": 0.0
+            }
+          }
+        },
+        {
+          "sourceId": "31",
+          "sourceName": "Shape 29",
+          "shape": "roundRect",
+          "x": 1.22,
+          "y": 5.16,
+          "w": 1.2,
+          "h": 0.34,
+          "type": "shape",
+          "style": {
+            "fill": "F8E9E1",
+            "line": "F8E9E1",
+            "rectRadius": 0.08
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "roundRect",
+            "position": {
+              "x": 1.22,
+              "y": 5.16,
+              "w": 1.2,
+              "h": 0.34
+            }
+          }
+        },
+        {
+          "sourceId": "32",
+          "sourceName": "Text 30",
+          "shape": "rect",
+          "x": 1.29,
+          "y": 5.23,
+          "w": 1.06,
+          "h": 0.15,
+          "type": "text",
+          "text": "성장 가능성",
+          "defaultText": "성장 가능성",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "bold": true,
+            "color": "C65B3C",
+            "align": "center",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 1.29,
+              "y": 5.23,
+              "w": 1.06,
+              "h": 0.15
+            }
+          },
+          "binding": "competencyEvidence.3.competency",
+          "maxLength": 12,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{competencyEvidence.3.competency}}"
+        },
+        {
+          "sourceId": "33",
+          "sourceName": "Text 31",
+          "shape": "rect",
+          "x": 3.65,
+          "y": 5.23,
+          "w": 2.9,
+          "h": 0.18,
+          "type": "text",
+          "text": "[실패·개선 경험]",
+          "defaultText": "[실패·개선 경험]",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.0,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 3.65,
+              "y": 5.23,
+              "w": 2.9,
+              "h": 0.18
+            }
+          },
+          "binding": "competencyEvidence.3.experience",
+          "maxLength": 22,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{competencyEvidence.3.experience}}"
+        },
+        {
+          "sourceId": "34",
+          "sourceName": "Text 32",
+          "shape": "rect",
+          "x": 7.45,
+          "y": 5.23,
+          "w": 2.2,
+          "h": 0.18,
+          "type": "text",
+          "text": "[변화·배운 점]",
+          "defaultText": "[변화·배운 점]",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.0,
+            "color": "5F6B7A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 7.45,
+              "y": 5.23,
+              "w": 2.2,
+              "h": 0.18
+            }
+          },
+          "binding": "competencyEvidence.3.outcome",
+          "maxLength": 28,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{competencyEvidence.3.outcome}}"
+        },
+        {
+          "sourceId": "35",
+          "sourceName": "Text 33",
+          "shape": "rect",
+          "x": 10.35,
+          "y": 5.23,
+          "w": 1.7,
+          "h": 0.18,
+          "type": "text",
+          "text": "성장 과정",
+          "defaultText": "성장 과정",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.0,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 10.35,
+              "y": 5.23,
+              "w": 1.7,
+              "h": 0.18
+            }
+          },
+          "binding": "competencyEvidence.3.question",
+          "maxLength": 16,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{competencyEvidence.3.question}}"
+        },
+        {
+          "sourceId": "36",
+          "sourceName": "Shape 34",
+          "shape": "roundRect",
+          "x": 1.15,
+          "y": 5.72,
+          "w": 10.9,
+          "h": 0.42,
+          "type": "shape",
+          "style": {
+            "fill": "E8F0FA",
+            "line": "E8F0FA",
+            "rectRadius": 0.08
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "roundRect",
+            "position": {
+              "x": 1.15,
+              "y": 5.72,
+              "w": 10.9,
+              "h": 0.42
+            }
+          }
+        },
+        {
+          "sourceId": "37",
+          "sourceName": "Text 35",
+          "shape": "rect",
+          "x": 1.31,
+          "y": 5.82,
+          "w": 10.58,
+          "h": 0.18,
+          "type": "text",
+          "text": "작성 팁: 한 역량은 최소 2개 이상의 경험으로 반복 증명하면 자기소개서 전체의 일관성이 높아집니다.",
+          "defaultText": "작성 팁: 한 역량은 최소 2개 이상의 경험으로 반복 증명하면 자기소개서 전체의 일관성이 높아집니다.",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 9.5,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 1.31,
+              "y": 5.82,
+              "w": 10.58,
+              "h": 0.18
+            }
+          }
+        },
+        {
+          "sourceId": "38",
+          "sourceName": "Text 36",
+          "shape": "rect",
+          "x": 0.58,
+          "y": 6.94,
+          "w": 0.3,
+          "h": 0.18,
+          "type": "text",
+          "text": "07",
+          "defaultText": "07",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 0.58,
+              "y": 6.94,
+              "w": 0.3,
+              "h": 0.18
+            }
+          }
+        },
+        {
+          "sourceId": "39",
+          "sourceName": "Shape 37",
+          "shape": "line",
+          "x": 0.95,
+          "y": 7.03,
+          "w": 1.2,
+          "h": 0.0,
+          "type": "shape",
+          "style": {
+            "line": "315C9B"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "line",
+            "position": {
+              "x": 0.95,
+              "y": 7.03,
+              "w": 1.2,
+              "h": 0.0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "future_plan",
+      "sourceSlide": 8,
+      "title": "입사 후 기여 방향",
+      "sectionLabel": "Future Plan",
+      "description": "과거 경험을 미래 기여로 연결하며 포트폴리오를 마무리합니다.",
+      "elements": [
+        {
+          "sourceId": "2",
+          "sourceName": "Text 0",
+          "shape": "rect",
+          "x": 0.55,
+          "y": 0.32,
+          "w": 1.8,
+          "h": 0.28,
+          "type": "text",
+          "text": "MyFitfolio",
+          "defaultText": "MyFitfolio",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 15.0,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 0.55,
+              "y": 0.32,
+              "w": 1.8,
+              "h": 0.28
+            }
+          }
+        },
+        {
+          "sourceId": "3",
+          "sourceName": "Text 1",
+          "shape": "rect",
+          "x": 10.35,
+          "y": 0.34,
+          "w": 2.35,
+          "h": 0.25,
+          "type": "text",
+          "text": "Future Plan",
+          "defaultText": "Future Plan",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.5,
+            "color": "5F6B7A",
+            "align": "right",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 10.35,
+              "y": 0.34,
+              "w": 2.35,
+              "h": 0.25
+            }
+          }
+        },
+        {
+          "sourceId": "4",
+          "sourceName": "Shape 2",
+          "shape": "line",
+          "x": 0.5,
+          "y": 0.72,
+          "w": 12.35,
+          "h": 0.0,
+          "type": "shape",
+          "style": {
+            "line": "DDE4EE"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "line",
+            "position": {
+              "x": 0.5,
+              "y": 0.72,
+              "w": 12.35,
+              "h": 0.0
+            }
+          }
+        },
+        {
+          "sourceId": "5",
+          "sourceName": "Text 3",
+          "shape": "rect",
+          "x": 0.75,
+          "y": 1.0,
+          "w": 5.7,
+          "h": 0.45,
+          "type": "text",
+          "text": "입사 후 기여 방향",
+          "defaultText": "입사 후 기여 방향",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 27.0,
+            "bold": true,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 0.75,
+              "y": 1.0,
+              "w": 5.7,
+              "h": 0.45
+            }
+          }
+        },
+        {
+          "sourceId": "6",
+          "sourceName": "Text 4",
+          "shape": "rect",
+          "x": 0.77,
+          "y": 1.52,
+          "w": 7.0,
+          "h": 0.28,
+          "type": "text",
+          "text": "과거 경험을 미래 기여로 연결하며 포트폴리오를 마무리합니다.",
+          "defaultText": "과거 경험을 미래 기여로 연결하며 포트폴리오를 마무리합니다.",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.5,
+            "color": "5F6B7A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 0.77,
+              "y": 1.52,
+              "w": 7.0,
+              "h": 0.28
+            }
+          }
+        },
+        {
+          "sourceId": "7",
+          "sourceName": "Shape 5",
+          "shape": "roundRect",
+          "x": 0.95,
+          "y": 2.25,
+          "w": 3.45,
+          "h": 2.95,
+          "type": "shape",
+          "style": {
+            "fill": "FFFFFF",
+            "line": "DDE4EE",
+            "rectRadius": 0.08
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "roundRect",
+            "position": {
+              "x": 0.95,
+              "y": 2.25,
+              "w": 3.45,
+              "h": 2.95
+            }
+          }
+        },
+        {
+          "sourceId": "8",
+          "sourceName": "Text 6",
+          "shape": "rect",
+          "x": 1.23,
+          "y": 2.58,
+          "w": 1.0,
+          "h": 0.35,
+          "type": "text",
+          "text": "30일",
+          "defaultText": "30일",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 22.0,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 1.23,
+              "y": 2.58,
+              "w": 1.0,
+              "h": 0.35
+            }
+          },
+          "binding": "contributionPlan.0.period",
+          "maxLength": 8,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{contributionPlan.0.period}}"
+        },
+        {
+          "sourceId": "9",
+          "sourceName": "Text 7",
+          "shape": "rect",
+          "x": 1.23,
+          "y": 3.15,
+          "w": 1.8,
+          "h": 0.3,
+          "type": "text",
+          "text": "입사 초기",
+          "defaultText": "입사 초기",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 16.0,
+            "bold": true,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 1.23,
+              "y": 3.15,
+              "w": 1.8,
+              "h": 0.3
+            }
+          },
+          "binding": "contributionPlan.0.title",
+          "maxLength": 10,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{contributionPlan.0.title}}"
+        },
+        {
+          "sourceId": "10",
+          "sourceName": "Shape 8",
+          "shape": "line",
+          "x": 1.23,
+          "y": 3.62,
+          "w": 2.8,
+          "h": 0.0,
+          "type": "shape",
+          "style": {
+            "line": "DDE4EE"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "line",
+            "position": {
+              "x": 1.23,
+              "y": 3.62,
+              "w": 2.8,
+              "h": 0.0
+            }
+          }
+        },
+        {
+          "sourceId": "11",
+          "sourceName": "Text 9",
+          "shape": "rect",
+          "x": 1.23,
+          "y": 3.9,
+          "w": 2.65,
+          "h": 0.65,
+          "type": "text",
+          "text": "업무·서비스 구조 이해\n팀 프로세스 학습",
+          "defaultText": "업무·서비스 구조 이해\n팀 프로세스 학습",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 11.0,
+            "color": "5F6B7A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 1.23,
+              "y": 3.9,
+              "w": 2.65,
+              "h": 0.65
+            }
+          },
+          "binding": "contributionPlan.0.plan",
+          "maxLength": 42,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{contributionPlan.0.plan}}"
+        },
+        {
+          "sourceId": "12",
+          "sourceName": "Shape 10",
+          "shape": "roundRect",
+          "x": 5.0,
+          "y": 2.25,
+          "w": 3.45,
+          "h": 2.95,
+          "type": "shape",
+          "style": {
+            "fill": "FFFFFF",
+            "line": "DDE4EE",
+            "rectRadius": 0.08
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "roundRect",
+            "position": {
+              "x": 5.0,
+              "y": 2.25,
+              "w": 3.45,
+              "h": 2.95
+            }
+          }
+        },
+        {
+          "sourceId": "13",
+          "sourceName": "Text 11",
+          "shape": "rect",
+          "x": 5.28,
+          "y": 2.58,
+          "w": 1.0,
+          "h": 0.35,
+          "type": "text",
+          "text": "90일",
+          "defaultText": "90일",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 22.0,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 5.28,
+              "y": 2.58,
+              "w": 1.0,
+              "h": 0.35
+            }
+          },
+          "binding": "contributionPlan.1.period",
+          "maxLength": 8,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{contributionPlan.1.period}}"
+        },
+        {
+          "sourceId": "14",
+          "sourceName": "Text 12",
+          "shape": "rect",
+          "x": 5.28,
+          "y": 3.15,
+          "w": 1.8,
+          "h": 0.3,
+          "type": "text",
+          "text": "성장 단계",
+          "defaultText": "성장 단계",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 16.0,
+            "bold": true,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 5.28,
+              "y": 3.15,
+              "w": 1.8,
+              "h": 0.3
+            }
+          },
+          "binding": "contributionPlan.1.title",
+          "maxLength": 10,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{contributionPlan.1.title}}"
+        },
+        {
+          "sourceId": "15",
+          "sourceName": "Shape 13",
+          "shape": "line",
+          "x": 5.28,
+          "y": 3.62,
+          "w": 2.8,
+          "h": 0.0,
+          "type": "shape",
+          "style": {
+            "line": "DDE4EE"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "line",
+            "position": {
+              "x": 5.28,
+              "y": 3.62,
+              "w": 2.8,
+              "h": 0.0
+            }
+          }
+        },
+        {
+          "sourceId": "16",
+          "sourceName": "Text 14",
+          "shape": "rect",
+          "x": 5.28,
+          "y": 3.9,
+          "w": 2.65,
+          "h": 0.65,
+          "type": "text",
+          "text": "경험 기반 개선 제안\n작은 자동화·효율화 실행",
+          "defaultText": "경험 기반 개선 제안\n작은 자동화·효율화 실행",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 11.0,
+            "color": "5F6B7A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 5.28,
+              "y": 3.9,
+              "w": 2.65,
+              "h": 0.65
+            }
+          },
+          "binding": "contributionPlan.1.plan",
+          "maxLength": 42,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{contributionPlan.1.plan}}"
+        },
+        {
+          "sourceId": "17",
+          "sourceName": "Shape 15",
+          "shape": "roundRect",
+          "x": 9.05,
+          "y": 2.25,
+          "w": 3.45,
+          "h": 2.95,
+          "type": "shape",
+          "style": {
+            "fill": "FFFFFF",
+            "line": "DDE4EE",
+            "rectRadius": 0.08
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "roundRect",
+            "position": {
+              "x": 9.05,
+              "y": 2.25,
+              "w": 3.45,
+              "h": 2.95
+            }
+          }
+        },
+        {
+          "sourceId": "18",
+          "sourceName": "Text 16",
+          "shape": "rect",
+          "x": 9.33,
+          "y": 2.58,
+          "w": 1.0,
+          "h": 0.35,
+          "type": "text",
+          "text": "180일",
+          "defaultText": "180일",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 22.0,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 9.33,
+              "y": 2.58,
+              "w": 1.0,
+              "h": 0.35
+            }
+          },
+          "binding": "contributionPlan.2.period",
+          "maxLength": 8,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{contributionPlan.2.period}}"
+        },
+        {
+          "sourceId": "19",
+          "sourceName": "Text 17",
+          "shape": "rect",
+          "x": 9.33,
+          "y": 3.15,
+          "w": 1.8,
+          "h": 0.3,
+          "type": "text",
+          "text": "장기 기여",
+          "defaultText": "장기 기여",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 16.0,
+            "bold": true,
+            "color": "1E2A3A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 9.33,
+              "y": 3.15,
+              "w": 1.8,
+              "h": 0.3
+            }
+          },
+          "binding": "contributionPlan.2.title",
+          "maxLength": 10,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{contributionPlan.2.title}}"
+        },
+        {
+          "sourceId": "20",
+          "sourceName": "Shape 18",
+          "shape": "line",
+          "x": 9.33,
+          "y": 3.62,
+          "w": 2.8,
+          "h": 0.0,
+          "type": "shape",
+          "style": {
+            "line": "DDE4EE"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "line",
+            "position": {
+              "x": 9.33,
+              "y": 3.62,
+              "w": 2.8,
+              "h": 0.0
+            }
+          }
+        },
+        {
+          "sourceId": "21",
+          "sourceName": "Text 19",
+          "shape": "rect",
+          "x": 9.33,
+          "y": 3.9,
+          "w": 2.65,
+          "h": 0.65,
+          "type": "text",
+          "text": "고객/사용자 문제 해결\n조직 성과에 연결",
+          "defaultText": "고객/사용자 문제 해결\n조직 성과에 연결",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 11.0,
+            "color": "5F6B7A",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 9.33,
+              "y": 3.9,
+              "w": 2.65,
+              "h": 0.65
+            }
+          },
+          "binding": "contributionPlan.2.plan",
+          "maxLength": 42,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{contributionPlan.2.plan}}"
+        },
+        {
+          "sourceId": "22",
+          "sourceName": "Shape 20",
+          "shape": "roundRect",
+          "x": 0.95,
+          "y": 5.62,
+          "w": 11.55,
+          "h": 0.88,
+          "type": "shape",
+          "style": {
+            "fill": "315C9B",
+            "line": "315C9B",
+            "rectRadius": 0.08
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "roundRect",
+            "position": {
+              "x": 0.95,
+              "y": 5.62,
+              "w": 11.55,
+              "h": 0.88
+            }
+          }
+        },
+        {
+          "sourceId": "23",
+          "sourceName": "Text 21",
+          "shape": "rect",
+          "x": 1.18,
+          "y": 5.9,
+          "w": 1.2,
+          "h": 0.18,
+          "type": "text",
+          "text": "마무리 문장",
+          "defaultText": "마무리 문장",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 9.0,
+            "bold": true,
+            "color": "FFFFFF",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 1.18,
+              "y": 5.9,
+              "w": 1.2,
+              "h": 0.18
+            }
+          }
+        },
+        {
+          "sourceId": "24",
+          "sourceName": "Text 22",
+          "shape": "rect",
+          "x": 2.45,
+          "y": 5.82,
+          "w": 8.6,
+          "h": 0.28,
+          "type": "text",
+          "text": "[나의 경험]을 바탕으로 [회사/직무]에서 [구체적 기여]를 만들어가겠습니다.",
+          "defaultText": "[나의 경험]을 바탕으로 [회사/직무]에서 [구체적 기여]를 만들어가겠습니다.",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 15.0,
+            "bold": true,
+            "color": "FFFFFF",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": true,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 2.45,
+              "y": 5.82,
+              "w": 8.6,
+              "h": 0.28
+            }
+          },
+          "binding": "closingSentence",
+          "maxLength": 90,
+          "promptHint": "사용자 경험 데이터, 마이페이지 정보, 선택 직무/회사 정보를 근거로 채우는 텍스트입니다.",
+          "textTemplate": "{{closingSentence}}"
+        },
+        {
+          "sourceId": "25",
+          "sourceName": "Text 23",
+          "shape": "rect",
+          "x": 0.58,
+          "y": 6.94,
+          "w": 0.3,
+          "h": 0.18,
+          "type": "text",
+          "text": "08",
+          "defaultText": "08",
+          "style": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "bold": true,
+            "color": "315C9B",
+            "valign": "mid",
+            "margin": 0,
+            "fit": "shrink"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addText",
+            "shape": null,
+            "position": {
+              "x": 0.58,
+              "y": 6.94,
+              "w": 0.3,
+              "h": 0.18
+            }
+          }
+        },
+        {
+          "sourceId": "26",
+          "sourceName": "Shape 24",
+          "shape": "line",
+          "x": 0.95,
+          "y": 7.03,
+          "w": 1.2,
+          "h": 0.0,
+          "type": "shape",
+          "style": {
+            "line": "315C9B"
+          },
+          "editable": false,
+          "pptxGenJS": {
+            "method": "addShape",
+            "shape": "line",
+            "position": {
+              "x": 0.95,
+              "y": 7.03,
+              "w": 1.2,
+              "h": 0.0
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
