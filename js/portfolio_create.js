@@ -268,11 +268,7 @@
 
     async function loadProfileMajor() {
       try {
-        const response = await fetch(PROFILE_ENDPOINT, {
-          method: 'GET',
-          credentials: 'same-origin',
-          cache: 'no-store'
-        });
+        const response = await window.MyfitfolioCache.cachedGet(PROFILE_ENDPOINT, { ttlMs: 20000 });
         if (!response.ok) throw new Error('Profile load failed.');
 
         const result = await response.json();

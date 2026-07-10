@@ -164,11 +164,7 @@
 
     async function loadSavedProfile() {
       try {
-        const response = await fetch(PROFILE_ENDPOINT, {
-          method: "GET",
-          credentials: "same-origin",
-          cache: "no-store"
-        });
+        const response = await window.MyfitfolioCache.cachedGet(PROFILE_ENDPOINT, { ttlMs: 20000 });
 
         if (response.ok) {
           const payload = await response.json();
@@ -503,6 +499,7 @@
         }
 
         const result = await response.json();
+        window.MyfitfolioCache.invalidate(PROFILE_ENDPOINT);
         const savedProfile = result.profile || payload;
         if (Object.hasOwn(savedProfile, "photo")) profileState.photo = savedProfile.photo || "";
         if (profileState.photo) localStorage.setItem("myfitfolioPhoto", profileState.photo);

@@ -1203,8 +1203,8 @@ assert.match(
 );
 assert.match(
   mainHtml,
-  /fetch\(PROFILE_ENDPOINT,\s*\{[\s\S]*credentials:\s*'same-origin'[\s\S]*cache:\s*'no-store'/,
-  'main dashboard should request the current user profile without using a stale cache'
+  /window\.MyfitfolioCache\.cachedGet\(PROFILE_ENDPOINT,\s*\{\s*ttlMs:\s*20000\s*\}\)/,
+  'main dashboard should request the current user profile through the shared short-TTL cache'
 );
 assert.match(
   mainHtml,
@@ -1523,8 +1523,8 @@ for (const text of ['전기공학과', '정보컴퓨터공학과', '화공생명
 }
 assert.match(
   mypageHtml,
-  /<div data-shared-nav data-active="mypage"><\/div>\s*<script src="\.\.\/js\/shared-nav\.js"><\/script>\s*<script src="\.\.\/js\/auth-nav\.js"><\/script>/,
-  'mypage should keep the shared nav and auth-nav scripts when applying the attachment'
+  /<div data-shared-nav data-active="mypage"><\/div>\s*<script src="\.\.\/js\/shared-nav\.js"><\/script>\s*<script src="\.\.\/js\/session-cache\.js"><\/script>\s*<script src="\.\.\/js\/auth-nav\.js"><\/script>/,
+  'mypage should keep the shared nav, session cache and auth-nav scripts when applying the attachment'
 );
 assert.match(
   mypageHtml,
@@ -1570,13 +1570,18 @@ assert.match(
 );
 assert.match(
   mypageHtml,
-  /async function\s+loadSavedProfile\(\)[\s\S]*fetch\(PROFILE_ENDPOINT,\s*\{[\s\S]*method:\s*"GET"[\s\S]*credentials:\s*"same-origin"/,
-  'mypage should load saved profile values from the Supabase profile API'
+  /async function\s+loadSavedProfile\(\)[\s\S]*window\.MyfitfolioCache\.cachedGet\(PROFILE_ENDPOINT,\s*\{\s*ttlMs:\s*20000\s*\}\)/,
+  'mypage should load saved profile values from the Supabase profile API through the shared short-TTL cache'
 );
 assert.match(
   mypageHtml,
   /async function\s+saveProfile\(\)[\s\S]*fetch\(PROFILE_ENDPOINT,\s*\{[\s\S]*method:\s*"PUT"[\s\S]*body:\s*JSON\.stringify\(payload\)/,
   'mypage should save edited profile values through the Supabase profile API'
+);
+assert.match(
+  mypageHtml,
+  /async function\s+saveProfile\(\)[\s\S]*window\.MyfitfolioCache\.invalidate\(PROFILE_ENDPOINT\)/,
+  'mypage should invalidate the cached profile after saving so other pages see the update immediately'
 );
 assert.match(
   mypageHtml,
@@ -2842,8 +2847,8 @@ assert.match(
 );
 assert.match(
   contestJs,
-  /async function\s+loadRecommendationProfileFromServer\(\)[\s\S]*fetch\('\/api\/profile'[\s\S]*localStorage\.setItem\('myfitfolioProfile'/,
-  'contest should refresh recommendations from the latest saved mypage profile API'
+  /async function\s+loadRecommendationProfileFromServer\(\)[\s\S]*window\.MyfitfolioCache\.cachedGet\('\/api\/profile',\s*\{\s*ttlMs:\s*20000\s*\}\)[\s\S]*localStorage\.setItem\('myfitfolioProfile'/,
+  'contest should refresh recommendations from the latest saved mypage profile API through the shared short-TTL cache'
 );
 assert.match(
   contestJs,
@@ -3130,8 +3135,8 @@ assert.match(
 );
 assert.match(
   portfolioCreateHtml,
-  /async function\s+loadProfileMajor\(\)[\s\S]*fetch\(PROFILE_ENDPOINT,[\s\S]*profileMajor\s*=\s*educations\.find\(\(education\)\s*=>\s*education\?\.major\)\?\.major/,
-  'portfolio_create should load the displayed major from mypage education data'
+  /async function\s+loadProfileMajor\(\)[\s\S]*window\.MyfitfolioCache\.cachedGet\(PROFILE_ENDPOINT,\s*\{\s*ttlMs:\s*20000\s*\}\)[\s\S]*profileMajor\s*=\s*educations\.find\(\(education\)\s*=>\s*education\?\.major\)\?\.major/,
+  'portfolio_create should load the displayed major from mypage education data through the shared short-TTL cache'
 );
 assert.match(
   portfolioCreateHtml,

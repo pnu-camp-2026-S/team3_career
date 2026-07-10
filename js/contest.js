@@ -895,11 +895,7 @@ function refreshRecommendationsFromProfile(profile = readRecommendationProfile()
 
 async function loadRecommendationProfileFromServer() {
   try {
-    const response = await fetch('/api/profile', {
-      method: 'GET',
-      credentials: 'same-origin',
-      cache: 'no-store'
-    });
+    const response = await window.MyfitfolioCache.cachedGet('/api/profile', { ttlMs: 20000 });
 
     if (response.status === 401) return false;
     if (!response.ok) throw new Error('Profile load failed.');
