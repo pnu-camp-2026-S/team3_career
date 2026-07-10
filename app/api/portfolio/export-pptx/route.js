@@ -6,6 +6,20 @@ function normalizeText(value) {
   return String(value || '').replace(/\s+/g, ' ').trim();
 }
 
+function stripTrailingPostposition(text) {
+  return String(text || '')
+    .replace(/(\S+\s+\S+)\s+(?:과|와|은|는|이|가|을|를|의|에|로|으로|도|만|까지|부터|처럼|보다|에게|께|한테|랑|이랑|하고)$/u, '$1')
+    .replace(/(\S+\s+\S+)(?:과|와|은|는|이|가|을|를|의|에|로|으로|도|만|까지|부터|처럼|보다|에게|께|한테|랑|이랑|하고)$/u, '$1')
+    .trim();
+}
+
+function normalizeKeywordList(keywords) {
+  return [...new Set((Array.isArray(keywords) ? keywords : [])
+    .map((keyword) => stripTrailingPostposition(keyword))
+    .filter(Boolean))]
+    .slice(0, 12);
+}
+
 function normalizeBlocks(portfolio) {
   const source = portfolio.format === 'PPT 발표 스펙'
     ? portfolio.slides
@@ -176,7 +190,7 @@ function placeholderMap(portfolio) {
       education: asList(profile.education, 4),
       experience: asList(profile.experience, 4),
       licenses: asList(profile.licenses, 4),
-      skills: asList(profile.skills || portfolio.keywords, 4),
+      skills: asList(profile.skills || normalizeKeywordList(portfolio.keywords), 4),
     },
     experiences: (Array.isArray(raw.experiences) && raw.experiences.length ? raw.experiences : [fallbackExperience]).slice(0, 6),
   };
@@ -857,7 +871,7 @@ function addOverviewSlide(pptx, portfolio, blocks) {
     line: { color: '101828', width: 2 },
   });
 
-  const keywords = Array.isArray(portfolio.keywords) ? portfolio.keywords.slice(0, 3) : [];
+  const keywords = normalizeKeywordList(portfolio.keywords).slice(0, 3);
   [
     ['형식', portfolio.format],
     ['전공', portfolio.major],
