@@ -20,7 +20,6 @@
 
     let selectedFolderId = new URLSearchParams(window.location.search).get('folder') || 'completed-personal';
     let selectedSubfolderId = null;
-    let nextFileId = 1;
     let toastTimer = null;
     const collapsedFolderTypes = {};
     const projectAnalyses = {};
@@ -90,7 +89,7 @@
               ${FolderStore.FOLDER_TYPES.map((type) => {
                 const typeFolders = groupFolders.filter((folder) => folder.type === type.key);
                 const typeKey = folderTypeStateKey(group.key, type.key);
-                const isCollapsed = collapsedFolderTypes[typeKey] ?? typeFolders.length === 0;
+                const isCollapsed = collapsedFolderTypes[typeKey] ?? true;
                 return `
                   <div class="manager-folder-type">
                     <button class="manager-folder-type-head" type="button" data-folder-type-toggle="${escapeHtml(typeKey)}" aria-expanded="${String(!isCollapsed)}">
@@ -174,14 +173,15 @@
                 <span class="status-pill ${getStatusClass(file.status)}">${file.status || '분석대기'}</span>
                 ${isProjectArtifact
                   ? `
-                    <button class="ghost-button compact-button" type="button" data-action="preview-file" data-file-id="${file.id}">열람</button>
                     <button class="ghost-button compact-button" type="button" data-action="edit-project-artifact" data-project-id="${escapeHtml(file.projectId)}" data-artifact="${escapeHtml(file.artifact)}">수정</button>
                     <span class="analysis-file-note">AI 산출물</span>
                   `
                   : `
                     <button class="ghost-button compact-button" type="button" data-action="preview-file" data-file-id="${file.id}">미리보기</button>
-                    ${hasFileSummary ? `<button class="ghost-button compact-button" type="button" data-action="view-file-summary" data-file-id="${file.id}">AI 요약 보기</button>` : ''}
-                    <button class="ghost-button compact-button danger-button" type="button" data-action="delete-file" data-file-id="${file.id}">삭제</button>
+                    ${hasFileSummary ? `<button class="ghost-button compact-button" type="button" data-action="view-file-summary" data-file-id="${file.id}">AI 요약 수정</button>` : ''}
+                    <button class="folder-delete-button file-delete-button" type="button" data-action="delete-file" data-file-id="${file.id}" aria-label="${escapeHtml(file.name)} 자료 삭제">
+                      <span aria-hidden="true">🗑</span>
+                    </button>
                   `}
               </div>
             </article>
@@ -210,10 +210,17 @@
     function renderSubfolders(folder) {
       const container = document.getElementById('subfolderList');
       container.innerHTML = (folder.subfolders || []).map((sub) => `
-        <button class="subfolder-card ${sub.id === selectedSubfolderId ? 'active' : ''}" type="button" data-subfolder-id="${escapeHtml(sub.id)}">
-          <strong>${escapeHtml(sub.label)}</strong>
-          <span>${sub.files.length}개 자료</span>
-        </button>
+        <div class="subfolder-card ${sub.id === selectedSubfolderId ? 'active' : ''}">
+          <button class="subfolder-select" type="button" data-subfolder-id="${escapeHtml(sub.id)}">
+            <strong>${escapeHtml(sub.label)}</strong>
+            <span>${sub.files.length}개 자료</span>
+          </button>
+          ${isAnalysisSubfolder(sub) ? '' : `
+            <button class="folder-delete-button subfolder-delete-button" type="button" data-action="delete-subfolder" data-subfolder-delete-id="${escapeHtml(sub.id)}" aria-label="${escapeHtml(sub.label)} 세부 폴더 삭제">
+              <span aria-hidden="true">🗑</span>
+            </button>
+          `}
+        </div>
       `).join('');
     }
 
@@ -464,6 +471,14 @@
       if (mimeType === 'application/pdf' || extension === 'pdf') return 'pdf';
       if (mimeType.startsWith('image/') || ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(extension)) return 'image';
       if (['txt', 'md', 'csv'].includes(extension) || ['text/plain', 'text/markdown', 'text/csv'].includes(mimeType)) return 'text';
+      if (
+        ['docx', 'pptx', 'xlsx'].includes(extension)
+        || [
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ].includes(mimeType)
+      ) return 'office';
       return 'unsupported';
     }
 
@@ -479,6 +494,40 @@
 
     function getFilePreviewText(file, preview = {}) {
       return preview.text || preview.previewText || file.previewText || file.content || '';
+    }
+
+    function renderOfficePreview(preview = {}) {
+      const sections = Array.isArray(preview.sections) ? preview.sections : [];
+      const notice = preview.notice ? `<p class="file-preview-office-notice">${escapeHtml(preview.notice)}</p>` : '';
+      const content = sections.length
+        ? sections.map((section) => {
+          const rows = Array.isArray(section.rows) ? section.rows : [];
+          const rowsHtml = rows.length
+            ? `
+              <div class="file-preview-table-wrap">
+                <table class="file-preview-table">
+                  <tbody>
+                    ${rows.map((row) => `<tr>${(row || []).map((cell) => `<td>${escapeHtml(cell || '')}</td>`).join('')}</tr>`).join('')}
+                  </tbody>
+                </table>
+              </div>
+            `
+            : `<pre class="file-preview-text">${escapeHtml(section.text || '추출 가능한 내용이 없습니다.')}</pre>`;
+          return `
+            <section class="file-preview-office-section">
+              <h3>${escapeHtml(section.title || '문서 내용')}</h3>
+              ${rowsHtml}
+            </section>
+          `;
+        }).join('')
+        : '<div class="file-preview-empty"><strong>추출 가능한 내용이 없습니다.</strong><p>원본 파일을 새 탭에서 확인해 주세요.</p></div>';
+
+      return `
+        <div class="file-preview-office">
+          ${notice}
+          ${content}
+        </div>
+      `;
     }
 
     function buildPreviewUnavailableHtml(file, preview = {}) {
@@ -519,6 +568,10 @@
         return `<pre class="file-preview-text">${escapeHtml(text)}</pre>`;
       }
 
+      if (kind === 'office' && preview.sections) {
+        return renderOfficePreview(preview);
+      }
+
       return buildPreviewUnavailableHtml(file, preview);
     }
 
@@ -531,6 +584,132 @@
           </div>
           ${renderFilePreviewContent(file, preview)}
           <p class="file-preview-meta">연결 폴더: ${escapeHtml(getSelectedFolder().label)} / ${escapeHtml(subfolder ? subfolder.label : '')}</p>
+        </div>
+      `;
+    }
+
+    function renderInlineMarkdown(text) {
+      return escapeHtml(text)
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    }
+
+    function renderMarkdownPreview(markdown) {
+      const lines = String(markdown || '').replace(/\r\n/g, '\n').split('\n');
+      const html = [];
+      let listOpen = false;
+      let codeOpen = false;
+      let tableBuffer = [];
+
+      function closeList() {
+        if (!listOpen) return;
+        html.push('</ul>');
+        listOpen = false;
+      }
+
+      function flushTable() {
+        if (!tableBuffer.length) return;
+        const rows = tableBuffer
+          .filter((line) => !/^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(line))
+          .map((line) => line.trim().replace(/^\||\|$/g, '').split('|').map((cell) => cell.trim()));
+        if (rows.length) {
+          html.push('<table>');
+          rows.forEach((row, index) => {
+            const tag = index === 0 ? 'th' : 'td';
+            html.push(`<tr>${row.map((cell) => `<${tag}>${renderInlineMarkdown(cell)}</${tag}>`).join('')}</tr>`);
+          });
+          html.push('</table>');
+        }
+        tableBuffer = [];
+      }
+
+      lines.forEach((line) => {
+        if (line.trim().startsWith('```')) {
+          flushTable();
+          closeList();
+          html.push(codeOpen ? '</code></pre>' : '<pre><code>');
+          codeOpen = !codeOpen;
+          return;
+        }
+
+        if (codeOpen) {
+          html.push(`${escapeHtml(line)}\n`);
+          return;
+        }
+
+        if (/^\s*\|.+\|\s*$/.test(line)) {
+          closeList();
+          tableBuffer.push(line);
+          return;
+        }
+        flushTable();
+
+        const heading = line.match(/^(#{1,3})\s+(.+)$/);
+        if (heading) {
+          closeList();
+          const level = heading[1].length;
+          html.push(`<h${level}>${renderInlineMarkdown(heading[2])}</h${level}>`);
+          return;
+        }
+
+        const listItem = line.match(/^\s*[-*]\s+(.+)$/);
+        if (listItem) {
+          if (!listOpen) {
+            html.push('<ul>');
+            listOpen = true;
+          }
+          html.push(`<li>${renderInlineMarkdown(listItem[1])}</li>`);
+          return;
+        }
+
+        if (!line.trim()) {
+          closeList();
+          html.push('');
+          return;
+        }
+
+        closeList();
+        html.push(`<p>${renderInlineMarkdown(line)}</p>`);
+      });
+
+      flushTable();
+      closeList();
+      if (codeOpen) html.push('</code></pre>');
+      return html.join('');
+    }
+
+    function buildMarkdownEditorHtml({ content, textareaId, saveAction, saveAttrs = '', title = 'Markdown 미리보기' }) {
+      const hasContent = String(content || '').trim().length > 0;
+      return `
+        <div class="markdown-modal-shell" data-markdown-editor>
+          <div class="markdown-modal-toolbar">
+            <strong>${escapeHtml(title)}</strong>
+            <button class="ghost-button compact-button" type="button" data-action="enable-markdown-edit">편집</button>
+          </div>
+          <div class="markdown-preview ${hasContent ? '' : 'empty'}">
+            ${hasContent ? renderMarkdownPreview(content) : '<p>아직 표시할 요약 내용이 없습니다.</p>'}
+          </div>
+          <textarea class="textarea-box markdown-editor-input hidden" id="${escapeHtml(textareaId)}">${escapeHtml(content)}</textarea>
+          <div class="form-actions markdown-editor-actions hidden">
+            <button class="primary-button" type="button" data-action="${escapeHtml(saveAction)}" ${saveAttrs}>저장 후 미리보기</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function buildCodeEditorHtml({ content, textareaId, saveAction, saveAttrs = '', title = '원문 미리보기' }) {
+      return `
+        <div class="markdown-modal-shell" data-markdown-editor>
+          <div class="markdown-modal-toolbar">
+            <strong>${escapeHtml(title)}</strong>
+            <button class="ghost-button compact-button" type="button" data-action="enable-markdown-edit">편집</button>
+          </div>
+          <pre class="json-artifact-preview markdown-preview">${escapeHtml(content || '{}')}</pre>
+          <textarea class="textarea-box markdown-editor-input hidden" id="${escapeHtml(textareaId)}">${escapeHtml(content)}</textarea>
+          <div class="form-actions markdown-editor-actions hidden">
+            <button class="primary-button" type="button" data-action="${escapeHtml(saveAction)}" ${saveAttrs}>저장 후 미리보기</button>
+          </div>
         </div>
       `;
     }
@@ -574,12 +753,15 @@
       const match = findFileById(fileId);
       if (!match?.file) return;
       const summary = match.file.analysis?.summaryMd || '';
-      showModal('AI 요약 보기', `
+      showModal('AI 요약 수정', `
         <p class="panel-note">파일별 summary.md입니다. 수정한 내용은 이후 재분석해도 보존됩니다.</p>
-        <textarea class="textarea-box" id="fileSummaryInput">${escapeHtml(summary)}</textarea>
-        <div class="form-actions">
-          <button class="primary-button" type="button" data-action="save-file-summary" data-file-id="${escapeHtml(fileId)}">요약 저장</button>
-        </div>
+        ${buildMarkdownEditorHtml({
+          content: summary,
+          textareaId: 'fileSummaryInput',
+          saveAction: 'save-file-summary',
+          saveAttrs: `data-file-id="${escapeHtml(fileId)}"`,
+          title: `${match.file.name} summary.md`,
+        })}
       `);
     }
 
@@ -595,8 +777,8 @@
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(payload.message || '요약 저장에 실패했습니다.');
         await loadActivityFilesFromApi();
-        hideModal();
         render();
+        openFileSummary(fileId);
         showToast('파일 요약을 저장했습니다.');
       } catch (error) {
         console.warn('File summary save failed.', error);
@@ -612,10 +794,23 @@
       const content = projectArtifactContent(analysis, artifact);
       showModal(`${definition.name} 열람·수정`, `
         <p class="panel-note">${escapeHtml(folder.label)} 프로젝트의 AI 종합 산출물입니다. 수정본은 재분석해도 보존됩니다.</p>
-        <textarea class="textarea-box" id="projectArtifactInput">${escapeHtml(content)}</textarea>
-        <div class="form-actions">
-          <button class="primary-button" type="button" data-action="save-project-artifact" data-project-id="${escapeHtml(projectId)}" data-artifact="${escapeHtml(artifact)}">${definition.name} 저장</button>
-        </div>
+        ${definition.type === 'MD'
+          ? buildMarkdownEditorHtml({
+            content,
+            textareaId: 'projectArtifactInput',
+            saveAction: 'save-project-artifact',
+            saveAttrs: `data-project-id="${escapeHtml(projectId)}" data-artifact="${escapeHtml(artifact)}"`,
+            title: definition.name,
+          })
+          : `
+            ${buildCodeEditorHtml({
+              content,
+              textareaId: 'projectArtifactInput',
+              saveAction: 'save-project-artifact',
+              saveAttrs: `data-project-id="${escapeHtml(projectId)}" data-artifact="${escapeHtml(artifact)}"`,
+              title: definition.name,
+            })}
+          `}
       `);
     }
 
@@ -636,12 +831,25 @@
           populateAnalysisSubfolder(folders[projectId]);
         }
         persistFolders();
-        hideModal();
         render();
+        openProjectArtifactModal(projectId, artifact);
         showToast('프로젝트 산출물을 저장했습니다.');
       } catch (error) {
         console.warn('Project artifact save failed.', error);
         showToast(error.message || '프로젝트 산출물을 저장하지 못했습니다.');
+      }
+    }
+
+    async function deleteStoredFile(file) {
+      if (file.storagePath) {
+        const response = await fetch(ACTIVITY_FILES_ENDPOINT, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({ id: file.id, storagePath: file.storagePath }),
+        });
+
+        if (!response.ok) throw new Error('Activity file delete failed.');
       }
     }
 
@@ -655,21 +863,15 @@
         return;
       }
 
-      if (file.storagePath) {
-        try {
-          const response = await fetch(ACTIVITY_FILES_ENDPOINT, {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'same-origin',
-            body: JSON.stringify({ id: file.id, storagePath: file.storagePath }),
-          });
+      try {
+        await deleteStoredFile(file);
+      } catch (error) {
+        console.warn('Activity file delete failed.', error);
+        showToast('서버에서 파일을 삭제하지 못했습니다. 잠시 후 다시 시도해주세요.');
+        return;
+      }
 
-          if (!response.ok) throw new Error('Activity file delete failed.');
-        } catch (error) {
-          console.warn('Activity file delete failed.', error);
-          showToast('서버에서 파일을 삭제하지 못했습니다. 잠시 후 다시 시도해주세요.');
-          return;
-        }
+      if (file.storagePath) {
         await loadActivityFilesFromApi();
         render();
         showToast('자료와 연결된 AI 요약 파일이 함께 삭제되었습니다.');
@@ -962,28 +1164,6 @@
       showToast(`'${removedLabel}' 폴더를 삭제했습니다.`);
     }
 
-    // 프로젝트별 '대화로 내용 추가하기'(#137-5). 현재 선택한 세부 폴더에 md 자료를 추가한다.
-    function openConversationModal() {
-      const folder = getSelectedFolder();
-      showModal(`${folder.label} 대화로 내용 추가하기`, `
-        <p class="panel-note">이 프로젝트의 활동 내용을 입력하면 선택한 세부 폴더에 Markdown 자료로 추가됩니다.</p>
-        <textarea class="textarea-box" id="conversationInput">팀 프로젝트에서 요구사항 분석과 발표 자료 제작을 담당했습니다.</textarea>
-        <div class="form-actions">
-          <button class="primary-button" type="button" data-action="add-conversation-save">내용 추가</button>
-        </div>
-      `);
-    }
-
-    function saveConversationContent() {
-      const subfolder = getSelectedSubfolder();
-      if (!subfolder) return;
-      subfolder.files.push({ id: `file-${nextFileId++}`, name: 'ai_activity_summary.md', type: 'MD', status: '작성완료' });
-      hideModal();
-      persistFolders();
-      render();
-      showToast('대화 내용을 md 자료로 추가했습니다.');
-    }
-
     function createFolder() {
       const typeOptions = FolderStore.FOLDER_TYPES
         .map((type) => `<option value="${type.key}">${escapeHtml(type.label)}</option>`)
@@ -1042,6 +1222,112 @@
       showToast(`'${name}' 프로젝트를 세부 폴더와 함께 추가했습니다.`);
     }
 
+    function normalizeSubfolderName(name) {
+      return String(name || '').trim().replace(/\s+/g, ' ');
+    }
+
+    function isDuplicateSubfolderName(folder, name) {
+      const target = normalizeSubfolderName(name).toLowerCase();
+      return (folder.subfolders || []).some((sub) => normalizeSubfolderName(sub.label).toLowerCase() === target);
+    }
+
+    function openCreateSubfolderModal() {
+      const folder = getSelectedFolder();
+      if (!folder) return;
+      showModal('세부 폴더 추가', `
+        <p class="panel-note">${escapeHtml(folder.label)} 프로젝트 안에 자료 성격에 맞는 세부 폴더를 추가합니다.</p>
+        <div class="repo-form">
+          <label class="repo-field"><span>세부 폴더 이름</span><input id="newSubfolderName" type="text" placeholder="예: 실험 결과" /></label>
+          <div class="form-actions">
+            <button class="primary-button" type="button" data-action="create-subfolder-confirm">세부 폴더 만들기</button>
+          </div>
+        </div>
+      `);
+    }
+
+    async function confirmCreateSubfolder() {
+      const folder = getSelectedFolder();
+      if (!folder) return;
+      const name = normalizeSubfolderName(document.getElementById('newSubfolderName')?.value);
+      if (!name) {
+        showToast('세부 폴더 이름을 입력하세요.');
+        return;
+      }
+      if (name === FolderStore.ANALYSIS_SUBFOLDER_LABEL) {
+        showToast('AI 요약은 예약된 폴더 이름입니다.');
+        return;
+      }
+      if (isDuplicateSubfolderName(folder, name)) {
+        showToast('같은 이름의 세부 폴더가 이미 있습니다.');
+        return;
+      }
+
+      const subfolder = FolderStore.createSubfolder(folder, name);
+      folder.subfolders = [
+        ...(folder.subfolders || []).filter((sub) => !isAnalysisSubfolder(sub)),
+        subfolder,
+        ...(folder.subfolders || []).filter((sub) => isAnalysisSubfolder(sub)),
+      ];
+      selectedSubfolderId = subfolder.id;
+
+      try {
+        await FolderStore.updateFolderRemote(folder);
+      } catch (error) {
+        console.warn('Subfolder could not be saved.', error);
+        folder.subfolders = (folder.subfolders || []).filter((sub) => sub.id !== subfolder.id);
+        selectedSubfolderId = firstSubfolderId(folder);
+        showToast('세부 폴더를 서버에 저장하지 못했습니다. 잠시 후 다시 시도해주세요.');
+        return;
+      }
+
+      persistFolders();
+      hideModal();
+      render();
+      showToast(`'${name}' 세부 폴더를 추가했습니다.`);
+    }
+
+    async function deleteSubfolder(subfolderId) {
+      const folder = getSelectedFolder();
+      const subfolder = (folder?.subfolders || []).find((sub) => sub.id === subfolderId);
+      if (!folder || !subfolder) return;
+      if (isAnalysisSubfolder(subfolder)) {
+        showToast('AI 요약 폴더는 삭제할 수 없습니다.');
+        return;
+      }
+
+      const regularSubfolders = (folder.subfolders || []).filter((sub) => !isAnalysisSubfolder(sub));
+      if (regularSubfolders.length <= 1) {
+        showToast('자료를 넣을 세부 폴더가 최소 1개는 필요합니다.');
+        return;
+      }
+
+      const files = (subfolder.files || []).filter((file) => !isGeneratedAnalysisFile(file));
+      const confirmMessage = files.length
+        ? `'${subfolder.label}' 세부 폴더와 안의 자료 ${files.length}개를 함께 삭제할까요?`
+        : `'${subfolder.label}' 세부 폴더를 삭제할까요?`;
+      if (!window.confirm(confirmMessage)) return;
+
+      const previousSubfolders = folder.subfolders.map((sub) => ({ ...sub, files: [...(sub.files || [])] }));
+      try {
+        for (const file of files) {
+          await deleteStoredFile(file);
+        }
+        folder.subfolders = folder.subfolders.filter((sub) => sub.id !== subfolder.id);
+        await FolderStore.updateFolderRemote(folder);
+      } catch (error) {
+        console.warn('Subfolder could not be deleted.', error);
+        folder.subfolders = previousSubfolders;
+        showToast('세부 폴더를 삭제하지 못했습니다. 잠시 후 다시 시도해주세요.');
+        return;
+      }
+
+      selectedSubfolderId = firstSubfolderId(folder);
+      await loadActivityFilesFromApi();
+      persistFolders();
+      render();
+      showToast(`'${subfolder.label}' 세부 폴더를 삭제했습니다.`);
+    }
+
     function showModal(title, body) {
       document.getElementById('modalTitle').textContent = title;
       document.getElementById('modalBody').innerHTML = body;
@@ -1050,6 +1336,15 @@
 
     function hideModal() {
       document.getElementById('modalBackdrop').classList.add('hidden');
+    }
+
+    function enableMarkdownEdit() {
+      const editor = document.querySelector('[data-markdown-editor]');
+      if (!editor) return;
+      editor.querySelector('.markdown-preview')?.classList.add('hidden');
+      editor.querySelector('.markdown-editor-input')?.classList.remove('hidden');
+      editor.querySelector('.markdown-editor-actions')?.classList.remove('hidden');
+      editor.querySelector('[data-action="enable-markdown-edit"]')?.setAttribute('hidden', 'hidden');
     }
 
     function showToast(message) {
@@ -1133,6 +1428,7 @@
       if (action === 'preview-file') previewFile(fileId);
       if (action === 'view-file-summary') openFileSummary(fileId);
       if (action === 'save-file-summary') saveFileSummary(fileId);
+      if (action === 'enable-markdown-edit') enableMarkdownEdit();
       if (action === 'edit-project-artifact') openProjectArtifactModal(actionButton.dataset.projectId, actionButton.dataset.artifact);
       if (action === 'save-project-artifact') saveProjectArtifact(actionButton.dataset.projectId, actionButton.dataset.artifact);
       if (action === 'delete-file') deleteFile(fileId);
@@ -1141,10 +1437,11 @@
       if (action === 'rename-project') openRenameModal();
       if (action === 'save-project-name') saveProjectName();
       if (action === 'delete-folder') deleteProject(actionButton.dataset.folderDeleteId);
-      if (action === 'add-conversation') openConversationModal();
-      if (action === 'add-conversation-save') saveConversationContent();
       if (action === 'create-folder') createFolder();
       if (action === 'create-folder-confirm') confirmCreateFolder();
+      if (action === 'create-subfolder') openCreateSubfolderModal();
+      if (action === 'create-subfolder-confirm') confirmCreateSubfolder();
+      if (action === 'delete-subfolder') deleteSubfolder(actionButton.dataset.subfolderDeleteId);
       if (action === 'close-modal') hideModal();
     });
 

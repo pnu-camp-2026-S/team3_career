@@ -298,6 +298,16 @@ assert.match(
 );
 assert.match(
   folderStoreJs,
+  /function\s+createSubfolder\(folder,\s*label\)[\s\S]*::custom-[\s\S]*files:\s*\[\]/,
+  'folder store should create user-defined subfolders with ids that do not collide with template subfolders (#272)'
+);
+assert.match(
+  folderStoreJs,
+  /function\s+stripSubfolderFiles\(subfolders\)[\s\S]*async function\s+updateFolderRemote\(folder\)[\s\S]*subfolders:\s*stripSubfolderFiles\(folder\.subfolders\)/,
+  'folder store should persist updated subfolder lists through the folder PATCH API (#272)'
+);
+assert.match(
+  folderStoreJs,
   /window\.FolderStore\s*=/,
   'folder store should expose its API on window.FolderStore'
 );
@@ -770,6 +780,21 @@ assert.match(
 );
 assert.match(
   activityFilesRoute,
+  /import\s+\{\s*inflateRawSync\s*\}\s+from\s+'node:zlib'[\s\S]*function\s+parseZipEntries\(arrayBuffer\)[\s\S]*inflateRawSync\(compressed\)/,
+  'activity file API should inspect Office Open XML zip entries without executing document content (#286)'
+);
+assert.match(
+  activityFilesRoute,
+  /async function\s+extractDocxPreview\(arrayBuffer\)[\s\S]*mammoth\.extractRawText[\s\S]*function\s+extractPptxPreview\(arrayBuffer\)[\s\S]*ppt\\\/slides\\\/slide\\d\+\\\.xml[\s\S]*function\s+extractXlsxPreview\(arrayBuffer\)[\s\S]*xl\\\/worksheets\\\/sheet\\d\+\\\.xml[\s\S]*if \(kind === 'office'\)/,
+  'activity file API should extract structured DOCX, PPTX, and XLSX previews (#286)'
+);
+assert.match(
+  activityFilesRoute,
+  /OFFICE_PREVIEW_MIME_TYPES[\s\S]*presentationml\.presentation[\s\S]*OFFICE_PREVIEW_MIME_TYPES\.has\(normalizedMimeType\)/,
+  'activity file API should detect Office previews by MIME type as well as extension (#286)'
+);
+assert.match(
+  activityFilesRoute,
   /file_analyses\(status, summary_md, index_draft, log_md\)[\s\S]*summaryMd[\s\S]*indexDraft[\s\S]*logMd/,
   'activity file API should return saved AI summary artifacts for file-management display'
 );
@@ -950,6 +975,12 @@ assert.match(
   packageJson.dependencies?.['pdf-parse'] || '',
   /\^?2/,
   'pdf-parse v2 should be installed for PDF text extraction'
+);
+const extractorSource = fs.readFileSync(path.join(rootDir, 'ai_analysis', 'extractor.mjs'), 'utf8');
+assert.match(
+  extractorSource,
+  /async function\s+extractPdf\(buffer\)[\s\S]*PDFParse[\s\S]*getText\(\)[\s\S]*pageCount[\s\S]*pdf:\s*extractPdf/,
+  'single-file analysis extractor should support PDF text extraction and page count metadata (#264)'
 );
 assert.ok(
   Boolean(packageJson.dependencies?.mammoth),
@@ -1805,10 +1836,54 @@ assert.match(
   /function\s+getPreviewKind\(file\)[\s\S]*application\/pdf[\s\S]*startsWith\('image\/'\)[\s\S]*\['txt',\s*'md',\s*'csv'\][\s\S]*function\s+renderFilePreviewContent\(file,\s*preview\s*=\s*\{\}\)[\s\S]*file-preview-image[\s\S]*file-preview-pdf[\s\S]*file-preview-text[\s\S]*loadFilePreview\(file\)/,
   'file management should render real previews for image, PDF, and text-like files (#285)'
 );
+assert.ok(
+  createHtml.includes("['docx', 'pptx', 'xlsx'].includes(extension)")
+    && createHtml.includes('function renderOfficePreview(preview = {})')
+    && createHtml.includes('file-preview-office-section')
+    && createHtml.includes('file-preview-table')
+    && createHtml.includes('application/vnd.openxmlformats-officedocument.presentationml.presentation')
+    && createHtml.includes("if (kind === 'office' && preview.sections)"),
+  'file management should render structured office document previews for DOCX, PPTX, and XLSX (#286)'
+);
 assert.match(
   createCss,
   /\.file-preview-image[\s\S]*\.file-preview-pdf iframe[\s\S]*\.file-preview-text[\s\S]*\.file-preview-empty/,
   'file management should style image, PDF, text, and unavailable preview states (#285)'
+);
+assert.match(
+  createCss,
+  /\.file-preview-office[\s\S]*\.file-preview-office-section h3[\s\S]*\.file-preview-table-wrap[\s\S]*\.file-preview-table td/,
+  'file management should style structured office preview sections and sheet tables (#286)'
+);
+assert.match(
+  createHtml,
+  /id="managedFileInput"[\s\S]*accept="[^"]*\.pdf[^"]*application\/pdf[^"]*"[\s\S]*PDF, Markdown, TXT, CSV, DOCX/,
+  'file management should clearly allow PDF files in the upload control and guidance (#264)'
+);
+assert.match(
+  createHtml,
+  /function\s+renderMarkdownPreview\(markdown\)[\s\S]*escapeHtml[\s\S]*function\s+buildMarkdownEditorHtml[\s\S]*markdown-preview[\s\S]*enable-markdown-edit/,
+  'file summary and project markdown artifacts should render safe Markdown previews before editing (#267)'
+);
+assert.match(
+  createCss,
+  /\.manager-modal-card\s*\{[^}]*width:\s*min\(960px,[^;]+;[\s\S]*\.markdown-preview[\s\S]*max-height:\s*min\(68vh,\s*720px\)[\s\S]*\.markdown-editor-input/,
+  'file summary modal should be wider and provide readable Markdown preview/edit areas (#267)'
+);
+assert.match(
+  createHtml,
+  /data-action="create-subfolder"[\s\S]*function\s+openCreateSubfolderModal\(\)[\s\S]*function\s+confirmCreateSubfolder\(\)[\s\S]*AI 요약은 예약된 폴더 이름입니다[\s\S]*같은 이름의 세부 폴더가 이미 있습니다/,
+  'file management should let users add validated custom subfolders inside a project (#272)'
+);
+assert.match(
+  createHtml,
+  /data-action="delete-subfolder"[\s\S]*async function\s+deleteSubfolder\(subfolderId\)[\s\S]*deleteStoredFile\(file\)[\s\S]*FolderStore\.updateFolderRemote\(folder\)/,
+  'file management should delete custom subfolders and persist the updated subfolder list (#272)'
+);
+assert.match(
+  createHtml,
+  /class="folder-delete-button file-delete-button"[\s\S]*data-action="delete-file"[\s\S]*🗑[\s\S]*class="folder-delete-button subfolder-delete-button"[\s\S]*data-action="delete-subfolder"[\s\S]*🗑/,
+  'file and subfolder delete actions should use the same trash icon style as the left project delete button'
 );
 assert.match(
   createHtml,
@@ -1829,7 +1904,7 @@ assert.match(
   /\{\s*key:\s*'create',\s*href:\s*'create\.html',\s*label:\s*'파일 관리'\s*\}/,
   'file management should keep the shared file management nav link'
 );
-for (const text of ['파일 관리', '폴더 목록', '자료 추가', '미리보기', '분석하기', '대화로 내용 추가하기', '세부 폴더', '이름 수정']) {
+for (const text of ['파일 관리', '폴더 목록', '자료 추가', '미리보기', '분석하기', '세부 폴더', '이름 수정']) {
   assert.ok(
     createHtml.includes(text),
     `file management page should include ${text}`
@@ -1845,15 +1920,15 @@ assert.ok(
   !createHtml.includes('data-action="summarize-file"') && !createHtml.includes('function summarizeFile'),
   'file management should remove the per-file AI 요약 action (#137-3)'
 );
-// #137-5: 상단 공용 'AI 대화로 md 만들기' 제거, 프로젝트별 '대화로 내용 추가하기'로 교체
+// #137-5: 상단 공용 'AI 대화로 md 만들기' 제거
 assert.ok(
   !createHtml.includes('AI 대화로 md 만들기') && !createHtml.includes('data-action="make-md"'),
   'file management should drop the shared top AI md button (#137-5)'
 );
-assert.match(
-  createHtml,
-  /data-action="add-conversation"/,
-  'file management should offer a per-project 대화로 내용 추가하기 action (#137-5)'
+// 프로젝트별 '대화로 내용 추가하기' 버튼 제거
+assert.ok(
+  !createHtml.includes('대화로 내용 추가하기') && !createHtml.includes('data-action="add-conversation"'),
+  'file management should remove the per-project 대화로 내용 추가하기 action'
 );
 // 프로젝트 분석 진입점은 상단 '분석하기' 하나로 통합한다.
 assert.ok(
@@ -1898,6 +1973,11 @@ assert.match(
   createHtml,
   /PROJECT_ANALYSIS_ARTIFACTS[\s\S]*summary\.md[\s\S]*index\.json[\s\S]*log\.md[\s\S]*function\s+buildProjectArtifactFiles[\s\S]*kind:\s*'project-analysis-artifact'[\s\S]*FolderStore\.getAnalysisSubfolder\(folder\)/,
   'file management should show project summary.md/index.json/log.md artifacts in the dedicated AI 요약 subfolder'
+);
+const projectArtifactBranch = (createHtml.match(/\$\{isProjectArtifact[\s\S]*?\n\s*:\s*`/) || [''])[0];
+assert.ok(
+  projectArtifactBranch.includes('data-action="edit-project-artifact"') && !projectArtifactBranch.includes('data-action="preview-file"'),
+  'AI 요약 세부 폴더 산출물 카드는 열람 버튼 없이 수정 버튼만 보여야 한다'
 );
 assert.match(
   createHtml,
@@ -2084,8 +2164,8 @@ assert.ok(
 );
 assert.match(
   createHtml,
-  /collapsedFolderTypes\[typeKey\]\s*\?\?\s*typeFolders\.length\s*===\s*0[\s\S]*aria-expanded="\$\{String\(!isCollapsed\)\}"/,
-  'file management should collapse empty activity type buckets by default'
+  /collapsedFolderTypes\[typeKey\]\s*\?\?\s*true[\s\S]*aria-expanded="\$\{String\(!isCollapsed\)\}"/,
+  'file management should start every activity type bucket collapsed in the left folder list'
 );
 assert.match(
   createHtml,
@@ -2135,7 +2215,7 @@ assert.match(
 );
 assert.match(
   createHtml,
-  /async function\s+deleteFile[\s\S]*fetch\(ACTIVITY_FILES_ENDPOINT,\s*\{[\s\S]*method:\s*'DELETE'/,
+  /async function\s+deleteStoredFile\(file\)[\s\S]*fetch\(ACTIVITY_FILES_ENDPOINT,\s*\{[\s\S]*method:\s*'DELETE'[\s\S]*async function\s+deleteFile/,
   'file management deletes should remove files through the activity file API'
 );
 assert.match(
@@ -3247,6 +3327,7 @@ const portfolioGenerateRoutePath = path.join(appDir, 'api', 'portfolio', 'genera
 const portfolioKeywordsRoutePath = path.join(appDir, 'api', 'portfolio', 'keywords', 'route.js');
 const portfolioSourceDataRoutePath = path.join(appDir, 'api', 'portfolio', 'source-data', 'route.js');
 const portfolioReviseRoutePath = path.join(appDir, 'api', 'portfolio', 'revise', 'route.js');
+const portfolioOnePageLibPath = path.join(libDir, 'portfolio-onepage.js');
 const portfolioGenerateRoute = fs.existsSync(portfolioGenerateRoutePath)
   ? fs.readFileSync(portfolioGenerateRoutePath, 'utf8')
   : '';
@@ -3262,10 +3343,37 @@ const portfolioReviseRoute = fs.existsSync(portfolioReviseRoutePath)
 const portfolioExportPptxRoute = fs.existsSync(portfolioExportPptxRoutePath)
   ? fs.readFileSync(portfolioExportPptxRoutePath, 'utf8')
   : '';
+const portfolioOnePageLib = fs.existsSync(portfolioOnePageLibPath)
+  ? fs.readFileSync(portfolioOnePageLibPath, 'utf8')
+  : '';
 assert.match(
   portfolioGenerateRoute,
   /isAnalysisMockEnabled\(\)[\s\S]*buildMockPortfolioResponse/,
   'portfolio generation API should return mock portfolio data when ANALYSIS_MOCK=1'
+);
+assert.ok(
+  fs.existsSync(portfolioOnePageLibPath),
+  'portfolio one-page summary helper should live in lib/portfolio-onepage.js'
+);
+assert.match(
+  portfolioOnePageLib,
+  /portfolioOnePageSchema[\s\S]*template_version[\s\S]*profile[\s\S]*target_fit[\s\S]*representative_experiences[\s\S]*differentiator/,
+  'one-page summary helper should define the vertical summary schema from the starter kit'
+);
+assert.match(
+  portfolioOnePageLib,
+  /const INFO_MISSING = '제공된 정보 부족'[\s\S]*buildPortfolioOnePageUserPrompt[\s\S]*마이페이지 기본 정보[\s\S]*사용자가 승인한 활동 요약[\s\S]*정보가 없으면 '\$\{INFO_MISSING\}'/,
+  'one-page summary prompt should send mypage data and approved evidence with missing-info rules'
+);
+assert.match(
+  portfolioCreateHtml,
+  /function\s+renderOnePagePortfolio\(raw\)[\s\S]*onepage-summary-canvas[\s\S]*ABOUT ME[\s\S]*TARGET FIT[\s\S]*REPRESENTATIVE EXPERIENCES[\s\S]*DIFFERENTIATOR/,
+  'portfolio_create should render the one-page summary as the vertical starter-kit layout'
+);
+assert.match(
+  portfolioCreateHtml,
+  /let\s+profileData\s*=\s*\{\};[\s\S]*profileData\s*=\s*result\.profile\s*\|\|\s*\{\}[\s\S]*function\s+readMyPageInfo\(\)[\s\S]*Object\.keys\(profileData\)\.length/,
+  'portfolio_create should send server-loaded mypage profile data to portfolio generation'
 );
 assert.match(
   portfolioGenerateRoute,
@@ -3294,6 +3402,11 @@ assert.match(
 assert.ok(
   fs.existsSync(portfolioExportPptxRoutePath),
   'portfolio PPTX export API should live in app/api/portfolio/export-pptx/route.js'
+);
+assert.match(
+  portfolioExportPptxRoute,
+  /isOnePageSummary[\s\S]*MYFIT_A4_PORTRAIT_SAFE[\s\S]*addOnePageSummarySlide\(pptx,\s*portfolio\)/,
+  'portfolio PPTX export should render 1페이지 요약본 with the vertical one-page summary template'
 );
 assert.ok(
   fs.existsSync(portfolioKeywordsRoutePath),
