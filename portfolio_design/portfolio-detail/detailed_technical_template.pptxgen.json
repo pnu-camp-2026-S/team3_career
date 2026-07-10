@@ -1,0 +1,2874 @@
+{
+  "template": {
+    "id": "detailed_technical_template",
+    "name": "Detailed Technical Portfolio",
+    "description": "PptxGenJS layout template generated from the uploaded detailed technical portfolio PPTX.",
+    "schemaVersion": "1.0.0",
+    "sourcePptx": "detailed_technical_portfolio_from_json(1).pptx"
+  },
+  "pptx": {
+    "layout": "LAYOUT_WIDE",
+    "width": 13.3333,
+    "height": 7.5
+  },
+  "theme": {
+    "fonts": {
+      "heading": "Pretendard",
+      "body": "Pretendard",
+      "fallback": "Arial"
+    },
+    "colors": {
+      "primary": "2563EB",
+      "primaryDark": "1D4ED8",
+      "text": "111827",
+      "muted": "4B5563",
+      "lightMuted": "6B7280",
+      "border": "E5E7EB",
+      "blueLight": "EFF6FF",
+      "blueMid": "BFDBFE",
+      "card": "FFFFFF",
+      "canvas": "F9FAFB"
+    }
+  },
+  "placeholders": [
+    "{{challenge_problem}}",
+    "{{collaboration_method}}",
+    "{{communication_method}}",
+    "{{confirmed_constraint}}",
+    "{{core_competency_1}}",
+    "{{core_competency_2}}",
+    "{{core_competency_3}}",
+    "{{core_competency_4}}",
+    "{{core_goal}}",
+    "{{core_output}}",
+    "{{decision_basis}}",
+    "{{deliverable_type}}",
+    "{{email}}",
+    "{{expected_change}}",
+    "{{experience_improvement}}",
+    "{{feature_implementation}}",
+    "{{final_result}}",
+    "{{implemented_feature_1}}",
+    "{{implemented_feature_2}}",
+    "{{lesson_learned}}",
+    "{{limitation}}",
+    "{{name}}",
+    "{{next_improvement}}",
+    "{{one_line_intro}}",
+    "{{overview_image}}",
+    "{{owned_scope}}",
+    "{{phone}}",
+    "{{portfolio_link}}",
+    "{{problem_design}}",
+    "{{problem_solving_summary}}",
+    "{{process_detail}}",
+    "{{process_image}}",
+    "{{process_summary}}",
+    "{{profile_image}}",
+    "{{project_conclusion}}",
+    "{{project_label}}",
+    "{{project_one_line_description}}",
+    "{{project_period}}",
+    "{{project_role}}",
+    "{{requirement_analysis}}",
+    "{{responsibility_decision}}",
+    "{{result_image}}",
+    "{{result_retrospective_flow}}",
+    "{{result_summary}}",
+    "{{service_context}}",
+    "{{solution_change}}",
+    "{{target_role}}",
+    "{{target_user}}",
+    "{{team_size}}",
+    "{{tech_stack}}",
+    "{{technical_or_planning_refinement}}",
+    "{{test_iteration}}",
+    "{{user_need}}",
+    "{{user_problem_before}}",
+    "{{user_value}}"
+  ],
+  "slides": [
+    {
+      "id": "cover",
+      "slideNumber": 1,
+      "elements": [
+        {
+          "id": "s1_shape_0",
+          "type": "line",
+          "x": 0.62,
+          "y": 0.71,
+          "w": 12.09,
+          "h": 0.0,
+          "line": {
+            "color": "E5E7EB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s1_shape_1",
+          "type": "shape",
+          "x": 10.85,
+          "y": 0.32,
+          "w": 1.86,
+          "h": 0.26,
+          "shape": "rect",
+          "fill": {
+            "color": "EFF6FF"
+          },
+          "line": {
+            "color": "DBEAFE",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s1_shape_2",
+          "type": "shape",
+          "x": 0.87,
+          "y": 3.62,
+          "w": 1.73,
+          "h": 1.15,
+          "shape": "rect",
+          "fill": {
+            "color": "EFF6FF"
+          },
+          "line": {
+            "color": "DBEAFE",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s1_shape_3",
+          "type": "shape",
+          "x": 0.87,
+          "y": 3.65,
+          "w": 0.054,
+          "h": 1.064,
+          "shape": "rect",
+          "fill": {
+            "color": "3B82F6"
+          },
+          "line": {
+            "color": "3B82F6",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s1_shape_4",
+          "type": "shape",
+          "x": 2.67,
+          "y": 3.62,
+          "w": 1.73,
+          "h": 1.15,
+          "shape": "rect",
+          "fill": {
+            "color": "FFFFFF"
+          },
+          "line": {
+            "color": "E5E7EB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s1_shape_5",
+          "type": "shape",
+          "x": 2.67,
+          "y": 3.65,
+          "w": 0.054,
+          "h": 1.064,
+          "shape": "rect",
+          "fill": {
+            "color": "BFDBFE"
+          },
+          "line": {
+            "color": "BFDBFE",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s1_shape_6",
+          "type": "shape",
+          "x": 4.47,
+          "y": 3.62,
+          "w": 1.73,
+          "h": 1.15,
+          "shape": "rect",
+          "fill": {
+            "color": "FFFFFF"
+          },
+          "line": {
+            "color": "E5E7EB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s1_shape_7",
+          "type": "shape",
+          "x": 4.47,
+          "y": 3.65,
+          "w": 0.054,
+          "h": 1.064,
+          "shape": "rect",
+          "fill": {
+            "color": "BFDBFE"
+          },
+          "line": {
+            "color": "BFDBFE",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s1_shape_8",
+          "type": "shape",
+          "x": 6.27,
+          "y": 3.62,
+          "w": 1.73,
+          "h": 1.15,
+          "shape": "rect",
+          "fill": {
+            "color": "FFFFFF"
+          },
+          "line": {
+            "color": "E5E7EB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s1_shape_9",
+          "type": "shape",
+          "x": 6.27,
+          "y": 3.65,
+          "w": 0.054,
+          "h": 1.064,
+          "shape": "rect",
+          "fill": {
+            "color": "BFDBFE"
+          },
+          "line": {
+            "color": "BFDBFE",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s1_shape_10",
+          "type": "shape",
+          "x": 9.05,
+          "y": 1.37,
+          "w": 3.0,
+          "h": 3.75,
+          "shape": "rect",
+          "fill": {
+            "color": "F9FAFB"
+          },
+          "line": {
+            "color": "E5E7EB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s1_shape_11",
+          "type": "shape",
+          "x": 9.33,
+          "y": 1.65,
+          "w": 2.44,
+          "h": 2.55,
+          "shape": "rect",
+          "fill": {
+            "color": "F9FAFB"
+          },
+          "line": {
+            "color": "BFDBFE",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s1_shape_12",
+          "type": "shape",
+          "x": 10.19,
+          "y": 2.355,
+          "w": 0.72,
+          "h": 0.48,
+          "shape": "rect",
+          "fill": {
+            "color": "FFFFFF"
+          },
+          "line": {
+            "color": "D1D5DB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s1_shape_13",
+          "type": "shape",
+          "x": 10.33,
+          "y": 2.525,
+          "w": 0.2,
+          "h": 0.18,
+          "shape": "ellipse",
+          "line": {
+            "color": "D1D5DB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s1_shape_14",
+          "type": "shape",
+          "x": 10.28,
+          "y": 2.625,
+          "w": 0.32,
+          "h": 0.2,
+          "shape": "rect",
+          "fill": {
+            "color": "F3F4F6"
+          },
+          "line": {
+            "color": "D1D5DB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s1_shape_15",
+          "type": "shape",
+          "x": 10.53,
+          "y": 2.575,
+          "w": 0.38,
+          "h": 0.25,
+          "shape": "rect",
+          "fill": {
+            "color": "F3F4F6"
+          },
+          "line": {
+            "color": "D1D5DB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s1_shape_16",
+          "type": "shape",
+          "x": 9.33,
+          "y": 4.39,
+          "w": 2.44,
+          "h": 0.38,
+          "shape": "rect",
+          "fill": {
+            "color": "FFFFFF"
+          },
+          "line": {
+            "color": "E5E7EB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s1_shape_17",
+          "type": "shape",
+          "x": 0.87,
+          "y": 5.89,
+          "w": 11.68,
+          "h": 0.68,
+          "shape": "rect",
+          "fill": {
+            "color": "F9FAFB"
+          },
+          "line": {
+            "color": "E5E7EB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s1_shape_18",
+          "type": "line",
+          "x": 4.76,
+          "y": 6.101,
+          "w": 0.0,
+          "h": 0.0,
+          "line": {
+            "color": "E5E7EB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s1_shape_19",
+          "type": "line",
+          "x": 7.46,
+          "y": 6.101,
+          "w": 0.0,
+          "h": 0.0,
+          "line": {
+            "color": "E5E7EB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s1_text_20",
+          "type": "text",
+          "text": "Portfolio",
+          "x": 0.62,
+          "y": 0.35,
+          "w": 1.5,
+          "h": 0.22,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 7.5,
+            "bold": true,
+            "color": "2563EB"
+          }
+        },
+        {
+          "id": "s1_text_21",
+          "type": "text",
+          "text": "문제 해결 흐름 중심",
+          "x": 10.93,
+          "y": 0.393,
+          "w": 1.7,
+          "h": 0.1,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 5.7,
+            "bold": true,
+            "color": "1D4ED8",
+            "align": "center"
+          }
+        },
+        {
+          "id": "s1_text_22",
+          "type": "text",
+          "text": "{{target_role}}로 문제를 구조화하고\n구현하는 {{name}}입니다.",
+          "x": 0.83,
+          "y": 1.55,
+          "w": 7.5,
+          "h": 1.1,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 28.0,
+            "bold": true,
+            "color": "111827"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s1_text_23",
+          "type": "text",
+          "text": "{{one_line_intro}}",
+          "x": 0.87,
+          "y": 2.83,
+          "w": 7.2,
+          "h": 0.35,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.5,
+            "color": "4B5563"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s1_text_24",
+          "type": "text",
+          "text": "역량 01",
+          "x": 1.05,
+          "y": 3.76,
+          "w": 1.341,
+          "h": 0.316,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "bold": true,
+            "color": "1F2937"
+          }
+        },
+        {
+          "id": "s1_text_25",
+          "type": "text",
+          "text": "{{core_competency_1}}",
+          "x": 1.05,
+          "y": 4.09,
+          "w": 1.341,
+          "h": 0.259,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 9.0,
+            "color": "4B5563"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s1_text_26",
+          "type": "text",
+          "text": "역량 02",
+          "x": 2.85,
+          "y": 3.76,
+          "w": 1.341,
+          "h": 0.316,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "bold": true,
+            "color": "1F2937"
+          }
+        },
+        {
+          "id": "s1_text_27",
+          "type": "text",
+          "text": "{{core_competency_2}}",
+          "x": 2.85,
+          "y": 4.09,
+          "w": 1.341,
+          "h": 0.259,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 9.0,
+            "color": "4B5563"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s1_text_28",
+          "type": "text",
+          "text": "역량 03",
+          "x": 4.65,
+          "y": 3.76,
+          "w": 1.341,
+          "h": 0.316,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "bold": true,
+            "color": "1F2937"
+          }
+        },
+        {
+          "id": "s1_text_29",
+          "type": "text",
+          "text": "{{core_competency_3}}",
+          "x": 4.65,
+          "y": 4.09,
+          "w": 1.341,
+          "h": 0.259,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 9.0,
+            "color": "4B5563"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s1_text_30",
+          "type": "text",
+          "text": "역량 04",
+          "x": 6.45,
+          "y": 3.76,
+          "w": 1.341,
+          "h": 0.316,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "bold": true,
+            "color": "1F2937"
+          }
+        },
+        {
+          "id": "s1_text_31",
+          "type": "text",
+          "text": "{{core_competency_4}}",
+          "x": 6.45,
+          "y": 4.09,
+          "w": 1.341,
+          "h": 0.259,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 9.0,
+            "color": "4B5563"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s1_text_32",
+          "type": "text",
+          "text": "프로필 또는 대표 이미지",
+          "x": 9.61,
+          "y": 2.975,
+          "w": 1.88,
+          "h": 0.28,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.2,
+            "bold": true,
+            "color": "374151",
+            "align": "center"
+          }
+        },
+        {
+          "id": "s1_text_33",
+          "type": "text",
+          "text": "과하지 않은 보조 이미지",
+          "x": 9.61,
+          "y": 3.315,
+          "w": 1.88,
+          "h": 0.24,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 7.8,
+            "color": "6B7280",
+            "align": "center"
+          }
+        },
+        {
+          "id": "s1_text_34",
+          "type": "text",
+          "text": "{{name}} · {{target_role}}",
+          "x": 9.49,
+          "y": 4.51,
+          "w": 2.12,
+          "h": 0.1,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 6.7,
+            "bold": true,
+            "color": "374151",
+            "align": "center"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s1_text_35",
+          "type": "text",
+          "text": "Email",
+          "x": 1.15,
+          "y": 6.151,
+          "w": 0.5,
+          "h": 0.1,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "bold": true,
+            "color": "2563EB"
+          }
+        },
+        {
+          "id": "s1_text_36",
+          "type": "text",
+          "text": "{{email}}",
+          "x": 1.75,
+          "y": 6.146,
+          "w": 2.85,
+          "h": 0.11,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 9.0,
+            "color": "374151"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s1_text_37",
+          "type": "text",
+          "text": "Phone",
+          "x": 4.5,
+          "y": 6.151,
+          "w": 0.5,
+          "h": 0.1,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "bold": true,
+            "color": "2563EB"
+          }
+        },
+        {
+          "id": "s1_text_38",
+          "type": "text",
+          "text": "{{phone}}",
+          "x": 5.1,
+          "y": 6.146,
+          "w": 2.2,
+          "h": 0.11,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 9.0,
+            "color": "374151"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s1_text_39",
+          "type": "text",
+          "text": "Link",
+          "x": 7.4,
+          "y": 6.151,
+          "w": 0.5,
+          "h": 0.1,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "bold": true,
+            "color": "2563EB"
+          }
+        },
+        {
+          "id": "s1_text_40",
+          "type": "text",
+          "text": "{{portfolio_link}}",
+          "x": 8.0,
+          "y": 6.042,
+          "w": 4.6,
+          "h": 0.336,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 9.0,
+            "color": "374151"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s1_text_41",
+          "type": "text",
+          "text": "1",
+          "x": 12.25,
+          "y": 7.13,
+          "w": 0.875,
+          "h": 0.328,
+          "options": {
+            "color": "000000",
+            "align": "left"
+          }
+        },
+        {
+          "id": "profile_or_representative_image",
+          "type": "imagePlaceholder",
+          "placeholder": "{{profile_image}}",
+          "x": 9.05,
+          "y": 1.37,
+          "w": 3.0,
+          "h": 3.75,
+          "fit": "contain",
+          "fallbackElementIds": [
+            "s1_shape_10",
+            "s1_shape_11"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "project_overview",
+      "slideNumber": 2,
+      "elements": [
+        {
+          "id": "s2_shape_0",
+          "type": "line",
+          "x": 0.62,
+          "y": 0.71,
+          "w": 12.09,
+          "h": 0.0,
+          "line": {
+            "color": "E5E7EB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s2_shape_1",
+          "type": "shape",
+          "x": 11.08,
+          "y": 0.32,
+          "w": 1.63,
+          "h": 0.26,
+          "shape": "rect",
+          "fill": {
+            "color": "EFF6FF"
+          },
+          "line": {
+            "color": "DBEAFE",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s2_shape_2",
+          "type": "shape",
+          "x": 0.815,
+          "y": 2.722,
+          "w": 2.62,
+          "h": 1.28,
+          "shape": "rect",
+          "fill": {
+            "color": "FFFFFF"
+          },
+          "line": {
+            "color": "E5E7EB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s2_shape_3",
+          "type": "shape",
+          "x": 0.815,
+          "y": 2.752,
+          "w": 0.05,
+          "h": 1.22,
+          "shape": "rect",
+          "fill": {
+            "color": "3B82F6"
+          },
+          "line": {
+            "color": "3B82F6",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s2_shape_4",
+          "type": "shape",
+          "x": 3.675,
+          "y": 2.722,
+          "w": 2.62,
+          "h": 1.28,
+          "shape": "rect",
+          "fill": {
+            "color": "FFFFFF"
+          },
+          "line": {
+            "color": "E5E7EB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s2_shape_5",
+          "type": "shape",
+          "x": 3.675,
+          "y": 2.752,
+          "w": 0.05,
+          "h": 1.22,
+          "shape": "rect",
+          "fill": {
+            "color": "BFDBFE"
+          },
+          "line": {
+            "color": "BFDBFE",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s2_shape_6",
+          "type": "shape",
+          "x": 6.535,
+          "y": 2.722,
+          "w": 2.62,
+          "h": 1.28,
+          "shape": "rect",
+          "fill": {
+            "color": "FFFFFF"
+          },
+          "line": {
+            "color": "E5E7EB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s2_shape_7",
+          "type": "shape",
+          "x": 6.535,
+          "y": 2.752,
+          "w": 0.05,
+          "h": 1.22,
+          "shape": "rect",
+          "fill": {
+            "color": "BFDBFE"
+          },
+          "line": {
+            "color": "BFDBFE",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s2_shape_8",
+          "type": "shape",
+          "x": 9.575,
+          "y": 1.592,
+          "w": 2.8,
+          "h": 3.05,
+          "shape": "rect",
+          "fill": {
+            "color": "F9FAFB"
+          },
+          "line": {
+            "color": "BFDBFE",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s2_shape_9",
+          "type": "shape",
+          "x": 10.615,
+          "y": 2.547,
+          "w": 0.72,
+          "h": 0.48,
+          "shape": "rect",
+          "fill": {
+            "color": "FFFFFF"
+          },
+          "line": {
+            "color": "D1D5DB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s2_shape_10",
+          "type": "shape",
+          "x": 10.755,
+          "y": 2.717,
+          "w": 0.2,
+          "h": 0.18,
+          "shape": "ellipse",
+          "line": {
+            "color": "D1D5DB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s2_shape_11",
+          "type": "shape",
+          "x": 10.705,
+          "y": 2.817,
+          "w": 0.32,
+          "h": 0.2,
+          "shape": "rect",
+          "fill": {
+            "color": "F3F4F6"
+          },
+          "line": {
+            "color": "D1D5DB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s2_shape_12",
+          "type": "shape",
+          "x": 10.955,
+          "y": 2.767,
+          "w": 0.38,
+          "h": 0.25,
+          "shape": "rect",
+          "fill": {
+            "color": "F3F4F6"
+          },
+          "line": {
+            "color": "D1D5DB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s2_shape_13",
+          "type": "line",
+          "x": 0.815,
+          "y": 5.062,
+          "w": 11.56,
+          "h": 0.0,
+          "line": {
+            "color": "E5E7EB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s2_shape_14",
+          "type": "shape",
+          "x": 0.815,
+          "y": 5.362,
+          "w": 1.85,
+          "h": 0.55,
+          "shape": "rect",
+          "fill": {
+            "color": "F9FAFB"
+          },
+          "line": {
+            "color": "E5E7EB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s2_shape_15",
+          "type": "shape",
+          "x": 2.855,
+          "y": 5.362,
+          "w": 1.85,
+          "h": 0.55,
+          "shape": "rect",
+          "fill": {
+            "color": "F9FAFB"
+          },
+          "line": {
+            "color": "E5E7EB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s2_shape_16",
+          "type": "shape",
+          "x": 4.895,
+          "y": 5.362,
+          "w": 2.02,
+          "h": 0.55,
+          "shape": "rect",
+          "fill": {
+            "color": "F9FAFB"
+          },
+          "line": {
+            "color": "E5E7EB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s2_shape_17",
+          "type": "shape",
+          "x": 7.095,
+          "y": 5.362,
+          "w": 2.48,
+          "h": 0.55,
+          "shape": "rect",
+          "fill": {
+            "color": "F9FAFB"
+          },
+          "line": {
+            "color": "E5E7EB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s2_shape_18",
+          "type": "shape",
+          "x": 9.755,
+          "y": 5.362,
+          "w": 2.62,
+          "h": 0.55,
+          "shape": "rect",
+          "fill": {
+            "color": "F9FAFB"
+          },
+          "line": {
+            "color": "E5E7EB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s2_text_19",
+          "type": "text",
+          "text": "{{project_label}}",
+          "x": 0.62,
+          "y": 0.35,
+          "w": 1.7,
+          "h": 0.22,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 7.5,
+            "bold": true,
+            "color": "2563EB"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s2_text_20",
+          "type": "text",
+          "text": "Overview",
+          "x": 2.0,
+          "y": 0.355,
+          "w": 0.75,
+          "h": 0.1,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 6.0,
+            "color": "9CA3AF"
+          }
+        },
+        {
+          "id": "s2_text_21",
+          "type": "text",
+          "text": "근거 기반 작성",
+          "x": 11.16,
+          "y": 0.393,
+          "w": 1.47,
+          "h": 0.1,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 5.7,
+            "bold": true,
+            "color": "1D4ED8",
+            "align": "center"
+          }
+        },
+        {
+          "id": "s2_text_22",
+          "type": "text",
+          "text": "경험 : {{project_conclusion}}",
+          "x": 0.775,
+          "y": 1.522,
+          "w": 8.0,
+          "h": 0.46,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 24.0,
+            "bold": true,
+            "color": "111827"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s2_text_23",
+          "type": "text",
+          "text": "{{project_one_line_description}}",
+          "x": 0.815,
+          "y": 2.092,
+          "w": 7.3,
+          "h": 0.26,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.0,
+            "color": "4B5563"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s2_text_24",
+          "type": "text",
+          "text": "문제 상황",
+          "x": 0.995,
+          "y": 2.862,
+          "w": 2.26,
+          "h": 0.22,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.5,
+            "bold": true,
+            "color": "1F2937"
+          }
+        },
+        {
+          "id": "s2_text_25",
+          "type": "text",
+          "text": "{{user_problem_before}}\n{{service_context}}",
+          "x": 0.995,
+          "y": 3.192,
+          "w": 2.26,
+          "h": 0.66,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.0,
+            "color": "4B5563"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s2_text_26",
+          "type": "text",
+          "text": "목표 사용자",
+          "x": 3.855,
+          "y": 2.862,
+          "w": 2.26,
+          "h": 0.22,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.5,
+            "bold": true,
+            "color": "1F2937"
+          }
+        },
+        {
+          "id": "s2_text_27",
+          "type": "text",
+          "text": "{{target_user}}\n{{user_need}}",
+          "x": 3.855,
+          "y": 3.192,
+          "w": 2.26,
+          "h": 0.66,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.0,
+            "color": "4B5563"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s2_text_28",
+          "type": "text",
+          "text": "핵심 목표",
+          "x": 6.715,
+          "y": 2.862,
+          "w": 2.26,
+          "h": 0.22,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.5,
+            "bold": true,
+            "color": "1F2937"
+          }
+        },
+        {
+          "id": "s2_text_29",
+          "type": "text",
+          "text": "{{core_goal}}\n{{expected_change}}",
+          "x": 6.715,
+          "y": 3.192,
+          "w": 2.26,
+          "h": 0.66,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.0,
+            "color": "4B5563"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s2_text_30",
+          "type": "text",
+          "text": "대표 이미지 / 서비스 화면",
+          "x": 9.855,
+          "y": 3.167,
+          "w": 2.24,
+          "h": 0.28,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 11.0,
+            "bold": true,
+            "color": "374151",
+            "align": "center"
+          }
+        },
+        {
+          "id": "s2_text_31",
+          "type": "text",
+          "text": "실제 화면 캡처 또는 목업",
+          "x": 9.855,
+          "y": 3.507,
+          "w": 2.24,
+          "h": 0.24,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 9.0,
+            "color": "6B7280",
+            "align": "center"
+          }
+        },
+        {
+          "id": "s2_text_32",
+          "type": "text",
+          "text": "Project Metadata",
+          "x": 0.815,
+          "y": 4.822,
+          "w": 2.0,
+          "h": 0.16,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.0,
+            "bold": true,
+            "color": "1F2937"
+          }
+        },
+        {
+          "id": "s2_text_33",
+          "type": "text",
+          "text": "역할",
+          "x": 0.935,
+          "y": 5.472,
+          "w": 0.75,
+          "h": 0.1,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "bold": true,
+            "color": "6B7280"
+          }
+        },
+        {
+          "id": "s2_text_34",
+          "type": "text",
+          "text": "{{project_role}}",
+          "x": 0.935,
+          "y": 5.642,
+          "w": 1.61,
+          "h": 0.12,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 9.0,
+            "color": "1F2937"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s2_text_35",
+          "type": "text",
+          "text": "기간",
+          "x": 2.975,
+          "y": 5.472,
+          "w": 0.75,
+          "h": 0.1,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "bold": true,
+            "color": "6B7280"
+          }
+        },
+        {
+          "id": "s2_text_36",
+          "type": "text",
+          "text": "{{project_period}}",
+          "x": 2.975,
+          "y": 5.642,
+          "w": 1.61,
+          "h": 0.12,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 9.0,
+            "color": "1F2937"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s2_text_37",
+          "type": "text",
+          "text": "팀 규모",
+          "x": 5.015,
+          "y": 5.472,
+          "w": 0.75,
+          "h": 0.1,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "bold": true,
+            "color": "6B7280"
+          }
+        },
+        {
+          "id": "s2_text_38",
+          "type": "text",
+          "text": "{{team_size}}",
+          "x": 5.015,
+          "y": 5.642,
+          "w": 1.78,
+          "h": 0.12,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 9.0,
+            "color": "1F2937"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s2_text_39",
+          "type": "text",
+          "text": "사용 기술",
+          "x": 7.215,
+          "y": 5.472,
+          "w": 0.75,
+          "h": 0.1,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "bold": true,
+            "color": "6B7280"
+          }
+        },
+        {
+          "id": "s2_text_40",
+          "type": "text",
+          "text": "{{tech_stack}}",
+          "x": 7.215,
+          "y": 5.642,
+          "w": 2.24,
+          "h": 0.12,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 9.0,
+            "color": "1F2937"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s2_text_41",
+          "type": "text",
+          "text": "산출물",
+          "x": 9.875,
+          "y": 5.472,
+          "w": 0.75,
+          "h": 0.1,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "bold": true,
+            "color": "6B7280"
+          }
+        },
+        {
+          "id": "s2_text_42",
+          "type": "text",
+          "text": "{{deliverable_type}}",
+          "x": 9.875,
+          "y": 5.632,
+          "w": 2.38,
+          "h": 0.218,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 9.0,
+            "color": "1F2937"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s2_text_43",
+          "type": "text",
+          "text": "2",
+          "x": 12.25,
+          "y": 7.13,
+          "w": 0.875,
+          "h": 0.328,
+          "options": {
+            "color": "000000",
+            "align": "left"
+          }
+        },
+        {
+          "id": "overview_image",
+          "type": "imagePlaceholder",
+          "placeholder": "{{overview_image}}",
+          "x": 9.58,
+          "y": 1.59,
+          "w": 2.8,
+          "h": 3.05,
+          "fit": "contain",
+          "fallbackElementIds": [
+            "s2_shape_8"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "process_contribution",
+      "slideNumber": 3,
+      "elements": [
+        {
+          "id": "s3_shape_0",
+          "type": "line",
+          "x": 0.62,
+          "y": 0.71,
+          "w": 12.09,
+          "h": 0.0,
+          "line": {
+            "color": "E5E7EB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s3_shape_1",
+          "type": "shape",
+          "x": 0.83,
+          "y": 2.131,
+          "w": 11.66,
+          "h": 0.86,
+          "shape": "rect",
+          "fill": {
+            "color": "F9FAFB"
+          },
+          "line": {
+            "color": "E5E7EB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s3_shape_2",
+          "type": "line",
+          "x": 3.11,
+          "y": 2.531,
+          "w": 0.56,
+          "h": 0.0,
+          "line": {
+            "color": "DBEAFE",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s3_shape_3",
+          "type": "shape",
+          "x": 4.0,
+          "y": 2.351,
+          "w": 0.35,
+          "h": 0.35,
+          "shape": "ellipse",
+          "fill": {
+            "color": "FFFFFF"
+          },
+          "line": {
+            "color": "BFDBFE",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s3_shape_4",
+          "type": "line",
+          "x": 5.95,
+          "y": 2.531,
+          "w": 0.56,
+          "h": 0.0,
+          "line": {
+            "color": "DBEAFE",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s3_shape_5",
+          "type": "shape",
+          "x": 6.84,
+          "y": 2.351,
+          "w": 0.35,
+          "h": 0.35,
+          "shape": "ellipse",
+          "fill": {
+            "color": "FFFFFF"
+          },
+          "line": {
+            "color": "BFDBFE",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s3_shape_6",
+          "type": "line",
+          "x": 8.79,
+          "y": 2.531,
+          "w": 0.56,
+          "h": 0.0,
+          "line": {
+            "color": "DBEAFE",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s3_shape_7",
+          "type": "shape",
+          "x": 9.68,
+          "y": 2.351,
+          "w": 0.35,
+          "h": 0.35,
+          "shape": "ellipse",
+          "fill": {
+            "color": "FFFFFF"
+          },
+          "line": {
+            "color": "BFDBFE",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s3_shape_8",
+          "type": "shape",
+          "x": 0.83,
+          "y": 3.381,
+          "w": 5.05,
+          "h": 2.53,
+          "shape": "rect",
+          "fill": {
+            "color": "F9FAFB"
+          },
+          "line": {
+            "color": "BFDBFE",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s3_shape_9",
+          "type": "shape",
+          "x": 2.995,
+          "y": 4.076,
+          "w": 0.72,
+          "h": 0.48,
+          "shape": "rect",
+          "fill": {
+            "color": "FFFFFF"
+          },
+          "line": {
+            "color": "D1D5DB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s3_shape_10",
+          "type": "shape",
+          "x": 3.135,
+          "y": 4.246,
+          "w": 0.2,
+          "h": 0.18,
+          "shape": "ellipse",
+          "line": {
+            "color": "D1D5DB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s3_shape_11",
+          "type": "shape",
+          "x": 3.085,
+          "y": 4.346,
+          "w": 0.32,
+          "h": 0.2,
+          "shape": "rect",
+          "fill": {
+            "color": "F3F4F6"
+          },
+          "line": {
+            "color": "D1D5DB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s3_shape_12",
+          "type": "shape",
+          "x": 3.335,
+          "y": 4.296,
+          "w": 0.38,
+          "h": 0.25,
+          "shape": "rect",
+          "fill": {
+            "color": "F3F4F6"
+          },
+          "line": {
+            "color": "D1D5DB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s3_shape_13",
+          "type": "shape",
+          "x": 6.24,
+          "y": 3.381,
+          "w": 2.95,
+          "h": 1.05,
+          "shape": "rect",
+          "fill": {
+            "color": "FFFFFF"
+          },
+          "line": {
+            "color": "E5E7EB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s3_shape_14",
+          "type": "shape",
+          "x": 6.24,
+          "y": 3.411,
+          "w": 0.05,
+          "h": 0.99,
+          "shape": "rect",
+          "fill": {
+            "color": "3B82F6"
+          },
+          "line": {
+            "color": "3B82F6",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s3_shape_15",
+          "type": "shape",
+          "x": 9.43,
+          "y": 3.381,
+          "w": 2.95,
+          "h": 1.05,
+          "shape": "rect",
+          "fill": {
+            "color": "FFFFFF"
+          },
+          "line": {
+            "color": "E5E7EB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s3_shape_16",
+          "type": "shape",
+          "x": 9.43,
+          "y": 3.411,
+          "w": 0.05,
+          "h": 0.99,
+          "shape": "rect",
+          "fill": {
+            "color": "BFDBFE"
+          },
+          "line": {
+            "color": "BFDBFE",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s3_shape_17",
+          "type": "shape",
+          "x": 6.24,
+          "y": 4.721,
+          "w": 2.95,
+          "h": 1.05,
+          "shape": "rect",
+          "fill": {
+            "color": "FFFFFF"
+          },
+          "line": {
+            "color": "E5E7EB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s3_shape_18",
+          "type": "shape",
+          "x": 6.24,
+          "y": 4.751,
+          "w": 0.05,
+          "h": 0.99,
+          "shape": "rect",
+          "fill": {
+            "color": "BFDBFE"
+          },
+          "line": {
+            "color": "BFDBFE",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s3_shape_19",
+          "type": "shape",
+          "x": 9.43,
+          "y": 4.721,
+          "w": 2.95,
+          "h": 1.05,
+          "shape": "rect",
+          "fill": {
+            "color": "FFFFFF"
+          },
+          "line": {
+            "color": "E5E7EB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s3_shape_20",
+          "type": "shape",
+          "x": 9.43,
+          "y": 4.751,
+          "w": 0.05,
+          "h": 0.99,
+          "shape": "rect",
+          "fill": {
+            "color": "BFDBFE"
+          },
+          "line": {
+            "color": "BFDBFE",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s3_shape_21",
+          "type": "shape",
+          "x": 0.83,
+          "y": 6.151,
+          "w": 11.56,
+          "h": 0.42,
+          "shape": "rect",
+          "fill": {
+            "color": "EFF6FF"
+          },
+          "line": {
+            "color": "DBEAFE",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s3_shape_22",
+          "type": "shape",
+          "x": 1.12,
+          "y": 2.351,
+          "w": 0.35,
+          "h": 0.35,
+          "shape": "ellipse",
+          "fill": {
+            "color": "FFFFFF"
+          },
+          "line": {
+            "color": "BFDBFE",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s3_text_23",
+          "type": "text",
+          "text": "{{project_label}}",
+          "x": 0.62,
+          "y": 0.35,
+          "w": 1.7,
+          "h": 0.22,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 7.5,
+            "bold": true,
+            "color": "2563EB"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s3_text_24",
+          "type": "text",
+          "text": "Process & Contribution",
+          "x": 2.0,
+          "y": 0.355,
+          "w": 1.65,
+          "h": 0.1,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 6.0,
+            "color": "9CA3AF"
+          }
+        },
+        {
+          "id": "s3_text_25",
+          "type": "text",
+          "text": "과정 및 기여도: {{process_summary}}",
+          "x": 0.79,
+          "y": 1.081,
+          "w": 8.2,
+          "h": 0.42,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 21.0,
+            "bold": true,
+            "color": "111827"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s3_text_26",
+          "type": "text",
+          "text": "{{process_detail}}",
+          "x": 0.83,
+          "y": 1.621,
+          "w": 7.0,
+          "h": 0.24,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 9.2,
+            "color": "4B5563"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s3_text_27",
+          "type": "text",
+          "text": "01",
+          "x": 1.18,
+          "y": 2.461,
+          "w": 0.31,
+          "h": 0.08,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 6.0,
+            "bold": true,
+            "color": "FFFFFF",
+            "align": "center"
+          }
+        },
+        {
+          "id": "s3_text_28",
+          "type": "text",
+          "text": "요구 분석",
+          "x": 1.64,
+          "y": 2.311,
+          "w": 1.2,
+          "h": 0.13,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "bold": true,
+            "color": "1F2937"
+          }
+        },
+        {
+          "id": "s3_text_29",
+          "type": "text",
+          "text": "{{requirement_analysis}}",
+          "x": 1.64,
+          "y": 2.581,
+          "w": 1.55,
+          "h": 0.11,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 7.0,
+            "color": "6B7280"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s3_text_30",
+          "type": "text",
+          "text": "02",
+          "x": 4.02,
+          "y": 2.492,
+          "w": 0.31,
+          "h": 0.08,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 6.0,
+            "bold": true,
+            "color": "2563EB",
+            "align": "center"
+          }
+        },
+        {
+          "id": "s3_text_31",
+          "type": "text",
+          "text": "문제 설계",
+          "x": 4.48,
+          "y": 2.311,
+          "w": 1.2,
+          "h": 0.13,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "bold": true,
+            "color": "1F2937"
+          }
+        },
+        {
+          "id": "s3_text_32",
+          "type": "text",
+          "text": "{{problem_design}}",
+          "x": 4.48,
+          "y": 2.581,
+          "w": 1.55,
+          "h": 0.11,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 7.0,
+            "color": "6B7280"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s3_text_33",
+          "type": "text",
+          "text": "03",
+          "x": 6.86,
+          "y": 2.502,
+          "w": 0.31,
+          "h": 0.08,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 6.0,
+            "bold": true,
+            "color": "2563EB",
+            "align": "center"
+          }
+        },
+        {
+          "id": "s3_text_34",
+          "type": "text",
+          "text": "기능 구현",
+          "x": 7.32,
+          "y": 2.311,
+          "w": 1.2,
+          "h": 0.13,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "bold": true,
+            "color": "1F2937"
+          }
+        },
+        {
+          "id": "s3_text_35",
+          "type": "text",
+          "text": "{{feature_implementation}}",
+          "x": 7.32,
+          "y": 2.581,
+          "w": 1.55,
+          "h": 0.11,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 7.0,
+            "color": "6B7280"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s3_text_36",
+          "type": "text",
+          "text": "04",
+          "x": 9.71,
+          "y": 2.502,
+          "w": 0.31,
+          "h": 0.08,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 6.0,
+            "bold": true,
+            "color": "2563EB",
+            "align": "center"
+          }
+        },
+        {
+          "id": "s3_text_37",
+          "type": "text",
+          "text": "테스트·수정",
+          "x": 10.16,
+          "y": 2.311,
+          "w": 1.2,
+          "h": 0.13,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "bold": true,
+            "color": "1F2937"
+          }
+        },
+        {
+          "id": "s3_text_38",
+          "type": "text",
+          "text": "{{test_iteration}}",
+          "x": 10.16,
+          "y": 2.581,
+          "w": 1.55,
+          "h": 0.11,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 7.0,
+            "color": "6B7280"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s3_text_39",
+          "type": "text",
+          "text": "작업 화면 / 흐름도",
+          "x": 1.11,
+          "y": 4.696,
+          "w": 4.49,
+          "h": 0.28,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.2,
+            "bold": true,
+            "color": "374151",
+            "align": "center"
+          }
+        },
+        {
+          "id": "s3_text_40",
+          "type": "text",
+          "text": "데이터 흐름 · 구조도 · 목업",
+          "x": 1.11,
+          "y": 5.036,
+          "w": 4.49,
+          "h": 0.24,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 7.8,
+            "color": "6B7280",
+            "align": "center"
+          }
+        },
+        {
+          "id": "s3_text_41",
+          "type": "text",
+          "text": "내가 맡은 일",
+          "x": 6.42,
+          "y": 3.521,
+          "w": 2.59,
+          "h": 0.22,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 9.0,
+            "bold": true,
+            "color": "1F2937"
+          }
+        },
+        {
+          "id": "s3_text_42",
+          "type": "text",
+          "text": "{{owned_scope}}\n{{responsibility_decision}}",
+          "x": 6.42,
+          "y": 3.851,
+          "w": 2.59,
+          "h": 0.43,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 7.8,
+            "color": "4B5563"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s3_text_43",
+          "type": "text",
+          "text": "구현한 기능",
+          "x": 9.61,
+          "y": 3.521,
+          "w": 2.59,
+          "h": 0.22,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 9.0,
+            "bold": true,
+            "color": "1F2937"
+          }
+        },
+        {
+          "id": "s3_text_44",
+          "type": "text",
+          "text": "{{implemented_feature_1}}\n{{implemented_feature_2}}",
+          "x": 9.61,
+          "y": 3.851,
+          "w": 2.59,
+          "h": 0.43,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 7.8,
+            "color": "4B5563"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s3_text_45",
+          "type": "text",
+          "text": "협업 방식",
+          "x": 6.42,
+          "y": 4.861,
+          "w": 2.59,
+          "h": 0.22,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 9.0,
+            "bold": true,
+            "color": "1F2937"
+          }
+        },
+        {
+          "id": "s3_text_46",
+          "type": "text",
+          "text": "{{collaboration_method}}\n{{communication_method}}",
+          "x": 6.42,
+          "y": 5.191,
+          "w": 2.59,
+          "h": 0.43,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 7.8,
+            "color": "4B5563"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s3_text_47",
+          "type": "text",
+          "text": "문제 해결",
+          "x": 9.61,
+          "y": 4.861,
+          "w": 2.59,
+          "h": 0.22,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 9.0,
+            "bold": true,
+            "color": "1F2937"
+          }
+        },
+        {
+          "id": "s3_text_48",
+          "type": "text",
+          "text": "{{problem_solving_summary}}",
+          "x": 9.61,
+          "y": 5.191,
+          "w": 2.59,
+          "h": 0.43,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 7.8,
+            "color": "4B5563"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s3_text_49",
+          "type": "text",
+          "text": "문제",
+          "x": 1.03,
+          "y": 6.322,
+          "w": 0.35,
+          "h": 0.09,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "bold": true,
+            "color": "1D4ED8"
+          }
+        },
+        {
+          "id": "s3_text_50",
+          "type": "text",
+          "text": "{{challenge_problem}}",
+          "x": 1.53,
+          "y": 6.271,
+          "w": 2.45,
+          "h": 0.137,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "color": "374151"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s3_text_51",
+          "type": "text",
+          "text": "판단",
+          "x": 4.37,
+          "y": 6.322,
+          "w": 0.42,
+          "h": 0.09,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "bold": true,
+            "color": "1D4ED8"
+          }
+        },
+        {
+          "id": "s3_text_52",
+          "type": "text",
+          "text": "{{decision_basis}}",
+          "x": 4.899,
+          "y": 6.232,
+          "w": 2.45,
+          "h": 0.22,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "color": "374151"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s3_text_53",
+          "type": "text",
+          "text": "해결",
+          "x": 7.76,
+          "y": 6.312,
+          "w": 0.42,
+          "h": 0.09,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "bold": true,
+            "color": "1D4ED8"
+          }
+        },
+        {
+          "id": "s3_text_54",
+          "type": "text",
+          "text": "{{solution_change}}",
+          "x": 8.36,
+          "y": 6.202,
+          "w": 3.65,
+          "h": 0.3,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "color": "374151"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s3_text_55",
+          "type": "text",
+          "text": "3",
+          "x": 12.25,
+          "y": 7.13,
+          "w": 0.875,
+          "h": 0.328,
+          "options": {
+            "color": "000000",
+            "align": "left"
+          }
+        },
+        {
+          "id": "s3_text_56",
+          "type": "text",
+          "text": "01",
+          "x": 1.14,
+          "y": 2.502,
+          "w": 0.31,
+          "h": 0.08,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 6.0,
+            "bold": true,
+            "color": "2563EB",
+            "align": "center"
+          }
+        },
+        {
+          "id": "process_image",
+          "type": "imagePlaceholder",
+          "placeholder": "{{process_image}}",
+          "x": 0.83,
+          "y": 3.38,
+          "w": 5.05,
+          "h": 2.53,
+          "fit": "contain",
+          "fallbackElementIds": [
+            "s3_shape_8"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "result_retrospective",
+      "slideNumber": 4,
+      "elements": [
+        {
+          "id": "s4_shape_0",
+          "type": "line",
+          "x": 0.62,
+          "y": 0.71,
+          "w": 12.09,
+          "h": 0.0,
+          "line": {
+            "color": "E5E7EB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s4_shape_1",
+          "type": "shape",
+          "x": 10.88,
+          "y": 1.05,
+          "w": 1.82,
+          "h": 0.26,
+          "shape": "rect",
+          "fill": {
+            "color": "EFF6FF"
+          },
+          "line": {
+            "color": "DBEAFE",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s4_shape_2",
+          "type": "shape",
+          "x": 0.82,
+          "y": 2.08,
+          "w": 5.28,
+          "h": 3.32,
+          "shape": "rect",
+          "fill": {
+            "color": "F9FAFB"
+          },
+          "line": {
+            "color": "BFDBFE",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s4_shape_3",
+          "type": "shape",
+          "x": 3.1,
+          "y": 3.17,
+          "w": 0.72,
+          "h": 0.48,
+          "shape": "rect",
+          "fill": {
+            "color": "FFFFFF"
+          },
+          "line": {
+            "color": "D1D5DB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s4_shape_4",
+          "type": "shape",
+          "x": 3.24,
+          "y": 3.34,
+          "w": 0.2,
+          "h": 0.18,
+          "shape": "ellipse",
+          "line": {
+            "color": "D1D5DB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s4_shape_5",
+          "type": "shape",
+          "x": 3.19,
+          "y": 3.44,
+          "w": 0.32,
+          "h": 0.2,
+          "shape": "rect",
+          "fill": {
+            "color": "F3F4F6"
+          },
+          "line": {
+            "color": "D1D5DB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s4_shape_6",
+          "type": "shape",
+          "x": 3.44,
+          "y": 3.39,
+          "w": 0.38,
+          "h": 0.25,
+          "shape": "rect",
+          "fill": {
+            "color": "F3F4F6"
+          },
+          "line": {
+            "color": "D1D5DB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s4_shape_7",
+          "type": "shape",
+          "x": 6.48,
+          "y": 2.08,
+          "w": 2.67,
+          "h": 1.15,
+          "shape": "rect",
+          "fill": {
+            "color": "FFFFFF"
+          },
+          "line": {
+            "color": "E5E7EB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s4_shape_8",
+          "type": "shape",
+          "x": 6.48,
+          "y": 2.11,
+          "w": 0.05,
+          "h": 1.09,
+          "shape": "rect",
+          "fill": {
+            "color": "3B82F6"
+          },
+          "line": {
+            "color": "3B82F6",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s4_shape_9",
+          "type": "shape",
+          "x": 9.46,
+          "y": 2.08,
+          "w": 2.67,
+          "h": 1.15,
+          "shape": "rect",
+          "fill": {
+            "color": "FFFFFF"
+          },
+          "line": {
+            "color": "E5E7EB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s4_shape_10",
+          "type": "shape",
+          "x": 9.46,
+          "y": 2.11,
+          "w": 0.05,
+          "h": 1.09,
+          "shape": "rect",
+          "fill": {
+            "color": "BFDBFE"
+          },
+          "line": {
+            "color": "BFDBFE",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s4_shape_11",
+          "type": "shape",
+          "x": 6.48,
+          "y": 3.58,
+          "w": 2.67,
+          "h": 1.15,
+          "shape": "rect",
+          "fill": {
+            "color": "FFFFFF"
+          },
+          "line": {
+            "color": "E5E7EB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s4_shape_12",
+          "type": "shape",
+          "x": 6.48,
+          "y": 3.61,
+          "w": 0.05,
+          "h": 1.09,
+          "shape": "rect",
+          "fill": {
+            "color": "BFDBFE"
+          },
+          "line": {
+            "color": "BFDBFE",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s4_shape_13",
+          "type": "shape",
+          "x": 9.46,
+          "y": 3.58,
+          "w": 2.67,
+          "h": 1.15,
+          "shape": "rect",
+          "fill": {
+            "color": "FFFFFF"
+          },
+          "line": {
+            "color": "E5E7EB",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s4_shape_14",
+          "type": "shape",
+          "x": 9.46,
+          "y": 3.61,
+          "w": 0.05,
+          "h": 1.09,
+          "shape": "rect",
+          "fill": {
+            "color": "BFDBFE"
+          },
+          "line": {
+            "color": "BFDBFE",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s4_shape_15",
+          "type": "shape",
+          "x": 0.82,
+          "y": 5.82,
+          "w": 11.31,
+          "h": 0.64,
+          "shape": "rect",
+          "fill": {
+            "color": "EFF6FF"
+          },
+          "line": {
+            "color": "DBEAFE",
+            "width": 1.0
+          }
+        },
+        {
+          "id": "s4_text_16",
+          "type": "text",
+          "text": "{{project_label}}",
+          "x": 0.62,
+          "y": 0.35,
+          "w": 1.7,
+          "h": 0.22,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 7.5,
+            "bold": true,
+            "color": "2563EB"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s4_text_17",
+          "type": "text",
+          "text": "Result & Retrospective",
+          "x": 2.0,
+          "y": 0.355,
+          "w": 1.65,
+          "h": 0.1,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 6.0,
+            "color": "9CA3AF"
+          }
+        },
+        {
+          "id": "s4_text_18",
+          "type": "text",
+          "text": "결과 및 회고: {{result_summary}}",
+          "x": 0.78,
+          "y": 0.98,
+          "w": 8.35,
+          "h": 0.42,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 21.0,
+            "bold": true,
+            "color": "111827"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s4_text_19",
+          "type": "text",
+          "text": "{{result_retrospective_flow}}",
+          "x": 0.82,
+          "y": 1.52,
+          "w": 7.0,
+          "h": 0.24,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 9.2,
+            "color": "4B5563"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s4_text_20",
+          "type": "text",
+          "text": "임의 성과 수치 금지",
+          "x": 10.96,
+          "y": 1.123,
+          "w": 1.66,
+          "h": 0.1,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 5.7,
+            "bold": true,
+            "color": "1D4ED8",
+            "align": "center"
+          }
+        },
+        {
+          "id": "s4_text_21",
+          "type": "text",
+          "text": "결과 화면 / 최종 산출물",
+          "x": 1.1,
+          "y": 3.79,
+          "w": 4.72,
+          "h": 0.28,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.2,
+            "bold": true,
+            "color": "374151",
+            "align": "center"
+          }
+        },
+        {
+          "id": "s4_text_22",
+          "type": "text",
+          "text": "완성 화면 · 산출물 · KPI 카드",
+          "x": 1.1,
+          "y": 4.13,
+          "w": 4.72,
+          "h": 0.24,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 7.8,
+            "color": "6B7280",
+            "align": "center"
+          }
+        },
+        {
+          "id": "s4_text_23",
+          "type": "text",
+          "text": "구현 결과",
+          "x": 6.66,
+          "y": 2.22,
+          "w": 2.31,
+          "h": 0.22,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.5,
+            "bold": true,
+            "color": "1F2937"
+          }
+        },
+        {
+          "id": "s4_text_24",
+          "type": "text",
+          "text": "{{final_result}}\n{{core_output}}",
+          "x": 6.66,
+          "y": 2.55,
+          "w": 2.31,
+          "h": 0.53,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 9.0,
+            "color": "4B5563"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s4_text_25",
+          "type": "text",
+          "text": "사용자 가치",
+          "x": 9.64,
+          "y": 2.22,
+          "w": 2.31,
+          "h": 0.22,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.5,
+            "bold": true,
+            "color": "1F2937"
+          }
+        },
+        {
+          "id": "s4_text_26",
+          "type": "text",
+          "text": "{{user_value}}\n{{experience_improvement}}",
+          "x": 9.64,
+          "y": 2.55,
+          "w": 2.31,
+          "h": 0.53,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 9.0,
+            "color": "4B5563"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s4_text_27",
+          "type": "text",
+          "text": "한계점",
+          "x": 6.66,
+          "y": 3.72,
+          "w": 2.31,
+          "h": 0.22,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.5,
+            "bold": true,
+            "color": "1F2937"
+          }
+        },
+        {
+          "id": "s4_text_28",
+          "type": "text",
+          "text": "{{limitation}}\n{{confirmed_constraint}}",
+          "x": 6.66,
+          "y": 4.05,
+          "w": 2.31,
+          "h": 0.53,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 9.0,
+            "color": "4B5563"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s4_text_29",
+          "type": "text",
+          "text": "개선 방향",
+          "x": 9.64,
+          "y": 3.72,
+          "w": 2.31,
+          "h": 0.22,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 10.5,
+            "bold": true,
+            "color": "1F2937"
+          }
+        },
+        {
+          "id": "s4_text_30",
+          "type": "text",
+          "text": "{{next_improvement}}\n{{technical_or_planning_refinement}}",
+          "x": 9.64,
+          "y": 4.05,
+          "w": 2.31,
+          "h": 0.53,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 9.0,
+            "color": "4B5563"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s4_text_31",
+          "type": "text",
+          "text": "배운 점",
+          "x": 1.06,
+          "y": 6.04,
+          "w": 0.72,
+          "h": 0.12,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "bold": true,
+            "color": "1D4ED8"
+          }
+        },
+        {
+          "id": "s4_text_32",
+          "type": "text",
+          "text": "{{lesson_learned}}",
+          "x": 1.9,
+          "y": 6.04,
+          "w": 9.8,
+          "h": 0.12,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "color": "374151"
+          },
+          "placeholder": true
+        },
+        {
+          "id": "s4_text_33",
+          "type": "text",
+          "text": "※ 성과 수치가 없다면 정량 지표를 만들지 말고 정성적 결과와 사용자 가치로 표현하세요.",
+          "x": 6.48,
+          "y": 5.08,
+          "w": 5.6,
+          "h": 0.16,
+          "options": {
+            "fontFace": "Malgun Gothic",
+            "fontSize": 8.0,
+            "color": "6B7280"
+          }
+        },
+        {
+          "id": "s4_text_34",
+          "type": "text",
+          "text": "4",
+          "x": 12.25,
+          "y": 7.13,
+          "w": 0.875,
+          "h": 0.328,
+          "options": {
+            "color": "000000",
+            "align": "left"
+          }
+        },
+        {
+          "id": "result_image",
+          "type": "imagePlaceholder",
+          "placeholder": "{{result_image}}",
+          "x": 0.82,
+          "y": 2.08,
+          "w": 5.28,
+          "h": 3.32,
+          "fit": "contain",
+          "fallbackElementIds": [
+            "s4_shape_2"
+          ]
+        }
+      ]
+    }
+  ]
+}

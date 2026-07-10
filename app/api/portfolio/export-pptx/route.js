@@ -11,6 +11,7 @@ const COVERLETTER_TEMPLATE_PATH = path.join(
 );
 const coverletterTemplate = JSON.parse(fs.readFileSync(COVERLETTER_TEMPLATE_PATH, 'utf8'));
 
+import { renderPortfolioDetailTemplate } from '../../../../lib/portfolio-detail-pptx.js';
 import { renderPortfolioSummaryTemplate } from '../../../../lib/portfolio-summary-pptx.js';
 
 function normalizeText(value) {
@@ -2368,6 +2369,7 @@ export async function POST(request) {
     const pptx = new pptxgen();
     const isCoverLetter = isCoverLetterPortfolio(portfolio);
     const isOnePageSummary = portfolio.format === '1페이지 요약본';
+    const isDetailPortfolio = portfolio.format === '상세 기술 포트폴리오';
     const isPptPresentation = normalizeText(portfolio.format).includes('PPT');
 
     if (isCoverLetter) {
@@ -2375,6 +2377,8 @@ export async function POST(request) {
       renderCoverLetterTemplateV2Pptx(pptx, portfolio);
     } else if (isOnePageSummary) {
       renderPortfolioSummaryTemplate(pptx, portfolio);
+    } else if (isDetailPortfolio) {
+      renderPortfolioDetailTemplate(pptx, portfolio);
     } else if (isPptPresentation) {
       configurePptx(pptx, portfolio);
       renderPptPresentationTemplate(pptx, portfolio);
