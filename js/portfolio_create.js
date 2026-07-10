@@ -153,11 +153,17 @@
       return /\uC870\uC0AC/.test(String(keyword || ''));
     }
 
+    function stripTrailingPostposition(text) {
+      return String(text || '')
+        .replace(/(\S+\s+\S+)(?:과|와|은|는|이|가|을|를|의|에|로|으로|도|만|까지|부터|처럼|보다|에게|께|한테|랑|이랑|하고)$/u, '$1')
+        .trim();
+    }
+
     function compactKeyword(keyword) {
-      const text = String(keyword || '')
+      const text = stripTrailingPostposition(String(keyword || '')
         .replace(/[·ㆍ,;/|+]+/g, ' ')
         .replace(/\s+/g, ' ')
-        .trim();
+        .trim());
       if (!text) return '';
       if (hasBlockedKeywordText(text)) return '';
 

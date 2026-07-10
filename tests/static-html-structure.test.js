@@ -3170,8 +3170,8 @@ assert.match(
 );
 assert.match(
   portfolioCreateHtml,
-  /function\s+hasBlockedKeywordText\(keyword\)[\s\S]*\\uC870\\uC0AC[\s\S]*function\s+compactKeyword\(keyword\)[\s\S]*hasBlockedKeywordText\(text\)[\s\S]*renderKeywordTags[\s\S]*hasBlockedKeywordText\(keyword\)/,
-  'portfolio_create should hide AI keyword chips that contain the blocked 조사 wording'
+  /function\s+hasBlockedKeywordText\(keyword\)[\s\S]*\\uC870\\uC0AC[\s\S]*function\s+stripTrailingPostposition\(text\)[\s\S]*과\|와\|은\|는\|이\|가\|을\|를[\s\S]*function\s+compactKeyword\(keyword\)[\s\S]*stripTrailingPostposition[\s\S]*renderKeywordTags[\s\S]*hasBlockedKeywordText\(keyword\)/,
+  'portfolio_create should remove trailing Korean particles and hide blocked keyword chips'
 );
 assert.match(
   portfolioCreateHtml,
@@ -3652,13 +3652,13 @@ assert.match(
 );
 assert.match(
   portfolioKeywordsRoute,
-  /function\s+hasBlockedKeywordText\(item\)[\s\S]*\\uC870\\uC0AC[\s\S]*function\s+compactKeyword\(item\)[\s\S]*hasBlockedKeywordText\(text\)[\s\S]*function\s+uniqueKeywords\(items\)[\s\S]*hasBlockedKeywordText\(item\)/,
-  'portfolio keyword API should remove recommendations that contain the blocked 조사 wording'
+  /function\s+hasBlockedKeywordText\(item\)[\s\S]*\\uC870\\uC0AC[\s\S]*function\s+stripTrailingPostposition\(text\)[\s\S]*과\|와\|은\|는\|이\|가\|을\|를[\s\S]*function\s+compactKeyword\(item\)[\s\S]*stripTrailingPostposition[\s\S]*function\s+uniqueKeywords\(items\)[\s\S]*hasBlockedKeywordText\(item\)/,
+  'portfolio keyword API should remove trailing Korean particles and blocked keyword text'
 );
 assert.match(
   portfolioSourceDataRoute,
-  /function\s+hasBlockedKeywordText\(item\)[\s\S]*\\uC870\\uC0AC[\s\S]*function\s+compactKeyword\(item\)[\s\S]*hasBlockedKeywordText\(text\)[\s\S]*function\s+normalizeKeywordList\(items\)[\s\S]*hasBlockedKeywordText\(item\)/,
-  'portfolio source data API should remove selected project keywords that contain the blocked 조사 wording'
+  /function\s+hasBlockedKeywordText\(item\)[\s\S]*\\uC870\\uC0AC[\s\S]*function\s+stripTrailingPostposition\(text\)[\s\S]*과\|와\|은\|는\|이\|가\|을\|를[\s\S]*function\s+compactKeyword\(item\)[\s\S]*stripTrailingPostposition[\s\S]*function\s+normalizeKeywordList\(items\)[\s\S]*hasBlockedKeywordText\(item\)/,
+  'portfolio source data API should remove trailing Korean particles and blocked keyword text'
 );
 assert.match(
   portfolioExportPptxRoute,
