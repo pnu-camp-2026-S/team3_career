@@ -1,5 +1,8 @@
 import { POST as exportPortfolioPptx } from '../export-pptx/route';
 
+export const runtime = 'nodejs';
+export const maxDuration = 60;
+
 const PPTX_MIME_TYPE = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
 const PDF_MIME_TYPE = 'application/pdf';
 const DEFAULT_TIMEOUT_MS = 45_000;
@@ -69,6 +72,16 @@ async function resolveConverterResponse(response) {
   }
 
   const pdfBuffer = await response.arrayBuffer();
+  const pdfHeader = new Uint8Array(pdfBuffer.slice(0, 4));
+  const isPdf = pdfHeader.length === 4
+    && pdfHeader[0] === 0x25
+    && pdfHeader[1] === 0x50
+    && pdfHeader[2] === 0x44
+    && pdfHeader[3] === 0x46;
+  if (!contentType.toLowerCase().includes(PDF_MIME_TYPE) || !isPdf) {
+    throw new Error('변환 워커가 유효한 PDF를 반환하지 않았습니다.');
+  }
+
   return new Response(pdfBuffer, {
     headers: {
       'Content-Type': PDF_MIME_TYPE,
@@ -80,6 +93,7 @@ async function resolveConverterResponse(response) {
 
 export async function POST(request) {
   let timeoutId;
+  let requestAbortHandler;
 
   try {
     const converterUrl = getConverterUrl();
@@ -97,6 +111,12 @@ export async function POST(request) {
     const pptxBuffer = await createPptxBuffer(portfolio, request.url);
     const formData = createConverterFormData(portfolio, pptxBuffer);
     const controller = new AbortController();
+    requestAbortHandler = () => controller.abort();
+    if (request.signal.aborted) {
+      controller.abort();
+    } else {
+      request.signal.addEventListener('abort', requestAbortHandler, { once: true });
+    }
     timeoutId = setTimeout(() => controller.abort(), getConverterTimeoutMs());
 
     const headers = {};
@@ -129,5 +149,6 @@ export async function POST(request) {
     }, { status: isTimeout ? 504 : 500 });
   } finally {
     if (timeoutId) clearTimeout(timeoutId);
+    if (requestAbortHandler) request.signal.removeEventListener('abort', requestAbortHandler);
   }
 }
