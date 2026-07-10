@@ -63,7 +63,7 @@
     const portfolioRevisionOverlay = document.getElementById('portfolioRevisionOverlay');
     const editPortfolioId = new URLSearchParams(window.location.search).get('edit');
 
-    document.querySelectorAll('.format-card').forEach((card) => {
+    document.querySelectorAll('.format-card:not(:disabled)').forEach((card) => {
       card.addEventListener('click', () => selectFormat(card.dataset.format));
     });
 

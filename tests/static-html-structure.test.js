@@ -3143,6 +3143,21 @@ assert.match(
   'portfolio_create should use the unified two-line page header copy inside the setup panel'
 );
 assert.match(
+  portfolioCreateHtml,
+  /<button(?=[^>]*class="format-card")(?=[^>]*data-format="PPT 발표 스펙")(?=[^>]*aria-disabled="true")(?=[^>]*disabled)[^>]*>[\s\S]*?<strong>PPT 발표 스펙 \(미구현\)<\/strong>/,
+  'PPT 발표 스펙 카드는 미구현 상태를 표시하고 선택할 수 없어야 한다'
+);
+assert.match(
+  portfolioCreateHtml,
+  /querySelectorAll\('\.format-card:not\(:disabled\)'\)\.forEach/,
+  '포트폴리오 형식 선택 이벤트는 비활성 카드를 제외하고 연결해야 한다'
+);
+assert.match(
+  portfolioCreateCss,
+  /\.format-card:disabled,[\s\S]*cursor:\s*not-allowed;[\s\S]*opacity:\s*0\.62;[\s\S]*\.format-card:disabled \.format-visual[\s\S]*filter:\s*grayscale\(1\);/,
+  '미구현 포트폴리오 형식 카드는 비활성 상태를 시각적으로 구분해야 한다'
+);
+assert.match(
   sharedNavJs,
   /\{\s*key:\s*'portfolio_create',\s*href:\s*'portfolio_create\.html',\s*label:\s*'포트폴리오 생성'\s*\}/,
   'portfolio_create should keep the shared portfolio create nav link'
