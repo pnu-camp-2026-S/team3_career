@@ -505,6 +505,7 @@
         if (profileState.photo) localStorage.setItem("myfitfolioPhoto", profileState.photo);
         else localStorage.removeItem("myfitfolioPhoto");
         localStorage.setItem("myfitfolioProfile", JSON.stringify(savedProfile));
+        localStorage.setItem("myfitfolioProfileUpdatedAt", String(Date.now()));
         sessionStorage.setItem("myfitfolioProfileSaved", "true");
         return true;
       } catch (error) {
