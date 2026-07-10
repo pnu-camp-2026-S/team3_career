@@ -513,10 +513,11 @@ const industryPreferenceKeywordMap = {
 
 const departmentDirectionKeywordMap = {
   컴퓨터공학과: ['IT', 'SW', '개발', '프론트엔드', '백엔드', '데이터', 'AI', '머신러닝', '보안', '네트워크', '클라우드', '게임'],
-  전기공학과: ['전기', '전자', '회로', '전력', '제어', '반도체', '임베디드', '센서', 'IoT', '전기차'],
-  화공생명공학과: ['화공', '화학', '바이오', '제약', '공정', '소재', '환경', '배양', '실험', '전기화학'],
-  산업공학과: ['산업', '생산', '품질', '물류', 'SCM', '최적화', '프로세스', '운영', '제조', 'Lean']
+  전기공학과: ['전기', '전자', '회로', '전력', '제어', '반도체', '임베디드', '센서', 'IoT', '전기차', '제조'],
+  화공생명공학과: ['화공', '화학', '바이오', '제약', '공정', '소재', '환경', '배양', '실험', '전기화학', '반도체', '제조'],
+  산업공학과: ['산업', '생산', '품질', '물류', 'SCM', '최적화', '프로세스', '운영', '제조', 'Lean', '유통']
 };
+const unmatchedEducationDirection = '__unmatched_education_direction__';
 
 function getProfileEducationCandidates(profile) {
   return [profile.major, profile.minor, profile.linkedMajor]
@@ -547,13 +548,15 @@ function getDirectionEducationGate(profile) {
   const directionText = getDirectionPreferenceText(profile);
   if (!candidates.length || !directionText) return null;
 
-  return candidates
+  const bestCandidate = candidates
     .map((department, index) => ({
       department,
       score: getDepartmentDirectionMatchScore(department, directionText),
       index
     }))
-    .sort((a, b) => b.score - a.score || a.index - b.index)[0].department;
+    .sort((a, b) => b.score - a.score || a.index - b.index)[0];
+
+  return bestCandidate.score > 0 ? bestCandidate.department : unmatchedEducationDirection;
 }
 
 function isActivityInEducationDirection(item, gateDepartment) {
