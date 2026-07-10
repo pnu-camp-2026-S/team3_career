@@ -2733,8 +2733,8 @@ assert.match(
 );
 assert.match(
   contestJs,
-  /function\s+getProfileFitBreakdown\([\s\S]*profile\.desiredJobs[\s\S]*profile\.desiredIndustries[\s\S]*profile\.interestedIndustries[\s\S]*profile\.interestFields[\s\S]*profile\.interestedCompanies[\s\S]*educationSignal/,
-  'contest recommendations should prioritize desired job and desired industry, use interest inputs as boosts, and keep education as explanation'
+  /function\s+getProfileFitBreakdown\([\s\S]*profile\.desiredJobs[\s\S]*profile\.interestFields[\s\S]*profile\.desiredIndustries[\s\S]*profile\.interestedIndustries[\s\S]*profile\.interestedCompanies[\s\S]*directionEducationGate/,
+  'contest recommendations should prioritize desired job and industry direction, use interest inputs as boosts, and keep education as a direction gate'
 );
 assert.match(
   contestJs,
@@ -2748,8 +2748,18 @@ assert.match(
 );
 assert.match(
   contestJs,
-  /if\s*\(educationSignal\s*&&\s*!hasDirection\)[\s\S]*scoringSignals\.push\(\{\s*score:\s*educationScore/,
-  'contest recommendations should only use major, minor, and linked major for scoring when no direction inputs exist'
+  /function\s+getDirectionEducationGate\(profile\)[\s\S]*getProfileEducationCandidates\(profile\)[\s\S]*getDirectionPreferenceText\(profile\)[\s\S]*getDepartmentDirectionMatchScore/,
+  'contest recommendations should choose the closest major, minor, or linked major for the selected job and industry direction'
+);
+assert.match(
+  contestJs,
+  /function\s+isActivityInEducationDirection\(item,\s*gateDepartment\)[\s\S]*normalizeDepartmentName\(item\.primaryDepartment\)\s*===\s*gateDepartment/,
+  'contest recommendations should validate activity fields against the selected education direction'
+);
+assert.match(
+  contestJs,
+  /matchesEducationDirection\s*\?\s*weightedScore\s*:\s*Math\.min\(weightedScore,\s*69\)/,
+  'contest recommendations should cap activities outside the selected education direction below the recommendation threshold'
 );
 assert.match(
   contestJs,
@@ -2758,7 +2768,7 @@ assert.match(
 );
 assert.match(
   contestJs,
-  /jobMatch\.hasInput\s*&&\s*!jobMatch\.matched\s*\?\s*Math\.min\(weightedScore,\s*69\)/,
+  /jobMatch\.hasInput\s*&&\s*!jobMatch\.matched\s*\?\s*Math\.min\(directionCappedScore,\s*69\)/,
   'contest recommendations should cap job-mismatched activities below the recommendation threshold'
 );
 assert.match(
