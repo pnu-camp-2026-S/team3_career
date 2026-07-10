@@ -3423,7 +3423,15 @@ const portfolioKeywordsRoutePath = path.join(appDir, 'api', 'portfolio', 'keywor
 const portfolioSourceDataRoutePath = path.join(appDir, 'api', 'portfolio', 'source-data', 'route.js');
 const portfolioReviseRoutePath = path.join(appDir, 'api', 'portfolio', 'revise', 'route.js');
 const portfolioOnePageLibPath = path.join(libDir, 'portfolio-onepage.js');
+const portfolioDetailLibPath = path.join(libDir, 'portfolio-detail.js');
+const portfolioDetailPptxLibPath = path.join(libDir, 'portfolio-detail-pptx.js');
 const portfolioSummaryPptxLibPath = path.join(libDir, 'portfolio-summary-pptx.js');
+const portfolioDetailTemplatePath = path.join(
+  rootDir,
+  'portfolio_design',
+  'portfolio-detail',
+  'detailed_technical_template.pptxgen.json'
+);
 const portfolioSummaryTemplateV2Path = path.join(
   rootDir,
   'portfolio_design',
@@ -3459,6 +3467,15 @@ const portfolioConverterWorkerReadme = fs.existsSync(portfolioConverterWorkerRea
   : '';
 const portfolioOnePageLib = fs.existsSync(portfolioOnePageLibPath)
   ? fs.readFileSync(portfolioOnePageLibPath, 'utf8')
+  : '';
+const portfolioDetailLib = fs.existsSync(portfolioDetailLibPath)
+  ? fs.readFileSync(portfolioDetailLibPath, 'utf8')
+  : '';
+const portfolioDetailPptxLib = fs.existsSync(portfolioDetailPptxLibPath)
+  ? fs.readFileSync(portfolioDetailPptxLibPath, 'utf8')
+  : '';
+const portfolioDetailTemplate = fs.existsSync(portfolioDetailTemplatePath)
+  ? fs.readFileSync(portfolioDetailTemplatePath, 'utf8')
   : '';
 const portfolioSummaryPptxLib = fs.existsSync(portfolioSummaryPptxLibPath)
   ? fs.readFileSync(portfolioSummaryPptxLibPath, 'utf8')
@@ -3618,6 +3635,38 @@ assert.match(
   portfolioExportPptxRoute,
   /isOnePageSummary[\s\S]*renderPortfolioSummaryTemplate\(pptx,\s*portfolio\)/,
   'portfolio PPTX export should render 1페이지 요약본 from the pptxgenjs JSON template'
+);
+assert.ok(
+  fs.existsSync(portfolioDetailLibPath),
+  'portfolio detail OpenAI prompt module should live in lib/portfolio-detail.js'
+);
+assert.ok(
+  fs.existsSync(portfolioDetailPptxLibPath),
+  'portfolio detail PPTX renderer should live in lib/portfolio-detail-pptx.js'
+);
+assert.ok(
+  fs.existsSync(portfolioDetailTemplatePath),
+  'portfolio detail PPTX template JSON should exist'
+);
+assert.match(
+  portfolioDetailTemplate,
+  /"detailed_technical_template"[\s\S]*"\{\{project_label\}\}"[\s\S]*"\{\{result_image\}\}"/,
+  'portfolio detail template should expose detailed technical placeholders'
+);
+assert.match(
+  portfolioDetailLib,
+  /buildPortfolioDetailPrompt[\s\S]*detailed_technical_template\.pptxgen\.json[\s\S]*template_values[\s\S]*project_label[\s\S]*result_image/,
+  'portfolio detail prompt should generate template_values for the detailed technical template'
+);
+assert.match(
+  portfolioDetailPptxLib,
+  /detailed_technical_template\.pptxgen\.json[\s\S]*buildReplacementMap[\s\S]*replaceText[\s\S]*slide\.addText[\s\S]*imagePlaceholder/,
+  'portfolio detail PPTX renderer should replace text and image placeholders from the template JSON'
+);
+assert.match(
+  portfolioExportPptxRoute,
+  /isDetailPortfolio[\s\S]*renderPortfolioDetailTemplate\(pptx,\s*portfolio\)/,
+  'portfolio PPTX export should render 상세 기술 포트폴리오 from the detailed pptxgenjs JSON template'
 );
 assert.match(
   portfolioSummaryPptxLib,

@@ -1,5 +1,6 @@
 ﻿import pptxgen from 'pptxgenjs';
 
+import { renderPortfolioDetailTemplate } from '../../../../lib/portfolio-detail-pptx.js';
 import { renderPortfolioSummaryTemplate } from '../../../../lib/portfolio-summary-pptx.js';
 
 function normalizeText(value) {
@@ -951,6 +952,7 @@ export async function POST(request) {
 
     const pptx = new pptxgen();
     const isOnePageSummary = portfolio.format === '1페이지 요약본';
+    const isDetailPortfolio = portfolio.format === '상세 기술 포트폴리오';
     const isPptPresentation = normalizeText(portfolio.format).includes('PPT');
     if (!isOnePageSummary) {
       pptx.layout = 'LAYOUT_WIDE';
@@ -968,6 +970,8 @@ export async function POST(request) {
 
     if (isOnePageSummary) {
       renderPortfolioSummaryTemplate(pptx, portfolio);
+    } else if (isDetailPortfolio) {
+      renderPortfolioDetailTemplate(pptx, portfolio);
     } else if (isPptPresentation) {
       renderPptPresentationTemplate(pptx, portfolio);
     } else {
