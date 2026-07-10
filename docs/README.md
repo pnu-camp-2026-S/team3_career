@@ -25,7 +25,8 @@
 - `supabase-activity-files.sql` — 업로드 파일 메타데이터(`public.activity_files`)와 Storage 정책 (트리 컬럼 포함, 신규 설치용)
 - `supabase-activity-files-tree-migration.sql` — 기존 설치에 트리 컬럼(#167)을 추가하고 레거시 `folder_id`를 백필하는 마이그레이션
 - `supabase-analysis.sql` — AI 분석 결과(`public.file_analyses`, `public.project_analyses`)
-- `supabase-portfolios.sql` — 포트폴리오(`public.portfolios`)
+- `supabase-portfolios.sql` — 포트폴리오(`public.portfolios`) (프로젝트 근거·AI 원본·템플릿 값 컬럼 포함, 신규 설치용)
+- `supabase-portfolios-raw-migration.sql` — 기존 설치에 `experience_projects`/`raw`/`template_values` 컬럼을 추가하는 마이그레이션
 
 ## 문서 관리 원칙
 

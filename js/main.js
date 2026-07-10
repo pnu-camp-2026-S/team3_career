@@ -91,10 +91,7 @@
 
     async function hasSavedDatabaseProfile() {
       try {
-        const response = await fetch(PROFILE_ENDPOINT, {
-          credentials: 'same-origin',
-          cache: 'no-store',
-        });
+        const response = await window.MyfitfolioCache.cachedGet(PROFILE_ENDPOINT, { ttlMs: 20000 });
 
         if (!response.ok) return hasSavedProfile();
 

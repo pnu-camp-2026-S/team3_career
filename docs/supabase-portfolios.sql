@@ -12,10 +12,13 @@ create table if not exists public.portfolios (
   status text not null default 'done',
   liked boolean not null default false,
   experiences jsonb not null default '[]'::jsonb,
+  experience_projects jsonb not null default '[]'::jsonb,
   keywords jsonb not null default '[]'::jsonb,
   blocks jsonb not null default '[]'::jsonb,
   slides jsonb not null default '[]'::jsonb,
   cover_lines jsonb not null default '[]'::jsonb,
+  raw jsonb,
+  template_values jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   deleted_at timestamptz

@@ -268,11 +268,7 @@
 
     async function loadProfileMajor() {
       try {
-        const response = await fetch(PROFILE_ENDPOINT, {
-          method: 'GET',
-          credentials: 'same-origin',
-          cache: 'no-store'
-        });
+        const response = await window.MyfitfolioCache.cachedGet(PROFILE_ENDPOINT, { ttlMs: 20000 });
         if (!response.ok) throw new Error('Profile load failed.');
 
         const result = await response.json();
@@ -1374,12 +1370,13 @@
         content,
         format: currentPortfolio.format,
         experiences: currentPortfolio.experiences,
+        experienceProjects: currentPortfolio.experienceProjects || [],
         keywords: currentPortfolio.keywords,
         blocks: currentPortfolio.blocks || [],
         slides: currentPortfolio.slides || [],
-        coverLines: currentPortfolio.raw?.template_values
-          ? [`template_values: ${JSON.stringify(currentPortfolio.raw.template_values)}`]
-          : currentPortfolio.coverLines || [],
+        coverLines: currentPortfolio.coverLines || [],
+        raw: currentPortfolio.raw || null,
+        templateValues: currentPortfolio.raw?.template_values || currentPortfolio.templateValues || null,
       };
       const saved = readPortfolioStore().filter((item) => item.id !== nextPortfolio.id);
 
@@ -1453,12 +1450,15 @@
         purpose,
         major,
         experiences,
+        experienceProjects: Array.isArray(portfolio.experienceProjects) ? portfolio.experienceProjects : [],
         keywords,
         blocks: Array.isArray(portfolio.blocks) && portfolio.blocks.length ? portfolio.blocks : fallbackBlocks,
         slides: Array.isArray(portfolio.slides) && portfolio.slides.length
           ? portfolio.slides
           : buildSlides(format, purpose, major, experiences, keywords),
+        coverLines: Array.isArray(portfolio.coverLines) ? portfolio.coverLines : [],
         raw: portfolio.raw || null,
+        templateValues: portfolio.templateValues || null,
         sourceLabel: '저장본 편집',
         liked: Boolean(portfolio.liked),
         createdAt: portfolio.createdAt,

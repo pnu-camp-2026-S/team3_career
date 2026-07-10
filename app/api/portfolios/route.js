@@ -1,6 +1,6 @@
 import { createSupabaseServerClient } from '../../../lib/supabase-server';
 
-const PORTFOLIO_COLUMNS = 'id, title, purpose, summary, content, format, status, liked, experiences, keywords, blocks, slides, cover_lines, created_at, updated_at, deleted_at';
+const PORTFOLIO_COLUMNS = 'id, title, purpose, summary, content, format, status, liked, experiences, experience_projects, keywords, blocks, slides, cover_lines, raw, template_values, created_at, updated_at, deleted_at';
 
 function normalizeArray(value) {
   return Array.isArray(value) ? value : [];
@@ -8,6 +8,11 @@ function normalizeArray(value) {
 
 function normalizeString(value) {
   return typeof value === 'string' ? value.trim() : '';
+}
+
+// jsonb 원본 객체 컬럼(raw, template_values)은 배열이 아닌 순수 객체일 때만 그대로 저장한다.
+function normalizeObjectOrNull(value) {
+  return value && typeof value === 'object' && !Array.isArray(value) ? value : null;
 }
 
 function mapPortfolio(row) {
@@ -21,10 +26,13 @@ function mapPortfolio(row) {
     status: row.status || 'done',
     liked: Boolean(row.liked),
     experiences: normalizeArray(row.experiences),
+    experienceProjects: normalizeArray(row.experience_projects),
     keywords: normalizeArray(row.keywords),
     blocks: normalizeArray(row.blocks),
     slides: normalizeArray(row.slides),
     coverLines: normalizeArray(row.cover_lines),
+    raw: row.raw || null,
+    templateValues: row.template_values || null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -45,10 +53,13 @@ function toPortfolioRow(payload, userId) {
     status: normalizeString(payload.status) || 'done',
     liked: Boolean(payload.liked),
     experiences: normalizeArray(payload.experiences),
+    experience_projects: normalizeArray(payload.experienceProjects),
     keywords: normalizeArray(payload.keywords),
     blocks: normalizeArray(payload.blocks),
     slides: normalizeArray(payload.slides),
     cover_lines: normalizeArray(payload.coverLines),
+    raw: normalizeObjectOrNull(payload.raw),
+    template_values: normalizeObjectOrNull(payload.templateValues),
     updated_at: now,
   };
 }
