@@ -3556,6 +3556,11 @@ assert.match(
 );
 assert.match(
   portfolioRenderPdfRoute,
+  /export const runtime\s*=\s*'nodejs'[\s\S]*export const maxDuration\s*=\s*60/,
+  'portfolio PDF render API should use the Node.js runtime with a Vercel-compatible duration'
+);
+assert.match(
+  portfolioRenderPdfRoute,
   /new FormData\(\)[\s\S]*formData\.append\('file',\s*new Blob\(\[pptxBuffer\]/,
   'portfolio PDF render API should send the generated PPTX to the worker as multipart form data'
 );
@@ -3568,6 +3573,16 @@ assert.match(
   portfolioRenderPdfRoute,
   /contentType\.includes\('application\/json'\)[\s\S]*pdfUrl[\s\S]*Content-Type': PDF_MIME_TYPE/,
   'portfolio PDF render API should accept either a returned PDF file or a worker-hosted PDF URL'
+);
+assert.match(
+  portfolioRenderPdfRoute,
+  /pdfHeader\s*=\s*new Uint8Array\(pdfBuffer\.slice\(0, 4\)\)[\s\S]*contentType\.toLowerCase\(\)\.includes\(PDF_MIME_TYPE\)[\s\S]*유효한 PDF/,
+  'portfolio PDF render API should reject non-PDF binary responses from the converter worker'
+);
+assert.match(
+  portfolioRenderPdfRoute,
+  /requestAbortHandler\s*=\s*\(\)\s*=>\s*controller\.abort\(\)[\s\S]*request\.signal\.addEventListener\('abort'/,
+  'portfolio PDF render API should forward browser cancellation to the converter request'
 );
 assert.ok(
   fs.existsSync(portfolioConverterWorkerServerPath),
@@ -3585,6 +3600,11 @@ assert.match(
   portfolioConverterWorkerServer,
   /app\.post\('\/convert\/pptx-to-pdf'[\s\S]*upload\.single\('file'\)[\s\S]*runLibreOffice[\s\S]*Content-Type',\s*'application\/pdf'/,
   'portfolio converter worker should expose a PPTX-to-PDF multipart endpoint'
+);
+assert.match(
+  portfolioConverterWorkerServer,
+  /import\s+\{\s*mkdtemp,\s*readFile,\s*rename,\s*rm\s*\}[\s\S]*inputPath\s*=\s*path\.join\(workDir,\s*`\$\{fileStem\}\.pptx`\)[\s\S]*await rename\(uploadedFile\.path,\s*inputPath\)[\s\S]*runLibreOffice\(inputPath,\s*workDir\)/,
+  'portfolio converter worker should preserve a PPTX extension before LibreOffice conversion'
 );
 assert.match(
   portfolioConverterWorkerServer,
