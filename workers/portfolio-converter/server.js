@@ -1,7 +1,7 @@
 import express from 'express';
 import multer from 'multer';
 import { execFile } from 'node:child_process';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rename, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 
@@ -77,11 +77,18 @@ app.post('/convert/pptx-to-pdf', requireAuth, upload.single('file'), async (requ
     return;
   }
 
-  const workDir = await mkdtemp(path.join(os.tmpdir(), 'myfitfolio-pdf-'));
-  const fileStem = normalizeFileStem(uploadedFile.originalname);
+  let workDir = '';
+  let inputPath = '';
 
   try {
-    await runLibreOffice(uploadedFile.path, workDir);
+    workDir = await mkdtemp(path.join(os.tmpdir(), 'myfitfolio-pdf-'));
+    const fileStem = normalizeFileStem(uploadedFile.originalname);
+    // Multer의 dest 저장 파일은 확장자 없는 임의 이름이므로,
+    // LibreOffice가 PPTX 필터를 확실히 선택하도록 작업 폴더 안에 .pptx 이름으로 옮긴다.
+    inputPath = path.join(workDir, `${fileStem}.pptx`);
+    await rename(uploadedFile.path, inputPath);
+
+    await runLibreOffice(inputPath, workDir);
 
     const pdfPath = path.join(workDir, `${fileStem}.pdf`);
     const pdfBuffer = await readFile(pdfPath);
@@ -96,7 +103,7 @@ app.post('/convert/pptx-to-pdf', requireAuth, upload.single('file'), async (requ
       message: error.message || 'PPTX to PDF conversion failed.',
     });
   } finally {
-    await rm(workDir, { recursive: true, force: true });
+    if (workDir) await rm(workDir, { recursive: true, force: true });
     await rm(uploadedFile.path, { force: true });
   }
 });

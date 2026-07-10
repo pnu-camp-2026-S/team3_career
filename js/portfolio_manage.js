@@ -95,6 +95,20 @@
       }
     ];
 
+    function stripTrailingPostposition(text) {
+      return String(text || '')
+        .replace(/(\S+\s+\S+)\s+(?:과|와|은|는|이|가|을|를|의|에|로|으로|도|만|까지|부터|처럼|보다|에게|께|한테|랑|이랑|하고)$/u, '$1')
+        .replace(/(\S+\s+\S+)(?:과|와|은|는|이|가|을|를|의|에|로|으로|도|만|까지|부터|처럼|보다|에게|께|한테|랑|이랑|하고)$/u, '$1')
+        .trim();
+    }
+
+    function normalizeKeywordList(keywords) {
+      return [...new Set((Array.isArray(keywords) ? keywords : [])
+        .map((keyword) => stripTrailingPostposition(keyword))
+        .filter(Boolean))]
+        .slice(0, 12);
+    }
+
     function normalizePortfolio(item, index = 0) {
       const fallback = seedPortfolios[index % seedPortfolios.length];
       return {
@@ -104,13 +118,13 @@
         purpose: item.purpose || item.targetRole || fallback.purpose,
         summary: String(item.summary || item.content || fallback.summary).replace(/\s*초안\s*/g, ' '),
         liked: Boolean(item.liked),
-        coverLines: item.coverLines || [item.title, item.purpose || item.targetRole, item.summary || item.content],
+        coverLines: normalizeKeywordList(item.coverLines || [item.title, item.purpose || item.targetRole, item.summary || item.content]),
         content: item.content || item.summary || fallback.content,
         format: item.format || fallback.format || '',
         blocks: Array.isArray(item.blocks) ? item.blocks : [],
         slides: Array.isArray(item.slides) ? item.slides : [],
         updatedAt: item.updatedAt || item.updated_at || item.createdAt || fallback.createdAt,
-        keywords: Array.isArray(item.keywords) ? item.keywords : [],
+        keywords: normalizeKeywordList(item.keywords),
         experiences: Array.isArray(item.experiences) ? item.experiences : [],
         source: item.source || 'local'
       };
@@ -141,7 +155,9 @@
       try {
         const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
         if (!Array.isArray(saved) || !saved.length) return mergeWithSeedPortfolios([]);
-        return mergeWithSeedPortfolios(saved.map(normalizePortfolio));
+        const normalized = mergeWithSeedPortfolios(saved.map(normalizePortfolio));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
+        return normalized;
       } catch {
         return mergeWithSeedPortfolios([]);
       }
@@ -250,7 +266,7 @@
         title: first.title || portfolio.title,
         summary: first.body || portfolio.summary,
         detail: second.title || portfolio.purpose,
-        chips: (portfolio.keywords || portfolio.coverLines || [])
+        chips: normalizeKeywordList(portfolio.keywords || portfolio.coverLines || [])
           .filter(Boolean)
           .slice(0, 3)
           .map((item) => compactText(item, 16)),

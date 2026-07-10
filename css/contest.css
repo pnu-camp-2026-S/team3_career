@@ -24,7 +24,6 @@ body {
   overflow: auto;
   background: var(--bg);
   color: #333;
-  font-family: "Pretendard", sans-serif;
 }
 
 button,

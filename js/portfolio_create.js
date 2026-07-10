@@ -63,7 +63,7 @@
     const portfolioRevisionOverlay = document.getElementById('portfolioRevisionOverlay');
     const editPortfolioId = new URLSearchParams(window.location.search).get('edit');
 
-    document.querySelectorAll('.format-card').forEach((card) => {
+    document.querySelectorAll('.format-card:not(:disabled)').forEach((card) => {
       card.addEventListener('click', () => selectFormat(card.dataset.format));
     });
 
@@ -155,6 +155,7 @@
 
     function stripTrailingPostposition(text) {
       return String(text || '')
+        .replace(/(\S+\s+\S+)\s+(?:과|와|은|는|이|가|을|를|의|에|로|으로|도|만|까지|부터|처럼|보다|에게|께|한테|랑|이랑|하고)$/u, '$1')
         .replace(/(\S+\s+\S+)(?:과|와|은|는|이|가|을|를|의|에|로|으로|도|만|까지|부터|처럼|보다|에게|께|한테|랑|이랑|하고)$/u, '$1')
         .trim();
     }
@@ -177,8 +178,15 @@
       return compacted.length > 14 ? compacted.slice(0, 14).trim() : compacted;
     }
 
+    function normalizeKeywordList(keywords) {
+      return [...new Set((Array.isArray(keywords) ? keywords : [])
+        .map(compactKeyword)
+        .filter((keyword) => keyword && !hasBlockedKeywordText(keyword)))]
+        .slice(0, 12);
+    }
+
     function renderKeywordTags(keywords, { source = 'local' } = {}) {
-      const uniqueKeywords = [...new Set(keywords.map(compactKeyword).filter((keyword) => keyword && !hasBlockedKeywordText(keyword)))].slice(0, 12);
+      const uniqueKeywords = normalizeKeywordList(keywords);
 
       keywordPool.innerHTML = uniqueKeywords.map((keyword) => {
         const sourceClass = source === 'ai' ? ' ai-tag' : '';
@@ -323,9 +331,8 @@
     }
 
     function getSelectedKeywords() {
-      return Array.from(document.querySelectorAll('[data-keyword].selected'))
-        .map((tag) => compactKeyword(tag.textContent))
-        .filter(Boolean);
+      return normalizeKeywordList(Array.from(document.querySelectorAll('[data-keyword].selected'))
+        .map((tag) => tag.textContent));
     }
 
     async function triggerGeneratePortfolio() {
@@ -742,7 +749,7 @@
     function createPptxMatchedPreviewSlides(portfolio) {
       if (portfolio.format === '1페이지 요약본') return [createOnePagePptxPreviewSlide(portfolio)];
       const blocks = normalizePptxPreviewBlocks(portfolio);
-      const keywords = Array.isArray(portfolio.keywords) ? portfolio.keywords.slice(0, 3).filter(Boolean) : [];
+      const keywords = normalizeKeywordList(portfolio.keywords).slice(0, 3);
       return [
         {
           type: 'overview',
@@ -772,7 +779,7 @@
       const headline = raw.headline || {};
       const competencies = raw.core_competencies || [];
       const experiences = raw.representative_experiences || raw.experiences || [];
-      const skills = raw.skill_keywords || raw.skills || portfolio.keywords || [];
+      const skills = raw.skill_keywords || raw.skills || normalizeKeywordList(portfolio.keywords);
       const targetFit = raw.target_fit || {};
       return {
         type: 'onepage',
@@ -795,7 +802,7 @@
           title: item.title || item.project || '대표 경험',
           body: item.summary || item.highlight || item.role || '근거 보완 필요',
         })).slice(0, 3),
-        skills: skills.map((item) => typeof item === 'string' ? item : item.text).filter(Boolean).slice(0, 8),
+        skills: normalizeKeywordList(skills.map((item) => typeof item === 'string' ? item : item.text).filter(Boolean)).slice(0, 8),
       };
     }
 
@@ -841,7 +848,7 @@
         purpose: portfolio.purpose,
         major: portfolio.major,
         experiences: portfolio.experiences || [],
-        keywords: portfolio.keywords || [],
+        keywords: normalizeKeywordList(portfolio.keywords),
         blocks: portfolio.blocks || [],
         slides: portfolio.slides || [],
         raw: portfolio.raw || null,
@@ -1105,7 +1112,7 @@
       const targetFit = raw.target_fit || {};
       const competencies = raw.core_competencies || [];
       const experiences = raw.representative_experiences || raw.experiences || [];
-      const skillKeywords = raw.skill_keywords || raw.skills || currentPortfolio.keywords || [];
+      const skillKeywords = raw.skill_keywords || raw.skills || normalizeKeywordList(currentPortfolio.keywords);
       const educationItems = raw.license_awards_education || raw.licenses_and_awards || [];
       const differentiator = raw.differentiator || {};
       const title = headline.title || raw.headline || currentPortfolio.title || '1페이지 요약본';
@@ -1127,7 +1134,7 @@
         ['INDUSTRY', targetFit.industry?.value],
         ['COMPANY', targetFit.company?.value],
       ];
-      const skillTexts = skillKeywords.map((item) => typeof item === 'string' ? item : item.text).filter(Boolean);
+      const skillTexts = normalizeKeywordList(skillKeywords.map((item) => typeof item === 'string' ? item : item.text).filter(Boolean));
       const educationTexts = educationItems.map((item) => {
         if (typeof item === 'string') return item;
         return item.text || [item.year, item.title].filter(Boolean).join(' ');
@@ -1249,6 +1256,138 @@
     }
 
     function renderCoverLetterPortfolio(raw) {
+      if (raw.templateId === 'coverletter_ppt_v2' || raw.cover || raw.positioning || raw.strengths || raw.competencyEvidence) {
+        const storySections = [
+          raw.positioning && {
+            question_title: '지원자 포지셔닝',
+            question_reason: '직무 관심과 핵심 경험 연결',
+            answer: [
+              raw.positioning.statement,
+              raw.positioning.jobInterest,
+              raw.positioning.coreExperience,
+              raw.positioning.contributionDirection,
+            ].filter(Boolean).join('\n'),
+          },
+          raw.motivation && {
+            question_title: '지원 동기',
+            question_reason: '직무 이해와 개인 경험 연결',
+            answer: [
+              raw.motivation.companyUnderstanding,
+              raw.motivation.roleUnderstanding,
+              raw.motivation.personalConnection,
+              raw.motivation.finalSentence,
+            ].filter(Boolean).join('\n'),
+          },
+          raw.strengths?.length && {
+            question_title: '직무 적합 강점',
+            question_reason: '강점별 경험 근거',
+            answer: raw.strengths.map((item) => `${item.name}: ${item.description} (${item.evidence})`).join('\n'),
+          },
+          raw.experiences?.[0] && {
+            question_title: raw.experiences[0].title || '대표 경험 서술',
+            question_reason: raw.experiences[0].keywordsText || 'STAR 흐름',
+            answer: [
+              raw.experiences[0].summary,
+              raw.experiences[0].star?.situation && `S: ${raw.experiences[0].star.situation}`,
+              raw.experiences[0].star?.task && `T: ${raw.experiences[0].star.task}`,
+              raw.experiences[0].star?.action && `A: ${raw.experiences[0].star.action}`,
+              raw.experiences[0].star?.result && `R: ${raw.experiences[0].star.result}`,
+            ].filter(Boolean).join('\n'),
+          },
+          raw.experiences?.[1] && {
+            question_title: '협업과 실행 과정',
+            question_reason: '문제 발견부터 결과 정리까지',
+            answer: [
+              ...(raw.experiences[1].process || []).map((item, index) => `${index + 1}. ${item.answer}`),
+              raw.experiences[1].resultSentence,
+            ].filter(Boolean).join('\n'),
+          },
+          raw.competencyEvidence?.length && {
+            question_title: '역량 근거',
+            question_reason: '자기소개서 문항 연결',
+            answer: raw.competencyEvidence.map((item) => `${item.competency}: ${item.experience} - ${item.outcome} (${item.question})`).join('\n'),
+          },
+          raw.contributionPlan?.length && {
+            question_title: '입사 후 기여 계획',
+            question_reason: '단계별 기여 방향',
+            answer: raw.contributionPlan.map((item) => `${item.period} ${item.title}: ${item.plan}`).join('\n'),
+          },
+        ].filter(Boolean);
+
+        const pages = chunkItems(storySections, 2).map((pageItems) => `
+          <article class="portfolio-canvas">
+            <header class="canvas-hero">
+              <span class="canvas-kicker">Cover Letter PPT</span>
+              <h3>${escapeHtml(raw.cover?.applicantLine || currentPortfolio.title || '자기소개서 연결형')}</h3>
+              <p>${escapeHtml(raw.cover?.headline || currentPortfolio.summary || '경험을 자기소개서형 PPT 흐름으로 정리했습니다.')}</p>
+            </header>
+            ${renderChipSection(raw.cover?.tags || [])}
+            ${pageItems.map((item) => `
+              <section class="coverletter-question">
+                <h4>${escapeHtml(item.question_title || '자기소개서 문항')}</h4>
+                <small>${escapeHtml(item.question_reason || '경험과 직무 연결')}</small>
+                <p>${escapeHtml(item.answer || '')}</p>
+              </section>
+            `).join('')}
+          </article>
+        `);
+        document.getElementById('workspaceContent').innerHTML = renderDraftPageViewer(pages);
+        return;
+      }
+
+      if (raw.templateId === 'coverletter_ppt_v1' || raw.motivation || raw.representativeExperience) {
+        const storySections = [
+          raw.motivation && {
+            question_title: '지원 동기',
+            question_reason: raw.motivation.subtitle || '경험과 직무 관심 연결',
+            answer: raw.motivation.narrative,
+          },
+          raw.competencies?.length && {
+            question_title: '직무 적합 역량',
+            question_reason: '선택 경험에서 확인한 역량',
+            answer: raw.competencies.map((item) => `${item.name}: ${item.evidence}`).join('\n'),
+          },
+          raw.representativeExperience && {
+            question_title: raw.representativeExperience.title || '대표 경험 서술',
+            question_reason: '문제, 행동, 결과 흐름',
+            answer: [
+              raw.representativeExperience.narrative,
+              ...(raw.representativeExperience.star || []).map((item) => `${item.label}: ${item.text}`),
+            ].filter(Boolean).join('\n'),
+          },
+          raw.contributionPlan?.length && {
+            question_title: '입사 후 기여 계획',
+            question_reason: '초기 적응부터 실무 기여까지',
+            answer: raw.contributionPlan.map((item) => `${item.period}: ${item.plan}`).join('\n'),
+          },
+          raw.questionMap?.length && {
+            question_title: '자기소개서 문항 연결',
+            question_reason: '문항별 연결 경험과 답변 포인트',
+            answer: raw.questionMap.map((item) => `${item.question}: ${item.experience} - ${item.answerPoint}`).join('\n'),
+          },
+        ].filter(Boolean);
+
+        const pages = chunkItems(storySections, 2).map((pageItems) => `
+          <article class="portfolio-canvas">
+            <header class="canvas-hero">
+              <span class="canvas-kicker">Cover Letter PPT</span>
+              <h3>${escapeHtml(raw.title || currentPortfolio.title || '자기소개서 연결형')}</h3>
+              <p>${escapeHtml(raw.headline || currentPortfolio.summary || '경험을 자기소개서형 PPT 흐름으로 정리했습니다.')}</p>
+            </header>
+            ${renderChipSection(raw.coverChips || [])}
+            ${pageItems.map((item) => `
+              <section class="coverletter-question">
+                <h4>${escapeHtml(item.question_title || '자기소개서 문항')}</h4>
+                <small>${escapeHtml(item.question_reason || '경험과 직무 연결')}</small>
+                <p>${escapeHtml(item.answer || '')}</p>
+              </section>
+            `).join('')}
+          </article>
+        `);
+        document.getElementById('workspaceContent').innerHTML = renderDraftPageViewer(pages);
+        return;
+      }
+
       const items = raw.items || [];
       const pages = chunkItems(items, 2).map((pageItems) => `
         <article class="portfolio-canvas">
@@ -1382,7 +1521,7 @@
         format: currentPortfolio.format,
         experiences: currentPortfolio.experiences,
         experienceProjects: currentPortfolio.experienceProjects || [],
-        keywords: currentPortfolio.keywords,
+        keywords: normalizeKeywordList(currentPortfolio.keywords),
         blocks: currentPortfolio.blocks || [],
         slides: currentPortfolio.slides || [],
         coverLines: currentPortfolio.coverLines || [],
@@ -1447,7 +1586,7 @@
       const purpose = portfolio.purpose || '취업 지원용';
       const major = portfolio.major || '기존 저장 항목';
       const experiences = Array.isArray(portfolio.experiences) ? portfolio.experiences : [];
-      const keywords = Array.isArray(portfolio.keywords) ? portfolio.keywords : [];
+      const keywords = normalizeKeywordList(portfolio.keywords);
       const fallbackBlocks = (portfolio.content || portfolio.summary || '저장된 포트폴리오입니다.')
         .split(/\n{2,}/)
         .map((text, index) => ({ title: `${index + 1}. 저장된 내용`, body: text.replace(/\s+/g, ' ').trim() }));

@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import LegacyScripts from '../LegacyScripts';
+import LegacyStyleGate from '../LegacyStyleGate';
 import { getLegacyPage } from '../../lib/legacy-page';
 
 // html/ 아래 실제 존재하는 레거시 화면 목록. 새 화면을 추가하면 여기도 함께 갱신해야
@@ -49,10 +50,26 @@ export default async function LegacyPage({ params }) {
   return (
     <>
       {page.styles.map((href) => (
-        <link key={href} rel="stylesheet" href={href} />
+        <link
+          key={href}
+          rel="stylesheet"
+          href={href}
+          data-legacy-style-page={page.fileName}
+        />
       ))}
-      <div dangerouslySetInnerHTML={{ __html: page.body }} />
-      <LegacyScripts pageKey={page.fileName} scripts={page.scripts} />
+      <noscript
+        dangerouslySetInnerHTML={{
+          __html: '<style>[data-legacy-style-gate]{visibility:visible!important}</style>',
+        }}
+      />
+      <LegacyStyleGate
+        key={page.fileName}
+        pageKey={page.fileName}
+        styleCount={page.styles.length}
+      >
+        <div dangerouslySetInnerHTML={{ __html: page.body }} />
+        <LegacyScripts pageKey={page.fileName} scripts={page.scripts} />
+      </LegacyStyleGate>
     </>
   );
 }

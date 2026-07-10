@@ -191,11 +191,31 @@ html.portfolio-edit-entry #pfWorkspaceScreen {
   transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
 }
 
-.format-card:hover,
+.format-card:not(:disabled):hover,
 .format-card.selected {
   border-color: #9eb8ff;
   box-shadow: 0 12px 26px rgba(89, 101, 232, 0.1);
   transform: translateY(-1px);
+}
+
+.format-card:disabled,
+.format-card[aria-disabled="true"] {
+  border-color: #e2e6ef;
+  background: #f5f6f9;
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 0.62;
+  transform: none;
+}
+
+.format-card:disabled .format-visual,
+.format-card[aria-disabled="true"] .format-visual {
+  filter: grayscale(1);
+}
+
+.format-card:disabled strong,
+.format-card[aria-disabled="true"] strong {
+  color: #7c8597;
 }
 
 .format-card.selected::after {

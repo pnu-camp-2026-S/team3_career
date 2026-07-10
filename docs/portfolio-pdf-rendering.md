@@ -13,7 +13,7 @@ Vercel 배포 환경에서는 앱과 API 라우트만 Vercel에 두고, PPTX를 
 -> 브라우저가 실제 변환 PDF를 iframe으로 미리보기
 ```
 
-`PORTFOLIO_CONVERTER_URL`이 설정되지 않았거나 워커 요청에 실패하면 화면은 기존 PPTX 매칭 캔버스 미리보기로 자동 전환한다.
+`PORTFOLIO_CONVERTER_URL`이 설정되지 않았거나 워커 요청에 실패하면 화면은 기존 PPTX 매칭 캔버스 미리보기로 자동 전환한다. 실제 PDF 응답은 `application/pdf` 헤더와 `%PDF` 시그니처를 모두 통과해야 한다.
 
 ## Vercel 환경 변수
 
@@ -24,6 +24,8 @@ PORTFOLIO_CONVERTER_TIMEOUT_MS=45000
 ```
 
 `PORTFOLIO_CONVERTER_TOKEN`은 선택값이다. 설정하면 Vercel API가 워커 요청에 `Authorization: Bearer <token>` 헤더를 붙인다.
+
+Vercel 배포에서는 `key.env`가 저장소에 포함되지 않으므로 위 세 변수를 Vercel Project Settings의 **Production** 환경에 직접 등록한 뒤 새 배포를 실행해야 한다. `PORTFOLIO_CONVERTER_TOKEN` 값은 Render 워커의 `CONVERTER_TOKEN`과 같아야 한다. Next.js Route Handler는 Node.js 런타임과 최대 60초 실행 시간으로 설정되어 있으므로, 변환 워커가 콜드 스타트되는 환경에서는 Vercel과 워커의 타임아웃을 함께 확인한다.
 
 ## 변환 워커 계약
 

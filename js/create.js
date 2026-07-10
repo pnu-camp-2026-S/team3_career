@@ -12,6 +12,7 @@
     const FILE_ANALYSIS_ENDPOINT = '/api/analysis/file';
     const PROJECT_ANALYSIS_ENDPOINT = '/api/analysis/project';
     const AGGREGATE_ANALYSIS_ENDPOINT = '/api/analysis/aggregate';
+    const PROJECT_ANALYSIS_LOAD_CONCURRENCY = 4;
     const PROJECT_ANALYSIS_ARTIFACTS = [
       { key: 'summary', name: 'summary.md', type: 'MD', contentKey: 'summaryMd' },
       { key: 'index', name: 'index.json', type: 'JSON', contentKey: 'indexJson' },
@@ -366,9 +367,21 @@
     }
 
     async function loadProjectAnalysesForFolders(targetFolders = Object.values(folders)) {
-      for (const folder of targetFolders) {
-        await loadProjectAnalysis(folder);
+      const folderQueue = Array.from(targetFolders).filter((folder) => folder?.id);
+      let nextFolderIndex = 0;
+
+      // 프로젝트가 많아도 Vercel 함수와 Supabase에 요청이 한꺼번에 몰리지 않도록
+      // 최대 4개의 작업자만 동시에 프로젝트 분석을 조회한다.
+      async function loadNextProjectAnalysis() {
+        while (nextFolderIndex < folderQueue.length) {
+          const folderIndex = nextFolderIndex;
+          nextFolderIndex += 1;
+          await loadProjectAnalysis(folderQueue[folderIndex]);
+        }
       }
+
+      const workerCount = Math.min(PROJECT_ANALYSIS_LOAD_CONCURRENCY, folderQueue.length);
+      await Promise.all(Array.from({ length: workerCount }, () => loadNextProjectAnalysis()));
       populateAllAnalysisSubfolders();
       persistFolders();
     }
@@ -1487,8 +1500,10 @@
     async function initFileManager() {
       folders = await FolderStore.loadFoldersFromApi();
       ensureSelectedFolder();
-      await loadActivityFilesFromApi();
-      await loadProjectAnalysesForFolders();
+      await Promise.all([
+        loadActivityFilesFromApi(),
+        loadProjectAnalysesForFolders(),
+      ]);
       render();
     }
 
