@@ -511,6 +511,56 @@ const industryPreferenceKeywordMap = {
   게임: ['게임', '개발', '콘텐츠', '서비스']
 };
 
+const departmentDirectionKeywordMap = {
+  컴퓨터공학과: ['IT', 'SW', '개발', '프론트엔드', '백엔드', '데이터', 'AI', '머신러닝', '보안', '네트워크', '클라우드', '게임'],
+  전기공학과: ['전기', '전자', '회로', '전력', '제어', '반도체', '임베디드', '센서', 'IoT', '전기차'],
+  화공생명공학과: ['화공', '화학', '바이오', '제약', '공정', '소재', '환경', '배양', '실험', '전기화학'],
+  산업공학과: ['산업', '생산', '품질', '물류', 'SCM', '최적화', '프로세스', '운영', '제조', 'Lean']
+};
+
+function getProfileEducationCandidates(profile) {
+  return [profile.major, profile.minor, profile.linkedMajor]
+    .map(normalizeDepartmentName)
+    .filter(Boolean)
+    .filter((department, index, departments) => departments.indexOf(department) === index);
+}
+
+function getDirectionPreferenceText(profile) {
+  return normalizePreferenceList([
+    profile.desiredJobs,
+    profile.desiredIndustries,
+    profile.interestedIndustries
+  ].flat()).join(' ');
+}
+
+function getDepartmentDirectionMatchScore(department, directionText) {
+  const normalizedDirection = normalizeMatchText(directionText);
+  if (!department || !normalizedDirection) return 0;
+
+  return (departmentDirectionKeywordMap[department] || []).filter((keyword) =>
+    normalizedDirection.includes(normalizeMatchText(keyword))
+  ).length;
+}
+
+function getDirectionEducationGate(profile) {
+  const candidates = getProfileEducationCandidates(profile);
+  const directionText = getDirectionPreferenceText(profile);
+  if (!candidates.length || !directionText) return null;
+
+  return candidates
+    .map((department, index) => ({
+      department,
+      score: getDepartmentDirectionMatchScore(department, directionText),
+      index
+    }))
+    .sort((a, b) => b.score - a.score || a.index - b.index)[0].department;
+}
+
+function isActivityInEducationDirection(item, gateDepartment) {
+  if (!gateDepartment) return true;
+  return normalizeDepartmentName(item.primaryDepartment) === gateDepartment;
+}
+
 function getPreferenceKeywordScore(item, preferences, fallbackScore, keywordMap = {}) {
   const normalizedPreferences = normalizePreferenceList(preferences);
   if (!normalizedPreferences.length) return fallbackScore;
@@ -570,6 +620,8 @@ function getProfileFitBreakdown(item, profile) {
   );
   const educationSignal = getStrongestEducationFit(majorScore, minorScore, linkedMajorScore);
   const educationScore = educationSignal?.score || baseScore;
+  const directionEducationGate = getDirectionEducationGate(profile);
+  const matchesEducationDirection = isActivityInEducationDirection(item, directionEducationGate);
   const hasInput = hasProfileInput(profile);
   const hasPrimaryGoal = hasPrimaryRecommendationGoal(profile);
   const hasDirection = hasRecommendationDirection(profile);
@@ -603,7 +655,8 @@ function getProfileFitBreakdown(item, profile) {
   const weightedScore = totalWeight
     ? Math.round(scoringSignals.reduce((sum, signal) => sum + signal.score * signal.weight, 0) / totalWeight)
     : baseScore;
-  const cappedScore = jobMatch.hasInput && !jobMatch.matched ? Math.min(weightedScore, 69) : weightedScore;
+  const directionCappedScore = matchesEducationDirection ? weightedScore : Math.min(weightedScore, 69);
+  const cappedScore = jobMatch.hasInput && !jobMatch.matched ? Math.min(directionCappedScore, 69) : directionCappedScore;
   const score = Math.max(12, Math.min(96, cappedScore));
   const fitSignals = [
     { label: '직무 적합', score: jobScore, visible: normalizePreferenceList(profile.desiredJobs).length > 0 },
