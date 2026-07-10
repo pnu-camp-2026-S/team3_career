@@ -8,6 +8,14 @@ const cssDir = path.join(rootDir, 'css');
 const jsDir = path.join(rootDir, 'js');
 const appDir = path.join(rootDir, 'app');
 const libDir = path.join(rootDir, 'lib');
+const coverletterDesignDir = path.join(rootDir, 'portfolio_design', 'portfolio-coverletter');
+const coverletterPptTemplateJsonPath = path.join(coverletterDesignDir, 'coverletter_ppt_template_v2.json');
+const coverletterPptExportDocPath = path.join(rootDir, 'docs', 'coverletter-ppt-export.md');
+const coverletterPptTemplate = JSON.parse(fs.readFileSync(coverletterPptTemplateJsonPath, 'utf8'));
+const openaiPortfolioLibPath = path.join(libDir, 'openai-portfolio.js');
+const openaiPortfolioLib = fs.readFileSync(openaiPortfolioLibPath, 'utf8');
+const coverletterV2LibPath = path.join(libDir, 'portfolio-coverletter-v2.js');
+const coverletterV2Lib = fs.readFileSync(coverletterV2LibPath, 'utf8');
 const workersDir = path.join(rootDir, 'workers');
 
 function readHtml(fileName) {
@@ -75,6 +83,58 @@ assert.ok(
 assert.ok(
   fs.existsSync(path.join(jsDir, 'activity-recommendation-dataset.js')),
   'activity recommendation dummy dataset should live in the js directory'
+);
+assert.ok(
+  !fs.existsSync(path.join(coverletterDesignDir, 'design.md')),
+  'old coverletter design.md should be replaced by the PPT-specific design document'
+);
+assert.ok(
+  !fs.existsSync(path.join(coverletterDesignDir, '자기소개서형_템플릿.md')),
+  'old coverletter markdown template should be replaced by the PPT-specific template document'
+);
+assert.ok(
+  fs.existsSync(coverletterPptTemplateJsonPath),
+  'coverletter portfolio should provide the v2 PPT JSON template'
+);
+assert.equal(
+  coverletterPptTemplate.templateId,
+  'coverletter_ppt_v2',
+  'coverletter PPT template should use the v2 binding contract'
+);
+assert.equal(
+  coverletterPptTemplate.engine,
+  'PptxGenJS',
+  'coverletter PPT template should target PptxGenJS'
+);
+assert.equal(
+  coverletterPptTemplate.pptx.layout,
+  'LAYOUT_WIDE',
+  'coverletter PPT template should use the 16:9 wide PowerPoint layout'
+);
+assert.deepEqual(
+  coverletterPptTemplate.slides.map((slide) => slide.id),
+  ['cover', 'positioning', 'motivation', 'strengths', 'experience_problem', 'experience_collaboration', 'competency_evidence', 'future_plan'],
+  'coverletter PPT template should define the fixed v2 self-introduction portfolio slide order'
+);
+assert.equal(
+  coverletterPptTemplate.slides.flatMap((slide) => slide.elements).filter((element) => element.binding).length,
+  63,
+  'coverletter PPT v2 template should expose all 63 editable OpenAI bindings'
+);
+assert.match(
+  fs.readFileSync(coverletterPptExportDocPath, 'utf8'),
+  /\/api\/portfolio\/generate[\s\S]*\/api\/portfolio\/export-pptx[\s\S]*OPENAI_API_KEY[\s\S]*Vercel/,
+  'coverletter PPT export documentation should explain API flow and Vercel environment variables'
+);
+assert.match(
+  openaiPortfolioLib,
+  /buildPortfolioCoverLetterV2Prompt[\s\S]*normalizePortfolioCoverLetterV2[\s\S]*portfolioCoverLetterV2Schema/,
+  'OpenAI portfolio generation should use the coverletter v2 schema, prompt, and normalizer'
+);
+assert.match(
+  coverletterV2Lib,
+  /portfolioCoverLetterV2Schema[\s\S]*cover\.applicantLine[\s\S]*competencyEvidence[\s\S]*contributionPlan[\s\S]*normalizePortfolioCoverLetterV2/,
+  'OpenAI coverletter v2 helper should define every PPT binding group and normalize raw data for previews'
 );
 assert.ok(
   !fs.existsSync(path.join(cssDir, 'index.css')) && !fs.existsSync(path.join(cssDir, 'login.css')),
@@ -3824,13 +3884,33 @@ assert.match(
 );
 assert.match(
   portfolioExportPptxRoute,
+  /COVERLETTER_FORMAT\s*=\s*'자기소개서 연결형'[\s\S]*coverletter_ppt_template_v2\.json/,
+  'portfolio PPTX export should load the coverletter v2 PPT JSON template for the self-introduction format'
+);
+assert.match(
+  portfolioExportPptxRoute,
+  /function\s+renderCoverLetterTemplateV2Pptx[\s\S]*coverletterTemplate\.slides\.forEach[\s\S]*addTemplateElement\(slide,\s*coverletterTemplate,\s*element,\s*data\)/,
+  'portfolio PPTX export should render coverletter slides from the v2 JSON element bindings'
+);
+assert.match(
+  portfolioExportPptxRoute,
+  /function\s+maxRuleForBinding[\s\S]*function\s+clipTemplateText[\s\S]*function\s+normalizeCoverLetterTemplateV2Data/,
+  'portfolio PPTX export should clamp coverletter v2 text by template maxTextRules'
+);
+assert.match(
+  portfolioExportPptxRoute,
+  /case\s+'chipGroup'[\s\S]*case\s+'repeatCard'[\s\S]*case\s+'timeline'[\s\S]*case\s+'table'[\s\S]*case\s+'listCard'/,
+  'portfolio PPTX export should support the custom element types used by the coverletter PPT template'
+);
+assert.match(
+  portfolioExportPptxRoute,
   /addOverviewSlide\(pptx,\s*portfolio,\s*blocks\)[\s\S]*addDetailSlides\(pptx,\s*portfolio,\s*blocks\.slice/,
   'portfolio PPTX export should create editable text overview and detail slides'
 );
 assert.match(
   portfolioExportPptxRoute,
-  /slide\.addText\([\s\S]*Content-Disposition[\s\S]*myfitfolio-portfolio\.pptx/,
-  'portfolio PPTX export should return a real downloadable pptx file with editable text boxes'
+  /pptx\.write\(\{\s*outputType:\s*'nodebuffer'\s*\}\)[\s\S]*myfitfolio-coverletter-portfolio\.pptx[\s\S]*myfitfolio-portfolio\.pptx[\s\S]*Content-Disposition/,
+  'portfolio PPTX export should return real downloadable pptx files with editable text boxes'
 );
 for (const cssPattern of [
   /\.portfolio-create-page\s*\{/,
