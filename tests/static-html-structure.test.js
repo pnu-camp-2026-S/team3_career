@@ -44,8 +44,8 @@ for (const file of linkedHtmlFiles) {
 }
 
 const pageCssFiles = {
-  'index.html': 'index.css',
-  'login.html': 'login.css',
+  'index.html': 'auth.css',
+  'login.html': 'auth.css',
   'main.html': 'main.css',
   'mypage.html': 'mypage.css',
   'create.html': 'create.css',
@@ -76,6 +76,14 @@ assert.ok(
   fs.existsSync(path.join(jsDir, 'activity-recommendation-dataset.js')),
   'activity recommendation dummy dataset should live in the js directory'
 );
+assert.ok(
+  !fs.existsSync(path.join(cssDir, 'index.css')) && !fs.existsSync(path.join(cssDir, 'login.css')),
+  '인증 화면은 auth.css를 다시 불러오는 빈 중간 CSS 파일을 남기지 않아야 한다'
+);
+for (const cssFile of fs.readdirSync(cssDir).filter((name) => name.endsWith('.css'))) {
+  const css = fs.readFileSync(path.join(cssDir, cssFile), 'utf8');
+  assert.ok(!/@import\b/.test(css), `${cssFile}은 렌더링을 지연시키는 CSS @import를 사용하지 않아야 한다`);
+}
 
 for (const [htmlFile, cssFile] of Object.entries(pageCssFiles)) {
   assert.ok(
@@ -145,16 +153,41 @@ assert.ok(
   fs.existsSync(folderStoreJsPath),
   'folder data store script should live in the js directory (Firebase-ready abstraction)'
 );
-assert.match(
-  fs.readFileSync(jsRoutePath, 'utf8'),
-  /dynamic\s*=\s*'force-dynamic'[\s\S]*path\.resolve\(jsDir/,
-  'js asset route should stay dynamic in dev and restrict reads to the js directory'
-);
-assert.match(
-  fs.readFileSync(cssRoutePath, 'utf8'),
-  /dynamic\s*=\s*'force-dynamic'[\s\S]*path\.resolve\(cssDir/,
-  'css asset route should stay dynamic in dev and restrict reads to the css directory'
-);
+for (const [label, routePath, sourceDirName] of [
+  ['JavaScript', jsRoutePath, 'jsDir'],
+  ['CSS', cssRoutePath, 'cssDir'],
+]) {
+  const route = fs.readFileSync(routePath, 'utf8');
+  assert.match(
+    route,
+    /dynamic\s*=\s*'force-static'/,
+    `${label} 자산 경로는 Vercel CDN이 제공할 수 있도록 정적 생성해야 한다`
+  );
+  assert.match(
+    route,
+    /dynamicParams\s*=\s*false/,
+    `${label} 자산 경로는 빌드 때 등록되지 않은 파일을 동적으로 실행하지 않아야 한다`
+  );
+  assert.match(
+    route,
+    /readdir\([\s\S]*async function\s+generateStaticParams\(\)[\s\S]*return files\.map\(\(file\) => \(\{ file \}\)\)/,
+    `${label} 자산 경로는 원본 디렉터리의 파일 목록을 빌드 경로로 등록해야 한다`
+  );
+  assert.match(
+    route,
+    new RegExp(`path\\.resolve\\(${sourceDirName}`),
+    `${label} 자산 경로는 허용된 원본 디렉터리 밖을 읽지 못하게 해야 한다`
+  );
+  assert.match(
+    route,
+    /s-maxage=31536000/,
+    `${label} 자산 응답은 Vercel 공유 캐시를 사용해야 한다`
+  );
+  assert.ok(
+    !/force-dynamic|request\.headers|cache:\s*'no-store'/.test(route),
+    `${label} 자산 경로는 요청마다 서버 함수를 실행하거나 캐시를 우회하지 않아야 한다`
+  );
+}
 const folderStoreJs = fs.readFileSync(folderStoreJsPath, 'utf8');
 assert.match(
   folderStoreJs,
@@ -508,6 +541,7 @@ assert.match(
 
 const nextLegacyPage = fs.readFileSync(path.join(appDir, '[[...slug]]', 'page.js'), 'utf8');
 const nextLegacyScripts = fs.readFileSync(path.join(appDir, 'LegacyScripts.jsx'), 'utf8');
+const nextLegacyNavigation = fs.readFileSync(path.join(appDir, 'LegacyNavigation.jsx'), 'utf8');
 const nextLegacyLib = fs.readFileSync(path.join(libDir, 'legacy-page.js'), 'utf8');
 const nextCssRoute = fs.readFileSync(path.join(appDir, 'css', '[...file]', 'route.js'), 'utf8');
 const nextJsRoute = fs.readFileSync(path.join(appDir, 'js', '[...file]', 'route.js'), 'utf8');
@@ -571,8 +605,31 @@ assert.match(
 );
 assert.match(
   nextLegacyScripts,
-  /function\s+wrapInlineScript\(content\)[\s\S]*element\.text\s*=\s*wrapInlineScript\(script\.content \|\| ''\)/,
+  /function\s+wrapInlineScript\(content\)[\s\S]*element\.text\s*=\s*wrapInlineScript\(prepared\.content\)/,
   'Next legacy script loader should wrap inline scripts so repeated mounts do not redeclare top-level const bindings'
+);
+assert.match(
+  nextLegacyScripts,
+  /const preparedScripts = scripts\.map\([\s\S]*for \(let index = 0; index < scripts\.length; index \+= 1\)[\s\S]*await preparedScripts\[index\]/,
+  '레거시 스크립트는 다운로드를 동시에 시작하고 HTML 선언 순서대로 실행해야 한다'
+);
+assert.ok(
+  !/cache:\s*'no-store'/.test(nextLegacyScripts),
+  '레거시 스크립트 다운로드는 브라우저와 CDN 캐시를 우회하지 않아야 한다'
+);
+assert.match(
+  nextLegacyScripts,
+  /new AbortController\(\)[\s\S]*abortController\.abort\(\)/,
+  '페이지를 떠날 때 완료되지 않은 레거시 스크립트 다운로드를 취소해야 한다'
+);
+assert.ok(
+  !/LEGACY_PATHS_TO_PREFETCH|\.forEach\(\(path\)[\s\S]*\.prefetch\(path\)/.test(nextLegacyNavigation),
+  '첫 화면 진입 시 방문하지 않은 모든 레거시 페이지를 미리 불러오지 않아야 한다'
+);
+assert.match(
+  nextLegacyNavigation,
+  /useRef\(new Set\(\)\)[\s\S]*handleNavigationIntent[\s\S]*prefetch\(href\)[\s\S]*'pointerover'[\s\S]*'focusin'/,
+  '내부 링크는 사용자 이동 의도가 있을 때만 경로별 한 번 사전 로딩해야 한다'
 );
 assert.match(
   nextLegacyLib,
@@ -587,12 +644,12 @@ assert.ok(
 );
 assert.match(
   nextCssRoute,
-  /const params = await context\.params;[\s\S]*path\.join\(process\.cwd\(\), 'css'/,
+  /path\.join\(process\.cwd\(\), 'css'\)[\s\S]*const params = await context\.params;/,
   'Next route handler should serve existing css assets'
 );
 assert.match(
   nextJsRoute,
-  /const params = await context\.params;[\s\S]*path\.join\(process\.cwd\(\), 'js'/,
+  /path\.join\(process\.cwd\(\), 'js'\)[\s\S]*const params = await context\.params;/,
   'Next route handler should serve existing js assets'
 );
 assert.match(
@@ -1058,7 +1115,7 @@ assert.match(
 );
 assert.match(
   mainHtml,
-  /const isProfileSaved = await hasSavedDatabaseProfile\(\);[\s\S]*initializeTutorialPanel\(isProfileSaved\);[\s\S]*await renderFolders\(isProfileSaved\);/,
+  /const profilePromise = hasSavedDatabaseProfile\(\);[\s\S]*const isProfileSaved = await profilePromise;[\s\S]*initializeTutorialPanel\(isProfileSaved\);[\s\S]*await renderFolders\(isProfileSaved\);/,
   'main dashboard should decide the tutorial collapsed state after checking the saved database profile'
 );
 assert.ok(
@@ -1102,6 +1159,16 @@ assert.match(
   mainHtml,
   /<li class="tutorial-substep"><strong>3\. 원하는 형식 선택<\/strong><span>[\s\S]*<figure class="tutorial-image-slot">[\s\S]*src="\/images\/tutorial\/portfolio_format\.png"[\s\S]*<li class="tutorial-substep"><strong>4\. AI 대화창에서 내용 수정<\/strong><span>[\s\S]*<figure class="tutorial-image-slot">[\s\S]*src="\/images\/tutorial\/portfolio_modify\.png"/,
   'main tutorial should keep portfolio creation screenshots under each matching step'
+);
+assert.match(
+  mainHtml,
+  /<img(?=[^>]*src="\/images\/tutorial\/portfolio_format\.png")(?=[^>]*loading="lazy")(?=[^>]*decoding="async")(?=[^>]*width="1165")(?=[^>]*height="483")[^>]*>/,
+  '메인 튜토리얼의 포트폴리오 형식 이미지는 필요한 시점에 지연 로딩해야 한다'
+);
+assert.match(
+  mainHtml,
+  /<img(?=[^>]*src="\/images\/tutorial\/portfolio_modify\.png")(?=[^>]*loading="lazy")(?=[^>]*decoding="async")(?=[^>]*width="722")(?=[^>]*height="451")[^>]*>/,
+  '메인 튜토리얼의 포트폴리오 수정 이미지는 필요한 시점에 지연 로딩해야 한다'
 );
 assert.match(
   folderStoreJs,
@@ -1171,6 +1238,16 @@ assert.match(
   mainHtml,
   /async function\s+loadActivityFilesFromApi\(\)[\s\S]*fetch\(ACTIVITY_FILES_ENDPOINT/,
   'main dashboard should load existing uploaded files from the activity file API'
+);
+assert.match(
+  mainHtml,
+  /const profilePromise = hasSavedDatabaseProfile\(\);[\s\S]*const storedAggregateResultPromise = requestStoredAggregateResult\(\);[\s\S]*folders = await FolderStore\.loadFoldersFromApi\(\);[\s\S]*await restoreAggregateResult\(storedAggregateResultPromise\)/,
+  '메인 화면은 프로필과 저장된 분석 조회를 폴더·파일 로딩과 동시에 시작해야 한다'
+);
+assert.match(
+  mainHtml,
+  /async function\s+requestStoredAggregateResult\(\)[\s\S]*return payload\.result \|\| null;[\s\S]*async function\s+restoreAggregateResult\(storedResultPromise[\s\S]*applyAggregateResult\(storedResult\)/,
+  '메인 화면은 병렬 조회한 종합 분석 결과를 폴더·파일 상태가 준비된 뒤 적용해야 한다'
 );
 assert.ok(
   !mainHtml.includes('FolderStore.FOLDER_GROUPS'),
@@ -2208,6 +2285,16 @@ assert.match(
   'file management should load uploaded files from the activity file API'
 );
 assert.match(
+  createHtml,
+  /PROJECT_ANALYSIS_LOAD_CONCURRENCY\s*=\s*4[\s\S]*async function\s+loadProjectAnalysesForFolders[\s\S]*workerCount[\s\S]*Promise\.all\(Array\.from/,
+  '파일 관리 화면은 프로젝트 분석 조회를 최대 4개 작업자로 제한해 병렬 처리해야 한다'
+);
+assert.match(
+  createHtml,
+  /async function\s+initFileManager\(\)[\s\S]*folders = await FolderStore\.loadFoldersFromApi\(\);[\s\S]*await Promise\.all\(\[[\s\S]*loadActivityFilesFromApi\(\)[\s\S]*loadProjectAnalysesForFolders\(\)[\s\S]*\]\);/,
+  '파일 관리 화면은 폴더 확보 후 활동 파일과 프로젝트 분석을 동시에 불러와야 한다'
+);
+assert.match(
   createCss,
   /\.visually-hidden\s*\{/,
   'file management stylesheet should define visually-hidden so the file input stays hidden (#132)'
@@ -2333,6 +2420,19 @@ assert.match(
   /href="\.\.\/css\/common\.css"/,
   'contest page should load the shared common stylesheet for the top navigation'
 );
+assert.ok(
+  !/<link[^>]+href="https?:\/\//i.test(contestHtml),
+  '활동 추천 화면은 외부 CDN CSS 때문에 첫 렌더링이 지연되지 않아야 한다'
+);
+assert.ok(
+  !/font-awesome|fa-chevron|fa-solid/i.test(contestHtml),
+  '활동 추천 화면은 달력 화살표 두 개를 위해 Font Awesome을 내려받지 않아야 한다'
+);
+assert.match(
+  contestHtml,
+  /id="prevCalendarMonth"[\s\S]*<span aria-hidden="true">‹<\/span>[\s\S]*id="nextCalendarMonth"[\s\S]*<span aria-hidden="true">›<\/span>/,
+  '활동 추천 달력은 외부 아이콘 글꼴 없이 접근 가능한 이전·다음 버튼을 제공해야 한다'
+);
 assert.match(
   contestHtml,
   /src="\.\.\/js\/contest\.js"/,
@@ -2395,6 +2495,10 @@ assert.ok(
 
 const contestJs = fs.readFileSync(path.join(jsDir, 'contest.js'), 'utf8');
 const contestCss = fs.readFileSync(path.join(cssDir, 'contest.css'), 'utf8');
+assert.ok(
+  !/body\s*\{[^}]*font-family:\s*"Pretendard",\s*sans-serif;/s.test(contestCss),
+  '활동 추천 화면은 외부 Pretendard 전용 글꼴 설정 대신 공통 시스템 글꼴을 사용해야 한다'
+);
 assert.ok(
   !contestJs.includes('savedCount'),
   'contest schedule count should not depend on removed summary cards'
