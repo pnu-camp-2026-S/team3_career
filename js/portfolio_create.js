@@ -149,15 +149,20 @@
       '통한',
     ]);
 
+    function hasBlockedKeywordText(keyword) {
+      return /\uC870\uC0AC/.test(String(keyword || ''));
+    }
+
     function compactKeyword(keyword) {
       const text = String(keyword || '')
         .replace(/[·ㆍ,;/|+]+/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
       if (!text) return '';
+      if (hasBlockedKeywordText(text)) return '';
 
       const matchedRule = keywordCompactRules.find((rule) => rule.pattern.test(text));
-      if (matchedRule) return matchedRule.keyword;
+      if (matchedRule) return hasBlockedKeywordText(matchedRule.keyword) ? '' : matchedRule.keyword;
 
       const words = text.split(' ')
         .map((word) => word.replace(/의$/, ''))
@@ -167,7 +172,7 @@
     }
 
     function renderKeywordTags(keywords, { source = 'local' } = {}) {
-      const uniqueKeywords = [...new Set(keywords.map(compactKeyword).filter(Boolean))].slice(0, 12);
+      const uniqueKeywords = [...new Set(keywords.map(compactKeyword).filter((keyword) => keyword && !hasBlockedKeywordText(keyword)))].slice(0, 12);
 
       keywordPool.innerHTML = uniqueKeywords.map((keyword) => {
         const sourceClass = source === 'ai' ? ' ai-tag' : '';

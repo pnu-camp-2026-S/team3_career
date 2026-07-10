@@ -3160,6 +3160,11 @@ assert.match(
 );
 assert.match(
   portfolioCreateHtml,
+  /function\s+hasBlockedKeywordText\(keyword\)[\s\S]*\\uC870\\uC0AC[\s\S]*function\s+compactKeyword\(keyword\)[\s\S]*hasBlockedKeywordText\(text\)[\s\S]*renderKeywordTags[\s\S]*hasBlockedKeywordText\(keyword\)/,
+  'portfolio_create should hide AI keyword chips that contain the blocked 조사 wording'
+);
+assert.match(
+  portfolioCreateHtml,
   /function\s+getSelectedExperienceProjects\(\)[\s\S]*projectId:\s*folder\.id[\s\S]*summaryMd:\s*folder\.projectAnalysis\.summaryMd[\s\S]*summaryKeywords:\s*getFolderSummaryKeywords\(folder\)[\s\S]*function\s+getFolderMeta[\s\S]*포트폴리오 키워드 사용/,
   'portfolio_create should build selected project summary context and label portfolio keyword availability'
 );
@@ -3634,6 +3639,16 @@ assert.match(
   portfolioKeywordsRoute,
   /analysisSummary[\s\S]*analysisIndex[\s\S]*collectExperienceText/,
   'portfolio keyword API should consider uploaded file analysis summaries and index drafts'
+);
+assert.match(
+  portfolioKeywordsRoute,
+  /function\s+hasBlockedKeywordText\(item\)[\s\S]*\\uC870\\uC0AC[\s\S]*function\s+compactKeyword\(item\)[\s\S]*hasBlockedKeywordText\(text\)[\s\S]*function\s+uniqueKeywords\(items\)[\s\S]*hasBlockedKeywordText\(item\)/,
+  'portfolio keyword API should remove recommendations that contain the blocked 조사 wording'
+);
+assert.match(
+  portfolioSourceDataRoute,
+  /function\s+hasBlockedKeywordText\(item\)[\s\S]*\\uC870\\uC0AC[\s\S]*function\s+compactKeyword\(item\)[\s\S]*hasBlockedKeywordText\(text\)[\s\S]*function\s+normalizeKeywordList\(items\)[\s\S]*hasBlockedKeywordText\(item\)/,
+  'portfolio source data API should remove selected project keywords that contain the blocked 조사 wording'
 );
 assert.match(
   portfolioExportPptxRoute,

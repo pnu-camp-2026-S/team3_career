@@ -46,15 +46,20 @@ async function getCurrentUser(supabase) {
   return user;
 }
 
+function hasBlockedKeywordText(item) {
+  return /\uC870\uC0AC/.test(String(item || ''));
+}
+
 function compactKeyword(item) {
   const text = String(item || '')
     .replace(/[·ㆍ,;/|+]+/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
   if (!text) return '';
+  if (hasBlockedKeywordText(text)) return '';
 
   const matchedRule = KEYWORD_COMPACT_RULES.find((rule) => rule.pattern.test(text));
-  if (matchedRule) return matchedRule.keyword;
+  if (matchedRule) return hasBlockedKeywordText(matchedRule.keyword) ? '' : matchedRule.keyword;
 
   const words = text.split(' ')
     .map((word) => word.replace(/의$/, ''))
@@ -70,7 +75,7 @@ function normalizeKeywordList(items) {
       .replace(/^["'`]+|["'`]+$/g, '')
       .trim())
     .map(compactKeyword)
-    .filter((item) => item && item !== '-'))]
+    .filter((item) => item && item !== '-' && !hasBlockedKeywordText(item)))]
     .slice(0, 12);
 }
 

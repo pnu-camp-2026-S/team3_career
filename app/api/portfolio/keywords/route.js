@@ -118,15 +118,20 @@ const KEYWORD_STOP_WORDS = new Set([
   '통한',
 ]);
 
+function hasBlockedKeywordText(item) {
+  return /\uC870\uC0AC/.test(String(item || ''));
+}
+
 function compactKeyword(item) {
   const text = String(item || '')
     .replace(/[·ㆍ,;/|+]+/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
   if (!text) return '';
+  if (hasBlockedKeywordText(text)) return '';
 
   const matchedRule = KEYWORD_COMPACT_RULES.find((rule) => rule.pattern.test(text));
-  if (matchedRule) return matchedRule.keyword;
+  if (matchedRule) return hasBlockedKeywordText(matchedRule.keyword) ? '' : matchedRule.keyword;
 
   const words = text.split(' ')
     .map((word) => word.replace(/의$/, ''))
@@ -138,7 +143,7 @@ function compactKeyword(item) {
 function uniqueKeywords(items) {
   return [...new Set((items || [])
     .map(compactKeyword)
-    .filter(Boolean))]
+    .filter((item) => item && !hasBlockedKeywordText(item)))]
     .slice(0, 12);
 }
 
